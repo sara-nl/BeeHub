@@ -1,20 +1,9 @@
-A First Level Header
-====================
+This is the central **development portal** of *BeeHub*, [SARA](http://www.sara.nl/)'s new file sharing service. BeeHub's **user portal** can be found at http://www.beehub.nl/.
 
-A Second Level Header
----------------------
+This repository contains a number of different code-bases, that are so close coupled that I didn't think they should live in separate git repositories.
 
-Now is the time for all good men to come to
-the aid of their country. This is just a
-regular paragraph.
+*   **WebDAV:** the (BeeHub independent) custom WebDAV protocol implementation, as well as the BeeHub-specific XFS backend implementation.
+*   **WebSite**: the [BeeHub user portal](http://www.beehub.nl/), built on [WordPress](http://www.wordpress.org/).
+*   **WebClient**: the [BeeHub web client](http://beehub.nl/), built on [ExtJS](http://www.sencha.com/).
 
-The quick brown fox jumped over the lazy
-dog's back.
-
-### Header 3
-
-> This is a blockquote.
-> 
-> This is the second paragraph in the blockquote.
->
-> ## This is an H2 in a blockquote
+Each of these codebases has its own [milestones](/pieterb/BeeHub/issues/milestones) in this project.
