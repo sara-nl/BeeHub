@@ -36,7 +36,6 @@
 //exit();
 
 require_once dirname(__FILE__) . '/dav.php';
-require_once dirname(__FILE__) . '/secret.php';
 
 //DAV::debug('started!');
 
@@ -111,7 +110,7 @@ private static $MYSQLI = null;
 public static function mysqli() {
   if (self::$MYSQLI === null) {
     self::$MYSQLI = new mysqli(
-      'localhost', 'wordpress', DATABASE_PASSWORD, 'wordpress'
+      'localhost', 'wordpress', 'wordpress', 'wordpress'
     );
     if ( !self::$MYSQLI )
       throw new SD_MySQL(mysqli_connect_error());
