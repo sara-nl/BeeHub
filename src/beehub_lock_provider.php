@@ -1,8 +1,8 @@
 <?php
 
 /*·************************************************************************
- * Copyright ©2007-2011 Pieter van Beek, Almere, The Netherlands
- * 		    <http://purl.org/net/6086052759deb18f4c0c9fb2c3d3e83e>
+ * Copyright ©2007-2012 Pieter van Beek, Almere, The Netherlands
+ *         <http://purl.org/net/6086052759deb18f4c0c9fb2c3d3e83e>
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -13,32 +13,30 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * $Id: sd_lock_provider.php 3349 2011-07-28 13:04:24Z pieterb $
  **************************************************************************/
 
 /**
  * File documentation (who cares)
- * @package SD
+ * @package BeeHub
  */
 
 /**
  * Lock provider.
- * @package SD
+ * @package BeeHub
  */
-class SD_Lock_Provider implements DAV_Lock_Provider {
-  
+class BeeHub_Lock_Provider implements DAV_Lock_Provider {
+
 
 const PROPNAME   = 'DAV%3A%20lockdiscovery';
 const MAXTIMEOUT = 604800;
 
 
 /**
- * @return SD_Lock_Provider
+ * @return BeeHub_Lock_Provider
  */
 static public function inst() {
   static $inst = null;
-  if (!$inst) $inst = new SD_Lock_Provider();
+  if (!$inst) $inst = new BeeHub_Lock_Provider();
   return $inst;
 }
 
@@ -51,7 +49,7 @@ private static function timeout($timeout) {
 
 
 public function memberLocks($path) {
-  exec( 'getfattr --absolute-names -n "user.' . self::PROPNAME . '" -R ' . SD::escapeshellarg(SD::localPath($path)) . ' 2>/dev/null', $output );
+  exec( 'getfattr --absolute-names -n "user.' . self::PROPNAME . '" -R ' . BeeHub::escapeshellarg(BeeHub::localPath($path)) . ' 2>/dev/null', $output );
   $result = array();
   $filename = null;
   foreach ($output as $line)
@@ -63,7 +61,7 @@ public function memberLocks($path) {
                $line, $matches
              ) )
       $result[$filename] = stripcslashes($matches[1]);
-  unset ($result[SD::localPath($path)]);
+  unset ($result[BeeHub::localPath($path)]);
   $retval = array();
   foreach($result as $localPath => $lockdiscovery) {
     $l = json_decode($lockdiscovery, true);
@@ -77,16 +75,16 @@ public function memberLocks($path) {
 
 
 public function getlock($path) {
-  if ($value = json_decode(@xattr_get(SD::localPath($path), self::PROPNAME), true))
+  if ($value = json_decode(@xattr_get(BeeHub::localPath($path), self::PROPNAME), true))
     if ($value['timeout'] && $value['timeout'] < time())
-      xattr_remove(SD::localPath($path), self::PROPNAME);
+      xattr_remove(BeeHub::localPath($path), self::PROPNAME);
     else
       return new DAV_Element_activelock( $value );
   do {
     $path = dirname($path);
-    if ($value = json_decode(@xattr_get(SD::localPath($path), self::PROPNAME), true))
+    if ($value = json_decode(@xattr_get(BeeHub::localPath($path), self::PROPNAME), true))
       if ($value['timeout'] && $value['timeout'] < time())
-        xattr_remove(SD::localPath($path), self::PROPNAME);
+        xattr_remove(BeeHub::localPath($path), self::PROPNAME);
       elseif( DAV::DEPTH_INF == $value['depth'] )
         return new DAV_Element_activelock( $value );
   } while ('/' != $path);
@@ -95,10 +93,10 @@ public function getlock($path) {
 
 
 public function setlock($lockroot, $depth, $owner, $timeout) {
-//   if (preg_match("@^(?:{SD::$USERS_PATH}|{SD::$GROUPS_PATH}).+\$@", $lockroot))
+//   if (preg_match("@^(?:{BeeHub::$USERS_PATH}|{BeeHub::$GROUPS_PATH}).+\$@", $lockroot))
 //     throw new DAV_Status(DAV::HTTP_FORBIDDEN);
   $timeout = self::timeout($timeout);
-  $result = SD::query('SELECT UUID();');
+  $result = BeeHub::query('SELECT UUID();');
   $row = $result->fetch_row();
   $locktoken = 'opaquelocktoken:' . $row[0];
   $result->free();
@@ -110,7 +108,7 @@ public function setlock($lockroot, $depth, $owner, $timeout) {
     'timeout'   => $timeout
   ) );
   xattr_set(
-    SD::localpath($lockroot), rawurlencode(DAV::PROP_LOCKDISCOVERY),
+    BeeHub::localpath($lockroot), rawurlencode(DAV::PROP_LOCKDISCOVERY),
     json_encode($activelock)
   );
   return $locktoken;
@@ -119,27 +117,27 @@ public function setlock($lockroot, $depth, $owner, $timeout) {
 
 public function refresh($path, $locktoken, $timeout) {
   $timeout = self::timeout($timeout);
-  $lock = @xattr_get( SD::localPath($path), self::PROPNAME );
+  $lock = @xattr_get( BeeHub::localPath($path), self::PROPNAME );
   if (!$lock) return false;
   $lock = new DAV_Element_activelock( json_decode($lock, true) );
   if ( $lock->timeout && $lock->timeout < time() ) {
-    xattr_remove( SD::localPath($path), self::PROPNAME );
+    xattr_remove( BeeHub::localPath($path), self::PROPNAME );
     return false;
   }
   if ( $locktoken != $lock->locktoken )
     return false;
   $lock->timeout = $timeout;
-  xattr_set( SD::localPath($lock->lockroot), self::PROPNAME, json_encode($lock) );
+  xattr_set( BeeHub::localPath($lock->lockroot), self::PROPNAME, json_encode($lock) );
   return true;
 }
 
 
 public function unlock($path) {
-  $value = @xattr_get( SD::localPath($path), self::PROPNAME );
+  $value = @xattr_get( BeeHub::localPath($path), self::PROPNAME );
   if (!$value) return false;
   $value = json_decode($value, true);
   $retval = $value['timeout'] >= time() || 0 == $value['timeout'];
-  xattr_remove( SD::localPath($path), self::PROPNAME );
+  xattr_remove( BeeHub::localPath($path), self::PROPNAME );
   return $retval;
 }
 

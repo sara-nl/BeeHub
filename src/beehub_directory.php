@@ -1,8 +1,8 @@
 <?php
 
 /*·************************************************************************
- * Copyright ©2007-2011 Pieter van Beek, Almere, The Netherlands
- * 		    <http://purl.org/net/6086052759deb18f4c0c9fb2c3d3e83e>
+ * Copyright ©2007-2012 Pieter van Beek, Almere, The Netherlands
+ *         <http://purl.org/net/6086052759deb18f4c0c9fb2c3d3e83e>
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -13,20 +13,18 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * $Id: sd_directory.php 3364 2011-08-04 14:11:03Z pieterb $
  **************************************************************************/
 
 /**
  * File documentation (who cares)
- * @package SD
+ * @package BeeHub
  */
 
 /**
  * Interface to a folder.
- * @package SD
+ * @package BeeHub
  */
-class SD_Directory extends SD_Resource implements DAV_Collection {
+class BeeHub_Directory extends BeeHub_Resource implements DAV_Collection {
 
 
 /**
@@ -43,7 +41,7 @@ public function __construct($path) {
 
 public function user_prop_getcontenttype() {
   return 'httpd/unix-directory';
-  //return SD::best_xhtml_type() . '; charset="utf-8"';
+  //return BeeHub::best_xhtml_type() . '; charset="utf-8"';
 }
 
 
@@ -63,7 +61,7 @@ public function create_member( $name ) {
 private function internal_create_member( $name, $collection = false ) {
   $this->assert(DAVACL::PRIV_WRITE);
   $path = $this->path . $name;
-  $localPath = SD::localPath( $path );
+  $localPath = BeeHub::localPath( $path );
   $cups = $this->current_user_principals();
   $group = $this->user_prop_group();
   if (!isset($cups[$group]))
@@ -73,7 +71,7 @@ private function internal_create_member( $name, $collection = false ) {
   $result = $collection ? @mkdir($localPath) : touch($localPath);
   if ( !$result )
     throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
-  xattr_set( $localPath, rawurlencode(DAV::PROP_GETETAG), SD::ETag(0) );
+  xattr_set( $localPath, rawurlencode(DAV::PROP_GETETAG), BeeHub::ETag(0) );
   xattr_set( $localPath, rawurlencode(DAV::PROP_OWNER  ), $this->user_prop_current_user_principal() );
   xattr_set( $localPath, rawurlencode(DAV::PROP_GROUP  ), $group );
   return DAV::$REGISTRY->resource($path);
@@ -81,10 +79,10 @@ private function internal_create_member( $name, $collection = false ) {
 
 
 public function method_COPY( $path ) {
-  $parent = SD_Registry::inst()->resource(dirname($path));
+  $parent = BeeHub_Registry::inst()->resource(dirname($path));
   if (!$parent)
     throw new DAV_Status(DAV::HTTP_CONFLICT);
-  if (!$parent instanceof SD_Directory)
+  if (!$parent instanceof BeeHub_Directory)
     throw new DAV_Status(DAV::HTTP_FORBIDDEN);
   $parent->internal_create_member(basename($path), true);
   foreach(xattr_list($this->localPath) as $xattr)
@@ -102,7 +100,7 @@ public function method_COPY( $path ) {
 public function method_DELETE( $name )
 {
   $path = $this->path . $name;
-  $localpath = SD::localPath( $path );
+  $localpath = BeeHub::localPath( $path );
   $this->assert(DAVACL::PRIV_WRITE);
   if (is_dir($localpath)) {
     if (!@rmdir($localpath))
@@ -112,7 +110,7 @@ public function method_DELETE( $name )
     if (!@unlink($localpath))
       throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
   }
-  SD_Registry::inst()->forget($path);
+  BeeHub_Registry::inst()->forget($path);
 }
 
 
@@ -147,10 +145,10 @@ EOS;
   return $retval;
 }
 
-  
+
 public function method_HEAD() {
   $this->assert(DAVACL::PRIV_READ);
-  return array('Content-Type' => SD::best_xhtml_type() . '; charset="utf-8"');
+  return array('Content-Type' => BeeHub::best_xhtml_type() . '; charset="utf-8"');
 }
 
 
@@ -165,10 +163,10 @@ public function method_MKCOL( $name ) {
 
 public function method_MOVE( $member, $destination ) {
   $this->assert(DAVACL::PRIV_WRITE);
-  SD_Registry::inst()->resource(dirname($destination))->assert(DAVACL::PRIV_WRITE);
-  $localDest = SD::localPath($destination);
+  BeeHub_Registry::inst()->resource(dirname($destination))->assert(DAVACL::PRIV_WRITE);
+  $localDest = BeeHub::localPath($destination);
   rename(
-    SD::localPath( $this->path . $member ),
+    BeeHub::localPath( $this->path . $member ),
     $localDest
   );
 }
@@ -193,7 +191,7 @@ private function skipInvalidMembers() {
   while (
     $this->dir()->valid() && (
       $this->dir()->isDot() ||
-      !SD_Registry::inst()->resource(
+      !BeeHub_Registry::inst()->resource(
         $this->path . $this->current()
       )->isVisible()
   ) )
@@ -217,6 +215,6 @@ public function rewind()  {
 }
 public function valid()   { return $this->dir()->valid(); }
 
-} // class SD_Directory
+} // class BeeHub_Directory
 
 

@@ -1,8 +1,8 @@
 <?php
 
 /*·************************************************************************
- * Copyright ©2007-2011 Pieter van Beek, Almere, The Netherlands
- * 		    <http://purl.org/net/6086052759deb18f4c0c9fb2c3d3e83e>
+ * Copyright ©2007-2012 Pieter van Beek, Almere, The Netherlands
+ *         <http://purl.org/net/6086052759deb18f4c0c9fb2c3d3e83e>
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -13,13 +13,11 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * $Id: sd.php 3364 2011-08-04 14:11:03Z pieterb $
  **************************************************************************/
 
 /**
  * File documentation (who cares)
- * @package SD
+ * @package BeeHub
  */
 
 //DAV::header(array('X-My-Header' => 'My Value'));
@@ -35,50 +33,48 @@
 //flush();
 //exit();
 
-require_once dirname(__FILE__) . '/dav.php';
+require_once dirname( dirname(__FILE__) ) . '/webdav-php/lib/dav.php';
 
 //DAV::debug('started!');
 
 /**
  * A MySQL exception
- * @package SD
+ * @package BeeHub
  */
-class SD_MySQL extends Exception {}
+class BeeHub_MySQL extends Exception {}
 
 /**
  * A deadlock occured: Try again.
- * @package SD
+ * @package BeeHub
  */
-class SD_Deadlock extends SD_MySQL {}
+class BeeHub_Deadlock extends BeeHub_MySQL {}
 
 /**
  * Out of resources: maybe later.
- * @package SD
+ * @package BeeHub
  */
-class SD_Timeout extends SD_MySQL {}
+class BeeHub_Timeout extends BeeHub_MySQL {}
 
 
 /**
  * Just a namespace.
- * @package SD
+ * @package BeeHub
  */
-class SD {
+class BeeHub {
 
 
-const REALM = 'BeeHub';
-const USERS_PATH = '/users/';
-const GROUPS_PATH = '/groups/';
-const WHEEL_PATH = '/users/admin';
+// const REALM = 'BeeHub';
+// const USERS_PATH = '/users/';
+// const GROUPS_PATH = '/groups/';
+// const WHEEL_PATH = '/users/admin';
 
 
-// rawurlencoded: http%3A%2F%2Fwww.sara.nl%2Fwebdav%23
-const SARANS = 'http://beehub.nl/';
+// const PRIV_READ_PROPERTIES = 'http://beehub.nl/ read-properties';
+// const PRIV_READ_CONTENT    = 'http://beehub.nl/ read-content';
 
+// const PROP_PASSWD          = 'http://beehub.nl/ passwd';
 
-const PRIV_READ_PROPERTIES = 'http://beehub.nl/ read-properties';
-const PRIV_READ_CONTENT    = 'http://beehub.nl/ read-content';
-
-const PROP_PASSWD          = 'http://beehub.nl/ passwd';
+const DATADIR = '/space/beehub/data';
 
 
 /**
@@ -91,11 +87,11 @@ public static function escapeshellarg($arg) {
   return "'" . str_replace( "'", "'\\''", $arg ) . "'";
 }
 
-  
+
 public static function localPath($path) {
 //  $path = DAV::unslashify('root' . $path);
 //  $path = str_replace('#', '##', $path);
-  return DAV::unslashify( '/space/beehub/data' . rawurldecode( $path ) );
+  return DAV::unslashify( DATADIR . rawurldecode( $path ) );
 }
 
 
@@ -113,7 +109,7 @@ public static function mysqli() {
       'localhost', 'wordpress', 'wordpress', 'wordpress'
     );
     if ( !self::$MYSQLI )
-      throw new SD_MySQL(mysqli_connect_error());
+      throw new BeeHub_MySQL(mysqli_connect_error(), mysqli_connect_errno());
   }
   return self::$MYSQLI;
 }
@@ -133,22 +129,22 @@ public static function ETag($etag = null) {
     if (!($etag % 100))
       self::query("DELETE FROM ETag WHERE etag < $etag");
   }
-  return '"' . base64_encode( pack( 'H*', dechex( $etag ) ) ) . '"';
+  return '"' . trim( base64_encode( pack( 'H*', dechex( $etag ) ) ), '=' ) . '"';
 }
 
 
 /**
  * @param string $query
  * @return void
- * @throws SD_Deadlock|SD_Timeout|SD_MySQL
+ * @throws BeeHub_Deadlock|BeeHub_Timeout|BeeHub_MySQL
  */
 public static function real_query($query) {
   if (! self::mysqli()->real_query($query)) {
     if (self::mysqli()->errno == 1213)
-      throw new SD_Deadlock(self::mysqli()->error);
+      throw new BeeHub_Deadlock(self::mysqli()->error);
     if (self::mysqli()->errno == 1205)
-      throw new SD_Timeout(self::mysqli()->error);
-    throw new SD_MySQL( self::mysqli()->error, self::mysqli()->errno );
+      throw new BeeHub_Timeout(self::mysqli()->error);
+    throw new BeeHub_MySQL( self::mysqli()->error, self::mysqli()->errno );
   }
 }
 
@@ -161,10 +157,10 @@ public static function real_query($query) {
 public static function query($query) {
   if ( !( $retval = self::mysqli()->query($query) ) ) {
     if (self::mysqli()->errno == 1213)
-      throw new SD_Deadlock(self::mysqli()->error);
+      throw new BeeHub_Deadlock(self::mysqli()->error);
     if (self::mysqli()->errno == 1205)
-      throw new SD_Timeout(self::mysqli()->error);
-    throw new SD_MySQL( self::mysqli()->error, self::mysqli()->errno );
+      throw new BeeHub_Timeout(self::mysqli()->error);
+    throw new BeeHub_MySQL( self::mysqli()->error, self::mysqli()->errno );
   }
   return $retval;
 }
@@ -181,43 +177,49 @@ public static function uuid() {
 
 
 /**
+ * @todo implement
+ */
+public static function current_user() {}
+
+
+/*
  * @param array $aces
  * @return string json
  */
-public static function aces2json($aces) {
-  $json = array();
-  foreach ($aces as $ace)
-    $json[] = array(
-      $ace->principal, $ace->invert, $ace->privileges, $ace->deny
-    );
-  return json_encode($json);
-}
+// public static function aces2json($aces) {
+  // $json = array();
+  // foreach ($aces as $ace)
+    // $json[] = array(
+      // $ace->principal, $ace->invert, $ace->privileges, $ace->deny
+    // );
+  // return json_encode($json);
+// }
 
 
-/**
+/*
  * @param string $json
  * @return array
  */
-public static function json2aces($json) {
-  if ( !( $json = json_decode($json, true) ) )
-    return array();
-  $retval = array();
-  foreach ($json as $ace)
-    $retval[] = new DAVACL_Element_ace(
-      $ace[0], $ace[1], $ace[2], $ace[3]
-    );
-  return $retval;
-}
+// public static function json2aces($json) {
+  // if ( !( $json = json_decode($json, true) ) )
+    // return array();
+  // $retval = array();
+  // foreach ($json as $ace)
+    // $retval[] = new DAVACL_Element_ace(
+      // $ace[0], $ace[1], $ace[2], $ace[3]
+    // );
+  // return $retval;
+// }
 
 
-public static function best_xhtml_type() {
-  return ( false === strstr(@$_SERVER['HTTP_USER_AGENT'], 'MSIE') &&
-           false === strstr(@$_SERVER['HTTP_USER_AGENT'], 'Microsoft') ) ?
-    'application/xhtml+xml' : 'text/html';
-}
-  
-  
-/**
+// public static function best_xhtml_type() {
+  // return ( false === strstr(@$_SERVER['HTTP_USER_AGENT'], 'MSIE') &&
+           // false === strstr(@$_SERVER['HTTP_USER_AGENT'], 'Microsoft') ) ?
+    // 'application/xhtml+xml' : 'text/html';
+// }
+
+
+/*
  * Handles method spoofing.
  * 
  * Callers should use this method as one of the first methods in their
@@ -230,27 +232,27 @@ public static function best_xhtml_type() {
  *   <var>$_SERVER['CONTENT_TYPE']</var> as necessary.
  * @return void
  */
-public static function handle_method_spoofing() {
-  $_SERVER['ORIGINAL_REQUEST_METHOD'] = $_SERVER['REQUEST_METHOD'];
-  if ($_SERVER['REQUEST_METHOD'] == 'POST' and
-      isset($_GET['_method'])) {
-    $http_method = strtoupper( $_GET['_method'] );
-    unset( $_GET['_method'] );
-    if ( $http_method === 'GET' &&
-         strstr( @$_SERVER['CONTENT_TYPE'],
-                 'application/x-www-form-urlencoded' ) !== false ) {
-      $_GET = $_POST;
-      $_POST = array();
-    }
-    $_SERVER['QUERY_STRING'] = http_build_query($_GET);
-    $_SERVER['REQUEST_URI'] =
-      substr( $_SERVER['REQUEST_URI'], 0,
-              strpos( $_SERVER['REQUEST_URI'], '?' ) );
-    if ($_SERVER['QUERY_STRING'] != '')
-      $_SERVER['REQUEST_URI'] .= '?' . $_SERVER['QUERY_STRING'];
-    $_SERVER['REQUEST_METHOD'] = $http_method;
-  }
-}
+// public static function handle_method_spoofing() {
+  // $_SERVER['ORIGINAL_REQUEST_METHOD'] = $_SERVER['REQUEST_METHOD'];
+  // if ($_SERVER['REQUEST_METHOD'] == 'POST' and
+      // isset($_GET['_method'])) {
+    // $http_method = strtoupper( $_GET['_method'] );
+    // unset( $_GET['_method'] );
+    // if ( $http_method === 'GET' &&
+         // strstr( @$_SERVER['CONTENT_TYPE'],
+                 // 'application/x-www-form-urlencoded' ) !== false ) {
+      // $_GET = $_POST;
+      // $_POST = array();
+    // }
+    // $_SERVER['QUERY_STRING'] = http_build_query($_GET);
+    // $_SERVER['REQUEST_URI'] =
+      // substr( $_SERVER['REQUEST_URI'], 0,
+              // strpos( $_SERVER['REQUEST_URI'], '?' ) );
+    // if ($_SERVER['QUERY_STRING'] != '')
+      // $_SERVER['REQUEST_URI'] .= '?' . $_SERVER['QUERY_STRING'];
+    // $_SERVER['REQUEST_METHOD'] = $http_method;
+  // }
+// }
 
 
 // function to parse the http auth header
@@ -261,7 +263,7 @@ public static function handle_method_spoofing() {
 #  $keys = implode('|', array_keys($needed_parts));
 #
 #  preg_match_all(
-#  	'@(' . $keys . ')=(\'[^\']+\'|"[^"]+"|[^\'"\\s,][^\\s,]*)@',
+#    '@(' . $keys . ')=(\'[^\']+\'|"[^"]+"|[^\'"\\s,][^\\s,]*)@',
 #    $txt, $matches, PREG_SET_ORDER
 #  );
 #  foreach ($matches as $m) {
@@ -275,4 +277,4 @@ public static function handle_method_spoofing() {
 #}
 
 
-} // class SD
+} // class BeeHub

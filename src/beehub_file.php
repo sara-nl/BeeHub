@@ -1,8 +1,8 @@
 <?php
 
 /*·************************************************************************
- * Copyright ©2007-2011 Pieter van Beek, Almere, The Netherlands
- * 		    <http://purl.org/net/6086052759deb18f4c0c9fb2c3d3e83e>
+ * Copyright ©2007-2012 Pieter van Beek, Almere, The Netherlands
+ *         <http://purl.org/net/6086052759deb18f4c0c9fb2c3d3e83e>
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -13,22 +13,20 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * $Id: sd_file.php 3364 2011-08-04 14:11:03Z pieterb $
  **************************************************************************/
 
 /**
  * File documentation (who cares)
- * @package SD
+ * @package BeeHub
  */
 
 /**
  * A class.
- * @package SD
+ * @package BeeHub
  *
  */
-class SD_File extends SD_Resource {
-  
+class BeeHub_File extends BeeHub_Resource {
+
 public function __construct ($path) {
   parent::__construct($path);
   $this->protected_props[DAV::PROP_GETCONTENTLENGTH] = $this->stat['size'];
@@ -68,23 +66,23 @@ public function user_prop_getcontentlength() {
 public function user_prop_getcontenttype() {
   return $this->user_prop(DAV::PROP_GETCONTENTTYPE);
 }
-  
-  
+
+
 protected function user_set_getcontenttype($type) {
   return $this->user_set(DAV::PROP_GETCONTENTTYPE, $type);
 }
-  
-  
+
+
 public function user_prop_getetag() {
   return $this->user_prop(DAV::PROP_GETETAG);
 }
-  
-  
+
+
 public function method_COPY( $path ) {
   $this->assert(DAVACL::PRIV_READ);
-  SD_Registry::inst()->resource(dirname($path))->assert(DAVACL::PRIV_WRITE);
-  $localPath = SD::localPath($path);
-  exec( 'cp --preserve=all ' . SD::escapeshellarg($this->localPath) . ' ' . SD::escapeshellarg($localPath) );
+  BeeHub_Registry::inst()->resource(dirname($path))->assert(DAVACL::PRIV_WRITE);
+  $localPath = BeeHub::localPath($path);
+  exec( 'cp --preserve=all ' . BeeHub::escapeshellarg($this->localPath) . ' ' . BeeHub::escapeshellarg($localPath) );
   xattr_remove( $localPath, rawurlencode(DAV::PROP_ACL) );
   xattr_remove( $localPath, rawurlencode(DAV::PROP_LOCKDISCOVERY) );
 }
@@ -125,7 +123,7 @@ public function method_PUT($stream) {
     try { $this->set_getcontenttype( $finfo->file( $this->localPath ) ); }
     catch (DAV_Status $e) {}
   }
-  try { $this->user_set(DAV::PROP_GETETAG, SD::ETag()); }
+  try { $this->user_set(DAV::PROP_GETETAG, BeeHub::ETag()); }
   catch (DAV_Status $e) {}
   $this->storeProperties();
 }
@@ -159,10 +157,10 @@ public function method_PUT_range($stream, $start, $end, $total) {
   }
   fclose($resource);
   fclose($stream);
-  $this->user_set(DAV::PROP_GETETAG, SD::ETag());
+  $this->user_set(DAV::PROP_GETETAG, BeeHub::ETag());
   $this->storeProperties();
 }
 
-} // class SD_File
+} // class BeeHub_File
 
 

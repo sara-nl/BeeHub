@@ -1,8 +1,8 @@
 <?php
 
 /*·************************************************************************
- * Copyright ©2007-2011 Pieter van Beek, Almere, The Netherlands
- * 		    <http://purl.org/net/6086052759deb18f4c0c9fb2c3d3e83e>
+ * Copyright ©2007-2012 Pieter van Beek, Almere, The Netherlands
+ *         <http://purl.org/net/6086052759deb18f4c0c9fb2c3d3e83e>
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -13,27 +13,28 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * $Id: sd_resource.php 3365 2011-08-04 14:22:58Z pieterb $
  **************************************************************************/
 
 /**
  * File documentation (who cares)
- * @package SD
+ * @package BeeHub
  */
 
 /**
  * Some class.
- * @package SD
+ * @package BeeHub
  */
-class SD_Resource extends DAVACL_Resource {
+class BeeHub_Resource extends DAV_Resource {
 
-  
+
 /**
  * @var string the path of the resource on the local filesystem.
  */
 protected $localPath;
 protected $protected_props;
+/**
+ * @var array
+ */
 protected $stat;
 private $dead_props = null;
 protected $touched = false;
@@ -41,22 +42,11 @@ protected $touched = false;
 
 public function __construct ($path) {
   parent::__construct($path);
-  $this->localPath = SD::localPath($path);
+  $this->localPath = BeeHub::localPath($path);
   $this->stat = stat($this->localPath);
   $this->protected_props = array(
     DAV::PROP_GETLASTMODIFIED  => $this->stat['mtime'],
   );
-}
-
-
-/**
- * @param array $privileges
- * @throws DAV_Status FORBIDDEN
- */
-public function assert($privileges) {
-  if (SD_ACL_Provider::inst()->wheel())
-    return;
-  return parent::assert($privileges);
 }
 
 
@@ -111,7 +101,7 @@ public function property_priv_read($properties) {
 public function user_prop_acl_internal() {
   $parent = $this->collection();
   $parent_acl = $parent ? $parent->user_prop_acl_internal() : array();
-  $retval = SD::json2aces( $this->user_prop(DAV::PROP_ACL) );
+  $retval = BeeHub::json2aces( $this->user_prop(DAV::PROP_ACL) );
   while ( count($parent_acl) ) {
     if ( ! $parent_acl[0]->inherited )
       $parent_acl[0]->inherited = $parent->path;
@@ -124,15 +114,15 @@ public function user_prop_acl_internal() {
 public function user_prop_acl() {
   $protected = array(
     new DAVACL_Element_ace(
-    	'DAV: owner', false, array('DAV: all'), false, true, null
+      'DAV: owner', false, array('DAV: all'), false, true, null
     ),
 //     new DAVACL_Element_ace(
-//     	SD::WHEEL_PATH, false, array('DAV: all'), false, true, null
+//       BeeHub::WHEEL_PATH, false, array('DAV: all'), false, true, null
 //     ),
   );
   if ( in_array( $this->path, array( '/' ) ) )
     $protected[] = new DAVACL_Element_ace(
-    	'DAV: all', false, array('DAV: read', 'DAV: read-acl'), false, true, null
+      'DAV: all', false, array('DAV: read', 'DAV: read-acl'), false, true, null
     );
   return array_merge(
     $protected,
@@ -232,7 +222,7 @@ public function user_prop_group() {
 protected function user_set_group($group) {
   $this->assert(DAVACL::PRIV_READ);
   if ( !( $group = DAV::$REGISTRY->resource($group) ) ||
-       ! $group instanceof SD_Group ||
+       ! $group instanceof BeeHub_Group ||
        ! $group->isVisible() )
     throw new DAV_Status(
       DAV::HTTP_BAD_REQUEST,
@@ -244,7 +234,7 @@ protected function user_set_group($group) {
       DAV::COND_ALLOWED_PRINCIPAL
     );
   if ( $this->user_prop_owner() != $this->user_prop_current_user_principal() &&
-       !SD_ACL_Provider::inst()->wheel() )
+       !BeeHub_ACL_Provider::inst()->wheel() )
     throw new DAV_Status(
       DAV::forbidden(),
       'Only the owner can change the group of a resource.'
@@ -265,16 +255,16 @@ public function user_prop_owner() {
 
 protected function user_set_owner($owner) {
   $this->assert(DAVACL::PRIV_READ);
-  $cups = SD_Registry::inst()->resource($this->user_prop_current_user_principal());
+  $cups = BeeHub_Registry::inst()->resource($this->user_prop_current_user_principal());
   if ( $this->user_prop_owner() != $this->user_prop_current_user_principal() and
-       !SD_ACL_Provider::inst()->wheel() )
+       !BeeHub_ACL_Provider::inst()->wheel() )
     throw new DAV_Status(
       DAV::forbidden(),
       'Only the resource owner can grant ownership.'
     );
   if ( !( $owner = DAV::$REGISTRY->resource($owner) ) ||
        ! $owner->isVisible() ||
-       ! $owner instanceof SD_User )
+       ! $owner instanceof BeeHub_User )
     throw new DAV_Status(
       DAV::HTTP_BAD_REQUEST,
       DAV::COND_RECOGNIZED_PRINCIPAL
@@ -311,11 +301,11 @@ public function storeProperties() {
 
 public function method_ACL($aces) {
   $this->assert(DAVACL::PRIV_WRITE_ACL);
-  $this->user_set(DAV::PROP_ACL, $aces ? SD::aces2json($aces) : null);
+  $this->user_set(DAV::PROP_ACL, $aces ? BeeHub::aces2json($aces) : null);
   $this->storeProperties();
 }
 
 
-} // class SD_Resource
+} // class BeeHub_Resource
 
 

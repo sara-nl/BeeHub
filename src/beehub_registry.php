@@ -1,8 +1,8 @@
 <?php
 
 /*·************************************************************************
- * Copyright ©2007-2011 Pieter van Beek, Almere, The Netherlands
- * 		    <http://purl.org/net/6086052759deb18f4c0c9fb2c3d3e83e>
+ * Copyright ©2007-2012 Pieter van Beek, Almere, The Netherlands
+ *         <http://purl.org/net/6086052759deb18f4c0c9fb2c3d3e83e>
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -13,35 +13,33 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
- * $Id: sd_registry.php 3349 2011-07-28 13:04:24Z pieterb $
  **************************************************************************/
 
 /**
  * File documentation (who cares)
- * @package SD
+ * @package BeeHub
  */
 
 /**
  * Resource Registry
- * @package SD
+ * @package BeeHub
  */
-class SD_Registry implements DAV_Registry {
-  
-  
+class BeeHub_Registry implements DAV_Registry {
+
+
 /**
- * @var SD_Registry
+ * @var BeeHub_Registry
  */
 private static $inst = null;
 
 
 /**
  * Singleton factory.
- * @return SD_Registry
+ * @return BeeHub_Registry
  */
 public static function inst() {
   if (null === self::$inst)
-    self::$inst = new SD_Registry();
+    self::$inst = new BeeHub_Registry();
   return self::$inst;
 }
 
@@ -60,31 +58,31 @@ public function resource($path) {
   $path = DAV::unslashify($path);
   if ( isset( $this->resourceCache[$path] ) )
     return $this->resourceCache[$path];
-  $localPath = SD::localPath($path);
+  $localPath = BeeHub::localPath($path);
   $retval = null;
   preg_match( '@^/(users|groups)(?:/[^/]+)?$@', $path, $match );
   if ( !$match ) {
     if (is_dir($localPath))
-      $retval = new SD_Directory($path);
+      $retval = new BeeHub_Directory($path);
     elseif (file_exists($localPath))
-      $retval = new SD_File($path);
+      $retval = new BeeHub_File($path);
   }
   elseif ( 'users' == $match[1] ) {
     if ( @is_dir( $localPath) )
-      $retval = new SD_Users($path);
+      $retval = new BeeHub_Users($path);
     else {
       try {
-        $retval = new SD_User($path);
+        $retval = new BeeHub_User($path);
       }
-      catch(Exception $e) {}	
+      catch(Exception $e) {}  
     }
   }
   elseif ( 'groups' == $match[1] ) {
     if ( @is_dir($localPath) )
-      $retval = new SD_Groups($path);
+      $retval = new BeeHub_Groups($path);
     else {
       try {
-        $retval = new SD_Group($path);
+        $retval = new BeeHub_Group($path);
       }
       catch(Exception $e) {}
     }
@@ -99,8 +97,8 @@ public function resource($path) {
 public function forget($path) {
   unset( $this->resourceCache[$path] );
 }
-  
-  
+
+
 /**
  * @param array $write paths to write-lock.
  * @param array $read paths to read-lock
@@ -108,24 +106,24 @@ public function forget($path) {
 public function shallowLock($write, $read) {
   $whashes = $rhashes = array();
   foreach ($write as $value)
-    $whashes[] = SD::escape_string( hash( 'sha256', $value, true ) );
+    $whashes[] = BeeHub::escape_string( hash( 'sha256', $value, true ) );
   foreach ($read as $value)
-    $rhashes[] = SD::escape_string( hash( 'sha256', $value, true ) );
+    $rhashes[] = BeeHub::escape_string( hash( 'sha256', $value, true ) );
   sort( $whashes, SORT_STRING );
   sort( $rhashes, SORT_STRING );
   if (!empty($whashes)) {
-    SD::query('INSERT IGNORE INTO `shallowLocks` VALUES (' . implode('),(', $whashes) . ');');
+    BeeHub::query('INSERT IGNORE INTO `shallowLocks` VALUES (' . implode('),(', $whashes) . ');');
     $whashes = implode(',', $whashes);
-    $whashes = SD::mysqli()->prepare(
+    $whashes = BeeHub::mysqli()->prepare(
       "SELECT * FROM `shallowLocks` WHERE `pathhash` IN ($whashes) FOR UPDATE;"
     );
   }
   else
     $whashes = null;
   if (!empty($rhashes)) {
-    SD::query('INSERT IGNORE INTO `shallowLocks` VALUES (' . implode('),(', $rhashes) . ');');
+    BeeHub::query('INSERT IGNORE INTO `shallowLocks` VALUES (' . implode('),(', $rhashes) . ');');
     $rhashes = implode(',', $rhashes);
-    $rhashes = SD::mysqli()->prepare(
+    $rhashes = BeeHub::mysqli()->prepare(
       "SELECT * FROM `shallowLocks` WHERE `pathhash` IN ($rhashes) LOCK IN SHARE MODE;"
     );
   }
@@ -134,20 +132,20 @@ public function shallowLock($write, $read) {
   $microsleeptimer = 10000; // also functions as success flag
   while ($microsleeptimer) {
     if ($microsleeptimer > 1280000) $microsleeptimer = 1280000;
-    SD::query('START TRANSACTION');
+    BeeHub::query('START TRANSACTION');
     if ($whashes)
       try {
         $whashes->execute();
         $whashes->free_result();
       }
-      catch (SD_Deadlock $e) {
-        SD::query('ROLLBACK');
+      catch (BeeHub_Deadlock $e) {
+        BeeHub::query('ROLLBACK');
         usleep( $microsleeptimer );
         $microsleeptimer *= 2;
         continue;
       }
-      catch (SD_Timeout $e) {
-        SD::query('ROLLBACK');
+      catch (BeeHub_Timeout $e) {
+        BeeHub::query('ROLLBACK');
         throw new DAV_Status(DAV::HTTP_SERVICE_UNAVAILABLE);
       }
     if ($rhashes)
@@ -155,14 +153,14 @@ public function shallowLock($write, $read) {
         $rhashes->execute();
         $rhashes->free_result();
       }
-      catch (SD_Deadlock $e) {
-        SD::query('ROLLBACK');
+      catch (BeeHub_Deadlock $e) {
+        BeeHub::query('ROLLBACK');
         usleep( $microsleeptimer );
         $microsleeptimer *= 2;
         continue;
       }
-      catch (SD_Timeout $e) {
-        SD::query('ROLLBACK');
+      catch (BeeHub_Timeout $e) {
+        BeeHub::query('ROLLBACK');
         throw new DAV_Status(DAV::HTTP_SERVICE_UNAVAILABLE);
       }
     $microsleeptimer = 0;
@@ -175,7 +173,7 @@ public function shallowLock($write, $read) {
  * @param array $read paths to read-lock
  */
 public function shallowUnlock() {
-  SD::query('COMMIT;');
+  BeeHub::query('COMMIT;');
 }
 
 
