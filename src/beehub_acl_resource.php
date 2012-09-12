@@ -1,8 +1,7 @@
 <?php
 
 /*·************************************************************************
- * Copyright ©2007-2012 Pieter van Beek, Almere, The Netherlands
- *           <http://purl.org/net/6086052759deb18f4c0c9fb2c3d3e83e>
+ * Copyright ©2007-2012 SARA b.v., Amsterdam, The Netherlands
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
