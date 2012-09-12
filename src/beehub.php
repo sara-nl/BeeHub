@@ -63,7 +63,7 @@ class BeeHub {
 
 
 // const REALM = 'BeeHub';
-// const USERS_PATH = '/users/';
+ const USERS_PATH = '/users/';
 // const GROUPS_PATH = '/groups/';
 // const WHEEL_PATH = '/users/admin';
 
@@ -90,7 +90,7 @@ public static function escapeshellarg($arg) {
 public static function localPath($path) {
 //  $path = DAV::unslashify('root' . $path);
 //  $path = str_replace('#', '##', $path);
-  return DAV::unslashify( DATADIR . rawurldecode( $path ) );
+  return DAV::unslashify( self::DATADIR . rawurldecode( $path ) );
 }
 
 
@@ -104,11 +104,8 @@ private static $MYSQLI = null;
  */
 public static function mysqli() {
   if (self::$MYSQLI === null) {
-    require(dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'config.php');
-    self::$MYSQLI = new mysqli( $host, $username, $password, $database );
-    // self::$MYSQLI = new mysqli(
-      // 'localhost', 'wordpress', 'wordpress', 'wordpress'
-    // );
+    $config = parse_ini_file(CONFIG_FILE, true);
+    self::$MYSQLI = new mysqli( $config['mysql']['host'], $config['mysql']['username'], $config['mysql']['password'], $config['mysql']['database'] );
     if ( !self::$MYSQLI )
       throw new BeeHub_MySQL(mysqli_connect_error(), mysqli_connect_errno());
   }

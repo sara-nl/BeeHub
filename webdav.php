@@ -1,9 +1,12 @@
 <?php
+// Prepare the environment: where is the configuration file and are we in development or production mode?
+defined('CONFIG_FILE') || define('CONFIG_FILE', dirname(__FILE__) . DIRECTORY_SEPARATOR . 'config.ini');
+defined('APPLICATION_ENV') || define('APPLICATION_ENV', (getenv('APPLICATION_ENV') ? strtolower(getenv('APPLICATION_ENV')) : 'production'));
 
-if ( !isset( $_SERVER['PHP_AUTH_USER'] ) )
-  $_SERVER['PHP_AUTH_USER'] = 'laura@sara.nl';
+// Only in development mode; fake a user
+if ( (APPLICATION_ENV == 'development') && !isset( $_SERVER['PHP_AUTH_USER'] ) ) {
+  $_SERVER['PHP_AUTH_USER'] = 'niek';
+}
 
-#if ( 'beehub.nl' == $_SERVER['SERVER_NAME'] )
-  require_once 'sd_run.php';
-#else
-#  require_once 'devel/sd_run.php';
+// Then start the application
+require_once 'src/beehub_run.php';

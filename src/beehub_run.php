@@ -19,9 +19,9 @@
  * @package BeeHub
  */
 
-require_once dirname(__FILE__) . '/sd.php';
+require_once dirname(__FILE__) . '/beehub.php';
 
-BeeHub::handle_method_spoofing();
+//BeeHub::handle_method_spoofing();
 DAV::$REGISTRY = BeeHub_Registry::inst();
 DAV::$LOCKPROVIDER = BeeHub_Lock_Provider::inst();
 DAV::$ACLPROVIDER = BeeHub_ACL_Provider::inst();

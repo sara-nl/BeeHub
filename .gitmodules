@@ -1,0 +1,3 @@
+[submodule "webdav-php"]
+	path = webdav-php
+	url = git@github.com:pieterb/webdav-php.git
