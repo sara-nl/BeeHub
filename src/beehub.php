@@ -105,9 +105,11 @@ private static $MYSQLI = null;
  */
 public static function mysqli() {
   if (self::$MYSQLI === null) {
-    self::$MYSQLI = new mysqli(
-      'localhost', 'wordpress', 'wordpress', 'wordpress'
-    );
+    require(dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'config.php');
+    self::$MYSQLI = new mysqli( $host, $username, $password, $database );
+    // self::$MYSQLI = new mysqli(
+      // 'localhost', 'wordpress', 'wordpress', 'wordpress'
+    // );
     if ( !self::$MYSQLI )
       throw new BeeHub_MySQL(mysqli_connect_error(), mysqli_connect_errno());
   }

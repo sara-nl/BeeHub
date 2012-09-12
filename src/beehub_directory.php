@@ -119,29 +119,22 @@ public function method_DELETE( $name )
  * @see DAV_Resource::method_GET()
  */
 public function method_GET() {
-  if ( 0 === strpos( $_SERVER['HTTP_USER_AGENT'], 'Mozilla' ) )
-    throw new DAV_Status(
-      DAV::HTTP_TEMPORARY_REDIRECT,
-      DAV::abs2uri('/client/index.html#' . $this->path)
-    );
+  // We willen hier de client gaan teruggeven:
+  // if ( 0 === strpos( $_SERVER['HTTP_USER_AGENT'], 'Mozilla' ) )
+    // throw new DAV_Status(
+      // DAV::HTTP_TEMPORARY_REDIRECT,
+      // DAV::abs2uri('/client/index.html#' . $this->path)
+    // );
   $this->assert(DAVACL::PRIV_READ);
-  $retval = DAV::xml_header() . <<<EOS
-<!DOCTYPE html  PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
-     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" lang="en-us">
-<head><title>Directory index</title></head>
-<body>
-EOS;
-  if ( '/' != $this->path )
-    $retval .= '<p><a href="../">Up one level</a></p>';
-  $retval .= '<ul>';
+  $view = new BeeHub_View(dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'directory.php');
+  $view->setVar('path', $this->path);
   $members = array();
-  foreach ($this as $member) $members[] = $member;
-  natcasesort( $members );
-  foreach ($members as $member)
-    $retval .= "<li><a href=\"{$this->path}{$member}\">" .
-    DAV::xmlescape(rawurldecode($member)) . "</a></li>\n";
-  $retval .= '</ul></body></html>';
+  foreach ($this as $member){
+    $members[] = $member;
+  }
+  natcasesort($members);
+  $view->setVar('members', $members);
+  $retval = DAV::xml_header() . $view->getParsedView();
   return $retval;
 }
 
