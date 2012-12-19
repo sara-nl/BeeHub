@@ -63,18 +63,18 @@ class BeeHub {
 
 
 // const REALM = 'BeeHub';
- const USERS_PATH = '/users/';
+// const USERS_PATH = '/users/';
 // const GROUPS_PATH = '/groups/';
 // const WHEEL_PATH = '/users/admin';
 
 
-// const PRIV_READ_PROPERTIES = 'http://beehub.nl/ read-properties';
-// const PRIV_READ_CONTENT    = 'http://beehub.nl/ read-content';
+const PRIV_READ_PROPERTIES = 'http://beehub.nl/ read-properties';
+const PRIV_READ_CONTENT    = 'http://beehub.nl/ read-content';
 
-// const PROP_PASSWD          = 'http://beehub.nl/ passwd';
+const PROP_PASSWD          = 'http://beehub.nl/ passwd';
 
-const DATADIR = '/space/beehub/data';
-
+  public static $CONFIG;
+  
 
 /**
  * A better escapeshellarg.
@@ -90,7 +90,7 @@ public static function escapeshellarg($arg) {
 public static function localPath($path) {
 //  $path = DAV::unslashify('root' . $path);
 //  $path = str_replace('#', '##', $path);
-  return DAV::unslashify( self::DATADIR . rawurldecode( $path ) );
+  return DAV::unslashify( self::$CONFIG['datadir'] . rawurldecode( $path ) );
 }
 
 
@@ -104,8 +104,12 @@ private static $MYSQLI = null;
  */
 public static function mysqli() {
   if (self::$MYSQLI === null) {
-    $config = parse_ini_file(CONFIG_FILE, true);
-    self::$MYSQLI = new mysqli( $config['mysql']['host'], $config['mysql']['username'], $config['mysql']['password'], $config['mysql']['database'] );
+    self::$MYSQLI = new mysqli(
+      BeeHub::$CONFIG['mysql']['host'],
+      BeeHub::$CONFIG['mysql']['username'],
+      BeeHub::$CONFIG['mysql']['password'],
+      BeeHub::$CONFIG['mysql']['database']
+    );
     if ( !self::$MYSQLI )
       throw new BeeHub_MySQL(mysqli_connect_error(), mysqli_connect_errno());
   }
@@ -174,105 +178,23 @@ public static function uuid() {
 }
 
 
+public static function best_xhtml_type() {
+  return ( false === strstr(@$_SERVER['HTTP_USER_AGENT'], 'MSIE') &&
+           false === strstr(@$_SERVER['HTTP_USER_AGENT'], 'Microsoft') ) ?
+    'application/xhtml+xml' : 'text/html';
+}
+
+
 /**
  * @todo implement
  */
 public static function current_user() {}
 
 
-/*
- * @param array $aces
- * @return string json
- */
-// public static function aces2json($aces) {
-  // $json = array();
-  // foreach ($aces as $ace)
-    // $json[] = array(
-      // $ace->principal, $ace->invert, $ace->privileges, $ace->deny
-    // );
-  // return json_encode($json);
-// }
-
-
-/*
- * @param string $json
- * @return array
- */
-// public static function json2aces($json) {
-  // if ( !( $json = json_decode($json, true) ) )
-    // return array();
-  // $retval = array();
-  // foreach ($json as $ace)
-    // $retval[] = new DAVACL_Element_ace(
-      // $ace[0], $ace[1], $ace[2], $ace[3]
-    // );
-  // return $retval;
-// }
-
-
-// public static function best_xhtml_type() {
-  // return ( false === strstr(@$_SERVER['HTTP_USER_AGENT'], 'MSIE') &&
-           // false === strstr(@$_SERVER['HTTP_USER_AGENT'], 'Microsoft') ) ?
-    // 'application/xhtml+xml' : 'text/html';
-// }
-
-
-/*
- * Handles method spoofing.
- * 
- * Callers should use this method as one of the first methods in their
- * scripts. This method does the following:
- * - The <em>real</em> HTTP method must be POST.
- * - Modify "environment variables" <var>$_SERVER['QUERY_STRING']</var>,
- *   <var>$_SERVER['REQUEST_URI']</var>,
- *   <var>$_SERVER['REQUEST_METHOD']</var>,
- *   <var>$_SERVER['CONTENT_LENGTH']</var>,
- *   <var>$_SERVER['CONTENT_TYPE']</var> as necessary.
- * @return void
- */
-// public static function handle_method_spoofing() {
-  // $_SERVER['ORIGINAL_REQUEST_METHOD'] = $_SERVER['REQUEST_METHOD'];
-  // if ($_SERVER['REQUEST_METHOD'] == 'POST' and
-      // isset($_GET['_method'])) {
-    // $http_method = strtoupper( $_GET['_method'] );
-    // unset( $_GET['_method'] );
-    // if ( $http_method === 'GET' &&
-         // strstr( @$_SERVER['CONTENT_TYPE'],
-                 // 'application/x-www-form-urlencoded' ) !== false ) {
-      // $_GET = $_POST;
-      // $_POST = array();
-    // }
-    // $_SERVER['QUERY_STRING'] = http_build_query($_GET);
-    // $_SERVER['REQUEST_URI'] =
-      // substr( $_SERVER['REQUEST_URI'], 0,
-              // strpos( $_SERVER['REQUEST_URI'], '?' ) );
-    // if ($_SERVER['QUERY_STRING'] != '')
-      // $_SERVER['REQUEST_URI'] .= '?' . $_SERVER['QUERY_STRING'];
-    // $_SERVER['REQUEST_METHOD'] = $http_method;
-  // }
-// }
-
-
-// function to parse the http auth header
-#public static function http_digest_parse($txt)
-#{
-#  $needed_parts = array('nonce'=>1, 'nc'=>1, 'cnonce'=>1, 'qop'=>1, 'username'=>1, 'uri'=>1, 'response'=>1);
-#  $data = array();
-#  $keys = implode('|', array_keys($needed_parts));
-#
-#  preg_match_all(
-#    '@(' . $keys . ')=(\'[^\']+\'|"[^"]+"|[^\'"\\s,][^\\s,]*)@',
-#    $txt, $matches, PREG_SET_ORDER
-#  );
-#  foreach ($matches as $m) {
-#    if ("'" == $m[2][0] || '"' == $m[2][0])
-#      $m[2] = substr($m[2], 1, -1);
-#    $data[$m[1]] = $m[2];
-#    unset($needed_parts[$m[1]]);
-#  }
-#
-#  return $needed_parts ? false : $data;
-#}
-
-
 } // class BeeHub
+
+BeeHub::$CONFIG = parse_ini_file(
+  dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'config.ini',
+  true
+);
+

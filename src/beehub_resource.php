@@ -23,7 +23,7 @@
  * Some class.
  * @package BeeHub
  */
-class BeeHub_Resource extends DAV_Resource {
+class BeeHub_Resource extends DAVACL_Resource {
 
 
 /**
@@ -48,6 +48,16 @@ public function __construct ($path) {
   );
 }
 
+
+/**
+ * @param array $privileges
+ * @throws DAV_Status FORBIDDEN
+ */
+public function assert($privileges) {
+  if (BeeHub_ACL_Provider::inst()->wheel())
+    return;
+  return parent::assert($privileges);
+}
 
 public function isVisible() {
   try {
@@ -100,7 +110,7 @@ public function property_priv_read($properties) {
 public function user_prop_acl_internal() {
   $parent = $this->collection();
   $parent_acl = $parent ? $parent->user_prop_acl_internal() : array();
-  $retval = BeeHub::json2aces( $this->user_prop(DAV::PROP_ACL) );
+  $retval = DAVACL_Element_ace::json2aces( $this->user_prop(DAV::PROP_ACL) );
   while ( count($parent_acl) ) {
     if ( ! $parent_acl[0]->inherited )
       $parent_acl[0]->inherited = $parent->path;
@@ -116,7 +126,7 @@ public function user_prop_acl() {
       'DAV: owner', false, array('DAV: all'), false, true, null
     ),
 //     new DAVACL_Element_ace(
-//       BeeHub::WHEEL_PATH, false, array('DAV: all'), false, true, null
+//       BeeHub::$CONFIG['wheel_path'], false, array('DAV: all'), false, true, null
 //     ),
   );
   if ( in_array( $this->path, array( '/' ) ) )
@@ -300,7 +310,7 @@ public function storeProperties() {
 
 public function method_ACL($aces) {
   $this->assert(DAVACL::PRIV_WRITE_ACL);
-  $this->user_set(DAV::PROP_ACL, $aces ? BeeHub::aces2json($aces) : null);
+  $this->user_set(DAV::PROP_ACL, $aces ? DAVACL_Element_ace::aces2json($aces) : null);
   $this->storeProperties();
 }
 

@@ -1,0 +1,10 @@
+DESCRIPTION='Handle URL: DELETE'
+
+source 'common.inc'
+
+function systemtest() (
+  set -e
+  ${CURL} --upload-file 'input_2.2_1' --header 'Content-Type: application/json' "${BASEURL}/${TESTHANDLE}"
+  ${CURL} --request 'DELETE' "${BASEURL}/${TESTHANDLE}"
+  if ${CURL} --request 'DELETE' "${BASEURL}/${TESTHANDLE}"; then false; else true; fi
+)

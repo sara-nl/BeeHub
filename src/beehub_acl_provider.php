@@ -46,7 +46,7 @@ public function user_prop_current_user_principal() {
 
 //private $wheelCache = null;
 public function wheel() {
-  return (BeeHub::WHEEL_PATH) == $this->CURRENT_USER_PRINCIPAL;
+  return BeeHub::$CONFIG['wheel_path'] == $this->CURRENT_USER_PRINCIPAL;
 //  if ($this->wheelCache === null)
 //    $this->wheelCache = (
 //      ($cup = $this->user_prop_current_user_principal()) &&
@@ -102,7 +102,7 @@ public function user_prop_acl_restrictions() {
 
 
 public function user_prop_principal_collection_set() {
-  return array(BeeHub::GROUPS_PATH, BeeHub::USERS_PATH);
+  return array(BeeHub::$CONFIG['groups_path'], BeeHub::$CONFIG['users_path']);
 }
 
 

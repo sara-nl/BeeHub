@@ -1,0 +1,98 @@
+Running test1.1.sh:
++ systemtest
++ curl --silent --fail --verbose --header 'Depth: 1' --request PROPFIND http://beehub-devel.grid.sara.nl/
+* About to connect() to beehub-devel.grid.sara.nl port 80 (#0)
+*   Trying 145.100.5.217... connected
+* Connected to beehub-devel.grid.sara.nl (145.100.5.217) port 80 (#0)
+> PROPFIND / HTTP/1.1
+> User-Agent: curl/7.21.4 (universal-apple-darwin11.0) libcurl/7.21.4 OpenSSL/0.9.8r zlib/1.2.5
+> Host: beehub-devel.grid.sara.nl
+> Accept: */*
+> Depth: 1
+> 
+< HTTP/1.1 207 Multi-Status
+< Date: Tue, 11 Dec 2012 15:26:31 GMT
+< Server: Apache
+< X-Powered-By: PHP/5.3.3
+< Content-Length: 3221
+< Content-Type: application/xml; charset="utf-8"
+< 
+{ [data not shown]
+* Connection #0 to host beehub-devel.grid.sara.nl left intact
+* Closing connection #0
+<?xml version="1.0" encoding="utf-8"?>
+<D:multistatus xmlns:D="DAV:">
+<D:response><D:href>/</D:href>
+<D:propstat><D:prop>
+<D:getcontenttype>httpd/unix-directory</D:getcontenttype>
+<D:getetag>"AA=="</D:getetag>
+<D:getlastmodified>Mon, 27 Aug 2012 09:41:27 GMT</D:getlastmodified>
+<D:lockdiscovery></D:lockdiscovery>
+<D:resourcetype><D:collection/></D:resourcetype>
+<D:supportedlock><D:lockentry>
+  <D:lockscope><D:exclusive/></D:lockscope>
+  <D:locktype><D:write/></D:locktype>
+</D:lockentry></D:supportedlock>
+<D:supported-report-set><D:supported-report><D:expand-property/></D:supported-report></D:supported-report-set>
+</D:prop>
+<D:status>HTTP/1.1 200 OK</D:status>
+</D:propstat>
+</D:response>
+<D:response><D:href>/users/</D:href>
+<D:propstat><D:prop>
+<D:getcontenttype>httpd/unix-directory</D:getcontenttype>
+<D:getlastmodified>Mon, 10 Dec 2012 09:16:19 GMT</D:getlastmodified>
+<D:lockdiscovery></D:lockdiscovery>
+<D:resourcetype><D:collection/></D:resourcetype>
+<D:supportedlock><D:lockentry>
+  <D:lockscope><D:exclusive/></D:lockscope>
+  <D:locktype><D:write/></D:locktype>
+</D:lockentry></D:supportedlock>
+<D:supported-report-set><D:supported-report><D:expand_property/></D:supported-report>
+<D:supported-report><D:acl_principal_prop_set/></D:supported-report>
+<D:supported-report><D:principal_match/></D:supported-report>
+<D:supported-report><D:principal_property_search/></D:supported-report>
+<D:supported-report><D:principal_search_property_set/></D:supported-report></D:supported-report-set>
+</D:prop>
+<D:status>HTTP/1.1 200 OK</D:status>
+</D:propstat>
+</D:response>
+<D:response><D:href>/groups/</D:href>
+<D:propstat><D:prop>
+<D:getcontenttype>httpd/unix-directory</D:getcontenttype>
+<D:getlastmodified>Tue, 20 Nov 2012 12:02:09 GMT</D:getlastmodified>
+<D:lockdiscovery></D:lockdiscovery>
+<D:resourcetype><D:collection/></D:resourcetype>
+<D:supportedlock><D:lockentry>
+  <D:lockscope><D:exclusive/></D:lockscope>
+  <D:locktype><D:write/></D:locktype>
+</D:lockentry></D:supportedlock>
+<D:supported-report-set><D:supported-report><D:expand_property/></D:supported-report>
+<D:supported-report><D:acl_principal_prop_set/></D:supported-report>
+<D:supported-report><D:principal_match/></D:supported-report>
+<D:supported-report><D:principal_property_search/></D:supported-report>
+<D:supported-report><D:principal_search_property_set/></D:supported-report></D:supported-report-set>
+</D:prop>
+<D:status>HTTP/1.1 200 OK</D:status>
+</D:propstat>
+</D:response>
+<D:response><D:href>/~niek/</D:href>
+<D:propstat><D:prop>
+<niek><pieter/></niek>
+<ns:niek xmlns:ns="niek:"><ns1:pieter xmlns:ns1="niek:"/></ns:niek>
+<ns:test xmlns:ns="niek:">Hello World!!!!!</ns:test>
+<D:getcontenttype>httpd/unix-directory</D:getcontenttype>
+<D:getlastmodified>Thu, 06 Dec 2012 14:35:21 GMT</D:getlastmodified>
+<D:lockdiscovery></D:lockdiscovery>
+<D:resourcetype><D:collection/></D:resourcetype>
+<D:supportedlock><D:lockentry>
+  <D:lockscope><D:exclusive/></D:lockscope>
+  <D:locktype><D:write/></D:locktype>
+</D:lockentry></D:supportedlock>
+<D:supported-report-set><D:supported-report><D:expand-property/></D:supported-report></D:supported-report-set>
+</D:prop>
+<D:status>HTTP/1.1 200 OK</D:status>
+</D:propstat>
+</D:response>
+</D:multistatus>
+

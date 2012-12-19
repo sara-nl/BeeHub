@@ -1,6 +1,5 @@
 <?php
 // Prepare the environment: where is the configuration file and are we in development or production mode?
-defined('CONFIG_FILE') || define('CONFIG_FILE', dirname(__FILE__) . DIRECTORY_SEPARATOR . 'config.ini');
 defined('APPLICATION_ENV') || define('APPLICATION_ENV', (getenv('APPLICATION_ENV') ? strtolower(getenv('APPLICATION_ENV')) : 'production'));
 
 // Only in development mode; fake a user
@@ -9,4 +8,4 @@ if ( (APPLICATION_ENV == 'development') && !isset( $_SERVER['PHP_AUTH_USER'] ) )
 }
 
 // Then start the application
-require_once 'src/beehub_run.php';
+require_once '../src/beehub_run.php';

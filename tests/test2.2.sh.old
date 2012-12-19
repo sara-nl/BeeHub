@@ -1,0 +1,13 @@
+DESCRIPTION='Handle URL: PUT and GET application/json'
+
+source 'common.inc'
+
+function systemtest() (
+  set -e
+  ${CURL} --upload-file 'input_2.2_1' --header 'Content-Type: application/json' "${BASEURL}/${TESTHANDLE}"
+  ${CURL} --header 'Accept: application/json' "${BASEURL}/${TESTHANDLE}" >"${TMPTEST}"
+  grep -P '^\{"1":\{"type":"URL","data":"http:\\/\\/www\.sara\.nl\\/","timestamp":\d+\},"2":\{"type":"EMAIL","data":"pieterb@sara\.com","timestamp":\d+\}\}$' "${TMPTEST}"
+  ${CURL} --upload-file 'input_2.2_2' --header 'Content-Type: application/json' "${BASEURL}/${TESTHANDLE}"
+  ${CURL} --header 'Accept: application/json' "${BASEURL}/${TESTHANDLE}" >"${TMPTEST}"
+  grep -P '^\{"1":\{"type":"URL","data":"http:\\/\\/www\.sara\.nl\\/","timestamp":\d+\},"2":\{"type":"EMAIL","data":"pieterb@sara\.nl","timestamp":\d+\}\}$' "${TMPTEST}"
+)
