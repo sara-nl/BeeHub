@@ -118,29 +118,27 @@ public function method_DELETE( $name )
  * @see DAV_Resource::method_GET()
  */
 public function method_GET() {
-  // We willen hier de client gaan teruggeven:
-  // if ( 0 === strpos( $_SERVER['HTTP_USER_AGENT'], 'Mozilla' ) )
-    // throw new DAV_Status(
-      // DAV::HTTP_TEMPORARY_REDIRECT,
-      // DAV::abs2uri('/client/index.html#' . $this->path)
-    // );
   $this->assert(DAVACL::PRIV_READ);
   $view = new BeeHub_View(dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'directory.php');
-  $view->setVar('path', $this->path);
+  $view->setVar('directory', $this);
   $members = array();
   foreach ($this as $member){
-    $members[] = $member;
+    $members[strtolower($member)] = DAV::$REGISTRY->resource($this->path . $member);
   }
-  natcasesort($members);
+  ksort($members, SORT_STRING);
   $view->setVar('members', $members);
-  $retval = DAV::xml_header() . $view->getParsedView();
+  $retval = /*DAV::xml_header() .*/ $view->getParsedView();
   return $retval;
 }
 
 
 public function method_HEAD() {
   $this->assert(DAVACL::PRIV_READ);
-  return array('Content-Type' => BeeHub::best_xhtml_type() . '; charset="utf-8"');
+  #return array('Content-Type' => BeeHub::best_xhtml_type() . '; charset="utf-8"');
+  return array(
+    'Content-Type' => 'text/html; charset="utf-8"',
+    'Cache-Control' => 'no-cache'
+  );
 }
 
 
