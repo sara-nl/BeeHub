@@ -65,7 +65,7 @@ EOS;
   $result = BeeHub::query($query);
   $retval = array();
   while (($row = $result->fetch_row()))
-    $retval[] = BeeHub::$CONFIG['groups_path'] . rawurlencode($row[0]);
+    $retval[] = BeeHub::$CONFIG['webdav_namespace']['groups_path'] . rawurlencode($row[0]);
   $result->free();
   return $retval;
 }

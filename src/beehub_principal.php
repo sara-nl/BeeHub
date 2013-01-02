@@ -34,7 +34,7 @@ public function __construct($path) {
     if ( !$result )
       throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
     xattr_set( $localPath, rawurlencode(DAV::PROP_GETETAG), BeeHub::ETag(0) );
-    xattr_set( $localPath, rawurlencode(DAV::PROP_OWNER  ), BeeHub::$CONFIG['wheel_path'] );
+    xattr_set( $localPath, rawurlencode(DAV::PROP_OWNER  ), BeeHub::$CONFIG['webdav_namespace']['wheel_path'] );
   }
   parent::__construct($path);
 }

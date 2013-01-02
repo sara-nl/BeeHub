@@ -111,8 +111,8 @@ public function user_prop_principal_collection_set() {
  */
 public function unauthorized() {
   header(
-    'WWW-Authenticate: Digest realm="' . BeeHub::$CONFIG['realm'] . '",qop="auth",nonce="' .
-    uniqid() . '",opaque="' . md5( BeeHub::$CONFIG['realm'] ) . '"'
+    'WWW-Authenticate: Digest realm="' . BeeHub::$CONFIG['authentication']['realm'] . '",qop="auth",nonce="' .
+    uniqid() . '",opaque="' . md5( BeeHub::$CONFIG['authentication']['realm'] ) . '"'
   );
   return false;
 

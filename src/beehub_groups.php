@@ -40,7 +40,7 @@ public function report_principal_property_search($properties) {
   $result = BeeHub::query("SELECT `slug` FROM `bh_bp_groups` WHERE `name` LIKE {$match};");
   $retval = array();
   while (($row = $result->fetch_row()))
-    $retval[] = BeeHub::$CONFIG['groups_path'] . rawurlencode($row[0]);
+    $retval[] = BeeHub::$CONFIG['webdav_namespace']['groups_path'] . rawurlencode($row[0]);
   $result->free();
   return $retval;
 }

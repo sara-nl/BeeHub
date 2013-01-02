@@ -126,7 +126,7 @@ public function user_prop_acl() {
       'DAV: owner', false, array('DAV: all'), false, true, null
     ),
 //     new DAVACL_Element_ace(
-//       BeeHub::$CONFIG['wheel_path'], false, array('DAV: all'), false, true, null
+//       BeeHub::$CONFIG['webdav_namespace']['wheel_path'], false, array('DAV: all'), false, true, null
 //     ),
   );
   if ( in_array( $this->path, array( '/' ) ) )

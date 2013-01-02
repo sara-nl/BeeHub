@@ -90,7 +90,7 @@ public static function escapeshellarg($arg) {
 public static function localPath($path) {
 //  $path = DAV::unslashify('root' . $path);
 //  $path = str_replace('#', '##', $path);
-  return DAV::unslashify( self::$CONFIG['datadir'] . rawurldecode( $path ) );
+  return DAV::unslashify( self::$CONFIG['environment']['datadir'] . rawurldecode( $path ) );
 }
 
 
