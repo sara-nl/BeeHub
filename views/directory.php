@@ -16,7 +16,7 @@ $members  All members of this directory
   </head>
   <body>
     <div id="inhoud">
-    <h1>Hoi Niek!</h1>
+    <h1>Directory index</h1>
     <?php if ( '/' != $path ) : ?>
       <p><a href="../">Up one level</a></p>
     <?php endif; ?>
