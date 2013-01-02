@@ -11,8 +11,6 @@ $members  All members of this directory
     <meta http-equiv="Content-Script-Type" content="text/javascript" />
     <meta http-equiv="Content-Style-Type" content="text/css" />
     <title>Directory index</title>
-    <!--script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.0/jquery.min.js"></script>
-    <script type="text/javascript" src="/webdav.js"></script-->
   </head>
   <body>
     <div id="inhoud">
