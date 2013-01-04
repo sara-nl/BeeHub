@@ -119,22 +119,33 @@ public function method_DELETE( $name )
  */
 public function method_GET() {
   // We willen hier de client gaan teruggeven:
-  // if ( 0 === strpos( $_SERVER['HTTP_USER_AGENT'], 'Mozilla' ) )
-    // throw new DAV_Status(
-      // DAV::HTTP_TEMPORARY_REDIRECT,
-      // DAV::abs2uri('/client/index.html#' . $this->path)
-    // );
   $this->assert(DAVACL::PRIV_READ);
-  $view = new BeeHub_View(dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'directory.php');
-  $view->setVar('path', $this->path);
-  $members = array();
-  foreach ($this as $member){
-    $members[] = $member;
+  if ($this->path == Beehub::$CONFIG['webdav_namespace']['users_path']) {
+    session_start();
+    $_SESSION['requestKey'] = md5(time() . '098awufejf94a8j2398jd98jv5498j34f9SEG$%Efvsw#W$FV(JH&6jq2f4@qf#klg J9KPb&');
+$attributes = array(
+  'uid'         => '666',
+  'username'    => 'aap',
+  'displayname' => 'Jaap Aap',
+  'email'       => 'banaan@broodje.aap',
+  'x509'        => 'iets @sara.nl ipv surfsara.nl',
+  'account'     => 'King Louis betaalt'
+);
+    $view = new BeeHub_View('users.php');
+    $view->setVar('attributes', $attributes);
+    $view->setVar('requestKey', $_SESSION['requestKey']);
+    return DAV::xml_header() . $view->getParsedView();
+  }else{
+    $view = new BeeHub_View('directory.php');
+    $view->setVar('path', $this->path);
+    $members = array();
+    foreach ($this as $member){
+      $members[] = $member;
+    }
+    natcasesort($members);
+    $view->setVar('members', $members);
+    return DAV::xml_header() . $view->getParsedView();
   }
-  natcasesort($members);
-  $view->setVar('members', $members);
-  $retval = DAV::xml_header() . $view->getParsedView();
-  return $retval;
 }
 
 
@@ -143,6 +154,50 @@ public function method_HEAD() {
   return array('Content-Type' => BeeHub::best_xhtml_type() . '; charset="utf-8"');
 }
 
+/**
+ * Handle POST requests, but only for system namespaces
+ *
+ * The collections containing all users, groups and sponsors can handle POST
+ * requests to store/update user data for those collections. For example: a POST
+ * to the users collection can update the profile of the current user. Requests
+ * for other collections will be handled by the parent class.
+ *
+ * return  mixed
+ */
+public function method_POST($headers) {
+  if ($this->path == Beehub::$CONFIG['webdav_namespace']['users_path']) {
+    if (isset($_POST['request_key']) && isset($_SESSION['requestKey']) && ($_POST['request_key'] == $_SESSION['requestKey'])) {
+      $db = BeeHub::mysqli();
+      $query = "UPDATE `beehub_users` SET `displayname`=?, `email`=?";
+      if ($_POST['change_password'] != 'true'){
+        $statement = $db->prepare($query . ';');
+        $statement->bind_param('ss',
+                $_POST['displayname'],
+                $_POST['email']);
+      }else{
+        if ($_POST['password1'] != $_POST['password2']) {
+          die('Passwords are not the same!');
+        }
+        $password = hash($_POST['password1']);
+        $query .= ', `password`=?';
+        $statement = $db->prepare($query . ' WHERE `user_id`=?;');
+        $statement->bind_param('sssd',
+                $_POST['displayname'],
+                $_POST['email'],
+                $password,
+//Dit gaat nog niet werken: hoe herken ik een gebruiker?
+                $attributes['uid']);
+      }
+      if (!$statement->execute()) {
+        die("Kon niet opslaan!");
+      }else{
+        die('Opgeslagen!');
+      }
+    }
+  }else{
+    return parent::method_POST($headers);
+  }
+}
 
 /**
  * @param string $name
