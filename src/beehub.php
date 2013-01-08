@@ -190,6 +190,27 @@ public static function best_xhtml_type() {
  */
 public static function current_user() {}
 
+public static function handle_method_spoofing() {
+  $_SERVER['ORIGINAL_REQUEST_METHOD'] = $_SERVER['REQUEST_METHOD'];
+  if ($_SERVER['REQUEST_METHOD'] == 'POST' and
+     isset($_GET['_method'])) {
+   $http_method = strtoupper( $_GET['_method'] );
+   unset( $_GET['_method'] );
+   if ( $http_method === 'GET' &&
+        strstr( @$_SERVER['CONTENT_TYPE'],
+                'application/x-www-form-urlencoded' ) !== false ) {
+     $_GET = $_POST;
+     $_POST = array();
+   }
+   $_SERVER['QUERY_STRING'] = http_build_query($_GET);
+   $_SERVER['REQUEST_URI'] =
+     substr( $_SERVER['REQUEST_URI'], 0,
+             strpos( $_SERVER['REQUEST_URI'], '?' ) );
+   if ($_SERVER['QUERY_STRING'] != '')
+     $_SERVER['REQUEST_URI'] .= '?' . $_SERVER['QUERY_STRING'];
+   $_SERVER['REQUEST_METHOD'] = $http_method;
+  }
+}
 
 } // class BeeHub
 
