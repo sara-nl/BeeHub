@@ -1,0 +1,51 @@
+body {
+  padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
+}
+.beehub-navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 999;
+  height: 40px;
+  border-bottom: solid 1px #000;
+  background: #d1d3d4 2px 2px no-repeat url('../img/logo.png');
+  padding: 0 150px;
+}
+.beehub-navbar-inner {
+  width: 1170px;
+  margin: 0 auto;
+}
+.beehub-navbar ul {
+  list-style-type: none;
+  padding: 0px;
+  margin: 0px;
+}
+.beehub-navbar ul li{
+  float: left;
+  line-height: 20px;
+  height: 40px;
+}
+.beehub-navbar ul li.active{
+  background: #008741;
+}
+.beehub-navbar ul li a{
+  display: block;
+  color: #414042;
+  font-size: 14px;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  text-decoration: none;
+  font-weight; none;
+  padding: 12px 15px;
+}
+.beehub-navbar ul li a:hover {
+  color: #008741;
+}
+.beehub-navbar ul li:first-child a {
+  font-size: 20px;
+  padding: 8px 15px;
+}
+.beehub-navbar ul li.active a,
+.beehub-navbar ul li.active a:hover {
+  color: #e6e7e8;
+}
