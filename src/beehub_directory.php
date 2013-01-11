@@ -137,12 +137,12 @@ $attributes = array(
     return DAV::xml_header() . $view->getParsedView();
   }else{
     $view = new BeeHub_View('directory.php');
-    $view->setVar('path', $this->path);
+    $view->setVar('directory', $this);
     $members = array();
     foreach ($this as $member){
-      $members[] = $member;
+      $members[strtolower($member)] = DAV::$REGISTRY->resource($this->path . $member);
     }
-    natcasesort($members);
+    ksort($members, SORT_STRING);
     $view->setVar('members', $members);
     return DAV::xml_header() . $view->getParsedView();
   }
@@ -151,7 +151,11 @@ $attributes = array(
 
 public function method_HEAD() {
   $this->assert(DAVACL::PRIV_READ);
-  return array('Content-Type' => BeeHub::best_xhtml_type() . '; charset="utf-8"');
+  #return array('Content-Type' => BeeHub::best_xhtml_type() . '; charset="utf-8"');
+  return array(
+    'Content-Type' => 'text/html; charset="utf-8"',
+    'Cache-Control' => 'no-cache'
+  );
 }
 
 /**
