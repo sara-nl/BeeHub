@@ -6,21 +6,21 @@
     <meta name="author" content="" />
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <title>BeeHub</title>
-    <link href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" />
-    <link href="/system/css/bootstrap.css" rel="stylesheet" />
-    <link href="/system/css/bootstrap-responsive.css" rel="stylesheet" />
-    <link href="/system/css/beehub.css" rel="stylesheet" />
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" />
+    <link rel="stylesheet" href="/system/css/bootstrap.css" />
+    <link rel="stylesheet" href="/system/css/bootstrap-responsive.css" />
+    <link rel="stylesheet" href="/system/css/beehub.css" />
     <?= $header ?>
   </head>
   <body>
     <div class="beehub-navbar">
       <div class="beehub-navbar-inner">
         <ul>
-          <li<?= ($active == 'beehub' ? ' class="active"' : '') ?>><a href="/system.php">BeeHub</a></li>
-          <li<?= ($active == 'profile' ? ' class="active"' : '') ?>><a href="/system/users.php">Profile</a></li>
-          <li<?= ($active == 'groups' ? ' class="active"' : '') ?>><a href="/system/groups.php">Groups</a></li>
-          <li<?= ($active == 'sponsors' ? ' class="active"' : '') ?>><a href="/system/sponsors.php">Sponsors</a></li>
-          <li><a href="http://beehub-devel.grid.sara.nl:8080/">Files</a></li>
+          <li<?= ($active == 'beehub' ? ' class="active"' : '') ?>><a href="/system/">BeeHub</a></li>
+          <li<?= ($active == 'profile' ? ' class="active"' : '') ?>><a href="/users/">Profile</a></li>
+          <li<?= ($active == 'groups' ? ' class="active"' : '') ?>><a href="/groups/">Groups</a></li>
+          <li<?= ($active == 'sponsors' ? ' class="active"' : '') ?>><a href="/sponsors/">Sponsors</a></li>
+          <li<?= ($active == 'files' ? ' class="active"' : '') ?>><a href="/">Files</a></li>
         </ul>
       </div>
     </div>
