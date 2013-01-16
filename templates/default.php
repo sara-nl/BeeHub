@@ -10,12 +10,17 @@
     <link rel="stylesheet" href="/system/css/bootstrap.css" />
     <link rel="stylesheet" href="/system/css/bootstrap-responsive.css" />
     <link rel="stylesheet" href="/system/css/beehub.css" />
-    <?= $header ?>
+    <?= isset($header) ? $header : '' ?>
   </head>
   <body>
     <div class="beehub-navbar">
       <div class="beehub-navbar-inner">
         <ul>
+          <?php
+          if (!isset($active)) {
+            $active == 'beehub';
+          }
+          ?>
           <li<?= ($active == 'beehub' ? ' class="active"' : '') ?>><a href="<?= htmlspecialchars(BeeHub::$CONFIG['webdav_namespace']['homepage'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>">BeeHub</a></li>
           <li<?= ($active == 'profile' ? ' class="active"' : '') ?>><a href="<?= htmlspecialchars(BeeHub_ACL_Provider::inst()->CURRENT_USER_PRINCIPAL, ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>">Profile</a></li>
           <li<?= ($active == 'groups' ? ' class="active"' : '') ?>><a href="<?= htmlspecialchars(BeeHub::$CONFIG['webdav_namespace']['groups_path'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>">Groups</a></li>
@@ -30,6 +35,6 @@
     </div>
     <script type="text/javascript" src="http://code.jquery.com/jquery-1.8.3.js"></script>
     <script type="text/javascript" src="http://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
-    <?= $footer ?>
+    <?= isset($footer) ? $footer : '' ?>
   </body>
 </html>

@@ -43,9 +43,9 @@ public function __construct($path) {
   self::$statement_display_name->execute();
   self::$result_name = null;
   self::$statement_display_name->fetch();
-  $this->display_name = self::$result_name;
+  $this->writable_props['DAV: displayname'] = self::$result_name;
   self::$statement_display_name->free_result();
-  if (null === $this->display_name)
+  if (null === $this->writable_props['DAV: displayname'])
     throw new DAV_Status(DAV::HTTP_NOT_FOUND);
   parent::__construct($path);
 }

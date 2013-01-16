@@ -1,6 +1,6 @@
 <?php
 
-/*·************************************************************************
+/* ·************************************************************************
  * Copyright ©2007-2012 SARA b.v., Amsterdam, The Netherlands
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -12,48 +12,38 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- **************************************************************************/
+ * ************************************************************************ */
 
 /**
  * File documentation (who cares)
  * @package BeeHub
  */
 
-//DAV::header(array('X-My-Header' => 'My Value'));
-//exit();
-
-//phpinfo(); exit;
-//ob_start("ob_gzhandler");
-
-//header("Transfer-Encoding: chunked");
-//header("Content-Type: text/plain; charset=US-ASCII");
-//flush();
-//echo "5\r\nhello\r\n0\r\n\r\nX-Trail: yes\r\n";
-//flush();
-//exit();
-
-require_once dirname( dirname(__FILE__) ) . '/webdav-php/lib/dav.php';
-
-//DAV::debug('started!');
+require_once dirname(dirname(__FILE__)) . '/webdav-php/lib/dav.php';
 
 /**
  * A MySQL exception
  * @package BeeHub
  */
-class BeeHub_MySQL extends Exception {}
+class BeeHub_MySQL extends Exception {
+
+}
 
 /**
  * A deadlock occured: Try again.
  * @package BeeHub
  */
-class BeeHub_Deadlock extends BeeHub_MySQL {}
+class BeeHub_Deadlock extends BeeHub_MySQL {
+
+}
 
 /**
  * Out of resources: maybe later.
  * @package BeeHub
  */
-class BeeHub_Timeout extends BeeHub_MySQL {}
+class BeeHub_Timeout extends BeeHub_MySQL {
 
+}
 
 /**
  * Just a namespace.
@@ -61,161 +51,141 @@ class BeeHub_Timeout extends BeeHub_MySQL {}
  */
 class BeeHub {
 
-
-// const REALM = 'BeeHub';
-// const USERS_PATH = '/users/';
-// const GROUPS_PATH = '/groups/';
-// const WHEEL_PATH = '/users/admin';
-
-
-const PRIV_READ_PROPERTIES = 'http://beehub.nl/ read-properties';
-const PRIV_READ_CONTENT    = 'http://beehub.nl/ read-content';
-
-const PROP_PASSWD          = 'http://beehub.nl/ passwd';
+  const PROP_USER_ID  = 'http://beehub.nl/ user_id';
+  const PROP_USERNAME = 'http://beehub.nl/ username';
+  const PROP_PASSWD   = 'http://beehub.nl/ passwd';
+  const PROP_EMAIL    = 'http://beehub.nl/ email';
+  const PROP_X509     = 'http://beehub.nl/ x509';
 
   public static $CONFIG;
-  
 
-/**
- * A better escapeshellarg.
- * The default PHP version seems not to work for UTF-8 strings...
- * @return string
- * @param string $arg
- */
-public static function escapeshellarg($arg) {
-  return "'" . str_replace( "'", "'\\''", $arg ) . "'";
-}
-
-
-public static function localPath($path) {
-//  $path = DAV::unslashify('root' . $path);
-//  $path = str_replace('#', '##', $path);
-  return DAV::unslashify( self::$CONFIG['environment']['datadir'] . rawurldecode( $path ) );
-}
-
-
-/**
- * @var mysqli
- */
-private static $MYSQLI = null;
-/**
- * @return mysqli
- * @throws DAV_Status
- */
-public static function mysqli() {
-  if (self::$MYSQLI === null) {
-    self::$MYSQLI = new mysqli(
-      BeeHub::$CONFIG['mysql']['host'],
-      BeeHub::$CONFIG['mysql']['username'],
-      BeeHub::$CONFIG['mysql']['password'],
-      BeeHub::$CONFIG['mysql']['database']
-    );
-    if ( !self::$MYSQLI )
-      throw new BeeHub_MySQL(mysqli_connect_error(), mysqli_connect_errno());
+  /**
+   * A better escapeshellarg.
+   * The default PHP version seems not to work for UTF-8 strings...
+   * @return string
+   * @param string $arg
+   */
+  public static function escapeshellarg($arg) {
+    return "'" . str_replace("'", "'\\''", $arg) . "'";
   }
-  return self::$MYSQLI;
-}
 
-
-public static function escape_string($string) {
-  return is_null($string)
-    ? 'NULL'
-    : '\'' . self::mysqli()->escape_string($string) . '\'';
-}
-
-
-public static function ETag($etag = null) {
-  if (is_null($etag)) {
-    self::query('INSERT INTO ETag VALUES();');
-    $etag = self::mysqli()->insert_id;
-    if (!($etag % 100))
-      self::query("DELETE FROM ETag WHERE etag < $etag");
+  public static function localPath($path) {
+    return DAV::unslashify(self::$CONFIG['environment']['datadir'] . rawurldecode($path));
   }
-  return '"' . trim( base64_encode( pack( 'H*', dechex( $etag ) ) ), '=' ) . '"';
-}
 
+  /**
+   * @var mysqli
+   */
+  private static $MYSQLI = null;
 
-/**
- * @param string $query
- * @return void
- * @throws BeeHub_Deadlock|BeeHub_Timeout|BeeHub_MySQL
- */
-public static function real_query($query) {
-  if (! self::mysqli()->real_query($query)) {
-    if (self::mysqli()->errno == 1213)
-      throw new BeeHub_Deadlock(self::mysqli()->error);
-    if (self::mysqli()->errno == 1205)
-      throw new BeeHub_Timeout(self::mysqli()->error);
-    throw new BeeHub_MySQL( self::mysqli()->error, self::mysqli()->errno );
+  /**
+   * @return mysqli
+   * @throws DAV_Status
+   */
+  public static function mysqli() {
+    if (self::$MYSQLI === null) {
+      self::$MYSQLI = new mysqli(
+                      BeeHub::$CONFIG['mysql']['host'],
+                      BeeHub::$CONFIG['mysql']['username'],
+                      BeeHub::$CONFIG['mysql']['password'],
+                      BeeHub::$CONFIG['mysql']['database']
+      );
+      if (!self::$MYSQLI)
+        throw new BeeHub_MySQL(mysqli_connect_error(), mysqli_connect_errno());
+    }
+    return self::$MYSQLI;
   }
-}
 
-
-/**
- * @param string $query
- * @return mysqli_result
- * @throws Exception
- */
-public static function query($query) {
-  if ( !( $retval = self::mysqli()->query($query) ) ) {
-    if (self::mysqli()->errno == 1213)
-      throw new BeeHub_Deadlock(self::mysqli()->error);
-    if (self::mysqli()->errno == 1205)
-      throw new BeeHub_Timeout(self::mysqli()->error);
-    throw new BeeHub_MySQL( self::mysqli()->error, self::mysqli()->errno );
+  public static function escape_string($string) {
+    return is_null($string) ? 'NULL' : '\'' . self::mysqli()->escape_string($string) . '\'';
   }
-  return $retval;
-}
 
-
-/**
- * @return string a uuid, generated by MySQL
- */
-public static function uuid() {
-  $result = self::query('SELECT UUID();');
-  $row = $result->fetch_row();
-  return $row[0];
-}
-
-
-public static function best_xhtml_type() {
-  return ( false === strstr(@$_SERVER['HTTP_USER_AGENT'], 'MSIE') &&
-           false === strstr(@$_SERVER['HTTP_USER_AGENT'], 'Microsoft') ) ?
-    'application/xhtml+xml' : 'text/html';
-}
-
-
-/**
- * @todo implement
- */
-public static function current_user() {}
-
-public static function handle_method_spoofing() {
-  $_SERVER['ORIGINAL_REQUEST_METHOD'] = $_SERVER['REQUEST_METHOD'];
-  if ($_SERVER['REQUEST_METHOD'] == 'POST' and
-     isset($_GET['_method'])) {
-   $http_method = strtoupper( $_GET['_method'] );
-   unset( $_GET['_method'] );
-   if ( $http_method === 'GET' &&
-        strstr( @$_SERVER['CONTENT_TYPE'],
-                'application/x-www-form-urlencoded' ) !== false ) {
-     $_GET = $_POST;
-     $_POST = array();
-   }
-   $_SERVER['QUERY_STRING'] = http_build_query($_GET);
-   $_SERVER['REQUEST_URI'] =
-     substr( $_SERVER['REQUEST_URI'], 0,
-             strpos( $_SERVER['REQUEST_URI'], '?' ) );
-   if ($_SERVER['QUERY_STRING'] != '')
-     $_SERVER['REQUEST_URI'] .= '?' . $_SERVER['QUERY_STRING'];
-   $_SERVER['REQUEST_METHOD'] = $http_method;
+  public static function ETag($etag = null) {
+    if (is_null($etag)) {
+      self::query('INSERT INTO ETag VALUES();');
+      $etag = self::mysqli()->insert_id;
+      if (!($etag % 100))
+        self::query("DELETE FROM ETag WHERE etag < $etag");
+    }
+    return '"' . trim(base64_encode(pack('H*', dechex($etag))), '=') . '"';
   }
-}
+
+  /**
+   * @param string $query
+   * @return void
+   * @throws BeeHub_Deadlock|BeeHub_Timeout|BeeHub_MySQL
+   */
+  public static function real_query($query) {
+    if (!self::mysqli()->real_query($query)) {
+      if (self::mysqli()->errno == 1213)
+        throw new BeeHub_Deadlock(self::mysqli()->error);
+      if (self::mysqli()->errno == 1205)
+        throw new BeeHub_Timeout(self::mysqli()->error);
+      throw new BeeHub_MySQL(self::mysqli()->error, self::mysqli()->errno);
+    }
+  }
+
+  /**
+   * @param string $query
+   * @return mysqli_result
+   * @throws Exception
+   */
+  public static function query($query) {
+    if (!( $retval = self::mysqli()->query($query) )) {
+      if (self::mysqli()->errno == 1213)
+        throw new BeeHub_Deadlock(self::mysqli()->error);
+      if (self::mysqli()->errno == 1205)
+        throw new BeeHub_Timeout(self::mysqli()->error);
+      throw new BeeHub_MySQL(self::mysqli()->error, self::mysqli()->errno);
+    }
+    return $retval;
+  }
+
+  /**
+   * @return string a uuid, generated by MySQL
+   */
+  public static function uuid() {
+    $result = self::query('SELECT UUID();');
+    $row = $result->fetch_row();
+    return $row[0];
+  }
+
+  public static function best_xhtml_type() {
+    return ( false === strstr(@$_SERVER['HTTP_USER_AGENT'], 'MSIE') &&
+            false === strstr(@$_SERVER['HTTP_USER_AGENT'], 'Microsoft') ) ?
+            'application/xhtml+xml' : 'text/html';
+  }
+
+  /**
+   * @todo implement
+   */
+  public static function current_user() {
+    return BeeHub_ACL_Provider::inst()->CURRENT_USER_PRINCIPAL;
+  }
+
+  public static function handle_method_spoofing() {
+    $_SERVER['ORIGINAL_REQUEST_METHOD'] = $_SERVER['REQUEST_METHOD'];
+    if ($_SERVER['REQUEST_METHOD'] == 'POST' and
+            isset($_GET['_method'])) {
+      $http_method = strtoupper($_GET['_method']);
+      unset($_GET['_method']);
+      if ($http_method === 'GET' &&
+              strstr(@$_SERVER['CONTENT_TYPE'], 'application/x-www-form-urlencoded') !== false) {
+        $_GET = $_POST;
+        $_POST = array();
+      }
+      $_SERVER['QUERY_STRING'] = http_build_query($_GET);
+      $_SERVER['REQUEST_URI'] =
+              substr($_SERVER['REQUEST_URI'], 0, strpos($_SERVER['REQUEST_URI'], '?'));
+      if ($_SERVER['QUERY_STRING'] != '')
+        $_SERVER['REQUEST_URI'] .= '?' . $_SERVER['QUERY_STRING'];
+      $_SERVER['REQUEST_METHOD'] = $http_method;
+    }
+  }
 
 } // class BeeHub
 
 BeeHub::$CONFIG = parse_ini_file(
-  dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'config.ini',
-  true
+        dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'config.ini', true
 );
 
