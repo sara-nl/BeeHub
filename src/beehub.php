@@ -53,9 +53,21 @@ class BeeHub {
 
   const PROP_USER_ID  = 'http://beehub.nl/ user_id';
   const PROP_USERNAME = 'http://beehub.nl/ username';
-  const PROP_PASSWD   = 'http://beehub.nl/ passwd';
+  const PROP_PASSWD   = 'http://beehub.nl/ password';
   const PROP_EMAIL    = 'http://beehub.nl/ email';
   const PROP_X509     = 'http://beehub.nl/ x509';
+
+  /**#@+
+   * These constants define the different environments the code can run in.
+   *
+   * The global constant APPLICATION_ENV can be compared to one of these
+   * constants to check whether the application is running in the respective
+   * environment. This reduces the chance of developers making up their own
+   * environment values without in stead of using one of the existing ones.
+   */
+  const ENVIRONMENT_DEVELOPMENT = 'development';
+  const ENVIRONMENT_PRODUCTION  = 'production';
+  /**#@-*/
 
   public static $CONFIG;
 
