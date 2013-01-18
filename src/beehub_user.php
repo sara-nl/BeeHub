@@ -47,11 +47,9 @@ class BeeHub_User extends BeeHub_Principal {
    * @see DAV_Resource::method_GET()
    */
   public function method_GET() {
-    if ($this->path != BeeHub::current_user()) {
-      throw new DAV_Status(
-              DAV::HTTP_FORBIDDEN,
-              DAV::COND_NEED_PRIVILEGES
-      );
+    // We won't sent user data over regular HTTP, so we require HTTPS!
+    if ((APPLICATION_ENV != BeeHub::ENVIRONMENT_DEVELOPMENT) && empty($_SERVER['HTTPS'])) {
+      header('Location: https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
     }
     $view = new BeeHub_View('users.php');
     $view->setVar('user', $this);
@@ -59,16 +57,26 @@ class BeeHub_User extends BeeHub_Principal {
   }
 
   public function method_HEAD() {
+    // TODO: See if this can't be arranged with regular (though protected) ACL's (see user_prop_acl() function)
     if ($this->path != BeeHub::current_user()) {
       throw new DAV_Status(
               DAV::HTTP_FORBIDDEN,
               DAV::COND_NEED_PRIVILEGES
       );
     }
+    $this->assert(DAVACL::PRIV_READ);
     return array(
         'Content-Type' => BeeHub::best_xhtml_type() . '; charset="utf-8"',
         'Cache-Control' => 'no-cache'
     );
+  }
+
+  public function method_PROPPATCH($propname, $value) {
+    // We won't allow user data to be manipulated over regular HTTP, so we require HTTPS!
+    if ((APPLICATION_ENV != BeeHub::ENVIRONMENT_DEVELOPMENT) && empty($_SERVER['HTTPS'])) {
+      throw new DAV_Status(DAV::HTTP_FORBIDDEN);
+    }
+    return parent::method_PROPPATCH($propname, $value);
   }
 
   protected function init_props() {
@@ -123,17 +131,17 @@ class BeeHub_User extends BeeHub_Principal {
    * @throws DAV_Status in particular 507 (Insufficient Storage)
    */
   public function storeProperties() {
-    if ($this->path != BeeHub::current_user()) {
-      throw new DAV_Status(
-              DAV::HTTP_FORBIDDEN,
-              DAV::COND_NEED_PRIVILEGES
-      );
-    }
     if (!$this->touched) {
       return;
     }
 
     // Are database properties set? If so, get the value and unset them
+    if (isset($this->writable_props[DAV::PROP_DISPLAYNAME])) {
+      $displayname = $this->writable_props[DAV::PROP_DISPLAYNAME];
+      unset($this->writable_props[DAV::PROP_DISPLAYNAME]);
+    }else{
+      $displayname = '';
+    }
     if (isset($this->writable_props[BeeHub::PROP_EMAIL])) {
       $email = $this->writable_props[BeeHub::PROP_EMAIL];
       unset($this->writable_props[BeeHub::PROP_EMAIL]);
@@ -144,7 +152,7 @@ class BeeHub_User extends BeeHub_Principal {
       if ($this->writable_props[BeeHub::PROP_PASSWD] === true) { //true means there is a password, but it hasn't been changed!
         $password = true;
       }else{
-        $password = crypt($this->writable_props[BeeHub::PROP_PASSWD], '$5$rounds=5000$' . md5(time() . rand(0, 99999)) . '$');
+        $password = crypt($this->writable_props[BeeHub::PROP_PASSWD], '$6$rounds=5000$' . md5(time() . rand(0, 99999)) . '$');
       }
       unset($this->writable_props[BeeHub::PROP_PASSWD]);
     }else{
@@ -158,16 +166,18 @@ class BeeHub_User extends BeeHub_Principal {
     }
 
     // Write all data to database
-    $updateStatement = BeeHub::mysqli()->prepare('UPDATE `beehub_users` SET `email`=?, `x509`=?' . (($password === true) ? '' : ', `password`=?') . ' WHERE `user_id`=?');
+    $updateStatement = BeeHub::mysqli()->prepare('UPDATE `beehub_users` SET `display_name`=?, `email`=?, `x509`=?' . (($password === true) ? '' : ', `password`=?') . ' WHERE `user_id`=?');
     $id = $this->prop(BeeHub::PROP_USER_ID);
     if ($password === true) {
-      $updateStatement->bind_param('ssd',
+      $updateStatement->bind_param('sssd',
+              $displayname,
               $email,
               $x509,
               $id
               );
     }else{
-      $updateStatement->bind_param('sssd',
+      $updateStatement->bind_param('ssssd',
+              $displayname,
               $email,
               $x509,
               $password,
@@ -183,6 +193,7 @@ class BeeHub_User extends BeeHub_Principal {
     if (!is_null($password)) {
       $this->writable_props[BeeHub::PROP_PASSWD] = true; // Nobody should have read access to this property. But just in case, we always set it to true.
     }
+    $this->writable_props[DAV::PROP_DISPLAYNAME] = $displayname;
     $this->writable_props[BeeHub::PROP_EMAIL] = $email;
     if (!is_null($x509)) {
       $this->writable_props[BeeHub::PROP_X509] = $x509;
@@ -197,30 +208,6 @@ class BeeHub_User extends BeeHub_Principal {
         )
     );
     return array_merge($protected, $default);
-  }
-
-  // TODO: Remove this method and make the client page (returned with a GET request) change the properties through AJAX PROPPATCH calls
-  public function method_POST() {
-//      $db = BeeHub::mysqli();
-//      $query = "UPDATE `beehub_users` SET `display_name`=?, `email`=? WHERE `username`='" . basename($this->path) . "'";
-//      if (!isset($_POST['change_password']) || ($_POST['change_password'] != 'true')) {
-//        $statement = $db->prepare($query . ';');
-//        $statement->bind_param('ss', $_POST['displayname'], $_POST['email']);
-//      } else {
-//        if ($_POST['password1'] != $_POST['password2']) {
-//          die('Passwords are not the same!');
-//        }
-//        $password = hash($_POST['password1']);
-//        $query .= ', `password`=?';
-//        $statement = $db->prepare($query . ' WHERE `user_id`=?;');
-//        $statement->bind_param('sssd', $_POST['displayname'], $_POST['email'], $password,
-////Dit gaat nog niet werken: hoe herken ik een gebruiker?
-//                $attributes['uid']);
-//      }
-//      if (!$statement->execute()) {
-      $this->user_set(BeeHub::PROP_EMAIL, $_POST['email']);
-//      $this->user_set(BeeHub::PROP_PASSWD, 'test');
-      $this->storeProperties();
   }
 
   public function user_prop_group_membership() {
