@@ -30,7 +30,7 @@
  * BeeHub::PROP_EMAIL
  * BeeHub::PROP_X509
  *
- * @TODO make user_id and username protected properties
+ * @TODO Checken of de properties in de juiste gevallen afschermd worden
  * @package BeeHub
  */
 class BeeHub_User extends BeeHub_Principal {
@@ -51,7 +51,7 @@ class BeeHub_User extends BeeHub_Principal {
     if ((APPLICATION_ENV != BeeHub::ENVIRONMENT_DEVELOPMENT) && empty($_SERVER['HTTPS'])) {
       header('Location: https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
     }
-    $view = new BeeHub_View('users.php');
+    $view = new BeeHub_View('user.php');
     $view->setVar('user', $this);
     return ((BeeHub::best_xhtml_type() != 'text/html') ? DAV::xml_header() : '' ) . $view->getParsedView();
   }
