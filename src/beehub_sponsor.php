@@ -1,6 +1,6 @@
 <?php
 
-/* * ***********************************************************************
+/*************************************************************************
  * Copyright ©2007-2012 SARA b.v., Amsterdam, The Netherlands
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -22,30 +22,26 @@
 /**
  * A sponsor principal
  *
- * There are a few properties defined which are stored in the database instead
- * of as xfs attribute.
- * BeeHub::PROP_SPONSOR_ID
- *
  * @TODO Hoe zorg ik dat <resourcetype> goed gevuld wordt?
  * @TODO Checken of de properties in de juiste gevallen afschermd worden
  * @package BeeHub
  */
-class BeeHub_Sponsor extends BeeHub_Principal {
+class BeeHub_Sponsor extends BeeHub_File {
+
+  const RESOURCETYPE = '<sponsor xmlns="http://beehub.nl/" />';
 
   private static $statement_props = null;
   private static $param_sponsor = null;
   private static $result_sponsor_id = null;
   private static $result_display_name = null;
 
+  protected $id = null;
+
   /**
    * @return string an HTML file
    * @see DAV_Resource::method_GET()
    */
   public function method_GET() {
-    // We won't sent sponsor data over regular HTTP, so we require HTTPS!
-    if ((APPLICATION_ENV != BeeHub::ENVIRONMENT_DEVELOPMENT) && empty($_SERVER['HTTPS'])) {
-      header('Location: https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
-    }
     $view = new BeeHub_View('sponsor.php');
     $view->setVar('sponsor', $this);
     return ((BeeHub::best_xhtml_type() != 'text/html') ? DAV::xml_header() : '' ) . $view->getParsedView();
@@ -59,18 +55,10 @@ class BeeHub_Sponsor extends BeeHub_Principal {
     );
   }
 
-  public function method_PROPPATCH($propname, $value) {
-    // We won't allow user data to be manipulated over regular HTTP, so we require HTTPS!
-    if ((APPLICATION_ENV != BeeHub::ENVIRONMENT_DEVELOPMENT) && empty($_SERVER['HTTPS'])) {
-      throw new DAV_Status(DAV::HTTP_FORBIDDEN);
-    }
-    return parent::method_PROPPATCH($propname, $value);
-  }
-
   protected function init_props() {
     if (is_null($this->writable_props)) {
       parent::init_props();
-      $this->protected_props[BeeHub::PROP_SPONSORNAME] = basename($this->path);
+      $this->protected_props[BeeHub::PROP_NAME] = basename($this->path);
 
       if (null === self::$statement_props) {
         self::$statement_props = BeeHub::mysqli()->prepare(
@@ -85,12 +73,12 @@ class BeeHub_Sponsor extends BeeHub_Principal {
                 self::$result_sponsor_id, self::$result_display_name
         );
       }
-      self::$param_sponsor = $this->prop(BeeHub::PROP_SPONSORNAME);
+      self::$param_sponsor = $this->prop(BeeHub::PROP_NAME);
       self::$statement_props->execute();
       self::$result_sponsor_id = null;
       self::$result_display_name = null;
       self::$statement_props->fetch();
-      $this->protected_props[BeeHub::PROP_SPONSOR_ID] = self::$result_sponsor_id;
+      $this->id = self::$result_sponsor_id;
       $this->writable_props[DAV::PROP_DISPLAYNAME] = self::$result_display_name;
       self::$statement_props->free_result();
     }
@@ -116,7 +104,7 @@ class BeeHub_Sponsor extends BeeHub_Principal {
 
     // Write all data to database
     $updateStatement = BeeHub::mysqli()->prepare('UPDATE `beehub_sponsors` SET `display_name`=? WHERE `sponsor_id`=?');
-    $id = $this->prop(BeeHub::PROP_SPONSOR_ID);
+    $id = $this->id;
     $updateStatement->bind_param('sd', $displayname, $id);
     $updateStatement->execute();
 
@@ -127,33 +115,32 @@ class BeeHub_Sponsor extends BeeHub_Principal {
     $this->writable_props[DAV::PROP_DISPLAYNAME] = $displayname;
   }
 
-  public function user_prop_group_membership() {
-    $esclogin = BeeHub::escape_string(basename($this->path));
-    $query = <<<EOS
-SELECT `g`.`slug`
-FROM `bh_users` AS `u`
-INNER JOIN `bh_bp_groups_members` AS `gm`
-  ON `gm`.`user_id` = `u`.`ID`
-INNER JOIN `bh_bp_groups` AS `g`
-  ON `g`.`id` = `gm`.`group_id`
-WHERE `u`.`user_login` = $esclogin;
-EOS;
-    $result = BeeHub::query($query);
-    $retval = array();
-    while (($row = $result->fetch_row()))
-      $retval[] = BeeHub::$CONFIG['webdav_namespace']['groups_path'] . rawurlencode($row[0]);
-    $result->free();
-    return $retval;
-  }
-
-  public function user_prop_group_member_set() {
-    return array();
-  }
-
   public function user_set_group_member_set($set) {
     throw new DAV_Status(DAV::HTTP_FORBIDDEN);
   }
 
-}
+  public function user_prop_group_member_set() {
+    $query = <<<EOS
+SELECT `users`.`username`
+FROM `beehub_users` AS `users`
+INNER JOIN `beehub_sponsor_members` AS `memberships`
+  USING (`user_id`)
+WHERE `memberships`.`sponsor_id` = ?;
+EOS;
+    $statement = BeeHub::mysqli()->prepare($query);
+    $sponsor_id = $this->id;
+    $statement->bind_param('d', $sponsor_id);
+    $username = null;
+    $statement->bind_result($username);
+    $statement->execute();
 
-// class BeeHub_Sponsor
+    $retval = array();
+    while ($statement->fetch()) {
+      $retval[] = BeeHub::$CONFIG['webdav_namespace']['users_path'] . rawurlencode($username);
+    }
+    $statement->free_result();
+
+    return $retval;
+  }
+
+} // class BeeHub_Sponsor

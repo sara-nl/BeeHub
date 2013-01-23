@@ -24,8 +24,7 @@
  *
  * There are a few properties defined which are stored in the database instead
  * of as xfs attribute. These properties are credentials and user contact info:
- * BeeHub::PROP_USER_ID
- * BeeHub::PROP_USERNAME
+ * BeeHub::PROP_NAME
  * BeeHub::PROP_PASSWD
  * BeeHub::PROP_EMAIL
  * BeeHub::PROP_X509
@@ -41,6 +40,8 @@ class BeeHub_User extends BeeHub_Principal {
   private static $result_password = null;
   private static $result_email = null;
   private static $result_x509 = null;
+
+  protected $id = null;
 
   /**
    * @return string an HTML file
@@ -82,7 +83,7 @@ class BeeHub_User extends BeeHub_Principal {
   protected function init_props() {
     if (is_null($this->writable_props)) {
       parent::init_props();
-      $this->protected_props[BeeHub::PROP_USERNAME] = basename($this->path);
+      $this->protected_props[BeeHub::PROP_NAME] = basename($this->path);
 
       if (null === self::$statement_props) {
         self::$statement_props = BeeHub::mysqli()->prepare(
@@ -104,7 +105,7 @@ class BeeHub_User extends BeeHub_Principal {
                 self::$result_x509
         );
       }
-      self::$param_user_login = $this->prop(BeeHub::PROP_USERNAME);
+      self::$param_user_login = $this->prop(BeeHub::PROP_NAME);
       self::$statement_props->execute();
       self::$result_user_id = null;
       self::$result_email = null;
@@ -112,7 +113,7 @@ class BeeHub_User extends BeeHub_Principal {
       self::$result_x509 = null;
       self::$result_display_name = null;
       self::$statement_props->fetch();
-      $this->protected_props[BeeHub::PROP_USER_ID] = self::$result_user_id;
+      $this->id = self::$result_user_id;
       $this->writable_props[DAV::PROP_DISPLAYNAME] = self::$result_display_name;
       $this->writable_props[BeeHub::PROP_EMAIL] = self::$result_email;
       if (!is_null(self::$result_x509)) {
@@ -167,7 +168,7 @@ class BeeHub_User extends BeeHub_Principal {
 
     // Write all data to database
     $updateStatement = BeeHub::mysqli()->prepare('UPDATE `beehub_users` SET `display_name`=?, `email`=?, `x509`=?' . (($password === true) ? '' : ', `password`=?') . ' WHERE `user_id`=?');
-    $id = $this->prop(BeeHub::PROP_USER_ID);
+    $id = $this->id;
     if ($password === true) {
       $updateStatement->bind_param('sssd',
               $displayname,
@@ -211,21 +212,26 @@ class BeeHub_User extends BeeHub_Principal {
   }
 
   public function user_prop_group_membership() {
-    $esclogin = BeeHub::escape_string(basename($this->path));
     $query = <<<EOS
-SELECT `g`.`slug`
-FROM `bh_users` AS `u`
-INNER JOIN `bh_bp_groups_members` AS `gm`
-  ON `gm`.`user_id` = `u`.`ID`
-INNER JOIN `bh_bp_groups` AS `g`
-  ON `g`.`id` = `gm`.`group_id`
-WHERE `u`.`user_login` = $esclogin;
+SELECT `groups`.`groupname`
+FROM `beehub_groups` AS `groups`
+INNER JOIN `beehub_group_members` AS `memberships`
+  USING (`group_id`)
+WHERE `memberships`.`user_id` = ?;
 EOS;
-    $result = BeeHub::query($query);
+    $statement = BeeHub::mysqli()->prepare($query);
+    $user_id = $this->id;
+    $statement->bind_param('d', $user_id);
+    $groupname = null;
+    $statement->bind_result($groupname);
+    $statement->execute();
+
     $retval = array();
-    while (($row = $result->fetch_row()))
-      $retval[] = BeeHub::$CONFIG['webdav_namespace']['groups_path'] . rawurlencode($row[0]);
-    $result->free();
+    while ($statement->fetch()) {
+      $retval[] = BeeHub::$CONFIG['webdav_namespace']['groups_path'] . rawurlencode($groupname);
+    }
+    $statement->free_result();
+
     return $retval;
   }
 

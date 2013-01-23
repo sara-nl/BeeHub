@@ -23,7 +23,7 @@
  * Collection of sponsors
  * @package BeeHub
  */
-class BeeHub_Sponsors extends BeeHub_Principal_Collection {
+class BeeHub_Sponsors extends BeeHub_Directory {
 
   public function report_principal_property_search($properties) {
     if (1 != count($properties) ||
@@ -38,8 +38,9 @@ class BeeHub_Sponsors extends BeeHub_Principal_Collection {
     $match = BeeHub::escape_string($match);
     $result = BeeHub::query("SELECT `sponsorname` FROM `beehub_sponsors` WHERE `display_name` LIKE {$match};");
     $retval = array();
-    while (($row = $result->fetch_row()))
+    while ($row = $result->fetch_row()) {
       $retval[] = rawurlencode($row[0]);
+    }
     $result->free();
     return $retval;
   }
@@ -47,11 +48,10 @@ class BeeHub_Sponsors extends BeeHub_Principal_Collection {
   protected function init_members() {
     $result = BeeHub::query('SELECT `sponsorname` FROM `beehub_sponsors`;');
     $this->members = array();
-    while (($row = $result->fetch_row()))
+    while ($row = $result->fetch_row()) {
       $this->members[] = rawurldecode($row[0]);
+    }
     $result->free();
   }
 
-}
-
-// class BeeHub_Sponsors
+} // class BeeHub_Sponsors

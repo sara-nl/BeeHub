@@ -51,16 +51,11 @@ class BeeHub_Timeout extends BeeHub_MySQL {
  */
 class BeeHub {
 
-  const PROP_USER_ID       = 'http://beehub.nl/ user_id';
-  const PROP_USERNAME      = 'http://beehub.nl/ username';
+  const PROP_NAME          = 'http://beehub.nl/ name';
   const PROP_PASSWD        = 'http://beehub.nl/ password';
   const PROP_EMAIL         = 'http://beehub.nl/ email';
   const PROP_X509          = 'http://beehub.nl/ x509';
-  const PROP_GROUP_ID      = 'http://beehub.nl/ group_id';
-  const PROP_GROUPNAME     = 'http://beehub.nl/ groupname';
   const PROP_DESCRIPTION   = 'http://beehub.nl/ description';
-  const PROP_SPONSOR_ID    = 'http://beehub.nl/ sponsor_id';
-  const PROP_SPONSORNAME   = 'http://beehub.nl/ sponsorname';
 
   /**#@+
    * These constants define the different environments the code can run in.
