@@ -36,7 +36,7 @@ class BeeHub_Sponsors extends BeeHub_Principal_Collection {
     $match = $properties[DAV::PROP_DISPLAYNAME][0];
     $match = str_replace(array('_', '%'), array('\\_', '\\%'), $match) . '%';
     $match = BeeHub::escape_string($match);
-    $result = BeeHub::query("SELECT `sponsor_path` FROM `beehub_sponsors` WHERE `display_name` LIKE {$match};");
+    $result = BeeHub::query("SELECT `sponsorname` FROM `beehub_sponsors` WHERE `display_name` LIKE {$match};");
     $retval = array();
     while (($row = $result->fetch_row()))
       $retval[] = rawurlencode($row[0]);
@@ -45,7 +45,7 @@ class BeeHub_Sponsors extends BeeHub_Principal_Collection {
   }
 
   protected function init_members() {
-    $result = BeeHub::query('SELECT `sponsor_path` FROM `beehub_sponsors`;');
+    $result = BeeHub::query('SELECT `sponsorname` FROM `beehub_sponsors`;');
     $this->members = array();
     while (($row = $result->fetch_row()))
       $this->members[] = rawurldecode($row[0]);

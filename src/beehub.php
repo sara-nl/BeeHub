@@ -60,6 +60,7 @@ class BeeHub {
   const PROP_GROUPNAME     = 'http://beehub.nl/ groupname';
   const PROP_DESCRIPTION   = 'http://beehub.nl/ description';
   const PROP_SPONSOR_ID    = 'http://beehub.nl/ sponsor_id';
+  const PROP_SPONSORNAME   = 'http://beehub.nl/ sponsorname';
 
   /**#@+
    * These constants define the different environments the code can run in.

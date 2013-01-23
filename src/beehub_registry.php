@@ -89,7 +89,7 @@ public function resource($path) {
   }
   elseif ( 'sponsors' == $match[1] ) {
     if ( @is_dir($localPath) )
-      $retval = new BeeHub_Sponsors($path);
+      $retval = new BeeHub_Directory($path);
     else {
       try {
         $retval = new BeeHub_Sponsor($path);

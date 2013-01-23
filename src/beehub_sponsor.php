@@ -70,6 +70,7 @@ class BeeHub_Sponsor extends BeeHub_Principal {
   protected function init_props() {
     if (is_null($this->writable_props)) {
       parent::init_props();
+      $this->protected_props[BeeHub::PROP_SPONSORNAME] = basename($this->path);
 
       if (null === self::$statement_props) {
         self::$statement_props = BeeHub::mysqli()->prepare(
@@ -77,19 +78,19 @@ class BeeHub_Sponsor extends BeeHub_Principal {
                   `sponsor_id`,
                   `display_name`
                  FROM `beehub_sponsors`
-                 WHERE `sponsor_path` = ?;'
+                 WHERE `sponsorname` = ?;'
         );
         self::$statement_props->bind_param('s', self::$param_sponsor);
         self::$statement_props->bind_result(
                 self::$result_sponsor_id, self::$result_display_name
         );
       }
-      self::$param_sponsor = $this->path;
+      self::$param_sponsor = $this->prop(BeeHub::PROP_SPONSORNAME);
       self::$statement_props->execute();
       self::$result_sponsor_id = null;
       self::$result_display_name = null;
       self::$statement_props->fetch();
-      $this->protected_props[BeeHub::PROP_USER_ID] = self::$result_sponsor_id;
+      $this->protected_props[BeeHub::PROP_SPONSOR_ID] = self::$result_sponsor_id;
       $this->writable_props[DAV::PROP_DISPLAYNAME] = self::$result_display_name;
       self::$statement_props->free_result();
     }
@@ -116,8 +117,7 @@ class BeeHub_Sponsor extends BeeHub_Principal {
     // Write all data to database
     $updateStatement = BeeHub::mysqli()->prepare('UPDATE `beehub_sponsors` SET `display_name`=? WHERE `sponsor_id`=?');
     $id = $this->prop(BeeHub::PROP_SPONSOR_ID);
-    $updateStatement->bind_param('sd', $displayname, $id
-    );
+    $updateStatement->bind_param('sd', $displayname, $id);
     $updateStatement->execute();
 
     // Store all other properties
@@ -125,6 +125,33 @@ class BeeHub_Sponsor extends BeeHub_Principal {
 
     // And set the database properties again
     $this->writable_props[DAV::PROP_DISPLAYNAME] = $displayname;
+  }
+
+  public function user_prop_group_membership() {
+    $esclogin = BeeHub::escape_string(basename($this->path));
+    $query = <<<EOS
+SELECT `g`.`slug`
+FROM `bh_users` AS `u`
+INNER JOIN `bh_bp_groups_members` AS `gm`
+  ON `gm`.`user_id` = `u`.`ID`
+INNER JOIN `bh_bp_groups` AS `g`
+  ON `g`.`id` = `gm`.`group_id`
+WHERE `u`.`user_login` = $esclogin;
+EOS;
+    $result = BeeHub::query($query);
+    $retval = array();
+    while (($row = $result->fetch_row()))
+      $retval[] = BeeHub::$CONFIG['webdav_namespace']['groups_path'] . rawurlencode($row[0]);
+    $result->free();
+    return $retval;
+  }
+
+  public function user_prop_group_member_set() {
+    return array();
+  }
+
+  public function user_set_group_member_set($set) {
+    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
   }
 
 }
