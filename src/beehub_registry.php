@@ -59,7 +59,8 @@ public function resource($path) {
     return $this->resourceCache[$path];
   $localPath = BeeHub::localPath($path);
   $retval = null;
-  preg_match( '@^/(users|groups)(?:/[^/]+)?$@', $path, $match );
+  //TODO: Change this expression so it uses the configuration options instead of this hard coded path!
+  preg_match( '@^/(users|groups|sponsors)(?:/[^/]+)?$@', $path, $match );
   if ( !$match ) {
     if (is_dir($localPath))
       $retval = new BeeHub_Directory($path);
@@ -73,7 +74,7 @@ public function resource($path) {
       try {
         $retval = new BeeHub_User($path);
       }
-      catch(Exception $e) {}  
+      catch(Exception $e) {}
     }
   }
   elseif ( 'groups' == $match[1] ) {
@@ -82,6 +83,16 @@ public function resource($path) {
     else {
       try {
         $retval = new BeeHub_Group($path);
+      }
+      catch(Exception $e) {}
+    }
+  }
+  elseif ( 'sponsors' == $match[1] ) {
+    if ( @is_dir($localPath) )
+      $retval = new BeeHub_Sponsors($path);
+    else {
+      try {
+        $retval = new BeeHub_Sponsor($path);
       }
       catch(Exception $e) {}
     }
