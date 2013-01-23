@@ -20,7 +20,9 @@
  */
 
 /**
- * A class.
+ * A group principal
+ *
+ * @TODO Fix ACL!
  * @package BeeHub
  */
 class BeeHub_Group extends BeeHub_Principal {
@@ -43,12 +45,12 @@ class BeeHub_Group extends BeeHub_Principal {
 
   public function method_HEAD() {
     // TODO: See if this can't be arranged with regular (though protected) ACL's (see user_prop_acl() function)
-    if ($this->path != BeeHub::current_user()) {
-      throw new DAV_Status(
-              DAV::HTTP_FORBIDDEN,
-              DAV::COND_NEED_PRIVILEGES
-      );
-    }
+//    if ($this->path != BeeHub::current_user()) {
+//      throw new DAV_Status(
+//              DAV::HTTP_FORBIDDEN,
+//              DAV::COND_NEED_PRIVILEGES
+//      );
+//    }
     $this->assert(DAVACL::PRIV_READ);
     return array(
         'Content-Type' => BeeHub::best_xhtml_type() . '; charset="utf-8"',
@@ -159,5 +161,3 @@ EOS;
 }
 
 // class BeeHub_Group
-
-
