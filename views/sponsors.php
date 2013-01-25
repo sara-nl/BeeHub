@@ -20,7 +20,7 @@ $this->setTemplateVar('header', '<style type="text/css">
   text-align: right;
 }
 </style>');
-?>
+?><div class="bootstrap">
 <h1>Sponsors</h1>
 <?php foreach ($sponsors as $sponsor) : ?>
   <div class="row-fluid groupname">
@@ -31,3 +31,4 @@ $this->setTemplateVar('header', '<style type="text/css">
     <div class="span9 offset1"><?= $sponsor->prop(BeeHub::PROP_DESCRIPTION) ?></div>
   </div>
 <?php endforeach; ?>
+</div>

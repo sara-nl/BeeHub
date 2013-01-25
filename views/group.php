@@ -7,7 +7,7 @@ $this->setTemplateVar('header', '<style type="text/css">
 </style>');
 $this->setTemplateVar('footer', '<script type="text/javascript" src="/system/js/group.js"></script>
 <script type="text/javascript" src="/system/js/webdavlib.js"></script>');
-?>
+?><div class="bootstrap">
 <h1>Profile</h1>
 <form method="post">
   <div class="row-fluid">
@@ -24,3 +24,4 @@ $this->setTemplateVar('footer', '<script type="text/javascript" src="/system/js/
   </div>
   <button class="btn">Save</button>
 </form>
+</div>

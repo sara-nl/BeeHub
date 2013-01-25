@@ -5,15 +5,13 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <title>BeeHub</title>
     <link rel="stylesheet" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" />
-    <!--link rel="stylesheet" href="/system/css/bootstrap.css" />
-    <link rel="stylesheet" href="/system/css/bootstrap-responsive.css" /-->
-    <link rel="stylesheet/less" href="/system/bootstrap/less/beehub.less"/>
-    <script src="/system/js/less.js"></script>
+    <link rel="stylesheet" href="/system/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="/system/bootstrap/css/bootstrap-responsive.min.css" />
     <link rel="stylesheet" href="/system/css/beehub.css"/>
     <?= isset($header) ? $header : '' ?>
   </head>
   <body>
-    <div class="bootstrap-styles">
+    <div class="bootstrap">
       <div class="navbar navbar-fixed-top">
         <div class="navbar-inner">
           <ul class="nav">

@@ -1,4 +1,5 @@
 <?php $this->setTemplateVar('active', "beehub"); ?>
+<div class="bootstrap">
 <h1>BeeHub is...</h1>
 <h5>Lots of Space</h5>
 <p>BeeHub is grow-as-you-go. The amount of space is virtually unlimited. Don’t ask how much you can store, just upload as much as you want. We’ll keep up.</p>
@@ -9,3 +10,4 @@
 <p>Instead, you can mount our storage on almost any OS, including MS Windows, Linux, OSX (Mac), iOS and Android.</p>
 <h5>Programmable Storage API</h5>
 <p>BeeHub uses the WebDAV protocol, including all the more advanced features of WebDAV an HTTP, such as Locking, lost-update prevention, partial file up- and downloads, metadata management and more. All from your favorite programming language, as long as it has an HTTP library. You can even script it in Bash!</p>
+</div>
