@@ -34,6 +34,7 @@ class BeeHub_Sponsor extends BeeHub_File {
   private static $param_sponsor = null;
   private static $result_sponsor_id = null;
   private static $result_display_name = null;
+  private static $result_description = null;
 
   protected $id = null;
 
@@ -64,22 +65,25 @@ class BeeHub_Sponsor extends BeeHub_File {
         self::$statement_props = BeeHub::mysqli()->prepare(
                 'SELECT
                   `sponsor_id`,
-                  `display_name`
+                  `display_name`,
+                  `description`
                  FROM `beehub_sponsors`
                  WHERE `sponsorname` = ?;'
         );
         self::$statement_props->bind_param('s', self::$param_sponsor);
         self::$statement_props->bind_result(
-                self::$result_sponsor_id, self::$result_display_name
+                self::$result_sponsor_id, self::$result_display_name, self::$result_description
         );
       }
       self::$param_sponsor = $this->prop(BeeHub::PROP_NAME);
       self::$statement_props->execute();
       self::$result_sponsor_id = null;
       self::$result_display_name = null;
+      self::$result_description = null;
       self::$statement_props->fetch();
       $this->id = self::$result_sponsor_id;
       $this->writable_props[DAV::PROP_DISPLAYNAME] = self::$result_display_name;
+      $this->writable_props[BeeHub::PROP_DESCRIPTION] = self::$result_description;
       self::$statement_props->free_result();
     }
   }
@@ -101,11 +105,17 @@ class BeeHub_Sponsor extends BeeHub_File {
     } else {
       $displayname = '';
     }
+    if (isset($this->writable_props[BeeHub::PROP_DESCRIPTION])) {
+      $description = $this->writable_props[BeeHub::PROP_DESCRIPTION];
+      unset($this->writable_props[BeeHub::PROP_DESCRIPTION]);
+    } else {
+      $description = null;
+    }
 
     // Write all data to database
-    $updateStatement = BeeHub::mysqli()->prepare('UPDATE `beehub_sponsors` SET `display_name`=? WHERE `sponsor_id`=?');
+    $updateStatement = BeeHub::mysqli()->prepare('UPDATE `beehub_sponsors` SET `display_name`=?, `description`=? WHERE `sponsor_id`=?');
     $id = $this->id;
-    $updateStatement->bind_param('sd', $displayname, $id);
+    $updateStatement->bind_param('ssd', $displayname, $description, $id);
     $updateStatement->execute();
 
     // Store all other properties
@@ -113,6 +123,9 @@ class BeeHub_Sponsor extends BeeHub_File {
 
     // And set the database properties again
     $this->writable_props[DAV::PROP_DISPLAYNAME] = $displayname;
+    if (!is_null($description)) {
+      $this->writable_props[BeeHub::PROP_DESCRIPTION] = $description;
+    }
   }
 
   public function user_set_group_member_set($set) {

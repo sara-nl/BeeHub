@@ -51,12 +51,15 @@ class BeeHub_Registry implements DAV_Registry {
    */
   public function resource($path) {
     $path = DAV::unslashify($path);
+    $usersPath = DAV::unslashify(BeeHub::$CONFIG['webdav_namespace']['users_path']);
+    $groupsPath = DAV::unslashify(BeeHub::$CONFIG['webdav_namespace']['groups_path']);
+    $sponsorsPath = DAV::unslashify(BeeHub::$CONFIG['webdav_namespace']['sponsors_path']);
     if (isset($this->resourceCache[$path])) {
       return $this->resourceCache[$path];
     }
     $localPath = BeeHub::localPath($path);
     $retval = null;
-    if (substr($path, 0, strlen(BeeHub::$CONFIG['webdav_namespace']['users_path'])) == BeeHub::$CONFIG['webdav_namespace']['users_path']) {
+    if (substr($path, 0, strlen($usersPath)) == $usersPath) {
       if (@is_dir($localPath))
         $retval = new BeeHub_Users($path);
       else {
@@ -64,7 +67,7 @@ class BeeHub_Registry implements DAV_Registry {
           $retval = new BeeHub_User($path);
         }catch(Exception $e){}
       }
-    }elseif(substr($path, 0, strlen(BeeHub::$CONFIG['webdav_namespace']['groups_path'])) == BeeHub::$CONFIG['webdav_namespace']['groups_path']) {
+    }elseif(substr($path, 0, strlen($groupsPath)) == $groupsPath) {
       if (@is_dir($localPath))
         $retval = new BeeHub_Groups($path);
       else {
@@ -72,9 +75,9 @@ class BeeHub_Registry implements DAV_Registry {
           $retval = new BeeHub_Group($path);
         }catch(Exception $e){}
       }
-    }elseif(substr($path, 0, strlen(BeeHub::$CONFIG['webdav_namespace']['sponsors_path'])) == BeeHub::$CONFIG['webdav_namespace']['sponsors_path']) {
+    }elseif(substr($path, 0, strlen($sponsorsPath)) == $sponsorsPath) {
       if (@is_dir($localPath))
-        $retval = new BeeHub_Directory($path);
+        $retval = new BeeHub_Sponsors($path);
       else {
         try {
           $retval = new BeeHub_Sponsor($path);

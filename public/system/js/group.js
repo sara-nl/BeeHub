@@ -9,7 +9,7 @@ $(function (){
     var description = new nl.sara.webdav.Property();
     description.namespace = 'http://beehub.nl/';
     description.tagname = 'description';
-    description.setValueAndRebuildXml($('input[name="email"]').val());
+    description.setValueAndRebuildXml($('input[name="description"]').val());
     setProps.push(description);
 
     var client = new nl.sara.webdav.Client();

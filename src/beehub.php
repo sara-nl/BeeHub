@@ -163,6 +163,8 @@ class BeeHub {
   }
 
   public static function best_xhtml_type() {
+    return 'text/html';
+    // The rest of the function will be skipped. This is because ExtJS doesn't support X(HT)ML, so we always need to send it as 'text/html'
     return ( false === strstr(@$_SERVER['HTTP_USER_AGENT'], 'MSIE') &&
             false === strstr(@$_SERVER['HTTP_USER_AGENT'], 'Microsoft') ) ?
             'application/xhtml+xml' : 'text/html';
