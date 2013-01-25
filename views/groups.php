@@ -1,12 +1,12 @@
 <?php
+/*
+Available variables:
+
+$directory  The beehub_directory object representing the current directory
+$groups     All members of this directory
+*/
 $this->setTemplateVar('active', "groups");
 $this->setTemplateVar('header', '<style type="text/css">
-.fieldname {
-  text-align: right;
-}
-div.passwd {
-  display: none;
-}
 .groupname {
   padding: 0.5em;
   background: #ddd;
@@ -20,28 +20,14 @@ div.passwd {
   text-align: right;
 }
 </style>');
-$this->setTemplateVar('footer', <<<EOS
-<script type="text/javascript">
-  $(function (){
-    $('#change_password').change(function() {
-      if ($(this).attr('checked') == 'checked') {
-        $('div.passwd').show("blind");
-      }else{
-        $('div.passwd').hide("blind");
-      }
-    });
-  });
-</script>
-EOS
-);
 ?>
 <h1>Groups</h1>
-<?php while ($group = $groups->fetch_assoc()) : ?>
+<?php foreach ($groups as $group) : ?>
   <div class="row-fluid groupname">
-    <div class="span10"><h4><?= $group['name'] ?></h4></div>
-    <div class="span2 actions"><?= ($group['admin'] ? '<a href="#">Admin</a> / ' : '') ?><a href="#">Unsubscribe</a></div>
+    <div class="span10"><h4><?= $group->prop(DAV::PROP_DISPLAYNAME) ?></h4></div>
+    <div class="span2 actions"><?= ('is_admin?' == 'is_admin?' ? '<a href="' . $group->path . '">Admin</a> / ' : '') ?><a href="#">Unsubscribe</a></div>
   </div>
   <div class="row-fluid groupdescription">
-    <div class="span9 offset1"><?= $group['description'] ?></div>
+    <div class="span9 offset1"><?= $group->prop(BeeHub::PROP_DESCRIPTION) ?></div>
   </div>
-<?php endwhile; ?>
+<?php endforeach; ?>

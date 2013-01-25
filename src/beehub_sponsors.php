@@ -25,6 +25,23 @@
  */
 class BeeHub_Sponsors extends BeeHub_Directory {
 
+  /**
+   * @return string an HTML file
+   * @see DAV_Resource::method_GET()
+   */
+  public function method_GET() {
+    $this->assert(DAVACL::PRIV_READ);
+    $view = new BeeHub_View('sponsors.php');
+    $view->setVar('directory', $this);
+    $sponsors = array();
+    foreach ($this as $sponsor) {
+      $sponsors[strtolower($sponsor)] = DAV::$REGISTRY->resource($this->path . $sponsor);
+    }
+    ksort($sponsors, SORT_STRING);
+    $view->setVar('sponsors', $sponsors);
+    return ((BeeHub::best_xhtml_type() != 'text/html') ? DAV::xml_header() : '' ) . $view->getParsedView();
+  }
+
   public function report_principal_property_search($properties) {
     if (1 != count($properties) ||
             !isset($properties[DAV::PROP_DISPLAYNAME]) ||

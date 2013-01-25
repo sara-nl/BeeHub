@@ -45,11 +45,11 @@ class BeeHub_View {
   /**
    * @var  Array  All variables available in the view (keys are the variable names)
    */
-  private $vars;
+  private $vars = array();
   /**
    * @var  Array  All variables available in the template (keys are the variable names)
    */
-  private $templateVars;
+  private $templateVars = array();
 
   /**
    * Constructor
@@ -199,6 +199,4 @@ class BeeHub_View {
 
     return $content;
   }
-}
-
-//  End of file
+} //  End of file
