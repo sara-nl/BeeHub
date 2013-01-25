@@ -1,7 +1,7 @@
 #!/bin/bash
 
 ### CONFIGURATION BEGIN
-declare -r TMPTEST=$(mktemp -d -t beehub)
+declare -r TMPTEST=$(mktemp -d)
 declare -r LOGFILE='log.txt'
 ### CONFIGURATION END
 

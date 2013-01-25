@@ -1,4 +1,6 @@
 #!/bin/bash
 
+source ./config.inc.sh
+
 declare -r CURL="curl --silent --fail --verbose"
-declare -r BASEURL='http://beehub-devel.grid.sara.nl'
+declare -r LITMUS_HOME="/opt/litmus"
