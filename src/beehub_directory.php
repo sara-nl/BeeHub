@@ -120,20 +120,24 @@ public function method_DELETE( $name )
 public function method_GET() {
   // We willen hier de client gaan teruggeven:
   $this->assert(DAVACL::PRIV_READ);
-  switch ($this->path) {
-    case BeeHub::$CONFIG['webdav_namespace']['homepage']:
-      $view = new BeeHub_View('homepage.php');
-      break;
-    default:
-      $view = new BeeHub_View('directory.php');
-      $view->setVar('directory', $this);
-      $members = array();
-      foreach ($this as $member){
-        $members[strtolower($member)] = DAV::$REGISTRY->resource($this->path . $member);
-      }
-      ksort($members, SORT_STRING);
-      $view->setVar('members', $members);
-    break;
+  // This was a switch() statement. I hate those. --pieterb
+  if ( BeeHub::$CONFIG['webdav_namespace']['homepage'] == $this->path ) {
+    $view = new BeeHub_View('homepage.php');
+  } else {
+    $view = new BeeHub_View('directory.php');
+    $view->setVar('directory', $this);
+    $members = array();
+    # TODO oops, the document isn't generated as a stream? Here, an object is
+    # created for each member resource, and stored in memory. This will crash
+    # the server for large directories!
+    # It would be nicer if these objects were created one at a time, and then
+    # forgotten.
+    # @see BeeHub::Registry::forget()
+    foreach ($this as $member){
+      $members[strtolower($member)] = DAV::$REGISTRY->resource($this->path . $member);
+    }
+    ksort($members, SORT_STRING);
+    $view->setVar('members', $members);
   }
   return ((BeeHub::best_xhtml_type() != 'text/html') ? DAV::xml_header() : '' ) . $view->getParsedView();
 }

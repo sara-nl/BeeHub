@@ -1,3 +1,6 @@
 [submodule "webdav-php"]
 	path = webdav-php
 	url = git@github.com:pieterb/webdav-php.git
+[submodule "public/system/bootstrap"]
+	path = public/system/bootstrap
+	url = git@github.com:sara-nl/bootstrap.git
