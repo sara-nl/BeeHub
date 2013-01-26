@@ -20,10 +20,28 @@
  */
 
 /**
- * Some class.
+ * Collection of sponsors
  * @package BeeHub
  */
-class BeeHub_Users extends BeeHub_Principal_Collection {
+class BeeHub_Sponsors extends BeeHub_Directory {
+
+  /**
+   * @return string an HTML file
+   * @see DAV_Resource::method_GET()
+   */
+  public function method_GET() {
+    $this->assert(DAVACL::PRIV_READ);
+    $view = new BeeHub_View('sponsors.php');
+    $view->setVar('directory', $this);
+    $result = BeeHub::query('SELECT `sponsorname` FROM `beehub_sponsors` ORDER BY `display_name`');
+    $sponsors = array();
+    while ($row = $result->fetch_assoc()) {
+      $sponsors[strtolower($row['sponsorname'])] = DAV::$REGISTRY->resource($this->path . $row['sponsorname']);
+    }
+    $result->free();
+    $view->setVar('sponsors', $sponsors);
+    return ((BeeHub::best_xhtml_type() != 'text/html') ? DAV::xml_header() : '' ) . $view->getParsedView();
+  }
 
   public function report_principal_property_search($properties) {
     if (1 != count($properties) ||
@@ -36,17 +54,17 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
     $match = $properties[DAV::PROP_DISPLAYNAME][0];
     $match = str_replace(array('_', '%'), array('\\_', '\\%'), $match) . '%';
     $match = BeeHub::escape_string($match);
-    $result = BeeHub::query("SELECT `username` FROM `beehub_users` WHERE `display_name` LIKE {$match};");
+    $result = BeeHub::query("SELECT `sponsorname` FROM `beehub_sponsors` WHERE `display_name` LIKE {$match};");
     $retval = array();
     while ($row = $result->fetch_row()) {
-      $retval[] = BeeHub::$CONFIG['webdav_namespace']['users_path'] . rawurlencode($row[0]);
+      $retval[] = rawurlencode($row[0]);
     }
     $result->free();
     return $retval;
   }
 
   protected function init_members() {
-    $result = BeeHub::query('SELECT `username` FROM `beehub_users`;');
+    $result = BeeHub::query('SELECT `sponsorname` FROM `beehub_sponsors`;');
     $this->members = array();
     while ($row = $result->fetch_row()) {
       $this->members[] = rawurldecode($row[0]);
@@ -100,4 +118,6 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
     throw new DAV_Status(DAV::HTTP_FORBIDDEN);
   }
 
-} // class BeeHub_Users
+}
+
+// class BeeHub_Sponsors

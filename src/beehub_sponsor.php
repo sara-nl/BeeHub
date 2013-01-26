@@ -1,6 +1,6 @@
 <?php
 
-/* ·************************************************************************
+/*************************************************************************
  * Copyright ©2007-2012 SARA b.v., Amsterdam, The Netherlands
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -20,33 +20,49 @@
  */
 
 /**
- * A group principal
+ * A sponsor principal
  *
- * @TODO Fix ACL!
+ * @TODO Hoe zorg ik dat <resourcetype> goed gevuld wordt?
+ * @TODO Checken of de properties in de juiste gevallen afschermd worden
  * @package BeeHub
  */
-class BeeHub_Group extends BeeHub_Principal {
+class BeeHub_Sponsor extends BeeHub_File {
+
+  const RESOURCETYPE = '<sponsor xmlns="http://beehub.nl/" />';
 
   private static $statement_props = null;
-  private static $param_slug = null;
-  private static $result_group_id = null;
+  private static $param_sponsor = null;
+  private static $result_sponsor_id = null;
   private static $result_display_name = null;
   private static $result_description = null;
+
   protected $id = null;
   private $admin = null;
+
+  public function __construct($path) {
+    $localPath = BeeHub::localPath($path);
+    if (!file_exists($localPath)) {
+      $result = touch($localPath);
+      if (!$result)
+        throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
+      xattr_set($localPath, rawurlencode(DAV::PROP_GETETAG), BeeHub::ETag(0));
+      xattr_set($localPath, rawurlencode(DAV::PROP_OWNER), BeeHub::$CONFIG['webdav_namespace']['wheel_path']);
+    }
+    parent::__construct($path);
+  }
 
   /**
    * @return string an HTML file
    * @see DAV_Resource::method_GET()
    */
   public function method_GET() {
-    $view = new BeeHub_View('group.php');
-    $view->setVar('group', $this);
+    $view = new BeeHub_View('sponsor.php');
+    $view->setVar('sponsor', $this);
     return ((BeeHub::best_xhtml_type() != 'text/html') ? DAV::xml_header() : '' ) . $view->getParsedView();
   }
 
   public function method_HEAD() {
-    // Test if the current user is admin of this group, only those are allowed to HEAD and GET.
+    // Test if the current user is admin of this sponsor, only those are allowed to HEAD and GET.
     if (!$this->isAdmin()) {
       throw new DAV_Status(
               DAV::HTTP_FORBIDDEN,
@@ -67,24 +83,24 @@ class BeeHub_Group extends BeeHub_Principal {
       if (null === self::$statement_props) {
         self::$statement_props = BeeHub::mysqli()->prepare(
                 'SELECT
-                  `group_id`,
+                  `sponsor_id`,
                   `display_name`,
                   `description`
-                 FROM `beehub_groups`
-                 WHERE `groupname` = ?;'
+                 FROM `beehub_sponsors`
+                 WHERE `sponsorname` = ?;'
         );
-        self::$statement_props->bind_param('s', self::$param_slug);
+        self::$statement_props->bind_param('s', self::$param_sponsor);
         self::$statement_props->bind_result(
-                self::$result_group_id, self::$result_display_name, self::$result_description
+                self::$result_sponsor_id, self::$result_display_name, self::$result_description
         );
       }
-      self::$param_slug = $this->prop(BeeHub::PROP_NAME);
+      self::$param_sponsor = $this->prop(BeeHub::PROP_NAME);
       self::$statement_props->execute();
-      self::$result_group_id = null;
+      self::$result_sponsor_id = null;
       self::$result_display_name = null;
       self::$result_description = null;
       self::$statement_props->fetch();
-      $this->id = self::$result_group_id;
+      $this->id = self::$result_sponsor_id;
       $this->writable_props[DAV::PROP_DISPLAYNAME] = self::$result_display_name;
       $this->writable_props[BeeHub::PROP_DESCRIPTION] = self::$result_description;
       self::$statement_props->free_result();
@@ -116,7 +132,7 @@ class BeeHub_Group extends BeeHub_Principal {
     }
 
     // Write all data to database
-    $updateStatement = BeeHub::mysqli()->prepare('UPDATE `beehub_groups` SET `display_name`=?, `description`=? WHERE `group_id`=?');
+    $updateStatement = BeeHub::mysqli()->prepare('UPDATE `beehub_sponsors` SET `display_name`=?, `description`=? WHERE `sponsor_id`=?');
     $id = $this->id;
     $updateStatement->bind_param('ssd', $displayname, $description, $id);
     $updateStatement->execute();
@@ -131,10 +147,6 @@ class BeeHub_Group extends BeeHub_Principal {
     }
   }
 
-  public function user_prop_group_membership() {
-    return array();
-  }
-
   public function user_set_group_member_set($set) {
     throw new DAV_Status(DAV::HTTP_FORBIDDEN);
   }
@@ -143,13 +155,13 @@ class BeeHub_Group extends BeeHub_Principal {
     $query = <<<EOS
 SELECT `users`.`username`
 FROM `beehub_users` AS `users`
-INNER JOIN `beehub_group_members` AS `memberships`
+INNER JOIN `beehub_sponsor_members` AS `memberships`
   USING (`user_id`)
-WHERE `memberships`.`group_id` = ?;
+WHERE `memberships`.`sponsor_id` = ?;
 EOS;
     $statement = BeeHub::mysqli()->prepare($query);
-    $group_id = $this->id;
-    $statement->bind_param('d', $group_id);
+    $sponsor_id = $this->id;
+    $statement->bind_param('d', $sponsor_id);
     $username = null;
     $statement->bind_result($username);
     $statement->execute();
@@ -179,17 +191,17 @@ EOS;
   }
 
   /**
-   * Determines whether the currently logged in user is an administrator of this group or not.
+   * Determines whether the currently logged in user is an administrator of this sponsor or not.
    *
-   * @return  boolean  True if the currently logged in user is an administrator of this group, false otherwise
+   * @return  boolean  True if the currently logged in user is an administrator of this sponsor, false otherwise
    */
   public function isAdmin() {
     if (is_null($this->admin)) {
       $result = null;
       $userId = BeeHub_Registry::inst()->resource(BeeHub::current_user())->getId();
-      $groupId = $this->getId();
-      $statement = BeeHub::mysqli()->prepare('SELECT `user_id` FROM `beehub_group_members` WHERE `group_id`=? AND `user_id`=? AND `admin`=1');
-      $statement->bind_param('dd', $groupId, $userId);
+      $sponsorId = $this->getId();
+      $statement = BeeHub::mysqli()->prepare('SELECT `user_id` FROM `beehub_sponsor_members` WHERE `sponsor_id`=? AND `user_id`=? AND `admin`=1');
+      $statement->bind_param('dd', $sponsorId, $userId);
       $statement->bind_result($result);
       $statement->execute();
       $response = $statement->fetch();
@@ -238,4 +250,4 @@ EOS;
     throw new DAV_Status(DAV::HTTP_FORBIDDEN);
   }
 
-} // class BeeHub_Group
+} // class BeeHub_Sponsor

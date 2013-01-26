@@ -7,3 +7,4 @@ client
 secret.php
 config.ini
 simplesaml
+/views/directory.php

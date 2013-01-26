@@ -27,7 +27,7 @@ DAV::$LOCKPROVIDER = BeeHub_Lock_Provider::inst();
 DAV::$ACLPROVIDER = BeeHub_ACL_Provider::inst();
 if (isset($_SERVER['PHP_AUTH_USER'])) {
   BeeHub_ACL_Provider::inst()->CURRENT_USER_PRINCIPAL = DAV::parseURI(
-    BeeHub::$CONFIG['users_path'] . $_SERVER['PHP_AUTH_USER']
+    BeeHub::$CONFIG['webdav_namespace']['users_path'] . $_SERVER['PHP_AUTH_USER']
   );
 }
 
