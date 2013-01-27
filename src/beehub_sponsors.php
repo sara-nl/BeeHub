@@ -33,11 +33,12 @@ class BeeHub_Sponsors extends BeeHub_Directory {
     $this->assert(DAVACL::PRIV_READ);
     $view = new BeeHub_View('sponsors.php');
     $view->setVar('directory', $this);
+    $result = BeeHub::query('SELECT `sponsorname` FROM `beehub_sponsors` ORDER BY `display_name`');
     $sponsors = array();
-    foreach ($this as $sponsor) {
-      $sponsors[strtolower($sponsor)] = DAV::$REGISTRY->resource($this->path . $sponsor);
+    while ($row = $result->fetch_assoc()) {
+      $sponsors[strtolower($row['sponsorname'])] = DAV::$REGISTRY->resource($this->path . $row['sponsorname']);
     }
-    ksort($sponsors, SORT_STRING);
+    $result->free();
     $view->setVar('sponsors', $sponsors);
     return ((BeeHub::best_xhtml_type() != 'text/html') ? DAV::xml_header() : '' ) . $view->getParsedView();
   }
@@ -71,4 +72,52 @@ class BeeHub_Sponsors extends BeeHub_Directory {
     $result->free();
   }
 
-} // class BeeHub_Sponsors
+  // We allow everybody to do everything with this object in the ACL, so we can handle all privileges hard-coded without ACL's interfering
+  public function user_prop_acl() {
+    return array(new DAVACL_Element_ace('DAV: all', false, array('DAV: all'), false, true, null));
+  }
+
+  // All these methods are forbidden:
+  public function method_ACL($aces) {
+    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
+  }
+
+  public function method_COPY($path) {
+    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
+  }
+
+  public function method_COPY_external($destination, $overwrite) {
+    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
+  }
+
+  public function method_DELETE($name) {
+    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
+  }
+
+  public function method_MKCOL($name) {
+    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
+  }
+
+  public function method_MOVE($member, $description) {
+    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
+  }
+
+  public function method_POST(&$headers) {
+    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
+  }
+
+  public function method_PROPPATCH($propname, $value = null) {
+    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
+  }
+
+  public function method_PUT($stream) {
+    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
+  }
+
+  public function method_PUT_range($stream, $start, $end, $total) {
+    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
+  }
+
+}
+
+// class BeeHub_Sponsors

@@ -32,8 +32,8 @@ class BeeHub_Group extends BeeHub_Principal {
   private static $result_group_id = null;
   private static $result_display_name = null;
   private static $result_description = null;
-
   protected $id = null;
+  private $admin = null;
 
   /**
    * @return string an HTML file
@@ -46,14 +46,13 @@ class BeeHub_Group extends BeeHub_Principal {
   }
 
   public function method_HEAD() {
-    // TODO: See if this can't be arranged with regular (though protected) ACL's (see user_prop_acl() function)
-//    if ($this->path != BeeHub::current_user()) {
-//      throw new DAV_Status(
-//              DAV::HTTP_FORBIDDEN,
-//              DAV::COND_NEED_PRIVILEGES
-//      );
-//    }
-    $this->assert(DAVACL::PRIV_READ);
+    // Test if the current user is admin of this group, only those are allowed to HEAD and GET.
+    if (!$this->isAdmin()) {
+      throw new DAV_Status(
+              DAV::HTTP_FORBIDDEN,
+              DAV::COND_NEED_PRIVILEGES
+      );
+    }
     return array(
         'Content-Type' => BeeHub::best_xhtml_type() . '; charset="utf-8"',
         'Cache-Control' => 'no-cache'
@@ -162,6 +161,81 @@ EOS;
     $statement->free_result();
 
     return $retval;
+  }
+
+  // We allow everybody to do everything with this object in the ACL, so we can handle all privileges hard-coded without ACL's interfering
+  public function user_prop_acl() {
+    return array(new DAVACL_Element_ace('DAV: all', false, array('DAV: all'), false, true, null));
+  }
+
+  /**
+   * Gets the (database) ID of the user
+   *
+   * @return  int  The (database) ID of this user
+   */
+  public function getId() {
+    $this->init_props();
+    return $this->id;
+  }
+
+  /**
+   * Determines whether the currently logged in user is an administrator of this group or not.
+   *
+   * @return  boolean  True if the currently logged in user is an administrator of this group, false otherwise
+   */
+  public function isAdmin() {
+    if (is_null($this->admin)) {
+      $result = null;
+      $userId = BeeHub_Registry::inst()->resource(BeeHub::current_user())->getId();
+      $groupId = $this->getId();
+      $statement = BeeHub::mysqli()->prepare('SELECT `user_id` FROM `beehub_group_members` WHERE `group_id`=? AND `user_id`=? AND `admin`=1');
+      $statement->bind_param('dd', $groupId, $userId);
+      $statement->bind_result($result);
+      $statement->execute();
+      $response = $statement->fetch();
+      if (is_null($response) || !($result > 0)) {
+        $this->admin = false;
+      } else {
+        $this->admin = true;
+      }
+    }
+    return $this->admin;
+  }
+
+  // These methods are only available for a limited range of users!
+  public function method_PROPPATCH($propname, $value = null) {
+    if (!$this->isAdmin()) {
+      throw new DAV_Status(
+              DAV::HTTP_FORBIDDEN,
+              DAV::COND_NEED_PRIVILEGES
+      );
+    }
+    return parent::method_PROPPATCH($propname, $value);
+  }
+
+  // All these methods are forbidden:
+  public function method_ACL($aces) {
+    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
+  }
+
+  public function method_COPY($path) {
+    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
+  }
+
+  public function method_COPY_external($destination, $overwrite) {
+    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
+  }
+
+  public function method_POST(&$headers) {
+    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
+  }
+
+  public function method_PUT($stream) {
+    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
+  }
+
+  public function method_PUT_range($stream, $start, $end, $total) {
+    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
   }
 
 } // class BeeHub_Group

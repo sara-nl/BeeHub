@@ -29,6 +29,8 @@
  * BeeHub::PROP_EMAIL
  * BeeHub::PROP_X509
  *
+ * We won't allow user data to be sent (GET, PROPFIND) or manipulated (PROPPATCH) over regular HTTP, so we require HTTPS! But this is arranged, because only an authenticated user can perform this GET request and you can only be authenticated over HTTPS.
+ *
  * @TODO Checken of de properties in de juiste gevallen afschermd worden
  * @package BeeHub
  */
@@ -48,36 +50,22 @@ class BeeHub_User extends BeeHub_Principal {
    * @see DAV_Resource::method_GET()
    */
   public function method_GET($headers) {
-    // We won't sent user data over regular HTTP, so we require HTTPS!
-    if ((APPLICATION_ENV != BeeHub::ENVIRONMENT_DEVELOPMENT) && empty($_SERVER['HTTPS'])) {
-      header('Location: https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);
-    }
     $view = new BeeHub_View('user.php');
     $view->setVar('user', $this);
     return ((BeeHub::best_xhtml_type() != 'text/html') ? DAV::xml_header() : '' ) . $view->getParsedView();
   }
 
   public function method_HEAD() {
-    // TODO: See if this can't be arranged with regular (though protected) ACL's (see user_prop_acl() function)
     if ($this->path != BeeHub::current_user()) {
       throw new DAV_Status(
               DAV::HTTP_FORBIDDEN,
               DAV::COND_NEED_PRIVILEGES
       );
     }
-    $this->assert(DAVACL::PRIV_READ);
     return array(
         'Content-Type' => BeeHub::best_xhtml_type() . '; charset="utf-8"',
         'Cache-Control' => 'no-cache'
     );
-  }
-
-  public function method_PROPPATCH($propname, $value) {
-    // We won't allow user data to be manipulated over regular HTTP, so we require HTTPS!
-    if ((APPLICATION_ENV != BeeHub::ENVIRONMENT_DEVELOPMENT) && empty($_SERVER['HTTPS'])) {
-      throw new DAV_Status(DAV::HTTP_FORBIDDEN);
-    }
-    return parent::method_PROPPATCH($propname, $value);
   }
 
   protected function init_props() {
@@ -201,14 +189,9 @@ class BeeHub_User extends BeeHub_Principal {
     }
   }
 
+  // We allow everybody to do everything with this object in the ACL, so we can handle all privileges hard-coded without ACL's interfering
   public function user_prop_acl() {
-    $default = parent::user_prop_acl();
-    $protected = array(
-        new DAVACL_Element_ace(
-                DAVACL::PRINCIPAL_SELF, false, array(DAVACL::PRIV_WRITE), false, true, null
-        )
-    );
-    return array_merge($protected, $default);
+    return array(new DAVACL_Element_ace('DAV: all', false, array('DAV: all'), false, true, null));
   }
 
   public function user_prop_group_membership() {
@@ -240,6 +223,61 @@ EOS;
   }
 
   public function user_set_group_member_set($set) {
+    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
+  }
+
+  /**
+   * Gets the (database) ID of the user
+   * @return  int  The (database) ID of this user
+   */
+  public function getId() {
+    $this->init_props();
+    return $this->id;
+  }
+
+  // These methods are only available for a limited range of users!
+//@TODO: Dit is geen functie, maar PROPFIND moet wel beperkt worden!
+//  public function method_PROPFIND($propname, $value = null) {
+//    self: all
+//    others: only display_name
+//  }
+//  public function method_REPORT(???) {
+//    self: all
+//    others: only display_name
+//  }
+
+  public function method_PROPPATCH($propname, $value = null) {
+    if ($this->path != BeeHub::current_user()) {
+      throw new DAV_Status(
+              DAV::HTTP_FORBIDDEN,
+              DAV::COND_NEED_PRIVILEGES
+      );
+    }
+    return parent::method_PROPPATCH($propname, $value);
+  }
+
+  // All these methods are forbidden:
+  public function method_ACL($aces) {
+    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
+  }
+
+  public function method_COPY($path) {
+    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
+  }
+
+  public function method_COPY_external($destination, $overwrite) {
+    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
+  }
+
+  public function method_POST(&$headers) {
+    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
+  }
+
+  public function method_PUT($stream) {
+    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
+  }
+
+  public function method_PUT_range($stream, $start, $end, $total) {
     throw new DAV_Status(DAV::HTTP_FORBIDDEN);
   }
 
