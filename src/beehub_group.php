@@ -39,7 +39,7 @@ class BeeHub_Group extends BeeHub_Principal {
    * @return string an HTML file
    * @see DAV_Resource::method_GET()
    */
-  public function method_GET() {
+  public function method_GET($headers) {
     $view = new BeeHub_View('group.php');
     $view->setVar('group', $this);
     return ((BeeHub::best_xhtml_type() != 'text/html') ? DAV::xml_header() : '' ) . $view->getParsedView();

@@ -47,7 +47,7 @@ class BeeHub_User extends BeeHub_Principal {
    * @return string an HTML file
    * @see DAV_Resource::method_GET()
    */
-  public function method_GET() {
+  public function method_GET($headers) {
     // We won't sent user data over regular HTTP, so we require HTTPS!
     if ((APPLICATION_ENV != BeeHub::ENVIRONMENT_DEVELOPMENT) && empty($_SERVER['HTTPS'])) {
       header('Location: https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI']);

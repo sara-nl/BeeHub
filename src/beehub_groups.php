@@ -29,7 +29,7 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
    * @return string an HTML file
    * @see DAV_Resource::method_GET()
    */
-  public function method_GET() {
+  public function method_GET($headers) {
     $this->assert(DAVACL::PRIV_READ);
     $view = new BeeHub_View('groups.php');
     $view->setVar('directory', $this);

@@ -29,7 +29,7 @@ class BeeHub_Sponsors extends BeeHub_Directory {
    * @return string an HTML file
    * @see DAV_Resource::method_GET()
    */
-  public function method_GET() {
+  public function method_GET($headers) {
     $this->assert(DAVACL::PRIV_READ);
     $view = new BeeHub_View('sponsors.php');
     $view->setVar('directory', $this);

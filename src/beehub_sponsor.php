@@ -42,7 +42,7 @@ class BeeHub_Sponsor extends BeeHub_File {
    * @return string an HTML file
    * @see DAV_Resource::method_GET()
    */
-  public function method_GET() {
+  public function method_GET($headers) {
     $view = new BeeHub_View('sponsor.php');
     $view->setVar('sponsor', $this);
     return ((BeeHub::best_xhtml_type() != 'text/html') ? DAV::xml_header() : '' ) . $view->getParsedView();

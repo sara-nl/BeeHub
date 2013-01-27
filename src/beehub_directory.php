@@ -117,7 +117,7 @@ public function method_DELETE( $name )
  * @return string an HTML file
  * @see DAV_Resource::method_GET()
  */
-public function method_GET() {
+public function method_GET($headers) {
   // We willen hier de client gaan teruggeven:
   $this->assert(DAVACL::PRIV_READ);
   // This was a switch() statement. I hate those. --pieterb
