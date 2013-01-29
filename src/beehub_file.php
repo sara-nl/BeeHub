@@ -24,11 +24,10 @@
  * @package BeeHub
  *
  */
-class BeeHub_File extends BeeHub_Resource {
+class BeeHub_File extends BeeHub_XFSResource {
 
 public function __construct ($path) {
   parent::__construct($path);
-  $this->protected_props[DAV::PROP_GETCONTENTLENGTH] = $this->stat['size'];
 }
 
 
@@ -58,7 +57,7 @@ protected function user_set_getcontentlanguage($value) {
 
 
 public function user_prop_getcontentlength() {
-  return $this->protected_props[DAV::PROP_GETCONTENTLENGTH];
+  return $this->stat['size'];
 }
 
 
@@ -77,6 +76,9 @@ public function user_prop_getetag() {
 }
 
 
+/**
+ * @TODO set owner and sponsor correctly!
+ */
 public function method_COPY( $path ) {
   $this->assert(DAVACL::PRIV_READ);
   BeeHub_Registry::inst()->resource(dirname($path))->assert(DAVACL::PRIV_WRITE);
@@ -88,8 +90,8 @@ public function method_COPY( $path ) {
 
 
 public function method_GET($headers) {
-  $this->assert(DAVACL::PRIV_READ);
-  return fopen( $this->localPath , 'r');
+  $this->assert( DAVACL::PRIV_READ );
+  return fopen( $this->localPath , 'r' );
 }
 
 
@@ -119,11 +121,11 @@ public function method_PUT($stream) {
   $contenttype = $this->user_prop_getcontenttype();
   if (!$contenttype || 'application/x-empty' == $contenttype) {
     $finfo = new finfo(FILEINFO_MIME);
+    // TODO: Shouldn't we call user_set_getcontenttype() here?
     try { $this->set_getcontenttype( $finfo->file( $this->localPath ) ); }
     catch (DAV_Status $e) {}
   }
-  try { $this->user_set(DAV::PROP_GETETAG, BeeHub::ETag()); }
-  catch (DAV_Status $e) {}
+  $this->user_set( DAV::PROP_GETETAG, BeeHub::ETag() );
   $this->storeProperties();
 }
 
@@ -156,7 +158,7 @@ public function method_PUT_range($stream, $start, $end, $total) {
   }
   fclose($resource);
   fclose($stream);
-  $this->user_set(DAV::PROP_GETETAG, BeeHub::ETag());
+  $this->user_set( DAV::PROP_GETETAG, BeeHub::ETag() );
   $this->storeProperties();
 }
 

@@ -24,7 +24,8 @@
  * @package BeeHub
  *
  */
-abstract class BeeHub_Principal extends BeeHub_File implements DAVACL_Principal {
+abstract class BeeHub_Principal extends BeeHub_Resource implements DAVACL_Principal {
+
 
   public function __construct($path) {
     $localPath = BeeHub::localPath($path);
@@ -38,13 +39,16 @@ abstract class BeeHub_Principal extends BeeHub_File implements DAVACL_Principal 
     parent::__construct($path);
   }
 
+
   public function user_prop_alternate_uri_set() {
     return array();
   }
 
+
   public function user_prop_principal_url() {
     return $this->path;
   }
+
 
   public function property_priv_read($properties) {
     $retval = array();
@@ -68,8 +72,7 @@ abstract class BeeHub_Principal extends BeeHub_File implements DAVACL_Principal 
     return $retval;
   }
 
-}
 
-// class BeeHub_Principal
+} // class BeeHub_Principal
 
 
