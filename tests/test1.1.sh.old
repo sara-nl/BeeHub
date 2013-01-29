@@ -1,8 +1,0 @@
-DESCRIPTION='Directory listing: XHTML'
-
-source 'common.inc'
-
-function systemtest() (
-  ${CURL} --header 'Accept: application/xhtml+xml' ${BASEURL}/ >"${TMPTEST}"
-  diff 'expect_1.1' "${TMPTEST}"
-)
