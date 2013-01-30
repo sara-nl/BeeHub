@@ -45,12 +45,6 @@ class BeeHub_XFSResource extends BeeHub_Resource {
   protected $stat;
 
 
-  /**
-   * @var boolean
-   */
-  protected $touched = false;
-
-
   public function __construct($path) {
     parent::__construct($path);
     $this->localPath = BeeHub::localPath($path);
@@ -75,6 +69,15 @@ class BeeHub_XFSResource extends BeeHub_Resource {
   public function user_prop($propname) {
     $this->init_props();
     return @$this->xattr_props[$propname];
+  }
+
+
+  /**
+   * @return Array a list of ACEs.
+   * @see BeeHub_Resource::user_prop_acl_internal()
+   */
+  public function user_prop_acl_internal() {
+    return DAVACL_Element_ace::json2aces($this->user_prop(DAV::PROP_ACL));
   }
 
 

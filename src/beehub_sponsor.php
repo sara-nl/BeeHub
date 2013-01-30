@@ -69,10 +69,7 @@ class BeeHub_Sponsor extends BeeHub_File {
               DAV::COND_NEED_PRIVILEGES
       );
     }
-    return array(
-        'Content-Type' => BeeHub::best_xhtml_type() . '; charset="utf-8"',
-        'Cache-Control' => 'no-cache'
-    );
+    return array( 'Cache-Control' => 'no-cache' );
   }
 
   protected function init_props() {

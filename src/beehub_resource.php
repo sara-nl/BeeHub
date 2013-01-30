@@ -23,7 +23,13 @@
  * Some class.
  * @package BeeHub
  */
-class BeeHub_Resource extends DAVACL_Resource {
+abstract class BeeHub_Resource extends DAVACL_Resource {
+
+
+  /**
+   * @var boolean
+   */
+  protected $touched = false;
 
 
   public function isVisible() {
@@ -53,6 +59,9 @@ class BeeHub_Resource extends DAVACL_Resource {
   }
 
 
+  /**
+   * @see DAV_Resource::property_priv_read()
+   */
   public function property_priv_read($properties) {
     $retval = array();
     try {
@@ -77,21 +86,9 @@ class BeeHub_Resource extends DAVACL_Resource {
 
 
   /**
-   * Returns a list of all ACEs, including all inherited ACEs, with the proper
-   * inheritance info.
    * @return Array a list of ACEs.
    */
-  public function user_prop_acl_internal() {
-    $parent = $this->collection();
-    $parent_acl = $parent ? $parent->user_prop_acl_internal() : array();
-    $retval = DAVACL_Element_ace::json2aces($this->user_prop(DAV::PROP_ACL));
-    while (count($parent_acl)) {
-      if (!$parent_acl[0]->inherited)
-        $parent_acl[0]->inherited = $parent->path;
-      $retval[] = array_shift($parent_acl);
-    }
-    return $retval;
-  }
+  abstract public function user_prop_acl_internal();
 
 
   public function user_prop_acl() {
@@ -105,11 +102,28 @@ class BeeHub_Resource extends DAVACL_Resource {
         'DAV: all', false, array('DAV: read', 'DAV: read-acl'), false, true, null
       );
     }
+    $parent = $this->collection();
+    $inherited = $parent ? $parent->user_prop_acl() : array();
+    while ( count($inherited) && $inherited[0]->protected )
+      array_shift($inherited);
+    foreach( $inherited as &$ace )
+      if ( ! $ace->inherited )
+        $ace->inherited = $parent->path;
     return array_merge(
-      $protected, $this->user_prop_acl_internal()
+      $protected, $this->user_prop_acl_internal(), $inherited
     );
   }
 
+
+  /**
+   * Should be overriden by BeeHub_File
+   */
+  public function user_prop_getcontenttype() {
+    //return 'httpd/unix-directory';
+    // Hmm, this was commented out, but why? I think XHTML is perfect for now.
+    // [PieterB]
+    return BeeHub::best_xhtml_type() . '; charset="utf-8"';
+  }
 
 
 } // class BeeHub_Resource

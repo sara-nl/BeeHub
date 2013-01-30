@@ -38,14 +38,6 @@ public function __construct($path) {
 //public function user_prop_getcontentlength() { return 4096; }
 
 
-public function user_prop_getcontenttype() {
-  //return 'httpd/unix-directory';
-  // Hmm, this was commented out, but why? I think XHTML is perfect for now.
-  // [PieterB]
-  return BeeHub::best_xhtml_type() . '; charset="utf-8"';
-}
-
-
 public function create_member( $name ) {
   return $this->internal_create_member( $name );
 }
@@ -116,7 +108,6 @@ public function method_DELETE( $name )
  * @see DAV_Resource::method_GET()
  */
 public function method_GET($headers) {
-  // We willen hier de client gaan teruggeven:
   $this->assert(DAVACL::PRIV_READ);
   // This was a switch() statement. I hate those. --pieterb
   if ( BeeHub::$CONFIG['webdav_namespace']['homepage'] == $this->path ) {
@@ -143,10 +134,7 @@ public function method_GET($headers) {
 
 public function method_HEAD() {
   $this->assert(DAVACL::PRIV_READ);
-  return array(
-    'Content-Type' => BeeHub::best_xhtml_type() . '; charset="utf-8"',
-    'Cache-Control' => 'no-cache'
-  );
+  return array( 'Cache-Control' => 'no-cache' );
 }
 
 /**
