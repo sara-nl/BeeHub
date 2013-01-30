@@ -44,7 +44,9 @@ public function user_prop_current_user_principal() {
 }
 
 
-//private $wheelCache = null;
+/**
+ * @return boolean is the current user an administrator?
+ */
 public function wheel() {
   return BeeHub::$CONFIG['webdav_namespace']['wheel_path'] == $this->CURRENT_USER_PRINCIPAL;
 //  if ($this->wheelCache === null)
@@ -62,27 +64,8 @@ public function user_prop_supported_privilege_set() {
   if (!is_null($retval)) return $retval;
 
   $retval    = new DAVACL_Element_supported_privilege(DAVACL::PRIV_ALL, false, 'All');
-
-#  $read_cups       = new DAVACL_Element_supported_privilege(DAVACL::PRIV_READ_CURRENT_USER_PRIVILEGE_SET, true, 'Read current user’s privileges');
-#  $read_properties = new DAVACL_Element_supported_privilege(DAVACL::PRIV_READ_PROPERTIES, false, 'Read properties');
-#  $read_properties->add_supported_privilege( $read_cups );
-
-#  $read_content    = new DAVACL_Element_supported_privilege(DAVACL::PRIV_READ_CONTENT,    false, 'Read content');
-  $read            = new DAVACL_Element_supported_privilege(DAVACL::PRIV_READ, false, 'Read');
-#  $read->add_supported_privilege( $read_properties )
-#       ->add_supported_privilege( $read_content );
-
-#  $write_properties = new DAVACL_Element_supported_privilege(DAVACL::PRIV_WRITE_PROPERTIES, false, 'Write properties');
-#  $write_content    = new DAVACL_Element_supported_privilege(DAVACL::PRIV_WRITE_CONTENT,    false, 'Write content');
-#  $bind             = new DAVACL_Element_supported_privilege(DAVACL::PRIV_BIND,   false, 'Bind');
-#  $unbind           = new DAVACL_Element_supported_privilege(DAVACL::PRIV_UNBIND, false, 'Unbind');
-#  $unlock           = new DAVACL_Element_supported_privilege(DAVACL::PRIV_UNLOCK, false, 'Unlock');
-  $write            = new DAVACL_Element_supported_privilege(DAVACL::PRIV_WRITE, false, 'Write');
-#  $write->add_supported_privilege($write_properties)
-#        ->add_supported_privilege($write_content)
-#        ->add_supported_privilege($bind)
-#        ->add_supported_privilege($unbind)
-#        ->add_supported_privilege($unlock);
+  $read      = new DAVACL_Element_supported_privilege(DAVACL::PRIV_READ, false, 'Read');
+  $write     = new DAVACL_Element_supported_privilege(DAVACL::PRIV_WRITE, false, 'Write');
 
   $read_acl  = new DAVACL_Element_supported_privilege(DAVACL::PRIV_READ_ACL, false, 'Read ACL');
   $write_acl = new DAVACL_Element_supported_privilege(DAVACL::PRIV_WRITE_ACL, false, 'Write ACL');

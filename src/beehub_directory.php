@@ -23,7 +23,7 @@
  * Interface to a folder.
  * @package BeeHub
  */
-class BeeHub_Directory extends BeeHub_Resource implements DAV_Collection {
+class BeeHub_Directory extends BeeHub_XFSResource implements DAV_Collection {
 
 
 /**
@@ -38,25 +38,14 @@ public function __construct($path) {
 //public function user_prop_getcontentlength() { return 4096; }
 
 
-public function user_prop_getcontenttype() {
-  return 'httpd/unix-directory';
-  //return BeeHub::best_xhtml_type() . '; charset="utf-8"';
-}
-
-
-protected function user_set_getcontenttype($value) {
-  throw new DAV_Status(
-    DAV::HTTP_FORBIDDEN,
-    DAV::COND_CANNOT_MODIFY_PROTECTED_PROPERTY
-  );
-}
-
-
 public function create_member( $name ) {
   return $this->internal_create_member( $name );
 }
 
 
+/**
+ * @TODO Sponsor stuff
+ */
 private function internal_create_member( $name, $collection = false ) {
   $this->assert(DAVACL::PRIV_WRITE);
   $path = $this->path . $name;
@@ -70,9 +59,9 @@ private function internal_create_member( $name, $collection = false ) {
   $result = $collection ? @mkdir($localPath) : touch($localPath);
   if ( !$result )
     throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
-  xattr_set( $localPath, rawurlencode(DAV::PROP_GETETAG), BeeHub::ETag(0) );
-  xattr_set( $localPath, rawurlencode(DAV::PROP_OWNER  ), $this->user_prop_current_user_principal() );
-  xattr_set( $localPath, rawurlencode(DAV::PROP_GROUP  ), $group );
+  xattr_set( $localPath, rawurlencode( DAV::PROP_GETETAG), BeeHub::ETag(0) );
+  xattr_set( $localPath, rawurlencode( DAV::PROP_OWNER  ), $this->user_prop_current_user_principal() );
+  xattr_set( $localPath, rawurlencode( DAV::PROP_GROUP  ), $group );
   return DAV::$REGISTRY->resource($path);
 }
 
@@ -84,6 +73,7 @@ public function method_COPY( $path ) {
   if (!$parent instanceof BeeHub_Directory)
     throw new DAV_Status(DAV::HTTP_FORBIDDEN);
   $parent->internal_create_member(basename($path), true);
+  // TODO: Should we check here if the xattr to be copied is in the 'user.' realm?
   foreach(xattr_list($this->localPath) as $xattr)
     if ( !in_array( rawurldecode($xattr), array(
       DAV::PROP_GETETAG,
@@ -118,7 +108,6 @@ public function method_DELETE( $name )
  * @see DAV_Resource::method_GET()
  */
 public function method_GET($headers) {
-  // We willen hier de client gaan teruggeven:
   $this->assert(DAVACL::PRIV_READ);
   // This was a switch() statement. I hate those. --pieterb
   if ( BeeHub::$CONFIG['webdav_namespace']['homepage'] == $this->path ) {
@@ -145,10 +134,7 @@ public function method_GET($headers) {
 
 public function method_HEAD() {
   $this->assert(DAVACL::PRIV_READ);
-  return array(
-    'Content-Type' => BeeHub::best_xhtml_type() . '; charset="utf-8"',
-    'Cache-Control' => 'no-cache'
-  );
+  return array( 'Cache-Control' => 'no-cache' );
 }
 
 /**
