@@ -22,7 +22,6 @@
 /**
  * A sponsor principal
  *
- * @TODO Hoe zorg ik dat <resourcetype> goed gevuld wordt?
  * @TODO Checken of de properties in de juiste gevallen afschermd worden
  * @package BeeHub
  */
@@ -56,8 +55,37 @@ class BeeHub_Sponsor extends BeeHub_File {
    * @see DAV_Resource::method_GET()
    */
   public function method_GET($headers) {
+    $query = <<<EOS
+    SELECT `username`,
+           `display_name`,
+           `admin`,
+           `accepted`
+      FROM `beehub_users`
+INNER JOIN `beehub_sponsor_members`
+     USING (`user_id`)
+     WHERE `beehub_sponsor_members`.`sponsor_id` = ?;
+EOS;
+    $statement = BeeHub::mysqli()->prepare($query);
+    $sponsorId = $this->getId();
+    $statement->bind_param('d', $sponsorId);
+    $username = null;
+    $displayname = null;
+    $admin = null;
+    $accepted = null;
+    $statement->bind_result($username, $displayname, $admin, $accepted);
+    $statement->execute();
+    $members = array();
+    while ($statement->fetch()) {
+      $members[] = Array(
+        'username' => $username,
+        'displayname' => $displayname,
+        'admin' => ($admin == 1),
+        'accepted' => ($accepted == 1)
+      );
+    }
     $view = new BeeHub_View('sponsor.php');
     $view->setVar('sponsor', $this);
+    $view->setVar('members', $members);
     return ((BeeHub::best_xhtml_type() != 'text/html') ? DAV::xml_header() : '' ) . $view->getParsedView();
   }
 
@@ -133,7 +161,7 @@ class BeeHub_Sponsor extends BeeHub_File {
 
     // Write all data to database
     $updateStatement = BeeHub::mysqli()->prepare('UPDATE `beehub_sponsors` SET `display_name`=?, `description`=? WHERE `sponsor_id`=?');
-    $id = $this->id;
+    $id = $this->getId();
     $updateStatement->bind_param('ssd', $displayname, $description, $id);
     $updateStatement->execute();
 
@@ -147,20 +175,131 @@ class BeeHub_Sponsor extends BeeHub_File {
     }
   }
 
-  public function user_set_group_member_set($set) {
-    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
+  public function user_prop($propname) {
+    switch ($propname) {
+      case DAV::PROP_GROUP_MEMBER_SET:
+      case BeeHub::PROP_GROUP_REQUESTED_MEMBER_SET:
+      case BeeHub::PROP_GROUP_ADMIN_SET:
+        $method = substr($propname, strpos($propname, ' ')+1);
+        $retval = $this->user_prop_group_member_set($method);
+        return $retval ? new DAV_Element_href( $retval ) : '';
+      default:
+        return parent::user_prop($propname);
+      break;
+    }
   }
 
-  public function user_prop_group_member_set() {
+  protected function user_set($propname, $value = null) {
+    $this->assert(DAVACL::PRIV_WRITE);
+    $this->init_props();
+    switch ($propname) {
+      case DAV::PROP_GROUP_MEMBER_SET:
+      case BeeHub::PROP_GROUP_REQUESTED_MEMBER_SET:
+      case BeeHub::PROP_GROUP_ADMIN_SET:
+        if (is_null($value)) {
+          $value = array();
+        }
+print_r($value);
+die();
+        $set = DAVACL::parse_hrefs($value)->URIs;
+        foreach ($set as &$uri) {
+          $uri = DAV::parseURI($uri, false);
+        }
+        $method = substr($propname, strpos($propname, ' ')+1);
+        $this->user_set_group_member_set($set, $method);
+        $this->touched = true;
+        break;
+      default:
+        return parent::user_set($propname, $value);
+      break;
+    }
+  }
+
+  public function user_set_group_member_set($set, $setType = 'group-member-set') {
+    // Test if the current user is admin of this sponsor, only those are allowed to add users.
+    if (!$this->isAdmin()) {
+      throw new DAV_Status(
+              DAV::HTTP_FORBIDDEN,
+              DAV::COND_NEED_PRIVILEGES
+      );
+    }
+
+    // Determine new users and users to be removed
+    $currentUsers = $this->user_prop_group_member_set($setType);
+    $newUsers = array_diff($set, $currentUsers);
+    $removedUsers = array_diff($currentUsers, $set);
+    $sponsorId = intval($this->getId());
+
+    // Remove users
+    if (count($removedUsers) > 0) {
+      $idQueryParts = array();
+      foreach ($removedUsers as $path) {
+        $user = BeeHub_Registry::inst()->resource($path);
+        $idQueryParts[] = "(`sponsor_id`='" . $sponsorId . "' AND `user_id`='" . intval($user->getId()) . "')";
+      }
+      if ($setType == 'group-admin-set') {
+//        BeeHub::mysqli()->query('UPDATE `beehub_sponsor_members` SET `admin`=0 WHERE ' . implode(' OR ', $idQueryParts));
+print('UPDATE `beehub_sponsor_members` SET `admin`=0 WHERE ' . implode(' OR ', $idQueryParts));
+      }else{
+//        BeeHub::mysqli()->query('DELETE FROM `beehub_sponsor_members` WHERE ' . implode(' OR ', $idQueryParts));
+print('DELETE FROM `beehub_sponsor_members` WHERE ' . implode(' OR ', $idQueryParts));
+      }
+    }
+
+    // Insert all new ID's to the database
+    if (count($newUsers) > 0) {
+      $idQueryParts = array();
+      foreach ($newUsers as $path) {
+        $user = BeeHub_Registry::inst()->resource($path);
+        $idQueryParts[] = "('" . $sponsorId . "', '" . intval($user->getId()) . "', %ADMIN%, %ACCEPTED%)";
+        // TODO: sent the user an e-mail
+      }
+      $query = 'INSERT INTO `beehub_sponsor_members` (`sponsor_id`, `user_id`, `admin`, `accepted`) VALUES ' . implode(',', $idQueryParts) . ' ON DUPLICATE KEY UPDATE `admin`=%DEFAULT_ADMIN%, `accepted`=%ACCEPTED%';
+      switch($setType) {
+        case 'group-requested-member-set':
+          $query = str_replace(array('%ADMIN%', '%DEFAULT_ADMIN%', '%ACCEPTED%'), array('0', '0', '0'), $query);
+          break;
+        case 'group-admin-set':
+          $query = str_replace(array('%ADMIN%', '%DEFAULT_ADMIN%', '%ACCEPTED%'), array('1', '1', '1'), $query);
+          break;
+        default:
+          $query = str_replace(array('%ADMIN%', '%DEFAULT_ADMIN%', '%ACCEPTED%'), array('0', '`admin`', '1'), $query);
+        break;
+      }
+//      BeeHub::mysqli()->query($query);
+print($query);
+    }
+die();
+  }
+
+  public function user_prop_group_member_set($setType = 'group-member-set') {
+    // Test if the current user is admin of this sponsor, only those are allowed to add users.
+    if (!$this->isAdmin()) {
+      throw new DAV_Status(
+              DAV::HTTP_FORBIDDEN,
+              DAV::COND_NEED_PRIVILEGES
+      );
+    }
     $query = <<<EOS
-SELECT `users`.`username`
-FROM `beehub_users` AS `users`
-INNER JOIN `beehub_sponsor_members` AS `memberships`
-  USING (`user_id`)
-WHERE `memberships`.`sponsor_id` = ?;
+    SELECT `username`
+      FROM `beehub_users`
+INNER JOIN `beehub_sponsor_members`
+     USING (`user_id`)
+     WHERE `beehub_sponsor_members`.`sponsor_id` = ?
 EOS;
+    switch ($setType) {
+      case 'group-requested-member-set':
+        $query .= ' AND `accepted`=0';
+        break;
+      case 'group-admin-set':
+        $query .= ' AND `admin`=1';
+        break;
+      default:
+        $query .= ' AND `accepted`=1';
+      break;
+    }
     $statement = BeeHub::mysqli()->prepare($query);
-    $sponsor_id = $this->id;
+    $sponsor_id = $this->getId();
     $statement->bind_param('d', $sponsor_id);
     $username = null;
     $statement->bind_result($username);

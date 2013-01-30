@@ -22,7 +22,6 @@
 /**
  * A group principal
  *
- * @TODO Fix ACL!
  * @package BeeHub
  */
 class BeeHub_Group extends BeeHub_Principal {
@@ -40,8 +39,40 @@ class BeeHub_Group extends BeeHub_Principal {
    * @see DAV_Resource::method_GET()
    */
   public function method_GET($headers) {
+    $query = <<<EOS
+    SELECT `username`,
+           `display_name`,
+           `admin`,
+           `invited`,
+           `requested`
+      FROM `beehub_users`
+INNER JOIN `beehub_group_members`
+     USING (`user_id`)
+     WHERE `beehub_group_members`.`group_id` = ?;
+EOS;
+    $statement = BeeHub::mysqli()->prepare($query);
+    $groupId = $this->getId();
+    $statement->bind_param('d', $groupId);
+    $username = null;
+    $displayname = null;
+    $admin = null;
+    $invited = null;
+    $requested = null;
+    $statement->bind_result($username, $displayname, $admin, $invited, $requested);
+    $statement->execute();
+    $members = array();
+    while ($statement->fetch()) {
+      $members[] = Array(
+        'username' => $username,
+        'displayname' => $displayname,
+        'admin' => ($admin == 1),
+        'invited' => ($invited == 1),
+        'requested' => ($requested == 1)
+      );
+    }
     $view = new BeeHub_View('group.php');
     $view->setVar('group', $this);
+    $view->setVar('members', $members);
     return ((BeeHub::best_xhtml_type() != 'text/html') ? DAV::xml_header() : '' ) . $view->getParsedView();
   }
 
@@ -136,19 +167,53 @@ class BeeHub_Group extends BeeHub_Principal {
   }
 
   public function user_set_group_member_set($set) {
-    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
+    // Test if the current user is admin of this group, only those are allowed to add users.
+    if (!$this->isAdmin()) {
+      throw new DAV_Status(
+              DAV::HTTP_FORBIDDEN,
+              DAV::COND_NEED_PRIVILEGES
+      );
+    }
+
+    // Determine new users and users to be removed
+    $currentUsers = $this->user_prop_group_member_set();
+    $newUsers = array_diff($set, $currentUsers);
+    $removedUsers = array_diff($currentUsers, $set);
+    $groupId = intval($this->getId());
+
+    // Remove users
+    if (count($removedUsers) > 0) {
+      $idQueryParts = array();
+      foreach ($removedUsers as $path) {
+        $user = BeeHub_Registry::inst()->resource($path);
+        $idQueryParts[] = "(`group_id`='" . $groupId . "' AND `user_id`='" . intval($user->getId()) . "')";
+      }
+      BeeHub::mysqli()->query('DELETE FROM `beehub_group_members` WHERE ' . implode(' OR ', $idQueryParts));
+    }
+
+    // Insert all new ID's to the database
+    if (count($newUsers) > 0) {
+      $idQueryParts = array();
+      foreach ($newUsers as $path) {
+        $user = BeeHub_Registry::inst()->resource($path);
+        $idQueryParts[] = "('" . $groupId . "', '" . intval($user->getId()) . "', 1)";
+        // TODO: sent the user an e-mail
+      }
+      BeeHub::mysqli()->query('INSERT INTO `beehub_group_members` (`group_id`, `user_id`, `invited`) VALUES ' . implode(',', $idQueryParts) . ' ON DUPLICATE KEY UPDATE `invited`=1');
+    }
   }
 
   public function user_prop_group_member_set() {
     $query = <<<EOS
-SELECT `users`.`username`
-FROM `beehub_users` AS `users`
-INNER JOIN `beehub_group_members` AS `memberships`
-  USING (`user_id`)
-WHERE `memberships`.`group_id` = ?;
+    SELECT `username`
+      FROM `beehub_users`
+INNER JOIN `beehub_group_members`
+     USING (`user_id`)
+     WHERE `beehub_group_members`.`group_id` = ?
+       AND ((`invited`=1 AND `requested`=1) OR `admin`=1);
 EOS;
     $statement = BeeHub::mysqli()->prepare($query);
-    $group_id = $this->id;
+    $group_id = $this->getId();
     $statement->bind_param('d', $group_id);
     $username = null;
     $statement->bind_result($username);
