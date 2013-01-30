@@ -56,6 +56,8 @@ class BeeHub {
   const PROP_EMAIL         = 'http://beehub.nl/ email';
   const PROP_X509          = 'http://beehub.nl/ x509';
   const PROP_DESCRIPTION   = 'http://beehub.nl/ description';
+  const PROP_GROUP_ADMIN_SET            = 'http://beehub.nl/ group-admin-set';
+  const PROP_GROUP_REQUESTED_MEMBER_SET = 'http://beehub.nl/ group-requested-member-set';
 
   /**#@+
    * These constants define the different environments the code can run in.
