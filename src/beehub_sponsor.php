@@ -77,7 +77,7 @@ EOS;
     $members = array();
     while ($statement->fetch()) {
       $members[] = Array(
-        'username' => $username,
+        'path' => BeeHub::$CONFIG['webdav_namespace']['users_path'] . $username,
         'displayname' => $displayname,
         'admin' => ($admin == 1),
         'accepted' => ($accepted == 1)
@@ -101,6 +101,96 @@ EOS;
         'Content-Type' => BeeHub::best_xhtml_type() . '; charset="utf-8"',
         'Cache-Control' => 'no-cache'
     );
+  }
+
+  public function method_POST ( &$headers ) {
+    //First add members, admins and requests
+    foreach (array('add_requests', 'add_members', 'add_admins', 'delete_admins', 'delete_members', 'delete_requests') as $key) {
+      if (isset($_POST[$key])) {
+        $members = array();
+        if (!is_array($_POST[$key])) {
+          throw new DAV_Status(DAV::HTTP_BAD_REQUEST);
+        }
+        foreach ($_POST[$key] as $uri) {
+          $members[] = DAV::parseURI($uri, false);
+        }
+        switch ($key) {
+          case 'add_members':
+            $this->change_memberships($members, true, false, true);
+            break;
+          case 'add_admins':
+            $this->change_memberships($members, true, true, true, true);
+            break;
+          case 'add_requests':
+            $this->change_memberships($members, false, false, false, false);
+            break;
+          case 'delete_admins':
+            $this->change_memberships($members, true, false, true, false);
+            break;
+          case 'delete_members':
+          case 'delete_requests':
+            $this->delete_members($members);
+            break;
+          default: //Should/cloud never happen
+            throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
+          break;
+        }
+      }
+    }
+  }
+
+  /**
+   * Adds member requests or sets them to be an accepted member or an administrator
+   *
+   * @param   Array    $members           An array with paths to the principals to add
+   * @param   Boolean  $newAccepted       The value the 'accepted' field should have if the membership had to be added to the database
+   * @param   Boolean  $newAdmin          The value the 'admin' field should have if the membership had to be added to the database
+   * @param   Boolean  $existingAccepted  Optionally; The value the 'accepted' field should have if the membership is already in the database. If ommited values will not be changed for existing memberships
+   * @param   Boolean  $existingAdmin     Optionally; The value the 'admin' field should have if the membership is already in the database. If ommited values will not be changed for existing membership
+   * @return  void
+   */
+  protected function change_memberships($members, $newAccepted, $newAdmin, $existingAccepted = null, $existingAdmin = null){
+    $sponsorId = intval($this->getId());
+    $newAccepted = ($newAccepted ? 1 : 0);
+    $newAdmin = ($newAdmin ? 1 : 0);
+    if (is_null($existingAccepted)) {
+      $existingAccepted = "`accepted`";
+    }else{
+      $existingAccepted = ($existingAccepted ? 1 : 0);
+    }
+    if (is_null($existingAdmin)) {
+      $existingAdmin = "`admin`";
+    }else{
+      $existingAdmin = ($existingAdmin ? 1 : 0);
+    }
+    if (count($members) > 0) {
+      $idQueryParts = array();
+      foreach ($members as $path) {
+        $user = BeeHub_Registry::inst()->resource($path);
+        $idQueryParts[] = "('" . $sponsorId . "', '" . intval($user->getId()) . "', " . $newAdmin . ", " . $newAccepted . ")";
+        // TODO: sent the user an e-mail
+      }
+      $query = 'INSERT INTO `beehub_sponsor_members` (`sponsor_id`, `user_id`, `admin`, `accepted`) VALUES ' . implode(',', $idQueryParts) . ' ON DUPLICATE KEY UPDATE `admin`=' . $existingAdmin . ', `accepted`=' . $existingAccepted;
+      BeeHub::mysqli()->query($query);
+    }
+  }
+
+  /**
+   * Delete memberships
+   *
+   * @param   Array    $members           An array with paths to the principals to add
+   * @return  void
+   */
+  protected function delete_members($members) {
+    $sponsorId = intval($this->getId());
+    if (count($members) > 0) {
+      $idQueryParts = array();
+      foreach ($members as $path) {
+        $user = BeeHub_Registry::inst()->resource($path);
+        $idQueryParts[] = "(`sponsor_id`='" . $sponsorId . "' AND `user_id`='" . intval($user->getId()) . "')";
+      }
+      BeeHub::mysqli()->query('DELETE FROM `beehub_sponsor_members` WHERE ' . implode(' OR ', $idQueryParts));
+    }
   }
 
   protected function init_props() {
@@ -178,10 +268,7 @@ EOS;
   public function user_prop($propname) {
     switch ($propname) {
       case DAV::PROP_GROUP_MEMBER_SET:
-      case BeeHub::PROP_GROUP_REQUESTED_MEMBER_SET:
-      case BeeHub::PROP_GROUP_ADMIN_SET:
-        $method = substr($propname, strpos($propname, ' ')+1);
-        $retval = $this->user_prop_group_member_set($method);
+        $retval = $this->user_prop_group_member_set();
         return $retval ? new DAV_Element_href( $retval ) : '';
       default:
         return parent::user_prop($propname);
@@ -194,19 +281,14 @@ EOS;
     $this->init_props();
     switch ($propname) {
       case DAV::PROP_GROUP_MEMBER_SET:
-      case BeeHub::PROP_GROUP_REQUESTED_MEMBER_SET:
-      case BeeHub::PROP_GROUP_ADMIN_SET:
         if (is_null($value)) {
           $value = array();
         }
-print_r($value);
-die();
         $set = DAVACL::parse_hrefs($value)->URIs;
         foreach ($set as &$uri) {
           $uri = DAV::parseURI($uri, false);
         }
-        $method = substr($propname, strpos($propname, ' ')+1);
-        $this->user_set_group_member_set($set, $method);
+        $this->user_set_group_member_set($set);
         $this->touched = true;
         break;
       default:
@@ -215,103 +297,10 @@ die();
     }
   }
 
-  public function user_set_group_member_set($set, $setType = 'group-member-set') {
-    // Test if the current user is admin of this sponsor, only those are allowed to add users.
-    if (!$this->isAdmin()) {
-      throw new DAV_Status(
-              DAV::HTTP_FORBIDDEN,
-              DAV::COND_NEED_PRIVILEGES
-      );
-    }
-
-    // Determine new users and users to be removed
-    $currentUsers = $this->user_prop_group_member_set($setType);
-    $newUsers = array_diff($set, $currentUsers);
-    $removedUsers = array_diff($currentUsers, $set);
-    $sponsorId = intval($this->getId());
-
-    // Remove users
-    if (count($removedUsers) > 0) {
-      $idQueryParts = array();
-      foreach ($removedUsers as $path) {
-        $user = BeeHub_Registry::inst()->resource($path);
-        $idQueryParts[] = "(`sponsor_id`='" . $sponsorId . "' AND `user_id`='" . intval($user->getId()) . "')";
-      }
-      if ($setType == 'group-admin-set') {
-//        BeeHub::mysqli()->query('UPDATE `beehub_sponsor_members` SET `admin`=0 WHERE ' . implode(' OR ', $idQueryParts));
-print('UPDATE `beehub_sponsor_members` SET `admin`=0 WHERE ' . implode(' OR ', $idQueryParts));
-      }else{
-//        BeeHub::mysqli()->query('DELETE FROM `beehub_sponsor_members` WHERE ' . implode(' OR ', $idQueryParts));
-print('DELETE FROM `beehub_sponsor_members` WHERE ' . implode(' OR ', $idQueryParts));
-      }
-    }
-
-    // Insert all new ID's to the database
-    if (count($newUsers) > 0) {
-      $idQueryParts = array();
-      foreach ($newUsers as $path) {
-        $user = BeeHub_Registry::inst()->resource($path);
-        $idQueryParts[] = "('" . $sponsorId . "', '" . intval($user->getId()) . "', %ADMIN%, %ACCEPTED%)";
-        // TODO: sent the user an e-mail
-      }
-      $query = 'INSERT INTO `beehub_sponsor_members` (`sponsor_id`, `user_id`, `admin`, `accepted`) VALUES ' . implode(',', $idQueryParts) . ' ON DUPLICATE KEY UPDATE `admin`=%DEFAULT_ADMIN%, `accepted`=%ACCEPTED%';
-      switch($setType) {
-        case 'group-requested-member-set':
-          $query = str_replace(array('%ADMIN%', '%DEFAULT_ADMIN%', '%ACCEPTED%'), array('0', '0', '0'), $query);
-          break;
-        case 'group-admin-set':
-          $query = str_replace(array('%ADMIN%', '%DEFAULT_ADMIN%', '%ACCEPTED%'), array('1', '1', '1'), $query);
-          break;
-        default:
-          $query = str_replace(array('%ADMIN%', '%DEFAULT_ADMIN%', '%ACCEPTED%'), array('0', '`admin`', '1'), $query);
-        break;
-      }
-//      BeeHub::mysqli()->query($query);
-print($query);
-    }
-die();
+  public function user_set_group_member_set($set) {
   }
 
-  public function user_prop_group_member_set($setType = 'group-member-set') {
-    // Test if the current user is admin of this sponsor, only those are allowed to add users.
-    if (!$this->isAdmin()) {
-      throw new DAV_Status(
-              DAV::HTTP_FORBIDDEN,
-              DAV::COND_NEED_PRIVILEGES
-      );
-    }
-    $query = <<<EOS
-    SELECT `username`
-      FROM `beehub_users`
-INNER JOIN `beehub_sponsor_members`
-     USING (`user_id`)
-     WHERE `beehub_sponsor_members`.`sponsor_id` = ?
-EOS;
-    switch ($setType) {
-      case 'group-requested-member-set':
-        $query .= ' AND `accepted`=0';
-        break;
-      case 'group-admin-set':
-        $query .= ' AND `admin`=1';
-        break;
-      default:
-        $query .= ' AND `accepted`=1';
-      break;
-    }
-    $statement = BeeHub::mysqli()->prepare($query);
-    $sponsor_id = $this->getId();
-    $statement->bind_param('d', $sponsor_id);
-    $username = null;
-    $statement->bind_result($username);
-    $statement->execute();
-
-    $retval = array();
-    while ($statement->fetch()) {
-      $retval[] = BeeHub::$CONFIG['webdav_namespace']['users_path'] . rawurlencode($username);
-    }
-    $statement->free_result();
-
-    return $retval;
+  public function user_prop_group_member_set() {
   }
 
   // We allow everybody to do everything with this object in the ACL, so we can handle all privileges hard-coded without ACL's interfering
@@ -374,10 +363,6 @@ EOS;
   }
 
   public function method_COPY_external($destination, $overwrite) {
-    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
-  }
-
-  public function method_POST(&$headers) {
     throw new DAV_Status(DAV::HTTP_FORBIDDEN);
   }
 
