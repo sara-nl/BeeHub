@@ -71,7 +71,7 @@ EOS;
 
   public function method_HEAD() {
     // Only group admins are allowed to HEAD and GET.
-    if (!$this->isAdmin()) {
+    if (!$this->is_admin()) {
       throw new DAV_Status( DAV::HTTP_FORBIDDEN, DAV::COND_NEED_PRIVILEGES );
     }
     return array('Cache-Control' => 'no-cache');
@@ -272,11 +272,6 @@ EOS;
   }
 
 
-  public function user_prop_group_membership() {
-    return array();
-  }
-
-
   public function user_prop_group_member_set() {
     return $this->user_prop(DAV::PROP_GROUP_MEMBER_SET);
   }
@@ -295,7 +290,7 @@ EOS;
    * @TODO extract text content from the 'description' XML fragment.
    */
   protected function user_set($propname, $value = null) {
-    if (!$this->isAdmin()) {
+    if (!$this->is_admin()) {
       throw new DAV_Status(
               DAV::HTTP_FORBIDDEN,
               DAV::COND_NEED_PRIVILEGES
@@ -316,7 +311,7 @@ EOS;
    *
    * @return  boolean  True if the currently logged in user is an administrator of this group, false otherwise
    */
-  public function isAdmin() {
+  public function is_admin() {
     if (is_null($this->isAdminCache)) {
       $result = null;
       $p_user_name = rawurldecode(basename(BeeHub::current_user()));

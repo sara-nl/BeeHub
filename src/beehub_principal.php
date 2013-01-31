@@ -71,7 +71,7 @@ abstract class BeeHub_Principal extends BeeHub_Resource implements DAVACL_Princi
 
   // These methods are only available for a limited range of users!
   public function method_PROPPATCH($propname, $value = null) {
-    if (!$this->isAdmin()) {
+    if (!$this->is_admin()) {
       throw new DAV_Status(
               DAV::HTTP_FORBIDDEN,
               DAV::COND_NEED_PRIVILEGES
@@ -82,7 +82,7 @@ abstract class BeeHub_Principal extends BeeHub_Resource implements DAVACL_Princi
 
 
   protected function user_set_displayname($displayname) {
-    if (!$this->isAdmin()) {
+    if (!$this->is_admin()) {
       throw new DAV_Status(
               DAV::HTTP_FORBIDDEN,
               DAV::COND_NEED_PRIVILEGES
@@ -97,13 +97,18 @@ abstract class BeeHub_Principal extends BeeHub_Resource implements DAVACL_Princi
   }
 
 
+  public function user_prop_group_membership() {
+    return array();
+  }
+
+
   abstract protected function init_props();
 
 
   /**
    * @return bool is the current user allowed to administer $this?
    */
-  abstract protected function isAdmin();
+  abstract public function is_admin();
 
 
 } // class BeeHub_Principal

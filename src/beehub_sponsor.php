@@ -25,7 +25,7 @@
  * @TODO Checken of de properties in de juiste gevallen afschermd worden
  * @package BeeHub
  */
-class BeeHub_Sponsor extends BeeHub_File {
+class BeeHub_Sponsor extends BeeHub_Principal {
 
   const RESOURCETYPE = '<sponsor xmlns="http://beehub.nl/" />';
 
@@ -34,20 +34,6 @@ class BeeHub_Sponsor extends BeeHub_File {
   private static $result_displayname = null;
   private static $result_description = null;
 
-  protected $name = null;
-
-  public function __construct($path) {
-    $localPath = BeeHub::localPath($path);
-    if (!file_exists($localPath)) {
-      $result = touch($localPath);
-      if (!$result)
-        throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
-      xattr_set($localPath, rawurlencode(DAV::PROP_GETETAG), BeeHub::ETag(0));
-      xattr_set($localPath, rawurlencode(DAV::PROP_OWNER), BeeHub::$CONFIG['webdav_namespace']['wheel_path']);
-    }
-    parent::__construct($path);
-    $this->name = rawurldecode(basename($path));
-  }
 
   /**
    * @return string an HTML file
@@ -89,13 +75,9 @@ EOS;
 
   public function method_HEAD() {
     // Test if the current user is admin of this sponsor, only those are allowed to HEAD and GET.
-    if (!$this->isAdmin()) {
-      throw new DAV_Status(
-              DAV::HTTP_FORBIDDEN,
-              DAV::COND_NEED_PRIVILEGES
-      );
-    }
-    return array( 'Content-Type' => BeeHub::best_xhtml_type() . '; charset="utf-8"', 'Cache-Control' => 'no-cache' );
+    if (!$this->is_admin())
+      throw DAV::forbidden();
+    return array( 'Cache-Control' => 'no-cache' );
   }
 
   public function method_POST ( &$headers ) {
@@ -192,7 +174,6 @@ EOS;
     }
   }
 
-  protected $sql_props = null;
   protected function init_props() {
     if (is_null($this->sql_props)) {
       parent::init_props();
@@ -294,9 +275,11 @@ EOS;
   }
 
   public function user_set_group_member_set($set) {
+    throw DAV::forbidden();
   }
 
   public function user_prop_group_member_set() {
+    return $this->user_prop(DAV::PROP_GROUP_MEMBER_SET);
   }
 
   // We allow everybody to do everything with this object in the ACL, so we can handle all privileges hard-coded without ACL's interfering
@@ -312,7 +295,7 @@ EOS;
    *
    * @return  boolean  True if the currently logged in user is an administrator of this sponsor, false otherwise
    */
-  public function isAdmin() {
+  public function is_admin() {
     if (is_null($this->isAdminCache)) {
       $result = null;
       $username = rawurldecode(basename(BeeHub::current_user()));
@@ -328,34 +311,13 @@ EOS;
 
   // These methods are only available for a limited range of users!
   public function method_PROPPATCH($propname, $value = null) {
-    if (!$this->isAdmin()) {
+    if (!$this->is_admin()) {
       throw new DAV_Status(
               DAV::HTTP_FORBIDDEN,
               DAV::COND_NEED_PRIVILEGES
       );
     }
     return parent::method_PROPPATCH($propname, $value);
-  }
-
-  // All these methods are forbidden:
-  public function method_ACL($aces) {
-    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
-  }
-
-  public function method_COPY($path) {
-    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
-  }
-
-  public function method_COPY_external($destination, $overwrite) {
-    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
-  }
-
-  public function method_PUT($stream) {
-    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
-  }
-
-  public function method_PUT_range($stream, $start, $end, $total) {
-    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
   }
 
 } // class BeeHub_Sponsor
