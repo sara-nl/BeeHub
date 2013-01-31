@@ -29,12 +29,6 @@ class BeeHub_Sponsor extends BeeHub_Principal {
 
   const RESOURCETYPE = '<sponsor xmlns="http://beehub.nl/" />';
 
-  private static $statement_props = null;
-  private static $param_sponsor = null;
-  private static $result_displayname = null;
-  private static $result_description = null;
-
-
   /**
    * @return string an HTML file
    * @see DAV_Resource::method_GET()
@@ -175,30 +169,34 @@ EOS;
   }
 
   protected function init_props() {
+    static $statement_props = null,
+           $param_sponsor = null,
+           $result_displayname = null,
+           $result_description = null;
     if (is_null($this->sql_props)) {
       $this->protected_props[BeeHub::PROP_NAME] = basename($this->path);
 
-      if (null === self::$statement_props) {
-        self::$statement_props = BeeHub::mysqli()->prepare(
+      if (null === $statement_props) {
+        $statement_props = BeeHub::mysqli()->prepare(
                 'SELECT
                   `displayname`,
                   `description`
                  FROM `beehub_sponsors`
                  WHERE `sponsor_name` = ?;'
         );
-        self::$statement_props->bind_param('s', self::$param_sponsor);
-        self::$statement_props->bind_result(
-                self::$result_displayname, self::$result_description
+        $statement_props->bind_param('s', $param_sponsor);
+        $statement_props->bind_result(
+                $result_displayname, $result_description
         );
       }
-      self::$param_sponsor = $this->name;
-      self::$statement_props->execute();
-      self::$result_displayname = null;
-      self::$result_description = null;
-      self::$statement_props->fetch();
-      $this->sql_props[DAV::PROP_DISPLAYNAME] = self::$result_displayname;
-      $this->sql_props[BeeHub::PROP_DESCRIPTION] = self::$result_description;
-      self::$statement_props->free_result();
+      $param_sponsor = $this->name;
+      $statement_props->execute();
+      $result_displayname = null;
+      $result_description = null;
+      $statement_props->fetch();
+      $this->sql_props[DAV::PROP_DISPLAYNAME] = $result_displayname;
+      $this->sql_props[BeeHub::PROP_DESCRIPTION] = $result_description;
+      $statement_props->free_result();
     }
   }
 

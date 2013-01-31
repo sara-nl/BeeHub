@@ -27,7 +27,7 @@ $this->setTemplateVar('footer', '<script type="text/javascript" src="/system/js/
     <div class="span2 fieldname">Description</div>
     <div class="span10 fieldvalue"><input type="text" name="description" value="<?= htmlspecialchars($group->prop(BeeHub::PROP_DESCRIPTION), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>" /></div>
   </div>
-  <button class="btn">Save</button>
+  <button id="save_sponsor_buton" class="btn">Save</button>
 </form>
 </div>
 
@@ -70,7 +70,7 @@ $this->setTemplateVar('footer', '<script type="text/javascript" src="/system/js/
     </thead>
     <tbody id="current_members">
       <?php foreach ($members as $member) :
-        if ($member['accepted']) : ?>
+        if ($member['invited']) : ?>
           <tr class="member_row" id="<?= BeeHub::$CONFIG['webdav_namespace']['users_path'] . rawurlencode($member['user_name']) ?>">
             <td><?= htmlspecialchars($member['user_name'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></td>
             <td><?= htmlspecialchars($member['displayname'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></td>

@@ -215,20 +215,22 @@ EOS;
 
     if (is_null($this->sql_props)) {
 
-      $param_group_name = rawurldecode(basename($this->path));
+      $param_group_name = $this->name;
 
       # Query table `beehub_groups`
       if ( ! $statement_props->execute() ||
            ! $statement_props->store_result() ||
-           ! $statement_props->fetch() )
+           ! $statement_props->fetch() ) {
         throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR );
+      }
       $this->sql_props[DAV::PROP_DISPLAYNAME] = $result_displayname;
       $this->sql_props[BeeHub::PROP_DESCRIPTION] = $result_description;
       $statement_props->free_result();
 
       if ( ! $statement_members->execute() ||
-           ! $statement_members->store_result() )
+           ! $statement_members->store_result() ) {
         throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR );
+      }
 
       $members = array();
       while ( $statement_members->fetch() ) {
