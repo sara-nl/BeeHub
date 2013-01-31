@@ -1,6 +1,6 @@
 <?php
 
-/*************************************************************************
+/*·************************************************************************
  * Copyright ©2007-2012 SARA b.v., Amsterdam, The Netherlands
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -35,15 +35,7 @@
  * @package BeeHub
  */
 class BeeHub_User extends BeeHub_Principal {
-  private static $statement_props = null;
-  private static $param_user_login = null;
-  private static $result_user_id = null;
-  private static $result_display_name = null;
-  private static $result_password = null;
-  private static $result_email = null;
-  private static $result_x509 = null;
 
-  protected $id = null;
 
   /**
    * @return string an HTML file
@@ -56,7 +48,7 @@ class BeeHub_User extends BeeHub_Principal {
   }
 
   public function method_HEAD() {
-    if ($this->path != BeeHub::current_user()) {
+    if ($this->isAdmin()) {
       throw new DAV_Status(
               DAV::HTTP_FORBIDDEN,
               DAV::COND_NEED_PRIVILEGES
@@ -66,48 +58,46 @@ class BeeHub_User extends BeeHub_Principal {
   }
 
   protected function init_props() {
-    if (is_null($this->writable_props)) {
-      parent::init_props();
-      $this->protected_props[BeeHub::PROP_NAME] = basename($this->path);
+    static $statement_props = null,
+           $p_user_name = null,
+           $r_displayname = null,
+           $r_email = null,
+           $r_password = null,
+           $r_x509 = null;
 
-      if (null === self::$statement_props) {
-        self::$statement_props = BeeHub::mysqli()->prepare(
-                'SELECT
-                  `user_id`,
-                  `display_name`,
-                  `email`,
-                  `password` IS NOT NULL,
-                  `x509`
-                 FROM `beehub_users`
-                 WHERE `username` = ?;'
-        );
-        self::$statement_props->bind_param('s', self::$param_user_login);
-        self::$statement_props->bind_result(
-                self::$result_user_id,
-                self::$result_display_name,
-                self::$result_email,
-                self::$result_password,
-                self::$result_x509
-        );
+    # Lazy initialization of prepared statement:
+    if (null === self::$statement_props) {
+      $statement_props = BeeHub::mysqli()->prepare(
+        'SELECT
+          `displayname`,
+          `email`,
+          `password` IS NOT NULL,
+          `x509`
+         FROM `beehub_users`
+         WHERE `username` = ?;'
+      );
+      $statement_props->bind_param('s', $p_user_name);
+      $statement_props->bind_result(
+        $r_displayname,
+        $r_email,
+        $r_password,
+        $r_x509
+      );
+    }
+
+    if (is_null($this->sql_props)) {
+      $p_username = $this->name;
+      $statement_props->execute();
+      $statement_props->fetch();
+      $this->sql_props[DAV::PROP_DISPLAYNAME] = $r_displayname;
+      $this->sql_props[BeeHub::PROP_EMAIL]    = $r_email;
+      if (!is_null($r_x509)) {
+        $this->sql_props[BeeHub::PROP_X509]   = $r_x509;
       }
-      self::$param_user_login = $this->prop(BeeHub::PROP_NAME);
-      self::$statement_props->execute();
-      self::$result_user_id = null;
-      self::$result_email = null;
-      self::$result_password = null;
-      self::$result_x509 = null;
-      self::$result_display_name = null;
-      self::$statement_props->fetch();
-      $this->id = self::$result_user_id;
-      $this->writable_props[DAV::PROP_DISPLAYNAME] = self::$result_display_name;
-      $this->writable_props[BeeHub::PROP_EMAIL] = self::$result_email;
-      if (!is_null(self::$result_x509)) {
-        $this->writable_props[BeeHub::PROP_X509] = self::$result_x509;
+      if ($r_password) {
+        $this->sql_props[BeeHub::PROP_PASSWD] = true; // Nobody should have read access to this property. But just in case, we always set it to true.
       }
-      if (self::$result_password) {
-        $this->writable_props[BeeHub::PROP_PASSWD] = true; // Nobody should have read access to this property. But just in case, we always set it to true.
-      }
-      self::$statement_props->free_result();
+      $statement_props->free_result();
     }
   }
 
@@ -121,69 +111,51 @@ class BeeHub_User extends BeeHub_Principal {
       return;
     }
 
-    // Are database properties set? If so, get the value and unset them
-    if (isset($this->writable_props[DAV::PROP_DISPLAYNAME])) {
-      $displayname = $this->writable_props[DAV::PROP_DISPLAYNAME];
-      unset($this->writable_props[DAV::PROP_DISPLAYNAME]);
-    }else{
-      $displayname = '';
-    }
-    if (isset($this->writable_props[BeeHub::PROP_EMAIL])) {
-      $email = $this->writable_props[BeeHub::PROP_EMAIL];
-      unset($this->writable_props[BeeHub::PROP_EMAIL]);
-    }else{
-      $email = '';
-    }
-    if (isset($this->writable_props[BeeHub::PROP_PASSWD])) {
-      if ($this->writable_props[BeeHub::PROP_PASSWD] === true) { //true means there is a password, but it hasn't been changed!
-        $password = true;
-      }else{
-        $password = crypt($this->writable_props[BeeHub::PROP_PASSWD], '$6$rounds=5000$' . md5(time() . rand(0, 99999)) . '$');
+    if (isset($this->sql_props[BeeHub::PROP_PASSWD])) {
+      if ($this->sql_props[BeeHub::PROP_PASSWD] === true) { //true means there is a password, but it hasn't been changed!
+        $p_password = true;
+      } else {
+        $p_password = crypt($this->sql_props[BeeHub::PROP_PASSWD], '$6$rounds=5000$' . md5(time() . rand(0, 99999)) . '$');
       }
-      unset($this->writable_props[BeeHub::PROP_PASSWD]);
+      $this->sql_props[BeeHub::PROP_PASSWD] = true;
     }else{
-      $password = null;
+      $p_password = null;
     }
-    if (isset($this->writable_props[BeeHub::PROP_X509])) {
-      $x509 = $this->writable_props[BeeHub::PROP_X509];
-      unset($this->writable_props[BeeHub::PROP_X509]);
-    }else{
-      $x509 = null;
-    }
+
+    $p_displayname = @$this->sql_props[DAV::PROP_DISPLAYNAME];
+    $p_email       = @$this->sql_props[BeeHub::PROP_EMAIL];
+    $p_x509        = @$this->sql_props[BeeHub::PROP_X509];
+    $p_displayname = @$this->sql_props[DAV::PROP_DISPLAYNAME];
 
     // Write all data to database
-    $updateStatement = BeeHub::mysqli()->prepare('UPDATE `beehub_users` SET `display_name`=?, `email`=?, `x509`=?' . (($password === true) ? '' : ', `password`=?') . ' WHERE `user_id`=?');
-    $id = $this->id;
-    if ($password === true) {
-      $updateStatement->bind_param('sssd',
-              $displayname,
-              $email,
-              $x509,
-              $id
-              );
-    }else{
-      $updateStatement->bind_param('ssssd',
-              $displayname,
-              $email,
-              $x509,
-              $password,
-              $id
-              );
+    $updateStatement = BeeHub::mysqli()->prepare(
+      'UPDATE `beehub_users`
+          SET `display_name` = ?,
+              `email` = ?,
+              `x509` = ?' .
+              (($p_password === true) ? '' : ', `password`=?') .
+      ' WHERE `user_name` = ?'
+    );
+    if ($p_password === true) {
+      $updateStatement->bind_param(
+        'ssss',
+        $p_displayname,
+        $p_email,
+        $p_x509,
+        $this->name
+      );
+    } else {
+      $updateStatement->bind_param(
+        'ssssd',
+        $p_displayname,
+        $p_email,
+        $p_x509,
+        $p_password,
+        $this->name
+      );
     }
     $updateStatement->execute();
-
-    // Store all other properties
-    parent::storeProperties();
-
-    // And set the database properties again
-    if (!is_null($password)) {
-      $this->writable_props[BeeHub::PROP_PASSWD] = true; // Nobody should have read access to this property. But just in case, we always set it to true.
-    }
-    $this->writable_props[DAV::PROP_DISPLAYNAME] = $displayname;
-    $this->writable_props[BeeHub::PROP_EMAIL] = $email;
-    if (!is_null($x509)) {
-      $this->writable_props[BeeHub::PROP_X509] = $x509;
-    }
+    $this->touched = false;
   }
 
   // We allow everybody to do everything with this object in the ACL, so we can handle all privileges hard-coded without ACL's interfering
@@ -191,17 +163,20 @@ class BeeHub_User extends BeeHub_Principal {
     return array(new DAVACL_Element_ace('DAV: all', false, array('DAV: all'), false, true, null));
   }
 
+
+  /**
+   * @todo move the initialization into init_props()
+   * @todo remove user_id
+   */
   public function user_prop_group_membership() {
     $query = <<<EOS
-SELECT `groups`.`groupname`
-FROM `beehub_groups` AS `groups`
-INNER JOIN `beehub_group_members` AS `memberships`
-  USING (`group_id`)
-WHERE `memberships`.`user_id` = ?;
+SELECT `group_name`
+FROM `beehub_group_members`
+WHERE `user_name` = ?;
 EOS;
     $statement = BeeHub::mysqli()->prepare($query);
-    $user_id = $this->id;
-    $statement->bind_param('d', $user_id);
+    $username = $this->name;
+    $statement->bind_param('d', $username);
     $groupname = null;
     $statement->bind_result($groupname);
     $statement->execute();
@@ -215,21 +190,16 @@ EOS;
     return $retval;
   }
 
+
+  /**
+   * @see DAVACL::user_prop_group_member_set()
+   */
   public function user_prop_group_member_set() {
     return array();
   }
 
-  public function user_set_group_member_set($set) {
-    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
-  }
-
-  /**
-   * Gets the (database) ID of the user
-   * @return  int  The (database) ID of this user
-   */
-  public function getId() {
-    $this->init_props();
-    return $this->id;
+  protected function isAdmin() {
+    return ($this->path != BeeHub::current_user());
   }
 
   // These methods are only available for a limited range of users!
@@ -244,7 +214,7 @@ EOS;
 //  }
 
   public function method_PROPPATCH($propname, $value = null) {
-    if ($this->path != BeeHub::current_user()) {
+    if ($this->isAdmin()) {
       throw new DAV_Status(
               DAV::HTTP_FORBIDDEN,
               DAV::COND_NEED_PRIVILEGES

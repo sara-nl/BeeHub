@@ -44,8 +44,8 @@ public function method_MKCOL( $name ) {
 
 
 public function user_prop_getcontenttype() {
-  return 'httpd/unix-directory';
-  //return BeeHub::best_xhtml_type() . '; charset="utf-8"';
+  //return 'httpd/unix-directory';
+  return BeeHub::best_xhtml_type() . '; charset="utf-8"';
 }
 
 

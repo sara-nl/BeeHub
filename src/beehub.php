@@ -174,6 +174,7 @@ class BeeHub {
 
   /**
    * @todo implement
+   * @todo deprecate?
    */
   public static function current_user() {
     return BeeHub_ACL_Provider::inst()->CURRENT_USER_PRINCIPAL;

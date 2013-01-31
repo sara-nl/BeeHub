@@ -17,7 +17,7 @@ $this->setTemplateVar('footer', '<script type="text/javascript" src="/system/js/
 <form method="post">
   <div class="row-fluid">
     <div class="span2 fieldname">Group name</div>
-    <div class="span10 fieldvalue"><?= htmlspecialchars($group->prop(BeeHub::PROP_NAME), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></div>
+    <div class="span10 fieldvalue"><?= htmlspecialchars($group->name, ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></div>
   </div>
   <div class="row-fluid">
     <div class="span2 fieldname">Display name</div>

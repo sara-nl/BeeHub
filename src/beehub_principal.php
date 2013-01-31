@@ -27,6 +27,18 @@
 abstract class BeeHub_Principal extends BeeHub_Resource implements DAVACL_Principal {
 
 
+  public $name;
+
+
+  public $sql_props = null;
+
+
+  public function __construct($path) {
+    parent::__construct($path);
+    $this->name = rawurldecode(basename($path));
+  }
+
+
   public function user_prop_alternate_uri_set() {
     return array();
   }
@@ -35,6 +47,63 @@ abstract class BeeHub_Principal extends BeeHub_Resource implements DAVACL_Princi
   public function user_prop_principal_url() {
     return $this->path;
   }
+
+
+  /**
+   * @see DAV_Resource::user_prop()
+   */
+  public function user_prop($propname) {
+    $this->init_props();
+    return DAV::xmlescape(@$this->sql_props[$propname]);
+  }
+
+
+  public function user_prop_displayname() {
+    $this->init_props();
+    return $this->sql_props[DAV::PROP_DISPLAYNAME];
+  }
+
+
+  public function user_prop_acl_internal() {
+    return array();
+  }
+
+
+  // These methods are only available for a limited range of users!
+  public function method_PROPPATCH($propname, $value = null) {
+    if (!$this->isAdmin()) {
+      throw new DAV_Status(
+              DAV::HTTP_FORBIDDEN,
+              DAV::COND_NEED_PRIVILEGES
+      );
+    }
+    return parent::method_PROPPATCH($propname, $value);
+  }
+
+
+  protected function user_set_displayname($displayname) {
+    if (!$this->isAdmin()) {
+      throw new DAV_Status(
+              DAV::HTTP_FORBIDDEN,
+              DAV::COND_NEED_PRIVILEGES
+      );
+    }
+    $this->sql_props[DAV::PROP_DISPLAYNAME] = $displayname;
+  }
+
+
+  public function user_prop_owner() {
+    return BeeHub::$CONFIG['webdav_namespace']['wheel_path'];
+  }
+
+
+  abstract protected function init_props();
+
+
+  /**
+   * @return bool is the current user allowed to administer $this?
+   */
+  abstract protected function isAdmin();
 
 
 } // class BeeHub_Principal

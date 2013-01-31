@@ -1,6 +1,6 @@
 <?php
 
-/* ·************************************************************************
+/*·************************************************************************
  * Copyright ©2007-2012 SARA b.v., Amsterdam, The Netherlands
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * ************************************************************************ */
+ **************************************************************************/
 
 /**
  * File documentation (who cares)
@@ -26,7 +26,6 @@
  */
 class BeeHub_Group extends BeeHub_Principal {
 
-  public $sql_props = null;
 
   /**
    * @return string an HTML file
@@ -34,19 +33,19 @@ class BeeHub_Group extends BeeHub_Principal {
    */
   public function method_GET($headers) {
     $query = <<<EOS
-    SELECT `username`,
-           `display_name`,
-           `admin`,
-           `invited`,
-           `requested`
+    SELECT `user_name`,
+           `displayname`,
+           `is_admin`,
+           `is_invited`,
+           `is_requested`
       FROM `beehub_users`
 INNER JOIN `beehub_group_members`
-     USING (`user_id`)
-     WHERE `beehub_group_members`.`group_id` = ?;
+     USING (`user_name`)
+     WHERE `group_name` = ?;
 EOS;
     $statement = BeeHub::mysqli()->prepare($query);
-    $groupId = $this->getId();
-    $statement->bind_param('d', $groupId);
+    $groupName = $this->name;
+    $statement->bind_param('d', $groupName);
     $username = null;
     $displayname = null;
     $admin = null;
@@ -81,40 +80,38 @@ EOS;
 
 
   protected function init_props() {
-    if (is_null($this->sql_props)) {
-      parent::init_props();
-      $this->protected_props[BeeHub::PROP_NAME] = basename($this->path);
-      static $param_group_name = null,
-             $result_user_name = null,
-             $result_display_name = null,
-             $result_description = null,
-             $statement_props = null,
-             $statement_members = null,
-             $statement_admins = null;
+    static $param_group_name = null,
+           $result_user_name = null,
+           $result_displayname = null,
+           $result_description = null,
+           $statement_props = null,
+           $statement_members = null,
+           $statement_admins = null;
 
-      // Lazy initialization of prepared statements:
-      if (null === $statement_props) {
-        $statement_props = BeeHub::mysqli()->prepare(
-'SELECT `display_name`, `description`
+    // Lazy initialization of prepared statements:
+    if (null === $statement_props) {
+      $statement_props = BeeHub::mysqli()->prepare(
+'SELECT `displayname`, `description`
  FROM `beehub_groups`
  WHERE `group_name` = ?'
-        );
-        $statement_props->bind_param( 's', $param_group_name );
-        $statement_props->bind_result(
-          $result_display_name, $result_description
-        );
-      }
-      if (null === $statement_members) {
-        $statement_members = BeeHub::mysqli()->prepare(
+      );
+      $statement_props->bind_param( 's', $param_group_name );
+      $statement_props->bind_result(
+        $result_displayname, $result_description
+      );
+
+      $statement_members = BeeHub::mysqli()->prepare(
  'SELECT `user_name`
-    FROM `beehub_group_members`
-   WHERE `group_name` = ?
-     AND `invited` = 1
-     AND `requested` = 1'
-        );
-        $statement_members->bind_param( 's', $param_group_name );
-        $statement_members->bind_result( $result_user_name );
-      }
+  FROM `beehub_group_members`
+ WHERE `group_name` = ?
+   AND `is_invited` = 1
+   AND `is_requested` = 1'
+      );
+      $statement_members->bind_param( 's', $param_group_name );
+      $statement_members->bind_result( $result_user_name );
+    }
+
+    if (is_null($this->sql_props)) {
 
       $param_group_name = rawurldecode(basename($this->path));
 
@@ -123,7 +120,7 @@ EOS;
            ! $statement_props->store_result() ||
            ! $statement_props->fetch() )
         throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR );
-      $this->sql_props[DAV::PROP_DISPLAYNAME] = $result_display_name;
+      $this->sql_props[DAV::PROP_DISPLAYNAME] = $result_displayname;
       $this->sql_props[BeeHub::PROP_DESCRIPTION] = $result_description;
       $statement_props->free_result();
 
@@ -152,34 +149,24 @@ EOS;
       return;
     }
 
-    // Are database properties set? If so, get the value and unset them
-    if (isset($this->sql_props[DAV::PROP_DISPLAYNAME])) {
-      $displayname = $this->sql_props[DAV::PROP_DISPLAYNAME];
-      unset($this->sql_props[DAV::PROP_DISPLAYNAME]);
-    } else {
-      $displayname = '';
-    }
-    if (isset($this->sql_props[BeeHub::PROP_DESCRIPTION])) {
-      $description = $this->sql_props[BeeHub::PROP_DESCRIPTION];
-      unset($this->sql_props[BeeHub::PROP_DESCRIPTION]);
-    } else {
-      $description = null;
+    static $statement_update = null;
+    $p_displayname = $p_description = $p_group_name = '';
+    if (null === $statement_update) {
+      $statement_update = BeeHub::mysqli()->prepare(
+ 'UPDATE `beehub_groups`
+     SET `displayname` = ?,
+         `description` = ?
+   WHERE `group_name` = ?'
+      );
+      $statement_update->bind_param('sss', $p_displayname, $p_description, $p_group_name);
     }
 
-    // Write all data to database
-    $updateStatement = BeeHub::mysqli()->prepare('UPDATE `beehub_groups` SET `display_name`=?, `description`=? WHERE `group_name`=?');
-    $id = $this->id;
-    $updateStatement->bind_param('ssd', $displayname, $description, $id);
-    $updateStatement->execute();
-
-    // Store all other properties
-    parent::storeProperties();
-
-    // And set the database properties again
-    $this->sql_props[DAV::PROP_DISPLAYNAME] = $displayname;
-    if (!is_null($description)) {
-      $this->sql_props[BeeHub::PROP_DESCRIPTION] = $description;
-    }
+    $p_displayname = $this->sql_props[DAV::PROP_DISPLAYNAME];
+    $p_description = $this->sql_props[BeeHub::PROP_DESCRIPTION];
+    $p_group_name = $this->name;
+    if ( ! $statement_update->execute() )
+      throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR );
+    $this->touched = false;
   }
 
 
@@ -188,12 +175,12 @@ EOS;
   }
 
 
-  public function user_set_group_member_set($set) {
+  public function method_POST(&$headers) {
     // Test if the current user is admin of this group, only those are allowed to add users.
     if (!$this->isAdmin()) {
       throw new DAV_Status(
               DAV::HTTP_FORBIDDEN,
-              DAV::COND_NEED_PRIVILEGES
+              DAV::COND_CANNOT_MODIFY_PROTECTED_PROPERTY
       );
     }
 
@@ -221,34 +208,10 @@ EOS;
         $idQueryParts[] = "('" . $groupId . "', '" . intval($user->getId()) . "', 1)";
         // TODO: sent the user an e-mail
       }
-      BeeHub::mysqli()->query('INSERT INTO `beehub_group_members` (`group_id`, `user_id`, `invited`) VALUES ' . implode(',', $idQueryParts) . ' ON DUPLICATE KEY UPDATE `invited`=1');
+      BeeHub::mysqli()->query('INSERT INTO `beehub_group_members` (`group_id`, `user_id`, `is_invited`) VALUES ' . implode(',', $idQueryParts) . ' ON DUPLICATE KEY UPDATE `is_invited`=1');
     }
   }
 
-<<<<<<< HEAD
-=======
-  public function user_prop_group_member_set() {
-    $query = <<<EOS
-    SELECT `username`
-      FROM `beehub_users`
-INNER JOIN `beehub_group_members`
-     USING (`user_id`)
-     WHERE `beehub_group_members`.`group_id` = ?
-       AND ((`invited`=1 AND `requested`=1) OR `admin`=1);
-EOS;
-    $statement = BeeHub::mysqli()->prepare($query);
-    $group_id = $this->getId();
-    $statement->bind_param('d', $group_id);
-    $username = null;
-    $statement->bind_result($username);
-    $statement->execute();
-
-    $retval = array();
-    while ($statement->fetch()) {
-      $retval[] = BeeHub::$CONFIG['webdav_namespace']['users_path'] . rawurlencode($username);
-    }
-    $statement->free_result();
->>>>>>> origin/niek_vanalles
 
   public function user_prop_group_member_set() {
     return $this->user_prop(DAV::PROP_GROUP_MEMBER_SET);
@@ -258,18 +221,30 @@ EOS;
   // We allow everybody to do everything with this object in the ACL, so we can handle all privileges hard-coded without ACL's interfering
   public function user_prop_acl() {
     return array(
-      new DAVACL_Element_ace('DAV: all', false, array('DAV: all'), false, true, null)
+      new DAVACL_Element_ace('DAV: all', false, array('DAV: all'), false, true)
     );
   }
 
 
   /**
-   * @see DAV_Resource::user_prop()
+   * @see DAV_Resource::user_set()
+   * @TODO extract text content from the 'description' XML fragment.
    */
-  public function user_prop($propname) {
+  protected function user_set($propname, $value = null) {
+    if (!$this->isAdmin()) {
+      throw new DAV_Status(
+              DAV::HTTP_FORBIDDEN,
+              DAV::COND_NEED_PRIVILEGES
+      );
+    }
     $this->init_props();
-    return @$this->sql_props[$propname];
+    if ( $propname !== BeeHub::PROP_DESCRIPTION || null === $value )
+      throw new DAV_Status(DAV::HTTP_FORBIDDEN);
+    $this->sql_props[$propname] = $value;
   }
+
+
+  private $isAdminCache;
 
 
   /**
@@ -278,57 +253,27 @@ EOS;
    * @return  boolean  True if the currently logged in user is an administrator of this group, false otherwise
    */
   public function isAdmin() {
-    if (is_null($this->admin)) {
+    if (is_null($this->isAdminCache)) {
       $result = null;
-      $userId = BeeHub_Registry::inst()->resource(BeeHub::current_user())->getId();
-      $groupId = $this->getId();
-      $statement = BeeHub::mysqli()->prepare('SELECT `user_id` FROM `beehub_group_members` WHERE `group_id`=? AND `user_id`=? AND `admin`=1');
-      $statement->bind_param('dd', $groupId, $userId);
+      $p_user_name = rawurldecode(basename(BeeHub::current_user()));
+      $groupName = $this->name;
+      $statement = BeeHub::mysqli()->prepare(
+ 'SELECT `is_admin`
+  FROM `beehub_group_members`
+  WHERE `group_name` = ? AND `user_name` = ?
+    AND `is_admin` = 1');
+      $statement->bind_param('ss', $groupName, $p_user_name);
       $statement->bind_result($result);
       $statement->execute();
       $response = $statement->fetch();
-      if (is_null($response) || !($result > 0)) {
-        $this->admin = false;
-      } else {
-        $this->admin = true;
-      }
+      $this->isAdminCache = !is_null($response);
     }
-    return $this->admin;
+    return $this->isAdminCache;
   }
 
-  // These methods are only available for a limited range of users!
-  public function method_PROPPATCH($propname, $value = null) {
-    if (!$this->isAdmin()) {
-      throw new DAV_Status(
-              DAV::HTTP_FORBIDDEN,
-              DAV::COND_NEED_PRIVILEGES
-      );
-    }
-    return parent::method_PROPPATCH($propname, $value);
-  }
 
   // All these methods are forbidden:
   public function method_ACL($aces) {
-    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
-  }
-
-  public function method_COPY($path) {
-    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
-  }
-
-  public function method_COPY_external($destination, $overwrite) {
-    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
-  }
-
-  public function method_POST(&$headers) {
-    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
-  }
-
-  public function method_PUT($stream) {
-    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
-  }
-
-  public function method_PUT_range($stream, $start, $end, $total) {
     throw new DAV_Status(DAV::HTTP_FORBIDDEN);
   }
 

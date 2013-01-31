@@ -134,11 +134,9 @@ class BeeHub_XFSResource extends BeeHub_Resource {
   }
 
 
-  public function user_prop_group() {
-    return $this->user_prop(DAV::PROP_GROUP);
-  }
-
-
+  /**
+   * @TODO rewrite to BeeHub::PROP_SPONSOR
+   */
   protected function user_set_group($group) {
     $this->assert(DAVACL::PRIV_READ);
     if (!( $group = DAV::$REGISTRY->resource($group) ) ||
@@ -173,6 +171,9 @@ class BeeHub_XFSResource extends BeeHub_Resource {
   }
 
 
+  /**
+   * @TODO check this implementation
+   */
   protected function user_set_owner($owner) {
     $this->assert(DAVACL::PRIV_READ);
     $cups = BeeHub_Registry::inst()->resource($this->user_prop_current_user_principal());

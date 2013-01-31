@@ -33,10 +33,10 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
     $this->assert(DAVACL::PRIV_READ);
     $view = new BeeHub_View('groups.php');
     $view->setVar('directory', $this);
-    $result = BeeHub::query('SELECT `groupname` FROM `beehub_groups` ORDER BY `display_name`');
+    $result = BeeHub::query('SELECT `group_name` FROM `beehub_groups` ORDER BY `displayname`');
     $groups = array();
     while ($row = $result->fetch_assoc()) {
-      $groups[strtolower($row['groupname'])] = DAV::$REGISTRY->resource($this->path . $row['groupname']);
+      $groups[strtolower($row['group_name'])] = DAV::$REGISTRY->resource($this->path . $row['group_name']);
     }
     $result->free();
     $view->setVar('groups', $groups);
@@ -54,7 +54,7 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
     $match = $properties[DAV::PROP_DISPLAYNAME][0];
     $match = str_replace(array('_', '%'), array('\\_', '\\%'), $match) . '%';
     $match = BeeHub::escape_string($match);
-    $result = BeeHub::query("SELECT `groupname` FROM `beehub_groups` WHERE `display_name` LIKE {$match};");
+    $result = BeeHub::query("SELECT `group_name` FROM `beehub_groups` WHERE `displayname` LIKE {$match};");
     $retval = array();
     while ($row = $result->fetch_row()) {
       $retval[] = BeeHub::$CONFIG['webdav_namespace']['groups_path'] . rawurlencode($row[0]);
@@ -64,7 +64,7 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
   }
 
   protected function init_members() {
-    $result = BeeHub::query('SELECT `groupname` FROM `beehub_groups`;');
+    $result = BeeHub::query('SELECT `group_name` FROM `beehub_groups`;');
     $this->members = array();
     while ($row = $result->fetch_row()) {
       $this->members[] = rawurlencode($row[0]);
