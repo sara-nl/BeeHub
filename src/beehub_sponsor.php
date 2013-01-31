@@ -176,7 +176,6 @@ EOS;
 
   protected function init_props() {
     if (is_null($this->sql_props)) {
-      parent::init_props();
       $this->protected_props[BeeHub::PROP_NAME] = basename($this->path);
 
       if (null === self::$statement_props) {
