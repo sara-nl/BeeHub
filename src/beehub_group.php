@@ -78,6 +78,109 @@ EOS;
   }
 
 
+  public function method_POST ( &$headers ) {
+    //First add members, admins and requests
+    foreach (array('add_requests', 'add_members', 'add_admins', 'delete_admins', 'delete_members', 'delete_requests') as $key) {
+      if (isset($_POST[$key])) {
+        $members = array();
+        if (!is_array($_POST[$key])) {
+          throw new DAV_Status(DAV::HTTP_BAD_REQUEST);
+        }
+        foreach ($_POST[$key] as $uri) {
+          $members[] = DAV::parseURI($uri, false);
+        }
+        switch ($key) {
+          case 'add_members':
+            $this->change_memberships($members, true, false, false, true);
+            break;
+          case 'add_admins':
+            $this->change_memberships($members, true, false, true, true, null, true);
+            break;
+          case 'add_requests':
+            $this->change_memberships($members, false, true, false, null, true);
+            break;
+          case 'delete_admins':
+            $this->change_memberships($members, true, false, false, null, null, false);
+            break;
+          case 'delete_members':
+          case 'delete_requests':
+            $this->delete_members($members);
+            break;
+          default: //Should/cloud never happen
+            throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
+          break;
+        }
+      }
+    }
+  }
+
+  /**
+   * Adds member requests or sets them to be an invited member or an administrator
+   *
+   * @param   Array    $members            An array with paths to the principals to add
+   * @param   Boolean  $newInvited         The value the 'is_invited' field should have if the membership had to be added to the database
+   * @param   Boolean  $newRequested       The value the 'is_requested' field should have if the membership had to be added to the database
+   * @param   Boolean  $newAdmin           The value the 'is_admin' field should have if the membership had to be added to the database
+   * @param   Boolean  $existingInvited    Optionally; The value the 'is_invited' field should have if the membership is already in the database. If ommited values will not be changed for existing memberships
+   * @param   Boolean  $existingRequested  Optionally; The value the 'is_requested' field should have if the membership is already in the database. If ommited values will not be changed for existing memberships
+   * @param   Boolean  $existingAdmin      Optionally; The value the 'is_admin' field should have if the membership is already in the database. If ommited values will not be changed for existing memberships
+   * @return  void
+   */
+  protected function change_memberships($members, $newInvited, $newRequested, $newAdmin, $existingInvited = null, $existingRequested = null, $existingAdmin = null){
+    if (count($members) == 0) {
+      return;
+    }
+    $newInvited = ($newInvited ? 1 : 0);
+    $newRequested = ($newRequested ? 1 : 0);
+    $newAdmin = ($newAdmin ? 1 : 0);
+    if (is_null($existingInvited)) {
+      $existingInvited = "`is_invited`";
+    }else{
+      $existingInvited = ($existingInvited ? 1 : 0);
+    }
+    if (is_null($existingRequested)) {
+      $existingRequested = "`is_requested`";
+    }else{
+      $existingRequested = ($existingRequested ? 1 : 0);
+    }
+    if (is_null($existingAdmin)) {
+      $existingAdmin = "`is_admin`";
+    }else{
+      $existingAdmin = ($existingAdmin ? 1 : 0);
+    }
+    $statement = BeeHub::mysqli()->prepare(
+            'INSERT INTO `beehub_group_members` (`group_name`, `user_name`, `is_invited`, `is_requested`, `is_admin`)
+                  VALUES (?, ?, ' . $newInvited . ', ' . $newRequested . ', ' . $newAdmin . ')
+ ON DUPLICATE KEY UPDATE `is_invited`=' . $existingInvited . ', `is_requested`=' . $existingRequested . ', `is_admin`=' . $existingAdmin);
+    $user_name = null;
+    $statement->bind_param('ss', $this->name, $user_name);
+    foreach ($members as $member) {
+      $user_name = rawurldecode(basename($member));
+      $statement->execute();
+      // TODO: sent the user an e-mail
+    }
+  }
+
+  /**
+   * Delete memberships
+   *
+   * @param   Array    $members           An array with paths to the principals to add
+   * @return  void
+   */
+  protected function delete_members($members) {
+    if (count($members) == 0) {
+      return;
+    }
+    $statement = BeeHub::mysqli()->prepare('DELETE FROM `beehub_group_members` WHERE `group_name`=? AND `user_name`=?');
+    $user_name = null;
+    $statement->bind_param('ss', $this->name, $user_name);
+    foreach ($members as $member) {
+      $user_name = rawurldecode(basename($path));
+      $statement->execute();
+    }
+  }
+
+
   protected function init_props() {
     static $param_group_name = null,
            $result_user_name = null,
@@ -166,44 +269,6 @@ EOS;
     if ( ! $statement_update->execute() )
       throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR );
     $this->touched = false;
-  }
-
-
-  public function method_POST(&$headers) {
-    // Test if the current user is admin of this group, only those are allowed to add users.
-    if (!$this->is_admin()) {
-      throw new DAV_Status(
-              DAV::HTTP_FORBIDDEN,
-              DAV::COND_CANNOT_MODIFY_PROTECTED_PROPERTY
-      );
-    }
-
-    // Determine new users and users to be removed
-    $currentUsers = $this->user_prop_group_member_set();
-    $newUsers = array_diff($set, $currentUsers);
-    $removedUsers = array_diff($currentUsers, $set);
-    $groupId = intval($this->getId());
-
-    // Remove users
-    if (count($removedUsers) > 0) {
-      $idQueryParts = array();
-      foreach ($removedUsers as $path) {
-        $user = BeeHub_Registry::inst()->resource($path);
-        $idQueryParts[] = "(`group_id`='" . $groupId . "' AND `user_id`='" . intval($user->getId()) . "')";
-      }
-      BeeHub::mysqli()->query('DELETE FROM `beehub_group_members` WHERE ' . implode(' OR ', $idQueryParts));
-    }
-
-    // Insert all new ID's to the database
-    if (count($newUsers) > 0) {
-      $idQueryParts = array();
-      foreach ($newUsers as $path) {
-        $user = BeeHub_Registry::inst()->resource($path);
-        $idQueryParts[] = "('" . $groupId . "', '" . intval($user->getId()) . "', 1)";
-        // TODO: sent the user an e-mail
-      }
-      BeeHub::mysqli()->query('INSERT INTO `beehub_group_members` (`group_id`, `user_id`, `is_invited`) VALUES ' . implode(',', $idQueryParts) . ' ON DUPLICATE KEY UPDATE `is_invited`=1');
-    }
   }
 
 

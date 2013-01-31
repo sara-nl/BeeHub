@@ -31,25 +31,55 @@ $this->setTemplateVar('footer', '<script type="text/javascript" src="/system/js/
 </form>
 </div>
 
-<table>
-  <thead>
-    <tr>
-      <th>user_name</th>
-      <th>Display name</th>
-      <th>Admin?</th>
-      <th>Invited?</th>
-      <th>Requested?</th>
-    </tr>
-  </thead>
-  <tbody>
-    <?php foreach ($members as $member) : ?>
+<form id="membership_form" method="post">
+  <h2>Requests</h2>
+  <p>The following users requested for you to sponsor them:</p>
+  <table>
+    <thead>
       <tr>
-        <td><?= $member['user_name'] ?></td>
-        <td><?= $member['displayname'] ?></td>
-        <td><?= ($member['admin'] ? 'jep' : 'nope') ?></td>
-        <td><?= ($member['invited'] ? 'jep' : 'nope') ?></td>
-        <td><?= ($member['requested'] ? 'jep' : 'nope') ?></td>
+        <th>user_name</th>
+        <th>Display name</th>
+        <th>Accept?</th>
+        <th>Delete?</th>
       </tr>
-    <?php endforeach; ?>
-  </tbody>
-</table>
+    </thead>
+    <tbody>
+      <?php foreach ($members as $member) :
+        if (!$member['invited']) : ?>
+          <tr class="member_row" id="<?= BeeHub::$CONFIG['webdav_namespace']['users_path'] . rawurlencode($member['user_name']) ?>">
+            <td><?= htmlspecialchars($member['user_name'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></td>
+            <td><?= htmlspecialchars($member['displayname'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></td>
+            <td><a href="#" class="accept_link">Accept</a></td>
+            <td><a href="#" class="remove_link">Delete</a></td>
+          </tr>
+        <?php endif;
+      endforeach; ?>
+    </tbody>
+  </table>
+
+  <h2>Current members</h2>
+  <p>The following users are member:</p>
+  <table>
+    <thead>
+      <tr>
+        <th>user_name</th>
+        <th>Display name</th>
+        <th>Admin?</th>
+        <th>Delete?</th>
+      </tr>
+    </thead>
+    <tbody id="current_members">
+      <?php foreach ($members as $member) :
+        if ($member['accepted']) : ?>
+          <tr class="member_row" id="<?= BeeHub::$CONFIG['webdav_namespace']['users_path'] . rawurlencode($member['user_name']) ?>">
+            <td><?= htmlspecialchars($member['user_name'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></td>
+            <td><?= htmlspecialchars($member['displayname'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></td>
+            <td><?= ($member['admin'] ? 'jep <a href="#" class="demote_link">demote</a>' : 'nope <a href="#" class="promote_link">promote</a>') ?></td>
+            <td><a href="#" class="remove_link">Delete</a></td>
+          </tr>
+        <?php endif;
+      endforeach; ?>
+    </tbody>
+  </table>
+  <input type="submit" value="Store" />
+</form>

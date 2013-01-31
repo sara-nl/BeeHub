@@ -31,11 +31,9 @@ class BeeHub_Sponsor extends BeeHub_Principal {
 
   private static $statement_props = null;
   private static $param_sponsor = null;
-  private static $result_sponsor_id = null;
-  private static $result_display_name = null;
+  private static $result_displayname = null;
   private static $result_description = null;
 
-  protected $id = null;
 
   /**
    * @return string an HTML file
@@ -44,17 +42,16 @@ class BeeHub_Sponsor extends BeeHub_Principal {
   public function method_GET($headers) {
     $query = <<<EOS
     SELECT `user_name`,
-           `display_name`,
-           `admin`,
-           `accepted`
+           `displayname`,
+           `is_admin`,
+           `is_accepted`
       FROM `beehub_users`
 INNER JOIN `beehub_sponsor_members`
-     USING (`user_id`)
-     WHERE `beehub_sponsor_members`.`sponsor_id` = ?;
+     USING (`user_name`)
+     WHERE `beehub_sponsor_members`.`sponsor_name` = ?;
 EOS;
     $statement = BeeHub::mysqli()->prepare($query);
-    $sponsorId = $this->getId();
-    $statement->bind_param('d', $sponsorId);
+    $statement->bind_param('s', $this->name);
     $user_name = null;
     $displayname = null;
     $admin = null;
@@ -83,34 +80,125 @@ EOS;
     return array( 'Cache-Control' => 'no-cache' );
   }
 
+  public function method_POST ( &$headers ) {
+    //First add members, admins and requests
+    foreach (array('add_requests', 'add_members', 'add_admins', 'delete_admins', 'delete_members', 'delete_requests') as $key) {
+      if (isset($_POST[$key])) {
+        $members = array();
+        if (!is_array($_POST[$key])) {
+          throw new DAV_Status(DAV::HTTP_BAD_REQUEST);
+        }
+        foreach ($_POST[$key] as $uri) {
+          $members[] = DAV::parseURI($uri, false);
+        }
+        switch ($key) {
+          case 'add_members':
+            $this->change_memberships($members, true, false, true);
+            break;
+          case 'add_admins':
+            $this->change_memberships($members, true, true, true, true);
+            break;
+          case 'add_requests':
+            $this->change_memberships($members, false, false, false, false);
+            break;
+          case 'delete_admins':
+            $this->change_memberships($members, true, false, true, false);
+            break;
+          case 'delete_members':
+          case 'delete_requests':
+            $this->delete_members($members);
+            break;
+          default: //Should/could never happen
+            throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
+          break;
+        }
+      }
+    }
+  }
+
+  /**
+   * Adds member requests or sets them to be an accepted member or an administrator
+   *
+   * @param   Array    $members           An array with paths to the principals to add
+   * @param   Boolean  $newAccepted       The value the 'accepted' field should have if the membership had to be added to the database
+   * @param   Boolean  $newAdmin          The value the 'admin' field should have if the membership had to be added to the database
+   * @param   Boolean  $existingAccepted  Optionally; The value the 'accepted' field should have if the membership is already in the database. If ommited values will not be changed for existing memberships
+   * @param   Boolean  $existingAdmin     Optionally; The value the 'admin' field should have if the membership is already in the database. If ommited values will not be changed for existing membership
+   * @return  void
+   */
+  protected function change_memberships($members, $newAccepted, $newAdmin, $existingAccepted = null, $existingAdmin = null){
+    if (count($members) == 0) {
+      return;
+    }
+    $newAccepted = ($newAccepted ? 1 : 0);
+    $newAdmin = ($newAdmin ? 1 : 0);
+    if (is_null($existingAccepted)) {
+      $existingAccepted = "`is_accepted`";
+    }else{
+      $existingAccepted = ($existingAccepted ? 1 : 0);
+    }
+    if (is_null($existingAdmin)) {
+      $existingAdmin = "`is_admin`";
+    }else{
+      $existingAdmin = ($existingAdmin ? 1 : 0);
+    }
+    $statement = BeeHub::mysqli()->prepare(
+            'INSERT INTO `beehub_sponsor_members` (`sponsor_name`, `user_name`, `is_accepted`, `is_admin`)
+                  VALUES (?, ?, ' . $newAccepted . ', ' . $newAdmin . ')
+ ON DUPLICATE KEY UPDATE `is_accepted`=' . $existingAccepted . ', `is_admin`=' . $existingAdmin);
+    $user_name = null;
+    $statement->bind_param('ss', $this->name, $user_name);
+    foreach ($members as $member) {
+      $user_name = rawurldecode(basename($member));
+      $statement->execute();
+      // TODO: sent the user an e-mail
+    }
+  }
+
+  /**
+   * Delete memberships
+   *
+   * @param   Array    $members           An array with paths to the principals to add
+   * @return  void
+   */
+  protected function delete_members($members) {
+    if (count($members) == 0) {
+      return;
+    }
+    $statement = BeeHub::mysqli()->prepare('DELETE FROM `beehub_sponsor_members` WHERE `sponsor_name`=? AND `user_name`=?');
+    $user_name = null;
+    $statement->bind_param('ss', $this->name, $user_name);
+    foreach ($members as $member) {
+      $user_name = rawurldecode(basename($path));
+      $statement->execute();
+    }
+  }
+
   protected function init_props() {
-    if (is_null($this->writable_props)) {
+    if (is_null($this->sql_props)) {
       parent::init_props();
       $this->protected_props[BeeHub::PROP_NAME] = basename($this->path);
 
       if (null === self::$statement_props) {
         self::$statement_props = BeeHub::mysqli()->prepare(
                 'SELECT
-                  `sponsor_id`,
-                  `display_name`,
+                  `displayname`,
                   `description`
                  FROM `beehub_sponsors`
-                 WHERE `sponsorname` = ?;'
+                 WHERE `sponsor_name` = ?;'
         );
         self::$statement_props->bind_param('s', self::$param_sponsor);
         self::$statement_props->bind_result(
-                self::$result_sponsor_id, self::$result_display_name, self::$result_description
+                self::$result_displayname, self::$result_description
         );
       }
-      self::$param_sponsor = $this->prop(BeeHub::PROP_NAME);
+      self::$param_sponsor = $this->name;
       self::$statement_props->execute();
-      self::$result_sponsor_id = null;
-      self::$result_display_name = null;
+      self::$result_displayname = null;
       self::$result_description = null;
       self::$statement_props->fetch();
-      $this->id = self::$result_sponsor_id;
-      $this->writable_props[DAV::PROP_DISPLAYNAME] = self::$result_display_name;
-      $this->writable_props[BeeHub::PROP_DESCRIPTION] = self::$result_description;
+      $this->sql_props[DAV::PROP_DISPLAYNAME] = self::$result_displayname;
+      $this->sql_props[BeeHub::PROP_DESCRIPTION] = self::$result_description;
       self::$statement_props->free_result();
     }
   }
@@ -126,42 +214,38 @@ EOS;
     }
 
     // Are database properties set? If so, get the value and unset them
-    if (isset($this->writable_props[DAV::PROP_DISPLAYNAME])) {
-      $displayname = $this->writable_props[DAV::PROP_DISPLAYNAME];
-      unset($this->writable_props[DAV::PROP_DISPLAYNAME]);
+    if (isset($this->sql_props[DAV::PROP_DISPLAYNAME])) {
+      $displayname = $this->sql_props[DAV::PROP_DISPLAYNAME];
+      unset($this->sql_props[DAV::PROP_DISPLAYNAME]);
     } else {
       $displayname = '';
     }
-    if (isset($this->writable_props[BeeHub::PROP_DESCRIPTION])) {
-      $description = $this->writable_props[BeeHub::PROP_DESCRIPTION];
-      unset($this->writable_props[BeeHub::PROP_DESCRIPTION]);
+    if (isset($this->sql_props[BeeHub::PROP_DESCRIPTION])) {
+      $description = $this->sql_props[BeeHub::PROP_DESCRIPTION];
+      unset($this->sql_props[BeeHub::PROP_DESCRIPTION]);
     } else {
       $description = null;
     }
 
     // Write all data to database
-    $updateStatement = BeeHub::mysqli()->prepare('UPDATE `beehub_sponsors` SET `display_name`=?, `description`=? WHERE `sponsor_id`=?');
-    $id = $this->getId();
-    $updateStatement->bind_param('ssd', $displayname, $description, $id);
+    $updateStatement = BeeHub::mysqli()->prepare('UPDATE `beehub_sponsors` SET `displayname`=?, `description`=? WHERE `sponsor_name`=?');
+    $updateStatement->bind_param('sss', $displayname, $description, $this->name);
     $updateStatement->execute();
 
     // Store all other properties
     parent::storeProperties();
 
     // And set the database properties again
-    $this->writable_props[DAV::PROP_DISPLAYNAME] = $displayname;
+    $this->sql_props[DAV::PROP_DISPLAYNAME] = $displayname;
     if (!is_null($description)) {
-      $this->writable_props[BeeHub::PROP_DESCRIPTION] = $description;
+      $this->sql_props[BeeHub::PROP_DESCRIPTION] = $description;
     }
   }
 
   public function user_prop($propname) {
     switch ($propname) {
       case DAV::PROP_GROUP_MEMBER_SET:
-      case BeeHub::PROP_GROUP_REQUESTED_MEMBER_SET:
-      case BeeHub::PROP_GROUP_ADMIN_SET:
-        $method = substr($propname, strpos($propname, ' ')+1);
-        $retval = $this->user_prop_group_member_set($method);
+        $retval = $this->user_prop_group_member_set();
         return $retval ? new DAV_Element_href( $retval ) : '';
       default:
         return parent::user_prop($propname);
@@ -174,19 +258,14 @@ EOS;
     $this->init_props();
     switch ($propname) {
       case DAV::PROP_GROUP_MEMBER_SET:
-      case BeeHub::PROP_GROUP_REQUESTED_MEMBER_SET:
-      case BeeHub::PROP_GROUP_ADMIN_SET:
         if (is_null($value)) {
           $value = array();
         }
-print_r($value);
-die();
         $set = DAVACL::parse_hrefs($value)->URIs;
         foreach ($set as &$uri) {
           $uri = DAV::parseURI($uri, false);
         }
-        $method = substr($propname, strpos($propname, ' ')+1);
-        $this->user_set_group_member_set($set, $method);
+        $this->user_set_group_member_set($set);
         $this->touched = true;
         break;
       default:
@@ -195,103 +274,12 @@ die();
     }
   }
 
-  public function user_set_group_member_set($set, $setType = 'group-member-set') {
-    // Test if the current user is admin of this sponsor, only those are allowed to add users.
-    if (!$this->is_admin()) {
-      throw new DAV_Status(
-              DAV::HTTP_FORBIDDEN,
-              DAV::COND_NEED_PRIVILEGES
-      );
-    }
-
-    // Determine new users and users to be removed
-    $currentUsers = $this->user_prop_group_member_set($setType);
-    $newUsers = array_diff($set, $currentUsers);
-    $removedUsers = array_diff($currentUsers, $set);
-    $sponsorId = intval($this->getId());
-
-    // Remove users
-    if (count($removedUsers) > 0) {
-      $idQueryParts = array();
-      foreach ($removedUsers as $path) {
-        $user = BeeHub_Registry::inst()->resource($path);
-        $idQueryParts[] = "(`sponsor_id`='" . $sponsorId . "' AND `user_id`='" . intval($user->getId()) . "')";
-      }
-      if ($setType == 'group-admin-set') {
-//        BeeHub::mysqli()->query('UPDATE `beehub_sponsor_members` SET `admin`=0 WHERE ' . implode(' OR ', $idQueryParts));
-print('UPDATE `beehub_sponsor_members` SET `admin`=0 WHERE ' . implode(' OR ', $idQueryParts));
-      }else{
-//        BeeHub::mysqli()->query('DELETE FROM `beehub_sponsor_members` WHERE ' . implode(' OR ', $idQueryParts));
-print('DELETE FROM `beehub_sponsor_members` WHERE ' . implode(' OR ', $idQueryParts));
-      }
-    }
-
-    // Insert all new ID's to the database
-    if (count($newUsers) > 0) {
-      $idQueryParts = array();
-      foreach ($newUsers as $path) {
-        $user = BeeHub_Registry::inst()->resource($path);
-        $idQueryParts[] = "('" . $sponsorId . "', '" . intval($user->getId()) . "', %ADMIN%, %ACCEPTED%)";
-        // TODO: sent the user an e-mail
-      }
-      $query = 'INSERT INTO `beehub_sponsor_members` (`sponsor_id`, `user_id`, `admin`, `accepted`) VALUES ' . implode(',', $idQueryParts) . ' ON DUPLICATE KEY UPDATE `admin`=%DEFAULT_ADMIN%, `accepted`=%ACCEPTED%';
-      switch($setType) {
-        case 'group-requested-member-set':
-          $query = str_replace(array('%ADMIN%', '%DEFAULT_ADMIN%', '%ACCEPTED%'), array('0', '0', '0'), $query);
-          break;
-        case 'group-admin-set':
-          $query = str_replace(array('%ADMIN%', '%DEFAULT_ADMIN%', '%ACCEPTED%'), array('1', '1', '1'), $query);
-          break;
-        default:
-          $query = str_replace(array('%ADMIN%', '%DEFAULT_ADMIN%', '%ACCEPTED%'), array('0', '`admin`', '1'), $query);
-        break;
-      }
-//      BeeHub::mysqli()->query($query);
-print($query);
-    }
-die();
+  public function user_set_group_member_set($set) {
+    throw DAV::forbidden();
   }
 
-  public function user_prop_group_member_set($setType = 'group-member-set') {
-    // Test if the current user is admin of this sponsor, only those are allowed to add users.
-    if (!$this->is_admin()) {
-      throw new DAV_Status(
-              DAV::HTTP_FORBIDDEN,
-              DAV::COND_NEED_PRIVILEGES
-      );
-    }
-    $query = <<<EOS
-    SELECT `user_name`
-      FROM `beehub_users`
-INNER JOIN `beehub_sponsor_members`
-     USING (`user_id`)
-     WHERE `beehub_sponsor_members`.`sponsor_id` = ?
-EOS;
-    switch ($setType) {
-      case 'group-requested-member-set':
-        $query .= ' AND `accepted`=0';
-        break;
-      case 'group-admin-set':
-        $query .= ' AND `admin`=1';
-        break;
-      default:
-        $query .= ' AND `accepted`=1';
-      break;
-    }
-    $statement = BeeHub::mysqli()->prepare($query);
-    $sponsor_id = $this->getId();
-    $statement->bind_param('d', $sponsor_id);
-    $user_name = null;
-    $statement->bind_result($user_name);
-    $statement->execute();
-
-    $retval = array();
-    while ($statement->fetch()) {
-      $retval[] = BeeHub::$CONFIG['webdav_namespace']['users_path'] . rawurlencode($user_name);
-    }
-    $statement->free_result();
-
-    return $retval;
+  public function user_prop_group_member_set() {
+    return $this->user_prop(DAV::PROP_GROUP_MEMBER_SET);
   }
 
   // We allow everybody to do everything with this object in the ACL, so we can handle all privileges hard-coded without ACL's interfering
@@ -299,17 +287,8 @@ EOS;
     return array(new DAVACL_Element_ace('DAV: all', false, array('DAV: all'), false, true, null));
   }
 
-  /**
-   * Gets the (database) ID of the user
-   *
-   * @return  int  The (database) ID of this user
-   */
-  public function getId() {
-    $this->init_props();
-    return $this->id;
-  }
 
-  private $is_admin_cache = null;
+  private $isAdminCache;
 
   /**
    * Determines whether the currently logged in user is an administrator of this sponsor or not.
@@ -317,17 +296,17 @@ EOS;
    * @return  boolean  True if the currently logged in user is an administrator of this sponsor, false otherwise
    */
   public function is_admin() {
-    if (is_null($this->is_admin_cache)) {
+    if (is_null($this->isAdminCache)) {
       $result = null;
-      $user_name = BeeHub_Registry::inst()->resource(BeeHub::current_user())->name;
-      $statement = BeeHub::mysqli()->prepare('SELECT `user_name` FROM `beehub_sponsor_members` WHERE `sponsor_name` = ? AND `user_name` = ? AND `is_admin` = 1');
-      $statement->bind_param('ss', $this->name, $user_name);
+      $username = rawurldecode(basename(BeeHub::current_user()));
+      $statement = BeeHub::mysqli()->prepare('SELECT `user_name` FROM `beehub_sponsor_members` WHERE `sponsor_name`=? AND `user_name`=? AND `is_admin`=1');
+      $statement->bind_param('ss', $this->name, $username);
       $statement->bind_result($result);
       $statement->execute();
       $response = $statement->fetch();
-      $this->is_admin_cache = !(is_null($response) || !($result > 0));
+      $this->isAdminCache = !is_null($response);
     }
-    return $this->is_admin_cache;
+    return $this->isAdminCache;
   }
 
   // These methods are only available for a limited range of users!
@@ -340,6 +319,5 @@ EOS;
     }
     return parent::method_PROPPATCH($propname, $value);
   }
-
 
 } // class BeeHub_Sponsor
