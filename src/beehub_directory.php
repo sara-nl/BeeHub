@@ -55,7 +55,7 @@ private function internal_create_member( $name, $collection = false ) {
   if (!isset($cups[$group]))
     $group = DAV::$REGISTRY->resource($this->user_prop_current_user_principal())->user_prop_group();
   if (file_exists($localPath))
-    throw new DAV_Status(DAV::forbidden());
+    throw DAV::forbidden();
   $result = $collection ? @mkdir($localPath) : touch($localPath);
   if ( !$result )
     throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);

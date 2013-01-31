@@ -1,6 +1,6 @@
 <?php
 
-/*************************************************************************
+/*·************************************************************************
  * Copyright ©2007-2012 SARA b.v., Amsterdam, The Netherlands
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * ************************************************************************ */
+ **************************************************************************/
 
 /**
  * File documentation (who cares)
@@ -56,7 +56,7 @@ class BeeHub_Sponsor extends BeeHub_File {
    */
   public function method_GET($headers) {
     $query = <<<EOS
-    SELECT `username`,
+    SELECT `user_name`,
            `display_name`,
            `admin`,
            `accepted`
@@ -68,16 +68,16 @@ EOS;
     $statement = BeeHub::mysqli()->prepare($query);
     $sponsorId = $this->getId();
     $statement->bind_param('d', $sponsorId);
-    $username = null;
+    $user_name = null;
     $displayname = null;
     $admin = null;
     $accepted = null;
-    $statement->bind_result($username, $displayname, $admin, $accepted);
+    $statement->bind_result($user_name, $displayname, $admin, $accepted);
     $statement->execute();
     $members = array();
     while ($statement->fetch()) {
       $members[] = Array(
-        'path' => BeeHub::$CONFIG['webdav_namespace']['users_path'] . $username,
+        'user_name' => $user_name,
         'displayname' => $displayname,
         'admin' => ($admin == 1),
         'accepted' => ($accepted == 1)
@@ -190,8 +190,9 @@ EOS;
     }
   }
 
+  protected $sql_props = null;
   protected function init_props() {
-    if (is_null($this->writable_props)) {
+    if (is_null($this->sql_props)) {
       parent::init_props();
       $this->protected_props[BeeHub::PROP_NAME] = basename($this->path);
 
@@ -216,8 +217,8 @@ EOS;
       self::$result_description = null;
       self::$statement_props->fetch();
       $this->id = self::$result_sponsor_id;
-      $this->writable_props[DAV::PROP_DISPLAYNAME] = self::$result_display_name;
-      $this->writable_props[BeeHub::PROP_DESCRIPTION] = self::$result_description;
+      $this->sql_props[DAV::PROP_DISPLAYNAME] = self::$result_display_name;
+      $this->sql_props[BeeHub::PROP_DESCRIPTION] = self::$result_description;
       self::$statement_props->free_result();
     }
   }
@@ -233,15 +234,15 @@ EOS;
     }
 
     // Are database properties set? If so, get the value and unset them
-    if (isset($this->writable_props[DAV::PROP_DISPLAYNAME])) {
-      $displayname = $this->writable_props[DAV::PROP_DISPLAYNAME];
-      unset($this->writable_props[DAV::PROP_DISPLAYNAME]);
+    if (isset($this->sql_props[DAV::PROP_DISPLAYNAME])) {
+      $displayname = $this->sql_props[DAV::PROP_DISPLAYNAME];
+      unset($this->sql_props[DAV::PROP_DISPLAYNAME]);
     } else {
       $displayname = '';
     }
-    if (isset($this->writable_props[BeeHub::PROP_DESCRIPTION])) {
-      $description = $this->writable_props[BeeHub::PROP_DESCRIPTION];
-      unset($this->writable_props[BeeHub::PROP_DESCRIPTION]);
+    if (isset($this->sql_props[BeeHub::PROP_DESCRIPTION])) {
+      $description = $this->sql_props[BeeHub::PROP_DESCRIPTION];
+      unset($this->sql_props[BeeHub::PROP_DESCRIPTION]);
     } else {
       $description = null;
     }
@@ -256,9 +257,9 @@ EOS;
     parent::storeProperties();
 
     // And set the database properties again
-    $this->writable_props[DAV::PROP_DISPLAYNAME] = $displayname;
+    $this->sql_props[DAV::PROP_DISPLAYNAME] = $displayname;
     if (!is_null($description)) {
-      $this->writable_props[BeeHub::PROP_DESCRIPTION] = $description;
+      $this->sql_props[BeeHub::PROP_DESCRIPTION] = $description;
     }
   }
 

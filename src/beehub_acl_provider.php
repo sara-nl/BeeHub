@@ -36,10 +36,12 @@ static public function inst() {
 }
 
 
+// TODO: Deprecate.
 public $CURRENT_USER_PRINCIPAL = null;
 
 
 public function user_prop_current_user_principal() {
+  // return BeeHub::current_user();
   return $this->CURRENT_USER_PRINCIPAL;
 }
 

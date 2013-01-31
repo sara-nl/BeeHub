@@ -1,6 +1,6 @@
 <?php
 
-/* ·************************************************************************
+/*·************************************************************************
  * Copyright ©2007-2012 SARA b.v., Amsterdam, The Netherlands
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -12,10 +12,15 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * ************************************************************************ */
+ **************************************************************************/
 
 /**
  * File documentation (who cares)
+ * @TODO For each occurrence of DAV::HTTP_FORBIDDEN in all BeeHub code, check
+ *   if it should be replaced with a call to DAV::forbidden(). Originally, we
+ *   expected that BeeHub would only have authenticated users, but this is no
+ *   longer the case, so we must start to distinguish between FORBIDDEN and
+ *   UNAUTHORIZED.
  * @package BeeHub
  */
 
@@ -174,6 +179,7 @@ class BeeHub {
 
   /**
    * @todo implement
+   * @todo deprecate?
    */
   public static function current_user() {
     return BeeHub_ACL_Provider::inst()->CURRENT_USER_PRINCIPAL;

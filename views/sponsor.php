@@ -2,7 +2,7 @@
 /*
  * Available variables:
  * $sponsor  The BeeHub_Sponsor instance representing the current sponsor
- * $members  A 2 dimensional array containing all members. Each member array contains 4 keys: path, displayname, admin, accepted. For example: $members[0]['path']
+ * $members  A 2 dimensional array containing all members. Each member array contains 4 keys: user_name, displayname, admin, accepted. For example: $members[0]['user_name']
  */
 $this->setTemplateVar('active', "sponsor");
 $this->setTemplateVar('header', '<style type="text/css">
@@ -37,6 +37,7 @@ $this->setTemplateVar('footer', '<script type="text/javascript" src="/system/js/
   <table>
     <thead>
       <tr>
+        <th>user_name</th>
         <th>Display name</th>
         <th>Accept?</th>
         <th>Delete?</th>
@@ -45,7 +46,8 @@ $this->setTemplateVar('footer', '<script type="text/javascript" src="/system/js/
     <tbody>
       <?php foreach ($members as $member) :
         if (!$member['accepted']) : ?>
-          <tr class="member_row" id="<?= $member['path'] ?>">
+          <tr class="member_row" id="<?= BeeHub::$CONFIG['webdav_namespaces']['users_path'] . $member['user_name'] ?>">
+            <td><?= $member['user_name'] ?></td>
             <td><?= $member['displayname'] ?></td>
             <td><a href="#" class="accept_link">Accept</a></td>
             <td><a href="#" class="remove_link">Delete</a></td>

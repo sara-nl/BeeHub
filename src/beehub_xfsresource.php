@@ -134,11 +134,9 @@ class BeeHub_XFSResource extends BeeHub_Resource {
   }
 
 
-  public function user_prop_group() {
-    return $this->user_prop(DAV::PROP_GROUP);
-  }
-
-
+  /**
+   * @TODO rewrite to BeeHub::PROP_SPONSOR
+   */
   protected function user_set_group($group) {
     $this->assert(DAVACL::PRIV_READ);
     if (!( $group = DAV::$REGISTRY->resource($group) ) ||
@@ -155,15 +153,9 @@ class BeeHub_XFSResource extends BeeHub_Resource {
       );
     if ($this->user_prop_owner() != $this->user_prop_current_user_principal() &&
             !BeeHub_ACL_Provider::inst()->wheel())
-      throw new DAV_Status(
-              DAV::forbidden(),
-              'Only the owner can change the group of a resource.'
-      );
+      throw DAV::forbidden( 'Only the owner can change the group of a resource.' );
     if (!in_array($group->path, $this->current_user_principals()))
-      throw new DAV_Status(
-              DAV::forbidden(),
-              "You're not a member of group {$group->path}"
-      );
+      throw DAV::forbidden( "You're not a member of group {$group->path}" );
     return $this->user_set(DAV::PROP_GROUP, $group->path);
   }
 
@@ -173,15 +165,15 @@ class BeeHub_XFSResource extends BeeHub_Resource {
   }
 
 
+  /**
+   * @TODO check this implementation
+   */
   protected function user_set_owner($owner) {
     $this->assert(DAVACL::PRIV_READ);
     $cups = BeeHub_Registry::inst()->resource($this->user_prop_current_user_principal());
     if ($this->user_prop_owner() != $this->user_prop_current_user_principal() and
             !BeeHub_ACL_Provider::inst()->wheel())
-      throw new DAV_Status(
-              DAV::forbidden(),
-              'Only the resource owner can grant ownership.'
-      );
+      throw DAV::forbidden( 'Only the resource owner can grant ownership.' );
     if (!( $owner = DAV::$REGISTRY->resource($owner) ) ||
             !$owner->isVisible() ||
             !$owner instanceof BeeHub_User)
@@ -190,10 +182,7 @@ class BeeHub_XFSResource extends BeeHub_Resource {
               DAV::COND_RECOGNIZED_PRINCIPAL
       );
     if (!in_array($this->user_prop_group(), $owner->current_user_principals()))
-      throw new DAV_Status(
-              DAV::forbidden(),
-              'User ' . $owner->path . ' is not a member of group ' . $this->user_prop_group() . '.'
-      );
+      throw DAV::forbidden( 'User ' . $owner->path . ' is not a member of group ' . $this->user_prop_group() . '.' );
     return $this->user_set(DAV::PROP_OWNER, $owner->path);
   }
 
