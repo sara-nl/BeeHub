@@ -130,7 +130,6 @@ EOS;
     if (count($members) == 0) {
       return;
     }
-    $sponsorId = intval($this->getId());
     $newInvited = ($newInvited ? 1 : 0);
     $newRequested = ($newRequested ? 1 : 0);
     $newAdmin = ($newAdmin ? 1 : 0);
@@ -172,7 +171,7 @@ EOS;
     if (count($members) == 0) {
       return;
     }
-    $statement = BeeHub::mysqli()->prepare('DELETE FROM `beehub_sponsor_members` WHERE `sponsor_name`=? AND `user_name`=?');
+    $statement = BeeHub::mysqli()->prepare('DELETE FROM `beehub_group_members` WHERE `group_name`=? AND `user_name`=?');
     $user_name = null;
     $statement->bind_param('ss', $this->name, $user_name);
     foreach ($members as $member) {

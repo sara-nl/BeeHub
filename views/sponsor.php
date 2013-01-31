@@ -46,9 +46,9 @@ $this->setTemplateVar('footer', '<script type="text/javascript" src="/system/js/
     <tbody>
       <?php foreach ($members as $member) :
         if (!$member['accepted']) : ?>
-          <tr class="member_row" id="<?= BeeHub::$CONFIG['webdav_namespaces']['users_path'] . $member['user_name'] ?>">
-            <td><?= $member['user_name'] ?></td>
-            <td><?= $member['displayname'] ?></td>
+          <tr class="member_row" id="<?= BeeHub::$CONFIG['webdav_namespace']['users_path'] . rawurlencode($member['user_name']) ?>">
+            <td><?= htmlspecialchars($member['user_name'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></td>
+            <td><?= htmlspecialchars($member['displayname'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></td>
             <td><a href="#" class="accept_link">Accept</a></td>
             <td><a href="#" class="remove_link">Delete</a></td>
           </tr>
@@ -62,6 +62,7 @@ $this->setTemplateVar('footer', '<script type="text/javascript" src="/system/js/
   <table>
     <thead>
       <tr>
+        <th>user_name</th>
         <th>Display name</th>
         <th>Admin?</th>
         <th>Delete?</th>
@@ -70,8 +71,9 @@ $this->setTemplateVar('footer', '<script type="text/javascript" src="/system/js/
     <tbody id="current_members">
       <?php foreach ($members as $member) :
         if ($member['accepted']) : ?>
-          <tr class="member_row" id="<?= $member['path'] ?>">
-            <td><?= $member['displayname'] ?></td>
+          <tr class="member_row" id="<?= BeeHub::$CONFIG['webdav_namespace']['users_path'] . rawurlencode($member['user_name']) ?>">
+            <td><?= htmlspecialchars($member['user_name'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></td>
+            <td><?= htmlspecialchars($member['displayname'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></td>
             <td><?= ($member['admin'] ? 'jep <a href="#" class="demote_link">demote</a>' : 'nope <a href="#" class="promote_link">promote</a>') ?></td>
             <td><a href="#" class="remove_link">Delete</a></td>
           </tr>

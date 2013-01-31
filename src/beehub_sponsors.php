@@ -53,12 +53,10 @@ class BeeHub_Sponsors extends BeeHub_Principal_Collection {
     $this->assert(DAVACL::PRIV_READ);
     $view = new BeeHub_View('sponsors.php');
     $view->setVar('directory', $this);
-    $result = BeeHub::query('SELECT `sponsor_name` FROM `beehub_sponsors` ORDER BY `display_name`');
+    $result = BeeHub::query('SELECT `sponsor_name` FROM `beehub_sponsors` ORDER BY `displayname`');
     $sponsors = array();
     while ($row = $result->fetch_assoc()) {
-      // TODO: waarom strtolower?
-      $sponsors[strtolower($row['sponsor_name'])] =
-        DAV::$REGISTRY->resource($this->path . $row['sponsor_name']);
+      $sponsors[] = DAV::$REGISTRY->resource($this->path . '/' . rawurlencode($row['sponsor_name']));
     }
     $result->free();
     $view->setVar('sponsors', $sponsors);
