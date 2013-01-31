@@ -48,7 +48,7 @@ class BeeHub_User extends BeeHub_Principal {
   }
 
   public function method_HEAD() {
-    if ($this->isAdmin()) {
+    if ($this->is_admin()) {
       throw new DAV_Status(
               DAV::HTTP_FORBIDDEN,
               DAV::COND_NEED_PRIVILEGES
@@ -198,7 +198,7 @@ EOS;
     return array();
   }
 
-  protected function isAdmin() {
+  public function is_admin() {
     return ($this->path != BeeHub::current_user());
   }
 
@@ -214,38 +214,13 @@ EOS;
 //  }
 
   public function method_PROPPATCH($propname, $value = null) {
-    if ($this->isAdmin()) {
+    if ($this->is_admin()) {
       throw new DAV_Status(
               DAV::HTTP_FORBIDDEN,
               DAV::COND_NEED_PRIVILEGES
       );
     }
     return parent::method_PROPPATCH($propname, $value);
-  }
-
-  // All these methods are forbidden:
-  public function method_ACL($aces) {
-    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
-  }
-
-  public function method_COPY($path) {
-    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
-  }
-
-  public function method_COPY_external($destination, $overwrite) {
-    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
-  }
-
-  public function method_POST(&$headers) {
-    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
-  }
-
-  public function method_PUT($stream) {
-    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
-  }
-
-  public function method_PUT_range($stream, $start, $end, $total) {
-    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
   }
 
 } // class BeeHub_User
