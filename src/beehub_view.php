@@ -1,5 +1,6 @@
 <?php
-/*************************************************************************
+
+/*·************************************************************************
  * Copyright ©2007-2012 SARA b.v., Amsterdam, The Netherlands
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -62,9 +63,6 @@ class BeeHub_View {
     $basePath = dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR;
     $viewPath = realpath($basePath . $viewPath);
 
-    if (substr($viewPath, 0, strlen($basePath)) != $basePath) {
-      throw new Exception("View path points to illegal location. It should point to a location inside the 'views' directory");
-    }
     if (is_readable($viewPath)) {
       $this->viewPath = $viewPath;
     }else{
@@ -89,12 +87,9 @@ class BeeHub_View {
     $basePath = dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'templates' . DIRECTORY_SEPARATOR;
     $templatePath = realpath($basePath . $templatePath);
 
-    if (substr($templatePath, 0, strlen($basePath)) != $basePath) {
-      throw new Exception("Template path points to illegal location. It should point to a location inside the 'templates' directory");
-    }
     if (is_readable($templatePath)) {
       $this->templatePath = $templatePath;
-    }else{
+    } else {
       throw new Exception('Template path does not exist: ' . $templatePath);
     }
 

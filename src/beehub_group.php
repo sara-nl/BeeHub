@@ -44,19 +44,18 @@ INNER JOIN `beehub_group_members`
      WHERE `group_name` = ?;
 EOS;
     $statement = BeeHub::mysqli()->prepare($query);
-    $groupName = $this->name;
-    $statement->bind_param('d', $groupName);
-    $username = null;
+    $statement->bind_param('s', $this->name);
+    $user_name = null;
     $displayname = null;
     $admin = null;
     $invited = null;
     $requested = null;
-    $statement->bind_result($username, $displayname, $admin, $invited, $requested);
+    $statement->bind_result($user_name, $displayname, $admin, $invited, $requested);
     $statement->execute();
     $members = array();
     while ($statement->fetch()) {
       $members[] = Array(
-        'username' => $username,
+        'user_name' => $user_name,
         'displayname' => $displayname,
         'admin' => ($admin == 1),
         'invited' => ($invited == 1),

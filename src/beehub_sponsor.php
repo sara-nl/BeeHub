@@ -1,6 +1,6 @@
 <?php
 
-/*************************************************************************
+/*·************************************************************************
  * Copyright ©2007-2012 SARA b.v., Amsterdam, The Netherlands
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * ************************************************************************ */
+ **************************************************************************/
 
 /**
  * File documentation (who cares)
@@ -56,7 +56,7 @@ class BeeHub_Sponsor extends BeeHub_File {
    */
   public function method_GET($headers) {
     $query = <<<EOS
-    SELECT `username`,
+    SELECT `user_name`,
            `display_name`,
            `admin`,
            `accepted`
@@ -68,16 +68,16 @@ EOS;
     $statement = BeeHub::mysqli()->prepare($query);
     $sponsorId = $this->getId();
     $statement->bind_param('d', $sponsorId);
-    $username = null;
+    $user_name = null;
     $displayname = null;
     $admin = null;
     $accepted = null;
-    $statement->bind_result($username, $displayname, $admin, $accepted);
+    $statement->bind_result($user_name, $displayname, $admin, $accepted);
     $statement->execute();
     $members = array();
     while ($statement->fetch()) {
       $members[] = Array(
-        'username' => $username,
+        'user_name' => $user_name,
         'displayname' => $displayname,
         'admin' => ($admin == 1),
         'accepted' => ($accepted == 1)
@@ -278,7 +278,7 @@ die();
       );
     }
     $query = <<<EOS
-    SELECT `username`
+    SELECT `user_name`
       FROM `beehub_users`
 INNER JOIN `beehub_sponsor_members`
      USING (`user_id`)
@@ -298,13 +298,13 @@ EOS;
     $statement = BeeHub::mysqli()->prepare($query);
     $sponsor_id = $this->getId();
     $statement->bind_param('d', $sponsor_id);
-    $username = null;
-    $statement->bind_result($username);
+    $user_name = null;
+    $statement->bind_result($user_name);
     $statement->execute();
 
     $retval = array();
     while ($statement->fetch()) {
-      $retval[] = BeeHub::$CONFIG['webdav_namespace']['users_path'] . rawurlencode($username);
+      $retval[] = BeeHub::$CONFIG['webdav_namespace']['users_path'] . rawurlencode($user_name);
     }
     $statement->free_result();
 

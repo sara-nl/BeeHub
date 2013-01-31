@@ -1,6 +1,6 @@
 <?php
 
-/* ·************************************************************************
+/*·************************************************************************
  * Copyright ©2007-2012 SARA b.v., Amsterdam, The Netherlands
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -12,7 +12,8 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * ************************************************************************ */
+ **************************************************************************/
+
 
 /**
  * File documentation (who cares)
@@ -72,50 +73,15 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
     $result->free();
   }
 
+
   // We allow everybody to do everything with this object in the ACL, so we can handle all privileges hard-coded without ACL's interfering
   public function user_prop_acl() {
-    return array(new DAVACL_Element_ace('DAV: all', false, array('DAV: all'), false, true, null));
+    return array(
+      new DAVACL_Element_ace(
+        'DAV: all', false, array('DAV: all'), false, true, null
+      )
+    );
   }
 
-  // All these methods are forbidden:
-  public function method_ACL($aces) {
-    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
-  }
-
-  public function method_COPY($path) {
-    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
-  }
-
-  public function method_COPY_external($destination, $overwrite) {
-    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
-  }
-
-  public function method_DELETE($name) {
-    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
-  }
-
-  public function method_MKCOL($name) {
-    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
-  }
-
-  public function method_MOVE($member, $description) {
-    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
-  }
-
-  public function method_POST(&$headers) {
-    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
-  }
-
-  public function method_PROPPATCH($propname, $value = null) {
-    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
-  }
-
-  public function method_PUT($stream) {
-    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
-  }
-
-  public function method_PUT_range($stream, $start, $end, $total) {
-    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
-  }
 
 } // class BeeHub_Groups

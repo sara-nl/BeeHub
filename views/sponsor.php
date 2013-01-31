@@ -2,7 +2,7 @@
 /*
  * Available variables:
  * $sponsor  The BeeHub_Sponsor instance representing the current sponsor
- * $members  A 2 dimensional array containing all members. Each member array contains 4 keys: username, displayname, admin, accepted. For example: $members[0]['username']
+ * $members  A 2 dimensional array containing all members. Each member array contains 4 keys: user_name, displayname, admin, accepted. For example: $members[0]['user_name']
  */
 $this->setTemplateVar('active', "sponsor");
 $this->setTemplateVar('header', '<style type="text/css">
@@ -34,7 +34,7 @@ $this->setTemplateVar('footer', '<script type="text/javascript" src="/system/js/
 <table>
   <thead>
     <tr>
-      <th>Username</th>
+      <th>user_name</th>
       <th>Display name</th>
       <th>Admin?</th>
       <th>Accepted?</th>
@@ -43,7 +43,7 @@ $this->setTemplateVar('footer', '<script type="text/javascript" src="/system/js/
   <tbody>
     <?php foreach ($members as $member) : ?>
       <tr>
-        <td><?= $member['username'] ?></td>
+        <td><?= $member['user_name'] ?></td>
         <td><?= $member['displayname'] ?></td>
         <td><?= ($member['admin'] ? 'jep' : 'nope') ?></td>
         <td><?= ($member['accepted'] ? 'jep' : 'nope') ?></td>

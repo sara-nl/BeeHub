@@ -66,7 +66,7 @@ class BeeHub_User extends BeeHub_Principal {
            $r_x509 = null;
 
     # Lazy initialization of prepared statement:
-    if (null === self::$statement_props) {
+    if (null === $statement_props) {
       $statement_props = BeeHub::mysqli()->prepare(
         'SELECT
           `displayname`,
@@ -74,7 +74,7 @@ class BeeHub_User extends BeeHub_Principal {
           `password` IS NOT NULL,
           `x509`
          FROM `beehub_users`
-         WHERE `username` = ?;'
+         WHERE `user_name` = ?;'
       );
       $statement_props->bind_param('s', $p_user_name);
       $statement_props->bind_result(
@@ -86,7 +86,7 @@ class BeeHub_User extends BeeHub_Principal {
     }
 
     if (is_null($this->sql_props)) {
-      $p_username = $this->name;
+      $p_user_name = $this->name;
       $statement_props->execute();
       $statement_props->fetch();
       $this->sql_props[DAV::PROP_DISPLAYNAME] = $r_displayname;
@@ -175,8 +175,8 @@ FROM `beehub_group_members`
 WHERE `user_name` = ?;
 EOS;
     $statement = BeeHub::mysqli()->prepare($query);
-    $username = $this->name;
-    $statement->bind_param('d', $username);
+    $user_name = $this->name;
+    $statement->bind_param('d', $user_name);
     $groupname = null;
     $statement->bind_result($groupname);
     $statement->execute();
