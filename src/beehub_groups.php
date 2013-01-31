@@ -37,7 +37,7 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
     $result = BeeHub::query('SELECT `group_name` FROM `beehub_groups` ORDER BY `displayname`');
     $groups = array();
     while ($row = $result->fetch_assoc()) {
-      $groups[strtolower($row['group_name'])] = DAV::$REGISTRY->resource($this->path . $row['group_name']);
+      $groups[] = DAV::$REGISTRY->resource($this->path . '/' . $row['group_name']);
     }
     $result->free();
     $view->setVar('groups', $groups);

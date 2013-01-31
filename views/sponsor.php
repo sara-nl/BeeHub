@@ -4,7 +4,7 @@
  * $sponsor  The BeeHub_Sponsor instance representing the current sponsor
  * $members  A 2 dimensional array containing all members. Each member array contains 4 keys: user_name, displayname, admin, accepted. For example: $members[0]['user_name']
  */
-$this->setTemplateVar('active', "sponsor");
+$this->setTemplateVar('active', "sponsors");
 $this->setTemplateVar('header', '<style type="text/css">
 .fieldname {
   text-align: right;

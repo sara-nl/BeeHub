@@ -1,5 +1,5 @@
 $(function (){
-  $('#save_sponsor_buton').click(function() {
+  $('#save_buton').click(function() {
     var setProps = new Array();
     var displayname = new nl.sara.webdav.Property();
     displayname.namespace = 'DAV:';
