@@ -1,12 +1,13 @@
 <?php
-/*
-Available variables:
 
-$directory  The beehub_directory object representing the current directory
-$groups     All members of this directory
-*/
-$this->setTemplateVar('active', "groups");
-$this->setTemplateVar('header', '<style type="text/css">
+/*
+ * Available variables:
+ *
+ * $directory  The beehub_directory object representing the current directory
+ * $groups     All members of this directory
+ */
+$active = 'groups';
+$header = '<style type="text/css">
 .groupname {
   padding: 0.5em;
   background: #ddd;
@@ -19,7 +20,9 @@ $this->setTemplateVar('header', '<style type="text/css">
   margin: 10px 0;
   text-align: right;
 }
-</style>');
+</style>';
+include 'views/header_bootstrap.php';
+
 ?><div class="bootstrap">
   <h1>Groups</h1>
   <?php foreach ($groups as $group) : ?>
@@ -32,3 +35,4 @@ $this->setTemplateVar('header', '<style type="text/css">
   </div>
   <?php endforeach; ?>
 </div>
+<?php include 'views/footer_bootstrap.php'; ?>

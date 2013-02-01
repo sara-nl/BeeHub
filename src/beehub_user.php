@@ -41,14 +41,12 @@ class BeeHub_User extends BeeHub_Principal {
    * @return string an HTML file
    * @see DAV_Resource::method_GET()
    */
-  public function method_GET($headers) {
-    $view = new BeeHub_View('user.php');
-    $view->setVar('user', $this);
-    return ((BeeHub::best_xhtml_type() != 'text/html') ? DAV::xml_header() : '' ) . $view->getParsedView();
+  public function method_GET() {
+    include_view( null, array( 'members' => $members ) );
   }
 
   public function method_HEAD() {
-    if ($this->is_admin()) {
+    if (!$this->is_admin()) {
       throw new DAV_Status(
               DAV::HTTP_FORBIDDEN,
               DAV::COND_NEED_PRIVILEGES

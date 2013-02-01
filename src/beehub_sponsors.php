@@ -49,24 +49,18 @@ class BeeHub_Sponsors extends BeeHub_Principal_Collection {
    * @return string an HTML file
    * @see DAV_Resource::method_GET()
    */
-  public function method_GET($headers) {
+  public function method_GET() {
     $this->assert(DAVACL::PRIV_READ);
-    $view = new BeeHub_View('sponsors.php');
-    $view->setVar('directory', $this);
-    $result = BeeHub::query('SELECT `sponsor_name` FROM `beehub_sponsors` ORDER BY `displayname`');
     $sponsors = array();
-    while ($row = $result->fetch_assoc()) {
-      $sponsors[] = DAV::$REGISTRY->resource($this->path . '/' . rawurlencode($row['sponsor_name']));
-    }
-    $result->free();
-    $view->setVar('sponsors', $sponsors);
-    return ((BeeHub::best_xhtml_type() != 'text/html') ? DAV::xml_header() : '' ) . $view->getParsedView();
+    foreach ($this as $sponsor)
+      $sponsors[] = DAV::$REGISTRY->resource($this->path . $sponsor );
+    $this->include_view(null, array('sponsors' => $sponsors));
   }
 
 
   protected function init_members() {
     $result = BeeHub::query(
-      'SELECT `sponsor_name` FROM `beehub_sponsors`'
+      'SELECT `sponsor_name` FROM `beehub_sponsors` ORDER BY `displayname`'
     );
     $this->members = array();
     while ($row = $result->fetch_row()) {

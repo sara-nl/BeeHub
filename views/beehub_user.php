@@ -1,15 +1,17 @@
 <?php
-$this->setTemplateVar('active', "profile");
-$this->setTemplateVar('header', '<style type="text/css">
+$active = "profile";
+$header = '<style type="text/css">
 .fieldname {
   text-align: right;
 }
 div.passwd {
   display: none;
 }
-</style>');
-$this->setTemplateVar('footer', '<script type="text/javascript" src="/system/js/user.js"></script>
-<script type="text/javascript" src="/system/js/webdavlib.js"></script>');
+</style>';
+$footer = '<script type="text/javascript" src="/system/js/user.js"></script>
+<script type="text/javascript" src="/system/js/webdavlib.js"></script>';
+include 'views/header_bootstrap.php';
+
 ?><div class="bootstrap">
 <h1>Profile</h1>
 <form method="post">
@@ -48,3 +50,4 @@ $this->setTemplateVar('footer', '<script type="text/javascript" src="/system/js/
   <button class="btn">Save</button>
 </form>
 </div>
+<?php include 'views/footer_bootstrap.php'; ?>

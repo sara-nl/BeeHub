@@ -107,7 +107,7 @@ public function method_DELETE( $name )
  * @return string an HTML file
  * @see DAV_Resource::method_GET()
  */
-public function method_GET($headers) {
+public function method_GET() {
   $this->assert(DAVACL::PRIV_READ);
   // This was a switch() statement. I hate those. --pieterb
   if ( BeeHub::$CONFIG['webdav_namespace']['homepage'] == $this->path ) {
