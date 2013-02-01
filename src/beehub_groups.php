@@ -26,23 +26,19 @@
  */
 class BeeHub_Groups extends BeeHub_Principal_Collection {
 
+
   /**
    * @return string an HTML file
    * @see DAV_Resource::method_GET()
    */
-  public function method_GET($headers) {
+  public function method_GET() {
     $this->assert(DAVACL::PRIV_READ);
-    $view = new BeeHub_View('groups.php');
-    $view->setVar('directory', $this);
-    $result = BeeHub::query('SELECT `group_name` FROM `beehub_groups` ORDER BY `displayname`');
     $groups = array();
-    while ($row = $result->fetch_assoc()) {
-      $groups[] = DAV::$REGISTRY->resource($this->path . '/' . $row['group_name']);
-    }
-    $result->free();
-    $view->setVar('groups', $groups);
-    return ((BeeHub::best_xhtml_type() != 'text/html') ? DAV::xml_header() : '' ) . $view->getParsedView();
+    foreach ($this as $group_name)
+      $groups[] = DAV::$REGISTRY->resource( $this->path . $group_name );
+    $this->include_view(null, array('groups', $groups));
   }
+
 
   public function report_principal_property_search($properties) {
     if (1 != count($properties) ||
@@ -64,12 +60,12 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
     return $retval;
   }
 
+
   protected function init_members() {
-    $result = BeeHub::query('SELECT `group_name` FROM `beehub_groups`;');
+    $result = BeeHub::query('SELECT `group_name` FROM `beehub_groups` ORDER BY `displayname`');
     $this->members = array();
-    while ($row = $result->fetch_row()) {
+    while ($row = $result->fetch_row())
       $this->members[] = rawurlencode($row[0]);
-    }
     $result->free();
   }
 

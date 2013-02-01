@@ -1,4 +1,7 @@
-<!DOCTYPE html>
+<?php
+if ( false !== strpos( $this->user_prop_getcontenttype(), 'xml' ) )
+  echo DAV::xml_header();
+?><!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -12,12 +15,12 @@
   </head>
   <body>
     <div class="bootstrap">
-      <div class="navbar navbar-fixed-top">
+      <div class="navbar navbar-inverse navbar-fixed-top">
         <div class="navbar-inner">
           <ul class="nav">
             <?php
             if (!isset($active)) {
-              $active == 'beehub';
+              $active = 'beehub';
             }
             ?>
             <li<?= ($active == 'beehub' ? ' class="active"' : '') ?>><a href="<?= htmlspecialchars(BeeHub::$CONFIG['webdav_namespace']['homepage'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>">BeeHub</a></li>
@@ -29,13 +32,4 @@
         </div>
       </div>
     </div>
-
-    <div class="container">
-      <?= $content ?>
-    </div>
-    <script type="text/javascript" src="http://code.jquery.com/jquery-1.8.3.js"></script>
-    <script type="text/javascript" src="http://code.jquery.com/ui/1.9.2/jquery-ui.js"></script>
-    <script type="text/javascript" src="/system/bootstrap/js/bootstrap.js"></script>
-    <?= isset($footer) ? $footer : '' ?>
-  </body>
-</html>
+    <div class="beehub-below-navbar-fixed-top">

@@ -25,6 +25,36 @@
  */
 class BeeHub_Users extends BeeHub_Principal_Collection {
 
+  public function method_GET($headers) {
+    $view = new BeeHub_View('new_user.php');
+    $view->parseView();
+  }
+
+
+  public function method_POST(&$headers) {
+    //TODO: check juistheid POST formulier
+    $user_name = $_POST['user_name'];
+    $displayname = $_POST['displayname'];
+    $email = $_POST['email'];
+    $password = $_POST['password'];
+    $surfconext_id = $_POST['surfconext_id'];
+    $x509 = $_POST['x509'];
+
+    // Store in the database
+    $statement = BeeHub::mysqli()->prepare("INSERT INTO `beehub_users` (`user_name`, `surfconext_id`) VALUES (?, ?)");
+    $statement->bind_param('ss', $user_name, $surfconext_id);//, $displayname, $email, $password, $x509);
+    if (!$statement->execute()) {
+      throw new Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
+    $user = BeeHub_Registry::inst()->resource(BeeHub::$CONFIG['webdav_namespace']['users_path'] . $user_name);
+    $user->user_set_internal(DAV::PROP_DISPLAYNAME, $displayname);
+    $user->user_set_internal(BeeHub::PROP_EMAIL, $email);
+    $user->user_set_internal(BeeHub::PROP_PASSWD, $password);
+    $user->user_set_internal(BeeHub::PROP_X509, $x509);
+    $user->storeProperties();
+  }
+
 
   public function report_principal_property_search($properties) {
     if ( 1 != count( $properties ) ||

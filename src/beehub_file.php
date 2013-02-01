@@ -89,7 +89,7 @@ public function method_COPY( $path ) {
 }
 
 
-public function method_GET($headers) {
+public function method_GET() {
   $this->assert( DAVACL::PRIV_READ );
   return fopen( $this->localPath , 'r' );
 }

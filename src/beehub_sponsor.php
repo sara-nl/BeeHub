@@ -33,7 +33,7 @@ class BeeHub_Sponsor extends BeeHub_Principal {
    * @return string an HTML file
    * @see DAV_Resource::method_GET()
    */
-  public function method_GET($headers) {
+  public function method_GET() {
     $query = <<<EOS
     SELECT `user_name`,
            `displayname`,
@@ -46,25 +46,22 @@ INNER JOIN `beehub_sponsor_members`
 EOS;
     $statement = BeeHub::mysqli()->prepare($query);
     $statement->bind_param('s', $this->name);
-    $user_name = null;
-    $displayname = null;
-    $admin = null;
-    $accepted = null;
-    $statement->bind_result($user_name, $displayname, $admin, $accepted);
+    $r_user_name = null;
+    $r_displayname = null;
+    $r_is_admin = null;
+    $r_is_accepted = null;
+    $statement->bind_result($r_user_name, $r_displayname, $r_is_admin, $r_is_accepted);
     $statement->execute();
     $members = array();
     while ($statement->fetch()) {
       $members[] = Array(
-        'user_name' => $user_name,
-        'displayname' => $displayname,
-        'admin' => ($admin == 1),
-        'accepted' => ($accepted == 1)
+        'user_name' => $r_user_name,
+        'displayname' => $r_displayname,
+        'is_admin' => ($r_is_admin == 1),
+        'is_accepted' => ($r_is_accepted == 1)
       );
     }
-    $view = new BeeHub_View('sponsor.php');
-    $view->setVar('sponsor', $this);
-    $view->setVar('members', $members);
-    return ((BeeHub::best_xhtml_type() != 'text/html') ? DAV::xml_header() : '' ) . $view->getParsedView();
+    $this->include_view( null, array( 'members' => $members ) );
   }
 
   public function method_HEAD() {
@@ -170,33 +167,46 @@ EOS;
 
   protected function init_props() {
     static $statement_props = null,
-           $param_sponsor = null,
            $result_displayname = null,
-           $result_description = null;
-    if (is_null($this->sql_props)) {
-      $this->protected_props[BeeHub::PROP_NAME] = basename($this->path);
+           $result_description = null,
+           $result_user_name = null;
+    # Lazy initialization:
+    if (null === $statement_props) {
+      $statement_props = BeeHub::mysqli()->prepare(
+        'SELECT
+          `displayname`,
+          `description`
+         FROM `beehub_sponsors`
+         WHERE `sponsor_name` = ?;'
+      );
+      $statement_props->bind_param('s', $this->name);
+      $statement_props->bind_result(
+              $result_displayname, $result_description
+      );
+      $statement_users = BeeHub::mysqli()->prepare(
+        'SELECT `user_name`
+         FROM `beehub_sponsor_members`
+         WHERE `sponsor_name` = ?'
+      );
+      $statement_props->bind_param('s', $this->name);
+      $statement_props->bind_result( $result_user_name );
+    }
 
-      if (null === $statement_props) {
-        $statement_props = BeeHub::mysqli()->prepare(
-                'SELECT
-                  `displayname`,
-                  `description`
-                 FROM `beehub_sponsors`
-                 WHERE `sponsor_name` = ?;'
-        );
-        $statement_props->bind_param('s', $param_sponsor);
-        $statement_props->bind_result(
-                $result_displayname, $result_description
-        );
-      }
-      $param_sponsor = $this->name;
+    if (is_null($this->sql_props)) {
+      $this->sql_props = array();
       $statement_props->execute();
-      $result_displayname = null;
-      $result_description = null;
       $statement_props->fetch();
       $this->sql_props[DAV::PROP_DISPLAYNAME] = $result_displayname;
       $this->sql_props[BeeHub::PROP_DESCRIPTION] = $result_description;
       $statement_props->free_result();
+      $statement_users->execute();
+      $group_member_set = array();
+      while( $statement_users->fetch() )
+        $group_member_set[] = BeeHub::$CONFIG['webdav_namespace']['users_path'] .
+          rawurlencode($result_user_name);
+      $statement_users->free_result();
+      $this->sql_props[DAV::PROP_GROUP_MEMBER_SET] =
+        new DAVACL_Element_href( $members );
     }
   }
 
@@ -271,21 +281,30 @@ EOS;
     }
   }
 
+
   public function user_set_group_member_set($set) {
-    throw DAV::forbidden();
+    throw new DAV_Status(
+      DAV::HTTP_FORBIDDEN,
+      DAV::COND_CANNOT_MODIFY_PROTECTED_PROPERTY
+    );
   }
+
 
   public function user_prop_group_member_set() {
     return $this->user_prop(DAV::PROP_GROUP_MEMBER_SET);
   }
 
-  // We allow everybody to do everything with this object in the ACL, so we can handle all privileges hard-coded without ACL's interfering
+
+  // We allow everybody to do everything with this object in the ACL, so we can
+  // handle all privileges hard-coded without ACL's interfering
   public function user_prop_acl() {
-    return array(new DAVACL_Element_ace('DAV: all', false, array('DAV: all'), false, true, null));
+    return array( new DAVACL_Element_ace(
+      'DAV: all', false, array('DAV: all'), false, true, null
+    ));
   }
 
 
-  private $isAdminCache;
+  private $is_admin_cache;
 
   /**
    * Determines whether the currently logged in user is an administrator of this sponsor or not.
@@ -293,7 +312,7 @@ EOS;
    * @return  boolean  True if the currently logged in user is an administrator of this sponsor, false otherwise
    */
   public function is_admin() {
-    if (is_null($this->isAdminCache)) {
+    if (is_null($this->is_admin_cache)) {
       $result = null;
       $username = rawurldecode(basename(BeeHub::current_user()));
       $statement = BeeHub::mysqli()->prepare('SELECT `user_name` FROM `beehub_sponsor_members` WHERE `sponsor_name`=? AND `user_name`=? AND `is_admin`=1');
@@ -301,9 +320,9 @@ EOS;
       $statement->bind_result($result);
       $statement->execute();
       $response = $statement->fetch();
-      $this->isAdminCache = !is_null($response);
+      $this->is_admin_cache = !is_null($response);
     }
-    return $this->isAdminCache;
+    return $this->is_admin_cache;
   }
 
   // These methods are only available for a limited range of users!

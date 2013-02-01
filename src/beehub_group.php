@@ -31,7 +31,7 @@ class BeeHub_Group extends BeeHub_Principal {
    * @return string an HTML file
    * @see DAV_Resource::method_GET()
    */
-  public function method_GET($headers) {
+  public function method_GET() {
     $query = <<<EOS
     SELECT `user_name`,
            `displayname`,
@@ -62,10 +62,7 @@ EOS;
         'requested' => ($requested == 1)
       );
     }
-    $view = new BeeHub_View('group.php');
-    $view->setVar('group', $this);
-    $view->setVar('members', $members);
-    return ((BeeHub::best_xhtml_type() != 'text/html') ? DAV::xml_header() : '' ) . $view->getParsedView();
+    $this->include_view( null, array( 'members' => $members ) );
   }
 
 
@@ -214,7 +211,7 @@ EOS;
     }
 
     if (is_null($this->sql_props)) {
-
+      $this->sql_props = array();
       $param_group_name = $this->name;
 
       # Query table `beehub_groups`
