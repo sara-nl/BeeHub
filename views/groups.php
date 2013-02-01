@@ -22,7 +22,7 @@ $this->setTemplateVar('header', '<style type="text/css">
 }
 		
 a:hover {
-	text-decoration: none !important;
+	text-decoration: none !important; 
 }
 		
 .customaccordion:hover {
@@ -38,6 +38,7 @@ a:hover {
   	<?php 
   		$i=1;
   		foreach ($groups as $group) : ?>
+  		
 	  		<div class="accordion-group customaccordion">
 				<div class="accordion-heading">
 					<a class="accordion-toggle" data-toggle="collapse" data-parent="#membership" href=#accordion<?= $i ?>>
@@ -47,6 +48,7 @@ a:hover {
 				<div id="accordion<?= $i ?>" class="accordion-body collapse">
 				
 				<div class="accordion-inner">
+
 					<?= $group->prop(BeeHub::PROP_DESCRIPTION) ?>
 					<form method="post">
 				  
@@ -109,4 +111,8 @@ a:hover {
  	<?php endforeach; ?>
   </div>
 </div>
-  
+				<script>
+   $(window).on('hide', function () {
+		alert("ja");
+	})
+</script>

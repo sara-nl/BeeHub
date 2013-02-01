@@ -13,7 +13,7 @@ $this->setTemplateVar('header', '<style type="text/css">
 $this->setTemplateVar('footer', '<script type="text/javascript" src="/system/js/group.js"></script>
 <script type="text/javascript" src="/system/js/webdavlib.js"></script>');
 ?><div class="bootstrap">
-<h1>Profile</h1>
+<h1>Group</h1>
 <form method="post">
   <div class="row-fluid">
     <div class="span2 fieldname">Group name</div>
