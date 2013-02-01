@@ -62,7 +62,7 @@ EOS;
         'requested' => ($requested == 1)
       );
     }
-    include_view( null, array( 'members' => $members ) );
+    $this->include_view( null, array( 'members' => $members ) );
   }
 
 

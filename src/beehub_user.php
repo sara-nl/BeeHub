@@ -42,7 +42,7 @@ class BeeHub_User extends BeeHub_Principal {
    * @see DAV_Resource::method_GET()
    */
   public function method_GET() {
-    include_view( null, array( 'members' => $members ) );
+    $this->include_view( null, array( 'members' => $members ) );
   }
 
   public function method_HEAD() {

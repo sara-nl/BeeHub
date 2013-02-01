@@ -111,7 +111,7 @@ public function method_GET() {
   $this->assert(DAVACL::PRIV_READ);
   // This was a switch() statement. I hate those. --pieterb
   if ( BeeHub::$CONFIG['webdav_namespace']['homepage'] == $this->path ) {
-    $view = new BeeHub_View('homepage.php');
+    $this->include_view('homepage');
   } else {
     $view = new BeeHub_View('directory.php');
     $view->setVar('directory', $this);

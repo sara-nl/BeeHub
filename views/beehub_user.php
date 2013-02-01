@@ -12,7 +12,7 @@ $footer = '<script type="text/javascript" src="/system/js/user.js"></script>
 <script type="text/javascript" src="/system/js/webdavlib.js"></script>';
 include 'views/header_bootstrap.php';
 
-?><div class="bootstrap">
+?><div class="container-fluid">
 <h1>Profile</h1>
 <form method="post">
   <div class="row-fluid">

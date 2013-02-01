@@ -61,7 +61,7 @@ EOS;
         'is_accepted' => ($r_is_accepted == 1)
       );
     }
-    include_view( null, array( 'members' => $members ) );
+    $this->include_view( null, array( 'members' => $members ) );
   }
 
   public function method_HEAD() {

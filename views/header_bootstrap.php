@@ -30,3 +30,4 @@ if ( false !== strpos( $this->user_prop_getcontenttype(), 'xml' ) )
         </ul>
       </div>
     </div>
+    <div class="beehub-below-navbar-fixed-top">
