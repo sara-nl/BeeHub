@@ -48,7 +48,7 @@ class BeeHub_User extends BeeHub_Principal {
   }
 
   public function method_HEAD() {
-    if ($this->is_admin()) {
+    if (!$this->is_admin()) {
       throw new DAV_Status(
               DAV::HTTP_FORBIDDEN,
               DAV::COND_NEED_PRIVILEGES
@@ -125,12 +125,11 @@ class BeeHub_User extends BeeHub_Principal {
     $p_displayname = @$this->sql_props[DAV::PROP_DISPLAYNAME];
     $p_email       = @$this->sql_props[BeeHub::PROP_EMAIL];
     $p_x509        = @$this->sql_props[BeeHub::PROP_X509];
-    $p_displayname = @$this->sql_props[DAV::PROP_DISPLAYNAME];
 
     // Write all data to database
     $updateStatement = BeeHub::mysqli()->prepare(
       'UPDATE `beehub_users`
-          SET `display_name` = ?,
+          SET `displayname` = ?,
               `email` = ?,
               `x509` = ?' .
               (($p_password === true) ? '' : ', `password`=?') .
@@ -146,7 +145,7 @@ class BeeHub_User extends BeeHub_Principal {
       );
     } else {
       $updateStatement->bind_param(
-        'ssssd',
+        'sssss',
         $p_displayname,
         $p_email,
         $p_x509,
@@ -154,13 +153,21 @@ class BeeHub_User extends BeeHub_Principal {
         $this->name
       );
     }
-    $updateStatement->execute();
+    if (!$updateStatement->execute()) {
+      // TODO: check for duplicate keys!
+      throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
+    }
     $this->touched = false;
   }
 
   // We allow everybody to do everything with this object in the ACL, so we can handle all privileges hard-coded without ACL's interfering
   public function user_prop_acl() {
     return array(new DAVACL_Element_ace('DAV: all', false, array('DAV: all'), false, true, null));
+  }
+
+
+  public function verify_email_address($code) {
+    //TODO: e-mail verification
   }
 
 
@@ -176,7 +183,7 @@ WHERE `user_name` = ?;
 EOS;
     $statement = BeeHub::mysqli()->prepare($query);
     $user_name = $this->name;
-    $statement->bind_param('d', $user_name);
+    $statement->bind_param('s', $user_name);
     $groupname = null;
     $statement->bind_result($groupname);
     $statement->execute();
@@ -199,7 +206,7 @@ EOS;
   }
 
   public function is_admin() {
-    return ($this->path != BeeHub::current_user());
+    return ($this->path == BeeHub::current_user());
   }
 
   // These methods are only available for a limited range of users!
@@ -208,19 +215,5 @@ EOS;
 //    self: all
 //    others: only display_name
 //  }
-//  public function method_REPORT(???) {
-//    self: all
-//    others: only display_name
-//  }
-
-  public function method_PROPPATCH($propname, $value = null) {
-    if ($this->is_admin()) {
-      throw new DAV_Status(
-              DAV::HTTP_FORBIDDEN,
-              DAV::COND_NEED_PRIVILEGES
-      );
-    }
-    return parent::method_PROPPATCH($propname, $value);
-  }
 
 } // class BeeHub_User

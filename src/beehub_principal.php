@@ -33,6 +33,18 @@ abstract class BeeHub_Principal extends BeeHub_Resource implements DAVACL_Princi
   public $sql_props = null;
 
 
+  protected function user_set($name, $value = null) {
+    $this->user_set_internal($name, $value);
+  }
+
+
+  public function user_set_internal($name, $value = null) {
+    $this->init_props();
+    $this->sql_props[$name] = $value;
+    $this->touched = true;
+  }
+  
+  
   public function __construct($path) {
     parent::__construct($path);
     $this->name = rawurldecode(basename($path));
@@ -82,13 +94,7 @@ abstract class BeeHub_Principal extends BeeHub_Resource implements DAVACL_Princi
 
 
   protected function user_set_displayname($displayname) {
-    if (!$this->is_admin()) {
-      throw new DAV_Status(
-              DAV::HTTP_FORBIDDEN,
-              DAV::COND_NEED_PRIVILEGES
-      );
-    }
-    $this->sql_props[DAV::PROP_DISPLAYNAME] = $displayname;
+    $this->user_set_internal(DAV::PROP_DISPLAYNAME, $displayname);
   }
 
 
