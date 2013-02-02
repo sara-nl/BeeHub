@@ -1,7 +1,7 @@
 <?php
 $active = 'beehub';
 include 'views/header_bootstrap.php'; ?>
-<div class="container">
+<div class="container-fluid">
   <h1>BeeHub is...</h1>
   <div class="row-fluid">
     <div class="span6">

@@ -30,4 +30,5 @@ if ( false !== strpos( $this->user_prop_getcontenttype(), 'xml' ) )
         </ul>
       </div>
     </div>
+    <img src="/system/img/surfsara.png" class="logo-surfsara" />
     <div class="beehub-below-navbar-fixed-top">

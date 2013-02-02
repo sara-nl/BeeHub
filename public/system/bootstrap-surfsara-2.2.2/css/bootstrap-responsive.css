@@ -1008,11 +1008,11 @@
   }
   .bootstrap .navbar-inverse .nav-collapse .nav > li > a,
   .bootstrap .navbar-inverse .nav-collapse .dropdown-menu a {
-    color: #a7a9ac;
+    color: #e6e7e8;
   }
   .bootstrap .navbar-inverse .nav-collapse .nav > li > a:hover,
   .bootstrap .navbar-inverse .nav-collapse .dropdown-menu a:hover {
-    background-color: #202121;
+    background-color: #004421;
   }
   .bootstrap .nav-collapse.in .btn-group {
     padding: 0;
@@ -1063,8 +1063,8 @@
   }
   .bootstrap .navbar-inverse .nav-collapse .navbar-form,
   .bootstrap .navbar-inverse .nav-collapse .navbar-search {
-    border-top-color: #202121;
-    border-bottom-color: #202121;
+    border-top-color: #004421;
+    border-bottom-color: #004421;
   }
   .bootstrap .navbar .nav-collapse .nav.pull-right {
     float: none;
