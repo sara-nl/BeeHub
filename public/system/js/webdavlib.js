@@ -41,6 +41,8 @@ if (nl.sara.webdav.codec === undefined) {
   nl.sara.webdav.codec = {};
 }
 
+// TODO why is there a copyright statement and "use strict" twice??? --PieterB
+
 /*
  * Copyright ©2012 SARA bv, The Netherlands
  *

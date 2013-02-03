@@ -57,7 +57,7 @@ class BeeHub_Timeout extends BeeHub_MySQL {
 class BeeHub {
 
   const PROP_NAME          = 'http://beehub.nl/ name';
-  const PROP_PASSWD        = 'http://beehub.nl/ password';
+  const PROP_PASSWORD        = 'http://beehub.nl/ password';
   const PROP_EMAIL         = 'http://beehub.nl/ email';
   const PROP_X509          = 'http://beehub.nl/ x509';
   const PROP_DESCRIPTION   = 'http://beehub.nl/ description';

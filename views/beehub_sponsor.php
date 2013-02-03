@@ -17,7 +17,7 @@ $header = '<style type="text/css">
 </style>';
 $footer = '<script type="text/javascript" src="/system/js/sponsor.js"></script>
 <script type="text/javascript" src="/system/js/webdavlib.js"></script>';
-include 'views/header_bootstrap.php';
+require 'views/header_bootstrap.php';
 
 ?>
 <div class="container-fluid">
@@ -91,4 +91,4 @@ include 'views/header_bootstrap.php';
     <input type="submit" value="Store" />
   </form>
 </div>
-<?php include 'views/footer_bootstrap.php'; ?>
+<?php require 'views/footer_bootstrap.php'; ?>

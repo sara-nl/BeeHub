@@ -1,17 +1,12 @@
-.beehub-below-navbar-fixed-top {
-  padding-top: 40px; /* 40px to make the container go all the way to the bottom of the topbar */
+.beehub-spacer-navbar-fixed-top {
+  height: 58px; /* 40px + 18px padding */
 }
-.logo-surfsara {
-  z-index: 1031; /* one more than the z-index of a fixed navbar */
+.beehub-spacer-surfsara-logo {
+  width: 202px;
+}
+.surfsara-logo {
   position: fixed;
   right: 0;
   top: 0;
-  border: 0;
-  margin: 0;
-  padding: 0;
-}
-@media (max-width: 979px) {
-  .logo-surfsara {
-    display: none;
-  }
+  z-index: 1031;
 }

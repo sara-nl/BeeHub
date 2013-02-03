@@ -1,6 +1,6 @@
 <?php
 $active = 'beehub';
-include 'views/header_bootstrap.php'; ?>
+require 'views/header_bootstrap.php'; ?>
 <div class="container-fluid">
   <h1>BeeHub is...</h1>
   <div class="row-fluid">
@@ -25,4 +25,4 @@ include 'views/header_bootstrap.php'; ?>
     </div>
   </div>
 </div>
-<?php include 'views/footer_bootstrap.php'; ?>
+<?php require 'views/footer_bootstrap.php'; ?>

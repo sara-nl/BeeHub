@@ -24,7 +24,9 @@
  * @package BeeHub
  *
  */
-abstract class BeeHub_Principal extends BeeHub_Resource implements DAVACL_Principal {
+abstract class BeeHub_Principal
+  extends BeeHub_Resource
+  implements DAVACL_Principal {
 
 
   public $name;
@@ -43,8 +45,8 @@ abstract class BeeHub_Principal extends BeeHub_Resource implements DAVACL_Princi
     $this->sql_props[$name] = $value;
     $this->touched = true;
   }
-  
-  
+
+
   public function __construct($path) {
     parent::__construct($path);
     $this->name = rawurldecode(basename($path));

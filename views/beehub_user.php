@@ -10,22 +10,22 @@ div.passwd {
 </style>';
 $footer = '<script type="text/javascript" src="/system/js/user.js"></script>
 <script type="text/javascript" src="/system/js/webdavlib.js"></script>';
-include 'views/header_bootstrap.php';
+require 'views/header_bootstrap.php';
 
 ?><div class="container-fluid">
 <h1>Profile</h1>
 <form method="post">
   <div class="row-fluid">
     <div class="span2 fieldname">Username</div>
-    <div class="span10 fieldvalue"><?= htmlspecialchars($user->prop(BeeHub::PROP_NAME), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></div>
+    <div class="span10 fieldvalue"><?= htmlspecialchars($this->prop(BeeHub::PROP_NAME), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></div>
   </div>
   <div class="row-fluid">
     <div class="span2 fieldname">Display name</div>
-    <div class="span10 fieldvalue"><input type="text" name="displayname" value="<?= htmlspecialchars($user->prop(DAV::PROP_DISPLAYNAME), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>" /></div>
+    <div class="span10 fieldvalue"><input type="text" name="displayname" value="<?= htmlspecialchars($this->prop(DAV::PROP_DISPLAYNAME), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>" /></div>
   </div>
   <div class="row-fluid">
     <div class="span2 fieldname">E-mail address</div>
-    <div class="span10 fieldvalue"><input type="text" name="email" value="<?= htmlspecialchars($user->prop(BeeHub::PROP_EMAIL), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>" /></div>
+    <div class="span10 fieldvalue"><input type="text" name="email" value="<?= htmlspecialchars($this->prop(BeeHub::PROP_EMAIL), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>" /></div>
   </div>
   <div class="row-fluid">
     <div class="span2 fieldname"><label class="checkbox" for="change_password">Change my password</label></div>
@@ -41,7 +41,7 @@ include 'views/header_bootstrap.php';
   </div>
   <div class="row-fluid">
     <div class="span2 fieldname">X509 certificate DN</div>
-    <div class="span10 fieldvalue"><?= htmlspecialchars($user->prop(BeeHub::PROP_X509), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></div>
+    <div class="span10 fieldvalue"><?= htmlspecialchars($this->prop(BeeHub::PROP_X509), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></div>
   </div>
   <div class="row-fluid">
     <div class="span2 fieldname">Sponsor</div>
@@ -50,4 +50,4 @@ include 'views/header_bootstrap.php';
   <button class="btn">Save</button>
 </form>
 </div>
-<?php include 'views/footer_bootstrap.php'; ?>
+<?php require 'views/footer_bootstrap.php'; ?>

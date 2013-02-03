@@ -2,11 +2,8 @@
 
 /*
  * Available variables:
- *
- * $directory  The beehub_directory object representing the current directory
  * $groups     All members of this directory
  */
-$active = 'groups';
 $header = '<style type="text/css">
 .customaccordion {
   border: 0px solid #E5E5E5 !important;
@@ -31,7 +28,7 @@ a:hover {
   border-style:dotted !important;
 }
 </style>';
-include 'views/header_bootstrap.php';
+require 'views/header_bootstrap.php';
 ?>
 <div class="container-fluid">
   <h3>Group memberships</h3>
@@ -112,9 +109,9 @@ include 'views/header_bootstrap.php';
   <?php endforeach; ?>
   </div>
 </div>
-<script>
+<!--script>
    $(window).on('hide', function () {
     alert("ja");
   })
-</script>
-<?php include 'views/footer_bootstrap.php'; ?>
+</script-->
+<?php require 'views/footer_bootstrap.php'; ?>

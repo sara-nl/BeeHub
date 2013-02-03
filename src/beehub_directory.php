@@ -175,8 +175,12 @@ private function skipInvalidMembers() {
       !BeeHub_Registry::inst()->resource(
         $this->path . $this->current()
       )->isVisible()
-  ) )
+  ) ) {
+    BeeHub_Registry::inst()->forget(
+      $this->path . $this->current()
+    );
     $this->dir->next();
+  }
 }
 
 public function current() {

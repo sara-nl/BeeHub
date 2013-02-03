@@ -50,7 +50,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
     $user = BeeHub_Registry::inst()->resource(BeeHub::$CONFIG['webdav_namespace']['users_path'] . $user_name);
     $user->user_set_internal(DAV::PROP_DISPLAYNAME, $displayname);
     $user->user_set_internal(BeeHub::PROP_EMAIL, $email);
-    $user->user_set_internal(BeeHub::PROP_PASSWD, $password);
+    $user->user_set_internal(BeeHub::PROP_PASSWORD, $password);
     $user->user_set_internal(BeeHub::PROP_X509, $x509);
     $user->storeProperties();
   }

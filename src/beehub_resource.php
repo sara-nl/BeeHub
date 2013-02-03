@@ -134,13 +134,14 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
       $view_name_BeEhUb_MaGiC = strtolower(get_class($this));
     if (is_null($parameters_BeEhUb_MaGiC))
       $parameters_BeEhUb_MaGiC = array();
-    foreach ( $parameters_BeEhUb_MaGiC as $param_BeEhUb_MaGiC => $value_BeEhUb_MaGiC )
+    foreach ( $parameters_BeEhUb_MaGiC as $param_BeEhUb_MaGiC => $value_BeEhUb_MaGiC ) {
       $$param_BeEhUb_MaGiC = $value_BeEhUb_MaGiC;
+    }
     set_include_path(
       realpath( dirname(__FILE__) . '/..' ) .
       PATH_SEPARATOR . get_include_path()
     );
-    include( 'views/' . $view_name_BeEhUb_MaGiC . '.php' );
+    require( 'views/' . $view_name_BeEhUb_MaGiC . '.php' );
   }
 
 

@@ -167,6 +167,7 @@ EOS;
 
   protected function init_props() {
     static $statement_props = null,
+           $statement_users = null,
            $result_displayname = null,
            $result_description = null,
            $result_user_name = null;
@@ -188,8 +189,8 @@ EOS;
          FROM `beehub_sponsor_members`
          WHERE `sponsor_name` = ?'
       );
-      $statement_props->bind_param('s', $this->name);
-      $statement_props->bind_result( $result_user_name );
+      $statement_users->bind_param('s', $this->name);
+      $statement_users->bind_result( $result_user_name );
     }
 
     if (is_null($this->sql_props)) {

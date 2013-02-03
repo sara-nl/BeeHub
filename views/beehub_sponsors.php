@@ -20,7 +20,7 @@ $header = '<style type="text/css">
   text-align: right;
 }
 </style>';
-include 'views/header_bootstrap.php';
+require 'views/header_bootstrap.php';
 ?><div class="container-fluid">
   <h1>Sponsors</h1>
   <?php foreach ($sponsors as $sponsor) : ?>
@@ -38,4 +38,4 @@ include 'views/header_bootstrap.php';
   </div>
   <?php endforeach; ?>
 </div>
-<?php include 'views/footer_bootstrap.php'; ?>
+<?php require 'views/footer_bootstrap.php'; ?>

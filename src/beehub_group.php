@@ -215,11 +215,12 @@ EOS;
       $param_group_name = $this->name;
 
       # Query table `beehub_groups`
-      if ( ! $statement_props->execute() ||
-           ! $statement_props->store_result() ||
-           ! $statement_props->fetch() ) {
-        throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR );
-      }
+      if ( ! $statement_props->execute() )
+        throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR, $statement_props->error );
+      if ( ! $statement_props->store_result() )
+        throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR, $statement_props->error );
+      if ( ! $statement_props->fetch() )
+        throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR, $statement_props->error );
       $this->sql_props[DAV::PROP_DISPLAYNAME] = $result_displayname;
       $this->sql_props[BeeHub::PROP_DESCRIPTION] = $result_description;
       $statement_props->free_result();

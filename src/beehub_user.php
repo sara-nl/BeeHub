@@ -20,12 +20,12 @@
  */
 
 /**
- * A user principal
+ * BeeHub user
  *
  * There are a few properties defined which are stored in the database instead
  * of as xfs attribute. These properties are credentials and user contact info:
  * BeeHub::PROP_NAME
- * BeeHub::PROP_PASSWD
+ * BeeHub::PROP_PASSWORD
  * BeeHub::PROP_EMAIL
  * BeeHub::PROP_X509
  *
@@ -42,7 +42,7 @@ class BeeHub_User extends BeeHub_Principal {
    * @see DAV_Resource::method_GET()
    */
   public function method_GET() {
-    $this->include_view( null, array( 'members' => $members ) );
+    $this->include_view();
   }
 
   public function method_HEAD() {
@@ -93,7 +93,7 @@ class BeeHub_User extends BeeHub_Principal {
         $this->sql_props[BeeHub::PROP_X509]   = $r_x509;
       }
       if ($r_password) {
-        $this->sql_props[BeeHub::PROP_PASSWD] = true; // Nobody should have read access to this property. But just in case, we always set it to true.
+        $this->sql_props[BeeHub::PROP_PASSWORD] = true; // Nobody should have read access to this property. But just in case, we always set it to true.
       }
       $statement_props->free_result();
     }
@@ -109,13 +109,13 @@ class BeeHub_User extends BeeHub_Principal {
       return;
     }
 
-    if (isset($this->sql_props[BeeHub::PROP_PASSWD])) {
-      if ($this->sql_props[BeeHub::PROP_PASSWD] === true) { //true means there is a password, but it hasn't been changed!
+    if (isset($this->sql_props[BeeHub::PROP_PASSWORD])) {
+      if ($this->sql_props[BeeHub::PROP_PASSWORD] === true) { //true means there is a password, but it hasn't been changed!
         $p_password = true;
       } else {
-        $p_password = crypt($this->sql_props[BeeHub::PROP_PASSWD], '$6$rounds=5000$' . md5(time() . rand(0, 99999)) . '$');
+        $p_password = crypt($this->sql_props[BeeHub::PROP_PASSWORD], '$6$rounds=5000$' . md5(time() . rand(0, 99999)) . '$');
       }
-      $this->sql_props[BeeHub::PROP_PASSWD] = true;
+      $this->sql_props[BeeHub::PROP_PASSWORD] = true;
     }else{
       $p_password = null;
     }

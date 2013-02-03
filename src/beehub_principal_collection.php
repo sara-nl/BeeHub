@@ -29,8 +29,12 @@ abstract class BeeHub_Principal_Collection
   implements DAVACL_Principal_Collection, DAV_Collection {
 
 
-public function report_principal_match($input) {
+public function __construct($path) {
+  parent::__construct(DAV::slashify($path));
 }
+
+
+public function report_principal_match($input) {}
 
 
 /**
@@ -92,6 +96,9 @@ public function valid()   {
 }
 
 
+/**#@+
+ * Must be implemented by all realizations of DAV_Collection.
+ */
 public function create_member( $name ) {
   throw new DAV_Status(DAV::HTTP_FORBIDDEN);
 }
@@ -110,6 +117,7 @@ public function method_MOVE( $name, $destination ) {
 public function method_MKCOL( $name ) {
   throw new DAV_Status(DAV::HTTP_FORBIDDEN);
 }
+/**#@-*/
 
 
 /**
