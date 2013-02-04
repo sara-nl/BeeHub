@@ -35,6 +35,10 @@
  * @package BeeHub
  */
 class BeeHub_User extends BeeHub_Principal {
+  /**
+   * @var  string  The original e-mail address as specified in the database. This is used to check if the user wants to change his/her e-mail address.
+   */
+  private $original_email = null;
 
 
   /**
@@ -84,11 +88,13 @@ class BeeHub_User extends BeeHub_Principal {
     }
 
     if (is_null($this->sql_props)) {
+      $this->sql_props = array();
       $p_user_name = $this->name;
       $statement_props->execute();
       $statement_props->fetch();
       $this->sql_props[DAV::PROP_DISPLAYNAME] = $r_displayname;
       $this->sql_props[BeeHub::PROP_EMAIL]    = $r_email;
+      $this->original_email                   = $r_email;
       if (!is_null($r_x509)) {
         $this->sql_props[BeeHub::PROP_X509]   = $r_x509;
       }
@@ -121,40 +127,74 @@ class BeeHub_User extends BeeHub_Principal {
     }
 
     $p_displayname = @$this->sql_props[DAV::PROP_DISPLAYNAME];
-    $p_email       = @$this->sql_props[BeeHub::PROP_EMAIL];
     $p_x509        = @$this->sql_props[BeeHub::PROP_X509];
+
+    $change_email = false;
+    if (@$this->sql_props[BeeHub::PROP_EMAIL] !== $this->original_email) {
+      $change_email = true;
+      $p_email = @$this->sql_props[BeeHub::PROP_EMAIL];
+      $p_verification_code = md5(time() . '0-c934q2089#$#%@#$jcq2iojc43q9  i1d' . rand(0, 10000));
+    }
 
     // Write all data to database
     $updateStatement = BeeHub::mysqli()->prepare(
       'UPDATE `beehub_users`
           SET `displayname` = ?,
-              `email` = ?,
               `x509` = ?' .
-              (($p_password === true) ? '' : ', `password`=?') .
+              ($change_email ? ',`unverified_email`=?,`verification_code`=?,`verification_expiration`=NOW() + INTERVAL 1 DAY' : '') .
+              (($p_password !== true) ? ',`password`=?' : '') .
       ' WHERE `user_name` = ?'
     );
     if ($p_password === true) {
-      $updateStatement->bind_param(
-        'ssss',
-        $p_displayname,
-        $p_email,
-        $p_x509,
-        $this->name
-      );
-    } else {
-      $updateStatement->bind_param(
-        'sssss',
-        $p_displayname,
-        $p_email,
-        $p_x509,
-        $p_password,
-        $this->name
-      );
+      if ($change_email) { // No new password, but there is a new e-mail address
+        $updateStatement->bind_param(
+          'sssss',
+          $p_displayname,
+          $p_x509,
+          $p_email,
+          $p_verification_code,
+          $this->name
+        );
+      }else{ // No new password, no new e-mail address
+        $updateStatement->bind_param(
+          'sss',
+          $p_displayname,
+          $p_x509,
+          $this->name
+        );
+      }
+    }else{
+      if ($change_email) { // A new password, and a new e-mail address
+        $updateStatement->bind_param(
+          'ssssss',
+          $p_displayname,
+          $p_x509,
+          $p_email,
+          $p_verification_code,
+          $p_password,
+          $this->name
+        );
+      }else{ // A new password, but no new e-mail address
+        $updateStatement->bind_param(
+          'ssss',
+          $p_displayname,
+          $p_x509,
+          $p_password,
+          $this->name
+        );
+      }
     }
     if (!$updateStatement->execute()) {
       // TODO: check for duplicate keys!
       throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
     }
+
+    // Notify the user if needed
+    if ($change_email) {
+      //TODO: send e-mail
+      die($p_verification_code);
+    }
+
     $this->touched = false;
   }
 
@@ -164,14 +204,42 @@ class BeeHub_User extends BeeHub_Principal {
   }
 
 
+  /**
+   * Checks the verification code and verifies the e-mail address if the code is correct
+   * @param   string  $code  The verification code
+   * @return  boolean        True if the code verified correctly, false if the code was wrong
+   */
   public function verify_email_address($code) {
-    //TODO: e-mail verification
+    $updateStatement = BeeHub::mysqli()->prepare(
+      'UPDATE `beehub_users`
+          SET `email`=`unverified_email`
+       WHERE `user_name`=? AND `verification_code`=? AND `verification_expiration`>NOW()'
+    );
+    $updateStatement->bind_param('ss', $this->name, $code);
+    if (!$updateStatement->execute()) {
+      throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
+    }
+    if ($updateStatement->affected_rows > 0) {
+      $updateStatement = BeeHub::mysqli()->prepare(
+        'UPDATE `beehub_users`
+            SET `unverified_email`=null,
+                `verification_code`=null,
+                `verification_expiration`=null
+        WHERE `user_name` = ?'
+      );
+      $updateStatement->bind_param('s', $this->name);
+      if (!$updateStatement->execute()) {
+        throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
+      }
+      return true;
+    }else{
+      return false;
+    }
   }
 
 
   /**
    * @todo move the initialization into init_props()
-   * @todo remove user_id
    */
   public function user_prop_group_membership() {
     $query = <<<EOS
@@ -205,6 +273,10 @@ EOS;
 
   public function is_admin() {
     return ($this->path == BeeHub::current_user());
+  }
+
+  public function user_set_group_member_set($set) {
+    return DAV::forbidden();
   }
 
   // These methods are only available for a limited range of users!

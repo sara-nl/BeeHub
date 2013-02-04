@@ -26,33 +26,59 @@
 class BeeHub_Users extends BeeHub_Principal_Collection {
 
   public function method_GET($headers) {
-    $view = new BeeHub_View('new_user.php');
-    $view->parseView();
+    if (empty($_SERVER['HTTPS']) && APPLICATION_ENV != BeeHub::ENVIRONMENT_DEVELOPMENT) {
+      header('location: https://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI']);
+      die();
+    }
+    if (!isset($_GET['verification_code'])) {
+      $this->include_view('new_user');
+    }else{
+      $current_email = BeeHub_Registry::inst()->resource(BeeHub::$CONFIG['webdav_namespace']['users_path'] . $_GET['user_name'])->prop(BeeHub::PROP_EMAIL);
+      $this->include_view('verify_email', array('setPassword'=>empty($current_email)));
+    }
   }
 
 
   public function method_POST(&$headers) {
-    //TODO: check juistheid POST formulier
-    $user_name = $_POST['user_name'];
-    $displayname = $_POST['displayname'];
-    $email = $_POST['email'];
-    $password = $_POST['password'];
-    $surfconext_id = $_POST['surfconext_id'];
-    $x509 = $_POST['x509'];
+    if (!isset($_POST['verification_code'])) {
+      // TODO: translate user_name to ASCII and check for double usernames
+      $user_name = $_POST['user_name'];
+      $displayname = $_POST['displayname'];
+      $email = $_POST['email'];
 
-    // Store in the database
-    $statement = BeeHub::mysqli()->prepare("INSERT INTO `beehub_users` (`user_name`, `surfconext_id`) VALUES (?, ?)");
-    $statement->bind_param('ss', $user_name, $surfconext_id);//, $displayname, $email, $password, $x509);
-    if (!$statement->execute()) {
-      throw new Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
+      // Store in the database
+      $statement = BeeHub::mysqli()->prepare("INSERT INTO `beehub_users` (`user_name`, `surfconext_id`) VALUES (?, ?)");
+      $statement->bind_param('ss', $user_name, $surfconext_id);
+      if (!$statement->execute()) {
+        throw new Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
+      }
+
+      // Fetch the user and store extra properties
+      $user = BeeHub_Registry::inst()->resource(BeeHub::$CONFIG['webdav_namespace']['users_path'] . $user_name);
+      $user->set_property(DAV::PROP_DISPLAYNAME, $displayname);
+      $user->set_property(BeeHub::PROP_EMAIL, $email);
+      $user->storeProperties();
+    }else{
+      // TODO: Check whether the POST field is filled out correctly
+      $verification_code = $_POST['verification_code'];
+      $user_name = $_POST['user_name'];
+      $user = BeeHub_Registry::inst()->resource(BeeHub::$CONFIG['webdav_namespace']['users_path'] . $user_name);
+      $old_email = $user->prop(BeeHub::PROP_EMAIL);
+
+      // Now verify the e-mail address
+      if (!$user->verify_email_address($verification_code)){
+        throw DAV::HTTP_UNAUTHORIZED;
+      }
+
+      // If the user doesn't have an e-mail address set yet, it is a new account. So allow setting the password or X509 certificate here
+      if (empty($old_email)) {
+        $password = $_POST['password'];
+        $user->set_property(BeeHub::PROP_PASSWORD, $password);
+        $x509 = $_POST['x509'];
+        $user->set_property(BeeHub::PROP_X509, $x509);
+        $user->storeProperties();
+      }
     }
-
-    $user = BeeHub_Registry::inst()->resource(BeeHub::$CONFIG['webdav_namespace']['users_path'] . $user_name);
-    $user->user_set_internal(DAV::PROP_DISPLAYNAME, $displayname);
-    $user->user_set_internal(BeeHub::PROP_EMAIL, $email);
-    $user->user_set_internal(BeeHub::PROP_PASSWORD, $password);
-    $user->user_set_internal(BeeHub::PROP_X509, $x509);
-    $user->storeProperties();
   }
 
 
