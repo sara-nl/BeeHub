@@ -51,9 +51,9 @@ class BeeHub_Registry implements DAV_Registry {
    */
   public function resource($path) {
     $path = DAV::unslashify($path);
-    $usersPath = DAV::unslashify(BeeHub::$CONFIG['webdav_namespace']['users_path']);
-    $groupsPath = DAV::unslashify(BeeHub::$CONFIG['webdav_namespace']['groups_path']);
-    $sponsorsPath = DAV::unslashify(BeeHub::$CONFIG['webdav_namespace']['sponsors_path']);
+    $usersPath = DAV::unslashify(BeeHub::$CONFIG['namespace']['users_path']);
+    $groupsPath = DAV::unslashify(BeeHub::$CONFIG['namespace']['groups_path']);
+    $sponsorsPath = DAV::unslashify(BeeHub::$CONFIG['namespace']['sponsors_path']);
     if (isset($this->resourceCache[$path])) {
       return $this->resourceCache[$path];
     }

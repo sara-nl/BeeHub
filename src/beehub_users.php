@@ -47,7 +47,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
       throw new Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
     }
 
-    $user = BeeHub_Registry::inst()->resource(BeeHub::$CONFIG['webdav_namespace']['users_path'] . $user_name);
+    $user = BeeHub_Registry::inst()->resource(BeeHub::$CONFIG['namespace']['users_path'] . $user_name);
     $user->user_set_internal(DAV::PROP_DISPLAYNAME, $displayname);
     $user->user_set_internal(BeeHub::PROP_EMAIL, $email);
     $user->user_set_internal(BeeHub::PROP_PASSWORD, $password);
@@ -70,7 +70,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
     $result = BeeHub::query("SELECT `user_name` FROM `beehub_users` WHERE `displayname` LIKE {$match};");
     $retval = array();
     while ($row = $result->fetch_row()) {
-      $retval[] = BeeHub::$CONFIG['webdav_namespace']['users_path'] . rawurlencode($row[0]);
+      $retval[] = BeeHub::$CONFIG['namespace']['users_path'] . rawurlencode($row[0]);
     }
     $result->free();
     return $retval;

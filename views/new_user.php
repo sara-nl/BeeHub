@@ -10,7 +10,7 @@ div.passwd {
 </style>');
 ?>
 <div class="bootstrap">
-  <form action="<?= BeeHub::$CONFIG['webdav_namespace']['users_path'] ?>" method="post">
+  <form action="<?= BeeHub::$CONFIG['namespace']['users_path'] ?>" method="post">
     <div>User name: <input type="text" name="user_name" /></div>
     <div>displayname: <input type="text" name="displayname" /></div>
     <div>email: <input type="text" name="email" /></div>

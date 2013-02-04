@@ -23,10 +23,10 @@ if ( false !== strpos( $this->user_prop_getcontenttype(), 'xml' ) )
               $active = 'beehub';
             }
             ?>
-            <li<?= ($active == 'beehub' ? ' class="active"' : '') ?>><a href="<?= htmlspecialchars(BeeHub::$CONFIG['webdav_namespace']['homepage'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>">BeeHub</a></li>
+            <li<?= ($active == 'beehub' ? ' class="active"' : '') ?>><a href="<?= htmlspecialchars(BeeHub::$CONFIG['namespace']['homepage'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>">BeeHub</a></li>
             <li<?= ($active == 'profile' ? ' class="active"' : '') ?>><a href="<?= htmlspecialchars(BeeHub_ACL_Provider::inst()->CURRENT_USER_PRINCIPAL, ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>">Profile</a></li>
-            <li<?= ($active == 'groups' ? ' class="active"' : '') ?>><a href="<?= htmlspecialchars(BeeHub::$CONFIG['webdav_namespace']['groups_path'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>">Groups</a></li>
-            <li<?= ($active == 'sponsors' ? ' class="active"' : '') ?>><a href="<?= htmlspecialchars(BeeHub::$CONFIG['webdav_namespace']['sponsors_path'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>">Sponsors</a></li>
+            <li<?= ($active == 'groups' ? ' class="active"' : '') ?>><a href="<?= htmlspecialchars(BeeHub::$CONFIG['namespace']['groups_path'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>">Groups</a></li>
+            <li<?= ($active == 'sponsors' ? ' class="active"' : '') ?>><a href="<?= htmlspecialchars(BeeHub::$CONFIG['namespace']['sponsors_path'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>">Sponsors</a></li>
             <li<?= ($active == 'files' ? ' class="active"' : '') ?>><a href="/">Files</a></li>
           </ul>
         </div>

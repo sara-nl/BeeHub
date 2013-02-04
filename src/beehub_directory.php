@@ -108,9 +108,8 @@ public function method_DELETE( $name )
  * @see DAV_Resource::method_GET()
  */
 public function method_GET() {
-  $this->assert(DAVACL::PRIV_READ);
   // This was a switch() statement. I hate those. --pieterb
-  if ( BeeHub::$CONFIG['webdav_namespace']['homepage'] == $this->path ) {
+  if ( BeeHub::$CONFIG['namespace']['homepage'] == $this->path ) {
     $this->include_view('homepage');
   } else {
     $members = array();
@@ -129,8 +128,9 @@ public function method_GET() {
 
 
 public function method_HEAD() {
-  $this->assert(DAVACL::PRIV_READ);
-  return array( 'Cache-Control' => 'no-cache' );
+  $retval = parent::method_HEAD();
+  $retval['Cache-Control'] = 'no-cache';
+  return $retval;
 }
 
 /**

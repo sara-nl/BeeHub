@@ -32,21 +32,6 @@ abstract class BeeHub_Principal
   public $name;
 
 
-  public $sql_props = null;
-
-
-  protected function user_set($name, $value = null) {
-    $this->user_set_internal($name, $value);
-  }
-
-
-  public function user_set_internal($name, $value = null) {
-    $this->init_props();
-    $this->sql_props[$name] = $value;
-    $this->touched = true;
-  }
-
-
   public function __construct($path) {
     parent::__construct($path);
     $this->name = rawurldecode(basename($path));
@@ -68,30 +53,12 @@ abstract class BeeHub_Principal
    */
   public function user_prop($propname) {
     $this->init_props();
-    return DAV::xmlescape(@$this->sql_props[$propname]);
+    return DAV::xmlescape(@$this->stored_props[$propname]);
   }
 
 
   public function user_prop_displayname() {
-    $this->init_props();
-    return $this->sql_props[DAV::PROP_DISPLAYNAME];
-  }
-
-
-  public function user_prop_acl_internal() {
-    return array();
-  }
-
-
-  // These methods are only available for a limited range of users!
-  public function method_PROPPATCH($propname, $value = null) {
-    if (!$this->is_admin()) {
-      throw new DAV_Status(
-              DAV::HTTP_FORBIDDEN,
-              DAV::COND_NEED_PRIVILEGES
-      );
-    }
-    return parent::method_PROPPATCH($propname, $value);
+    return $this->user_prop(DAV::PROP_DISPLAYNAME);
   }
 
 
@@ -101,7 +68,7 @@ abstract class BeeHub_Principal
 
 
   public function user_prop_owner() {
-    return BeeHub::$CONFIG['webdav_namespace']['wheel_path'];
+    return BeeHub::$CONFIG['namespace']['wheel_path'];
   }
 
 
@@ -110,7 +77,9 @@ abstract class BeeHub_Principal
   }
 
 
-  abstract protected function init_props();
+  public function user_prop_group_member_set() {
+    return array();
+  }
 
 
   /**
