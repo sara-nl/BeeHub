@@ -50,7 +50,7 @@ public function user_prop_current_user_principal() {
  * @return boolean is the current user an administrator?
  */
 public function wheel() {
-  return BeeHub::$CONFIG['webdav_namespace']['wheel_path'] == $this->CURRENT_USER_PRINCIPAL;
+  return BeeHub::$CONFIG['namespace']['wheel_path'] == $this->CURRENT_USER_PRINCIPAL;
 //  if ($this->wheelCache === null)
 //    $this->wheelCache = (
 //      ($cup = $this->user_prop_current_user_principal()) &&
@@ -65,12 +65,12 @@ public function user_prop_supported_privilege_set() {
   static $retval = null;
   if (!is_null($retval)) return $retval;
 
-  $retval    = new DAVACL_Element_supported_privilege(DAVACL::PRIV_ALL, false, 'All');
-  $read      = new DAVACL_Element_supported_privilege(DAVACL::PRIV_READ, false, 'Read');
-  $write     = new DAVACL_Element_supported_privilege(DAVACL::PRIV_WRITE, false, 'Write');
+  $retval      = new DAVACL_Element_supported_privilege(DAVACL::PRIV_ALL, false, 'All');
 
-  $read_acl  = new DAVACL_Element_supported_privilege(DAVACL::PRIV_READ_ACL, false, 'Read ACL');
-  $write_acl = new DAVACL_Element_supported_privilege(DAVACL::PRIV_WRITE_ACL, false, 'Write ACL');
+  $read        = new DAVACL_Element_supported_privilege(DAVACL::PRIV_READ, false, 'Read');
+  $write       = new DAVACL_Element_supported_privilege(DAVACL::PRIV_WRITE, false, 'Write');
+  $read_acl    = new DAVACL_Element_supported_privilege(DAVACL::PRIV_READ_ACL, false, 'Read ACL');
+  $write_acl   = new DAVACL_Element_supported_privilege(DAVACL::PRIV_WRITE_ACL, false, 'Write ACL');
 
   $retval->add_supported_privilege($read)
          ->add_supported_privilege($write)
@@ -87,7 +87,7 @@ public function user_prop_acl_restrictions() {
 
 
 public function user_prop_principal_collection_set() {
-  return array(BeeHub::$CONFIG['webdav_namespace']['groups_path'], BeeHub::$CONFIG['webdav_namespace']['users_path']);
+  return array(BeeHub::$CONFIG['namespace']['groups_path'], BeeHub::$CONFIG['namespace']['users_path']);
 }
 
 

@@ -1,6 +1,6 @@
 <?php require('views/header_bootstrap.php'); ?>
 <div class="bootstrap">
-  <form action="<?= BeeHub::$CONFIG['webdav_namespace']['users_path'] ?>" method="post">
+  <form action="<?= BeeHub::$CONFIG['namespace']['users_path'] ?>" method="post">
     <div>User name: <input type="text" name="user_name" /></div>
     <div>Display name: <input type="text" name="displayname" /></div>
     <div>E-mail address: <input type="text" name="email" /></div>

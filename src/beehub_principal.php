@@ -27,23 +27,7 @@
 abstract class BeeHub_Principal extends BeeHub_Resource implements DAVACL_Principal {
 
   public $name;
-  public $sql_props = null;
 
-  protected function user_set($name, $value = null) {
-    $this->set_property($name, $value);
-  }
-
-  /**
-   * Sets a property on the current data model
-   * @param   string  $name   The name of the property
-   * @param   type    $value  The value of the property. Set to null to remove the property.
-   * @return  void
-   */
-  public function set_property($name, $value = null) {
-    $this->init_props();
-    $this->sql_props[$name] = $value;
-    $this->touched = true;
-  }
 
   public function __construct($path) {
     parent::__construct($path);
@@ -63,27 +47,11 @@ abstract class BeeHub_Principal extends BeeHub_Resource implements DAVACL_Princi
    */
   public function user_prop($propname) {
     $this->init_props();
-    return DAV::xmlescape(@$this->sql_props[$propname]);
+    return DAV::xmlescape(@$this->stored_props[$propname]);
   }
 
   public function user_prop_displayname() {
-    $this->init_props();
-    return $this->sql_props[DAV::PROP_DISPLAYNAME];
-  }
-
-  public function user_prop_acl_internal() {
-    return array();
-  }
-
-  // These methods are only available for a limited range of users!
-  public function method_PROPPATCH($propname, $value = null) {
-    if (!$this->is_admin()) {
-      throw new DAV_Status(
-              DAV::HTTP_FORBIDDEN,
-              DAV::COND_NEED_PRIVILEGES
-      );
-    }
-    return parent::method_PROPPATCH($propname, $value);
+    return $this->user_prop(DAV::PROP_DISPLAYNAME);
   }
 
   protected function user_set_displayname($displayname) {
@@ -91,14 +59,17 @@ abstract class BeeHub_Principal extends BeeHub_Resource implements DAVACL_Princi
   }
 
   public function user_prop_owner() {
-    return BeeHub::$CONFIG['webdav_namespace']['wheel_path'];
+    return BeeHub::$CONFIG['namespace']['wheel_path'];
   }
 
   public function user_prop_group_membership() {
     return array();
   }
 
-  abstract protected function init_props();
+
+  public function user_prop_group_member_set() {
+    return array();
+  }
 
   /**
    * @return bool is the current user allowed to administer $this?

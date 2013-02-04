@@ -33,7 +33,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
     if (!isset($_GET['verification_code'])) {
       $this->include_view('new_user');
     }else{
-      $current_email = BeeHub_Registry::inst()->resource(BeeHub::$CONFIG['webdav_namespace']['users_path'] . $_GET['user_name'])->prop(BeeHub::PROP_EMAIL);
+      $current_email = BeeHub_Registry::inst()->resource(BeeHub::$CONFIG['namespace']['users_path'] . $_GET['user_name'])->prop(BeeHub::PROP_EMAIL);
       $this->include_view('verify_email', array('setPassword'=>empty($current_email)));
     }
   }
@@ -54,7 +54,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
       }
 
       // Fetch the user and store extra properties
-      $user = BeeHub_Registry::inst()->resource(BeeHub::$CONFIG['webdav_namespace']['users_path'] . $user_name);
+      $user = BeeHub_Registry::inst()->resource(BeeHub::$CONFIG['namespace']['users_path'] . $user_name);
       $user->set_property(DAV::PROP_DISPLAYNAME, $displayname);
       $user->set_property(BeeHub::PROP_EMAIL, $email);
       $user->storeProperties();
@@ -62,7 +62,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
       // TODO: Check whether the POST field is filled out correctly
       $verification_code = $_POST['verification_code'];
       $user_name = $_POST['user_name'];
-      $user = BeeHub_Registry::inst()->resource(BeeHub::$CONFIG['webdav_namespace']['users_path'] . $user_name);
+      $user = BeeHub_Registry::inst()->resource(BeeHub::$CONFIG['namespace']['users_path'] . $user_name);
       $old_email = $user->prop(BeeHub::PROP_EMAIL);
 
       // Now verify the e-mail address
@@ -96,7 +96,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
     $result = BeeHub::query("SELECT `user_name` FROM `beehub_users` WHERE `displayname` LIKE {$match};");
     $retval = array();
     while ($row = $result->fetch_row()) {
-      $retval[] = BeeHub::$CONFIG['webdav_namespace']['users_path'] . rawurlencode($row[0]);
+      $retval[] = BeeHub::$CONFIG['namespace']['users_path'] . rawurlencode($row[0]);
     }
     $result->free();
     return $retval;

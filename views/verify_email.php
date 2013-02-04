@@ -1,6 +1,6 @@
 <?php require('views/header_bootstrap.php'); ?>
 <div class="bootstrap">
-  <form action="<?= BeeHub::$CONFIG['webdav_namespace']['users_path'] ?>" method="post">
+  <form action="<?= BeeHub::$CONFIG['namespace']['users_path'] ?>" method="post">
     <div>User name: <input type="text" name="user_name" value="<?= htmlspecialchars($_GET['user_name'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>" /></div>
     <div>Verification code: <input type="text" name="verification_code" value="<?= htmlspecialchars($_GET['verification_code'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>" /></div>
     <?php if ($setPassword) : ?>

@@ -73,7 +73,7 @@ class BeeHub_User extends BeeHub_Principal {
         'SELECT
           `displayname`,
           `email`,
-          `password` IS NOT NULL,
+          `password`,
           `x509`
          FROM `beehub_users`
          WHERE `user_name` = ?;'
@@ -87,19 +87,21 @@ class BeeHub_User extends BeeHub_Principal {
       );
     }
 
-    if (is_null($this->sql_props)) {
-      $this->sql_props = array();
+    if (is_null($this->stored_props)) {
+      $this->stored_props = array();
       $p_user_name = $this->name;
       $statement_props->execute();
       $statement_props->fetch();
-      $this->sql_props[DAV::PROP_DISPLAYNAME] = $r_displayname;
-      $this->sql_props[BeeHub::PROP_EMAIL]    = $r_email;
-      $this->original_email                   = $r_email;
+      $this->stored_props[DAV::PROP_DISPLAYNAME] = $r_displayname;
+      if (!is_null($r_email)) {
+        $this->stored_props[BeeHub::PROP_EMAIL]  = $r_email;
+        $this->original_email                    = $r_email;
+      }
       if (!is_null($r_x509)) {
-        $this->sql_props[BeeHub::PROP_X509]   = $r_x509;
+        $this->stored_props[BeeHub::PROP_X509]   = $r_x509;
       }
       if ($r_password) {
-        $this->sql_props[BeeHub::PROP_PASSWORD] = true; // Nobody should have read access to this property. But just in case, we always set it to true.
+        $this->stored_props[BeeHub::PROP_PASSWORD] = true; // Nobody should have read access to this property. But just in case, we always set it to true.
       }
       $statement_props->free_result();
     }
@@ -115,24 +117,24 @@ class BeeHub_User extends BeeHub_Principal {
       return;
     }
 
-    if (isset($this->sql_props[BeeHub::PROP_PASSWORD])) {
-      if ($this->sql_props[BeeHub::PROP_PASSWORD] === true) { //true means there is a password, but it hasn't been changed!
+    if (isset($this->stored_props[BeeHub::PROP_PASSWORD])) {
+      if ($this->stored_props[BeeHub::PROP_PASSWORD] === true) { //true means there is a password, but it hasn't been changed!
         $p_password = true;
       } else {
-        $p_password = crypt($this->sql_props[BeeHub::PROP_PASSWORD], '$6$rounds=5000$' . md5(time() . rand(0, 99999)) . '$');
+        $p_password = crypt($this->stored_props[BeeHub::PROP_PASSWORD], '$6$rounds=5000$' . md5(time() . rand(0, 99999)) . '$');
       }
-      $this->sql_props[BeeHub::PROP_PASSWORD] = true;
+      $this->stored_props[BeeHub::PROP_PASSWORD] = true;
     }else{
       $p_password = null;
     }
 
-    $p_displayname = @$this->sql_props[DAV::PROP_DISPLAYNAME];
-    $p_x509        = @$this->sql_props[BeeHub::PROP_X509];
+    $p_displayname = @$this->stored_props[DAV::PROP_DISPLAYNAME];
+    $p_x509        = @$this->stored_props[BeeHub::PROP_X509];
 
     $change_email = false;
-    if (@$this->sql_props[BeeHub::PROP_EMAIL] !== $this->original_email) {
+    if (@$this->stored_props[BeeHub::PROP_EMAIL] !== $this->original_email) {
       $change_email = true;
-      $p_email = @$this->sql_props[BeeHub::PROP_EMAIL];
+      $p_email = @$this->stored_props[BeeHub::PROP_EMAIL];
       $p_verification_code = md5(time() . '0-c934q2089#$#%@#$jcq2iojc43q9  i1d' . rand(0, 10000));
     }
 
@@ -198,9 +200,20 @@ class BeeHub_User extends BeeHub_Principal {
     $this->touched = false;
   }
 
-  // We allow everybody to do everything with this object in the ACL, so we can handle all privileges hard-coded without ACL's interfering
-  public function user_prop_acl() {
-    return array(new DAVACL_Element_ace('DAV: all', false, array('DAV: all'), false, true, null));
+
+  public function user_prop_acl_internal() {
+    return array(
+      new DAVACL_Element_ace(
+        DAVACL::PRINCIPAL_SELF, false, array(
+          DAVACL::PRIV_WRITE
+        ), false, false
+      ),
+      new DAVACL_Element_ace(
+        DAVACL::PRINCIPAL_AUTHENTICATED, false, array(
+          DAVACL::PRIV_READ, DAVACL::PRIV_READ_ACL
+        ), false, false
+      )
+    );
   }
 
 
@@ -242,21 +255,21 @@ class BeeHub_User extends BeeHub_Principal {
    * @todo move the initialization into init_props()
    */
   public function user_prop_group_membership() {
-    $query = <<<EOS
-SELECT `group_name`
-FROM `beehub_group_members`
-WHERE `user_name` = ?;
-EOS;
-    $statement = BeeHub::mysqli()->prepare($query);
-    $user_name = $this->name;
-    $statement->bind_param('s', $user_name);
+    $statement = BeeHub::mysqli()->prepare(
+     'SELECT `group_name`
+      FROM `beehub_group_members`
+      WHERE `user_name` = ?
+        AND `is_invited` = 1
+        AND `is_requested` = 1'
+    );
+    $statement->bind_param('s', $this->name);
     $groupname = null;
     $statement->bind_result($groupname);
     $statement->execute();
 
     $retval = array();
     while ($statement->fetch()) {
-      $retval[] = BeeHub::$CONFIG['webdav_namespace']['groups_path'] . rawurlencode($groupname);
+      $retval[] = BeeHub::$CONFIG['namespace']['groups_path'] . rawurlencode($groupname);
     }
     $statement->free_result();
 
@@ -264,20 +277,58 @@ EOS;
   }
 
 
-  /**
-   * @see DAVACL::user_prop_group_member_set()
-   */
-  public function user_prop_group_member_set() {
-    return array();
+  public function is_admin() {
+    return BeeHub_ACL_Provider::inst()->wheel() ||
+      ( $this->path == BeeHub::current_user() );
   }
 
-  public function is_admin() {
-    return ($this->path == BeeHub::current_user());
+
+  /**
+   * @param array $properties
+   * @return array an array of (property => isReadable) pairs.
+   */
+  public function property_priv_read($properties) {
+    $retval = parent::property_priv_read($properties);
+    $is_admin = $this->is_admin();
+    $retval[BeeHub::PROP_EMAIL]         = $is_admin;
+    $retval[BeeHub::PROP_X509]          = $is_admin;
+    $retval[DAV::PROP_GROUP_MEMBERSHIP] = $is_admin;
+    $retval[BeeHub::PROP_PASSWORD]      = false;
+    return $retval;
+  }
+
+
+  public function user_propname() {
+    return BeeHub::$USER_PROPS;
   }
 
   public function user_set_group_member_set($set) {
     return DAV::forbidden();
   }
+
+
+  /**
+   * @param $name string
+   * @param $value string XML
+   */
+  protected function user_set($name, $value = null) {
+    if ( ! $this->is_admin() )
+      throw DAV::forbidden();
+    if ( false !== strpos( "$value", '<' ) )
+      throw new DAV_Status( DAV::HTTP_BAD_REQUEST );
+    if ( ! is_null($value) )
+      $value = htmlspecialchars_decode($value);
+    return $this->user_set_internal($name, $value);
+  }
+
+
+  public function user_set_internal($name, $value = null) {
+    switch($name) {
+      case BeeHub::PROP_EMAIL:
+        //TODO: check e-mail format
+    }
+  }
+
 
   // These methods are only available for a limited range of users!
 //@TODO: Dit is geen functie, maar PROPFIND moet wel beperkt worden!

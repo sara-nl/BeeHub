@@ -34,12 +34,6 @@ class BeeHub_XFSResource extends BeeHub_Resource {
 
 
   /**
-   * @var array Array of propery_name => property_value pairs.
-   */
-  protected $xattr_props;
-
-
-  /**
    * @var array
    */
   protected $stat;
@@ -53,22 +47,13 @@ class BeeHub_XFSResource extends BeeHub_Resource {
 
 
   protected function init_props() {
-    if (is_null($this->xattr_props)) {
-      $this->xattr_props = array();
+    if (is_null($this->stored_props)) {
+      $this->stored_props = array();
       $attributes = xattr_list($this->localPath);
       foreach ($attributes as $attribute)
-        $this->xattr_props[rawurldecode($attribute)] =
+        $this->stored_props[rawurldecode($attribute)] =
                 xattr_get($this->localPath, $attribute);
     }
-  }
-
-
-  /**
-   * @see DAV_Resource::user_prop()
-   */
-  public function user_prop($propname) {
-    $this->init_props();
-    return @$this->xattr_props[$propname];
   }
 
 
@@ -103,26 +88,10 @@ class BeeHub_XFSResource extends BeeHub_Resource {
   public function user_propname() {
     $this->init_props();
     $retval = array();
-    foreach (array_keys($this->xattr_props) as $prop)
+    foreach (array_keys($this->stored_props) as $prop)
       if (!isset(DAV::$SUPPORTED_PROPERTIES[$prop]))
         $retval[$prop] = true;
     return $retval;
-  }
-
-
-  /**
-   * @see DAV_Resource::user_set()
-   */
-  protected function user_set($propname, $value = null) {
-    $this->assert(DAVACL::PRIV_WRITE);
-    $this->init_props();
-    if (is_null($value) && isset($this->xattr_props[$propname])) {
-      unset($this->xattr_props[$propname]);
-      $this->touched = true;
-    } elseif (!is_null($value) && $value !== @$this->xattr_props[$propname]) {
-      $this->xattr_props[$propname] = $value;
-      $this->touched = true;
-    }
   }
 
 
@@ -201,9 +170,9 @@ class BeeHub_XFSResource extends BeeHub_Resource {
     if (!$this->touched)
       return;
     foreach (xattr_list($this->localPath) as $attribute)
-      if (!isset($this->xattr_props[rawurldecode($attribute)]))
+      if (!isset($this->stored_props[rawurldecode($attribute)]))
         xattr_remove($this->localPath, $attribute);
-    foreach ($this->xattr_props as $name => $value)
+    foreach ($this->stored_props as $name => $value)
       xattr_set($this->localPath, rawurlencode($name), $value);
     $this->touched = false;
   }
