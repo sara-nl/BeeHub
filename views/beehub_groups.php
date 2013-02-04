@@ -108,6 +108,15 @@ require 'views/header_bootstrap.php';
     <?php $i = $i+1;?>
   <?php endforeach; ?>
   </div>
+  <div>
+    <h2>Add new group</h2>
+    <form action="<?= BeeHub::$CONFIG['webdav_namespace']['groups_path'] ?>" method="post">
+      <div>Group name: <input type="text" name="group_name" /></div>
+      <div>Display name: <input type="text" name="displayname" /></div>
+      <div>Description: <input type="text" name="description" /></div>
+      <div><input type="submit" value="Add" /></div>
+    </form>
+  </div>
 </div>
 <!--script>
    $(window).on('hide', function () {
