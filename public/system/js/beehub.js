@@ -10,7 +10,9 @@
 		active = 'profile';
 	} else if ( RegExp('^/system/$').test( window.location.pathname ) ) {
 		active = 'beehub';
-	} else {
+	} else if ( RegExp('^/users/+$').test( window.location.pathname ) ) {
+    active = 'signup';
+  } else {
 		active = 'files';
 	}
 	$('.navbar-fixed-top li#navbar-li-' + active).addClass('active');

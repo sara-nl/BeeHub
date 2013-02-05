@@ -1,5 +1,3 @@
-<?php
-?>
     <div class="navbar navbar-inverse navbar-fixed-top">
       <div class="navbar-inner">
         <div class="container-fluid">
@@ -17,7 +15,7 @@
               <li id="navbar-li-files"><a href="/">Files</a></li>
             </ul>
             <ul class="nav pull-right">
-              <li><a href="#">Sign in</a></li>
+              <li id="navbar-li-signup"><a href="<?= BeeHub::$CONFIG['namespace']['users_path'] ?>">Sign up</a></li>
               <li><a href="#">Log in</a></li>
               <li class="beehub-spacer-surfsara-logo visible-desktop"></li>
             </ul>

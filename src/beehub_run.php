@@ -21,8 +21,17 @@
 
 // Perform some bootstrapping
 require_once dirname(__FILE__) . '/beehub.php';
-
 BeeHub::handle_method_spoofing();
+
+// If a GET request on the root doesn't have this server as a referer, redirect to the homepage
+if (
+        (DAV::unslashify($_SERVER['REQUEST_URI']) == '/') &&
+        ($_SERVER['REQUEST_METHOD'] == 'GET') &&
+        (!isset($_SERVER['HTTP_REFERER']) || (parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST) != $_SERVER['SERVER_NAME']))){
+  header('Location: ' . BeeHub::$CONFIG['namespace']['homepage'], true, DAV::HTTP_SEE_OTHER);
+  die();
+}
+
 DAV::$REGISTRY = BeeHub_Registry::inst();
 DAV::$LOCKPROVIDER = BeeHub_Lock_Provider::inst();
 DAV::$ACLPROVIDER = BeeHub_ACL_Provider::inst();
@@ -44,6 +53,14 @@ if (
         ($_SERVER['REQUEST_METHOD'] != 'OPTIONS')) {
   require_once(BeeHub::$CONFIG['environment']['simplesamlphp_autoloader']);
   $as = new SimpleSAML_Auth_Simple('default-sp');
+
+  if (isset($_GET['_web_logout']) && $as->isAuthenticated()) {
+    $as->logout();
+  }
+  if (isset($_GET['_web_login']) && !$as->isAuthenticated()) {
+    $as->login(array('saml:idp'=>'https://engine.surfconext.nl/authentication/idp/metadata'));
+  }
+
   if ($as->isAuthenticated()) {
     // @TODO: Retrieve and store the correct user (name) when authenticated through SimpleSamlPHP
   }else{ // If we are not authenticated through SimpleSamlPHP, require HTTP basic authentication
