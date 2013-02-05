@@ -7,4 +7,4 @@ client
 secret.php
 config.ini
 simplesaml
-/views/directory.php
+/views/beehub_directory.php
