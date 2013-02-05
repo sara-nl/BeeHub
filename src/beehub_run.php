@@ -28,7 +28,7 @@ if (
         (DAV::unslashify($_SERVER['REQUEST_URI']) == '/') &&
         ($_SERVER['REQUEST_METHOD'] == 'GET') &&
         (!isset($_SERVER['HTTP_REFERER']) || (parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST) != $_SERVER['SERVER_NAME']))){
-  header('Location: ' . BeeHub::$CONFIG['namespace']['homepage'], true, DAV::HTTP_SEE_OTHER);
+  header('Location: ' . BeeHub::$CONFIG['namespace']['system_path'], true, DAV::HTTP_SEE_OTHER);
   die();
 }
 
@@ -41,13 +41,13 @@ DAV::$ACLPROVIDER = BeeHub_ACL_Provider::inst();
  * - Accessing over regular HTTP (as opposed to HTTPS), unless you're in a development environment
  * - An OPTIONS request never requires authentication
  * - GET (or HEAD) or POST on the users collection (required to create a new user)
- * - GET (or HEAD) on the homepage collection (required to read the 'homepage')
+ * - GET (or HEAD) on the system collection (required to read the 'homepage')
  *
  * Note that the if-statements below check the inverse of these rules (because, if evaluated to true, it will start the authentication process)
  */
 $requireAuth = (
         (DAV::unslashify($_SERVER['REQUEST_URI']) != DAV::unslashify(BeeHub::$CONFIG['namespace']['users_path']) || !in_array($_SERVER['REQUEST_METHOD'], array('GET', 'HEAD', 'POST'))) &&
-        (DAV::unslashify($_SERVER['REQUEST_URI']) != DAV::unslashify(BeeHub::$CONFIG['namespace']['homepage']) || !in_array($_SERVER['REQUEST_METHOD'], array('GET', 'HEAD'))));
+        (DAV::unslashify($_SERVER['REQUEST_URI']) != DAV::unslashify(BeeHub::$CONFIG['namespace']['system_path']) || !in_array($_SERVER['REQUEST_METHOD'], array('GET', 'HEAD'))));
 if (
         (!empty($_SERVER['HTTPS']) || (APPLICATION_ENV == BeeHub::ENVIRONMENT_DEVELOPMENT)) &&
         ($_SERVER['REQUEST_METHOD'] != 'OPTIONS')) {

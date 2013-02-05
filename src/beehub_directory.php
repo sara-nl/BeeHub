@@ -108,22 +108,17 @@ public function method_DELETE( $name )
  * @see DAV_Resource::method_GET()
  */
 public function method_GET() {
-  // This was a switch() statement. I hate those. --pieterb
-  if ( BeeHub::$CONFIG['namespace']['homepage'] == $this->path ) {
-    $this->include_view('homepage');
-  } else {
-    $members = array();
-    # TODO oops, the document isn't generated as a stream? Here, an object is
-    # created for each member resource, and stored in memory. This will crash
-    # the server for large directories!
-    # It would be nicer if these objects were created one at a time, and then
-    # forgotten.
-    # @see BeeHub::Registry::forget()
-    foreach ($this as $member){
-      $members[$member] = DAV::$REGISTRY->resource($this->path . $member);
-    }
-    $this->include_view(null, array('members' => $members));
+  $members = array();
+  # TODO oops, the document isn't generated as a stream? Here, an object is
+  # created for each member resource, and stored in memory. This will crash
+  # the server for large directories!
+  # It would be nicer if these objects were created one at a time, and then
+  # forgotten.
+  # @see BeeHub::Registry::forget()
+  foreach ($this as $member){
+    $members[$member] = DAV::$REGISTRY->resource($this->path . $member);
   }
+  $this->include_view(null, array('members' => $members));
 }
 
 

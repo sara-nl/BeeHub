@@ -31,6 +31,7 @@ class BeeHub_Group extends BeeHub_Principal {
 
 
   public function user_prop_acl_internal() {
+    $this->init_props();
     $retval = array();
     foreach($this->users as $user_path => $user_info) {
       if ($user_info['is_admin']) {
@@ -41,6 +42,7 @@ class BeeHub_Group extends BeeHub_Principal {
         );
       }
     }
+    return $retval;
   }
 
 
@@ -242,8 +244,11 @@ EOS;
         throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR, $statement_props->error );
       if ( ! $statement_props->store_result() )
         throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR, $statement_props->error );
-      if ( ! $statement_props->fetch() )
+      $fetch_result = $statement_props->fetch();
+      if ( $fetch_result === false )
         throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR, $statement_props->error );
+      if ( is_null($fetch_result) )
+        throw new DAV_Status( DAV::HTTP_NOT_FOUND );
       $this->stored_props[DAV::PROP_DISPLAYNAME] = $result_displayname;
       $this->stored_props[BeeHub::PROP_DESCRIPTION] = $result_description;
       $statement_props->free_result();
@@ -319,19 +324,14 @@ EOS;
   }
 
 
-  private $is_admin_cache = null;
-
-
   /**
    * Determines whether the currently logged in user is an administrator of this group or not.
    *
    * @return  boolean  True if the currently logged in user is an administrator of this group, false otherwise
    */
   public function is_admin() {
-    if (is_null($this->is_admin_cache)) {
-      $this->init_props();
-    }
-    return $this->is_admin_cache;
+    $this->init_props();
+    return (isset($this->users[BeeHub::current_user()]) && $this->users[BeeHub::current_user()]['is_admin']);
   }
 
 
@@ -363,6 +363,10 @@ EOS;
     if ( @$retval[DAV::PROP_GROUP_MEMBER_SET] )
       $retval[DAV::PROP_GROUP_MEMBER_SET] = $this->is_member();
     return $retval;
+  }
+
+  public function user_set_group_member_set($set) {
+    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
   }
 
 

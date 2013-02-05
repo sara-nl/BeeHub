@@ -203,10 +203,18 @@ EOS;
 
     if (is_null($this->stored_props)) {
       $param_sponsor_name = $this->name;
-
       $this->stored_props = array();
-      $statement_props->execute();
-      $statement_props->fetch();
+
+      if ( ! $statement_props->execute() )
+        throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR, $statement_props->error );
+      if ( ! $statement_props->store_result() )
+        throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR, $statement_props->error );
+      $fetch_result = $statement_props->fetch();
+      if ( $fetch_result === false )
+        throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR, $statement_props->error );
+      if ( is_null($fetch_result) )
+        throw new DAV_Status( DAV::HTTP_NOT_FOUND );
+
       $this->stored_props[DAV::PROP_DISPLAYNAME] = $result_displayname;
       $this->stored_props[BeeHub::PROP_DESCRIPTION] = $result_description;
       $statement_props->free_result();
@@ -281,6 +289,7 @@ EOS;
 
 
   public function user_prop_acl_internal() {
+    $this->init_props();
     $retval = array();
     foreach($this->users as $user_path => $user_info) {
       if ($user_info['is_admin']) {
@@ -291,6 +300,7 @@ EOS;
         );
       }
     }
+    return $retval;
   }
 
 
@@ -318,6 +328,10 @@ EOS;
       $this->is_admin_cache = !is_null($response);
     }
     return $this->is_admin_cache;
+  }
+
+  public function user_set_group_member_set($set) {
+    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
   }
 
 } // class BeeHub_Sponsor

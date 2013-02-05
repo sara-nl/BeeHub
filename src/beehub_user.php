@@ -61,11 +61,13 @@ class BeeHub_User extends BeeHub_Principal {
 
   protected function init_props() {
     static $statement_props = null,
+           $statement_groups = null,
            $p_user_name = null,
            $r_displayname = null,
            $r_email = null,
            $r_password = null,
-           $r_x509 = null;
+           $r_x509 = null,
+           $result_group_name = null;
 
     # Lazy initialization of prepared statement:
     if (null === $statement_props) {
@@ -85,13 +87,32 @@ class BeeHub_User extends BeeHub_Principal {
         $r_password,
         $r_x509
       );
+
+      $statement_groups = BeeHub::mysqli()->prepare(
+        'SELECT `group_name`
+           FROM `beehub_group_members`
+          WHERE `user_name` = ?
+            AND `is_invited` = 1
+            AND `is_requested` = 1'
+      );
+      $statement_groups->bind_param('s', $p_user_name);
+      $statement_groups->bind_result($result_group_name);
     }
 
     if (is_null($this->stored_props)) {
       $this->stored_props = array();
       $p_user_name = $this->name;
-      $statement_props->execute();
-      $statement_props->fetch();
+
+      if ( ! $statement_props->execute() )
+        throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR, $statement_props->error );
+      if ( ! $statement_props->store_result() )
+        throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR, $statement_props->error );
+      $fetch_result = $statement_props->fetch();
+      if ( $fetch_result === false )
+        throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR, $statement_props->error );
+      if ( is_null($fetch_result) )
+        throw new DAV_Status( DAV::HTTP_NOT_FOUND );
+      
       $this->stored_props[DAV::PROP_DISPLAYNAME] = $r_displayname;
       if (!is_null($r_email)) {
         $this->stored_props[BeeHub::PROP_EMAIL]  = $r_email;
@@ -104,6 +125,17 @@ class BeeHub_User extends BeeHub_Principal {
         $this->stored_props[BeeHub::PROP_PASSWORD] = true; // Nobody should have read access to this property. But just in case, we always set it to true.
       }
       $statement_props->free_result();
+
+      if ( ! $statement_groups->execute() )
+        throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR, $statement_groups->error );
+      if ( ! $statement_groups->store_result() )
+        throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR, $statement_groups->error );
+      $groups = array();
+      while ($statement_groups->fetch()) {
+        $groups[] = BeeHub::$CONFIG['namespace']['groups_path'] . rawurlencode($result_group_name);
+      }
+      $statement_groups->free_result();
+      $this->stored_props[DAV::PROP_GROUP_MEMBERSHIP] = $groups;
     }
   }
 
@@ -255,28 +287,11 @@ class BeeHub_User extends BeeHub_Principal {
    * @todo move the initialization into init_props()
    */
   public function user_prop_group_membership() {
-    $statement = BeeHub::mysqli()->prepare(
-     'SELECT `group_name`
-      FROM `beehub_group_members`
-      WHERE `user_name` = ?
-        AND `is_invited` = 1
-        AND `is_requested` = 1'
-    );
-    $statement->bind_param('s', $this->name);
-    $groupname = null;
-    $statement->bind_result($groupname);
-    $statement->execute();
-
-    $retval = array();
-    while ($statement->fetch()) {
-      $retval[] = BeeHub::$CONFIG['namespace']['groups_path'] . rawurlencode($groupname);
-    }
-    $statement->free_result();
-
-    return $retval;
+    $this->init_props();
+    return $this->stored_props[DAV::PROP_GROUP_MEMBERSHIP];
   }
 
-
+  
   public function is_admin() {
     return BeeHub_ACL_Provider::inst()->wheel() ||
       ( $this->path == BeeHub::current_user() );
