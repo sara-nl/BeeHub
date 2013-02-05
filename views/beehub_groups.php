@@ -43,6 +43,11 @@
 			text-align: right;
 		}
 			
+		.testbutton{
+			padding: 12px !important;
+			text-align: right;
+		}
+			
 	</style>';
 	require 'views/header_bootstrap.php';
 ?>
@@ -52,11 +57,13 @@
   <div class="accordion" id="membershipinvitations">
   	<div class="accordion-group customaccordion">
 	  	<div class="accordion-heading customheader">
-	    	<div class="accordion-toggle" data-toggle="collapse" data-parent="#membershipinvitations" href=#invitation1>
-					<div class="row-fluid">
-							<div class="span10"><h5>Groepsnaam</h5></div>
-						  <div class="span2 admin"><h6>Administrator</h6></div>
-						</div>
+	  		<div class="row-fluid">
+	    		<div class="accordion-toggle span10" data-toggle="collapse" data-parent="#membershipinvitations" href=#invitation1>
+							<h5>Groepsnaam</h5>
+					</div>
+					<div class="span2 testbutton">
+						<button class="btn btn-primary " type="button" id="buttontest">Accept</button>
+					</div>
 	    	</div>
 	    </div>
    		<div id="invitation1" class="accordion-body collapse">
