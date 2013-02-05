@@ -25,7 +25,11 @@
  */
 class BeeHub_Users extends BeeHub_Principal_Collection {
 
-  public function method_GET($headers) {
+  /**
+   * Returns either a form to register a new user or a form to verify your e-mail address. No authentication required.
+   * @see DAV_Resource::method_GET
+   */
+  public function method_GET() {
     if (empty($_SERVER['HTTPS']) && APPLICATION_ENV != BeeHub::ENVIRONMENT_DEVELOPMENT) {
       header('location: https://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI']);
       die();
@@ -39,6 +43,17 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
   }
 
 
+  public function method_HEAD() {
+    $retval = array();
+    $retval['Cache-Control'] = 'no-cache';
+    return $retval;
+  }
+
+
+  /**
+   * Handles both the form to register a new user and the form to verify an e-mail address. No authentication required.
+   * @see DAV_Resource::method_POST()
+   */
   public function method_POST(&$headers) {
     if (!isset($_POST['verification_code'])) {
       // TODO: translate user_name to ASCII and check for double usernames

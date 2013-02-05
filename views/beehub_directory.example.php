@@ -8,7 +8,7 @@ $active = 'files';
 require 'views/header_bootstrap.php';
 ?><div class="container-fluid">
 <h1>Directory index</h1>
-<?php if ( '/' != $directory->path ) : ?>
+<?php if ( '/' != $this->path ) : ?>
 <p><a href="../">Up one level</a></p>
 <?php endif; ?>
 <ul>

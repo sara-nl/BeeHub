@@ -34,6 +34,14 @@ public function __construct($path) {
 }
 
 
+  public function method_HEAD() {
+    $this->assert(DAVACL::PRIV_READ);
+    $retval = array();
+    $retval['Cache-Control'] = 'no-cache';
+    return $retval;
+  }
+
+
 /**
  * This method renews file .../js/principals.js
  * @TODO make sure that .../js/principals.js is overwritable by a `rename`
