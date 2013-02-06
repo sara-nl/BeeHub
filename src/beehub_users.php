@@ -34,11 +34,11 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
       header('location: https://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI']);
       die();
     }
-    if (!isset($_GET['verification_code'])) {
+    if (!isset($_GET['verify']) && !isset($_GET['verify_user'])) {
       $this->include_view('new_user');
     }else{
-      $current_email = BeeHub_Registry::inst()->resource(BeeHub::$CONFIG['namespace']['users_path'] . $_GET['user_name'])->prop(BeeHub::PROP_EMAIL);
-      $this->include_view('verify_email', array('setPassword'=>empty($current_email)));
+      $setPassword = isset($_GET['verify_user']);
+      $this->include_view('verify_email', array('setPassword'=>$setPassword));
     }
   }
 
