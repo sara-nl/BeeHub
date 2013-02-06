@@ -55,7 +55,7 @@ abstract class BeeHub_Principal extends BeeHub_Resource implements DAVACL_Princi
   }
 
   protected function user_set_displayname($displayname) {
-    $this->set_property(DAV::PROP_DISPLAYNAME, $displayname);
+    $this->user_set(DAV::PROP_DISPLAYNAME, $displayname);
   }
 
   public function user_prop_owner() {
@@ -69,6 +69,19 @@ abstract class BeeHub_Principal extends BeeHub_Resource implements DAVACL_Princi
 
   public function user_prop_group_member_set() {
     return array();
+  }
+
+
+  /**
+  * The user has write privileges on all properties if he is the administrator of this principal
+  * @param array $properties
+  * @return array an array of (property => isWritable) pairs.
+  */
+  public function property_priv_write($properties) {
+    $allow = $this->is_admin();
+    $retval = array();
+    foreach ($properties as $prop) $retval[$prop] = $allow;
+    return $retval;
   }
 
   /**

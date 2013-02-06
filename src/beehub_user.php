@@ -327,21 +327,23 @@ class BeeHub_User extends BeeHub_Principal {
    * @param $value string XML
    */
   protected function user_set($name, $value = null) {
-    if ( ! $this->is_admin() )
-      throw DAV::forbidden();
-    if ( false !== strpos( "$value", '<' ) )
-      throw new DAV_Status( DAV::HTTP_BAD_REQUEST );
-    if ( ! is_null($value) )
-      $value = htmlspecialchars_decode($value);
-    return $this->user_set_internal($name, $value);
-  }
-
-
-  public function user_set_internal($name, $value = null) {
+//    if ( ! $this->is_admin() )
+//      throw DAV::forbidden();
+//    if ( false !== strpos( "$value", '<' ) )
+//      throw new DAV_Status( DAV::HTTP_BAD_REQUEST );
+//    if ( ! is_null($value) )
+//      $value = htmlspecialchars_decode($value);
+//    return $this->user_set_internal($name, $value);
+//  }
+//
+//
+//  public function user_set_internal($name, $value = null) {
     switch($name) {
       case BeeHub::PROP_EMAIL:
         //TODO: check e-mail format
     }
+    //TODO: check this implementation
+    return parent::user_set($name, $value);
   }
 
 

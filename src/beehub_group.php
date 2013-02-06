@@ -320,7 +320,8 @@ EOS;
   protected function user_set($propname, $value = null) {
     if (!$this->is_admin())
       throw DAV::forbidden();
-    //TODO: implement
+    // TODO: Is this the correct implementation?
+    return parent::user_set($name, $value);
   }
 
 
