@@ -85,7 +85,6 @@ class BeeHub_User extends BeeHub_Principal {
       $statement_props->bind_result(
         $r_displayname,
         $r_email,
-        $r_new_email,
         $r_password,
         $r_x509
       );
@@ -329,7 +328,7 @@ class BeeHub_User extends BeeHub_Principal {
    * @param $name string
    * @param $value string XML
    */
-  protected function user_set($name, $value = null) {
+  public function user_set($name, $value = null) {
     switch($name) {
       case BeeHub::PROP_EMAIL:
         //TODO: check e-mail format

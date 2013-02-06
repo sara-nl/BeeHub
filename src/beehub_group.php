@@ -317,7 +317,7 @@ EOS;
    * @see DAV_Resource::user_set()
    * @TODO extract text content from the 'description' XML fragment.
    */
-  protected function user_set($propname, $value = null) {
+  public function user_set($propname, $value = null) {
     if (!$this->is_admin())
       throw DAV::forbidden();
     // TODO: Is this the correct implementation?

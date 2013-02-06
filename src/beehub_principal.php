@@ -72,7 +72,7 @@ abstract class BeeHub_Principal extends BeeHub_Resource implements DAVACL_Princi
     return array();
   }
 
-  public function user_set_group_member_set() {
+  public function user_set_group_member_set($set) {
   }
 
 
