@@ -35,7 +35,7 @@ public function __construct($path) {
 
 
   public function method_HEAD() {
-    $retval = array();
+    $retval = parent::method_HEAD();
     $retval['Cache-Control'] = 'no-cache';
     return $retval;
   }
@@ -80,6 +80,18 @@ public function report_principal_match($input) {}
 public function report_principal_search_property_set() {
   return array('DAV: displayname' => 'Name');
 }
+
+
+  /**
+  * @see BeeHub_Resource::user_prop_acl_internal()
+  */
+  public function user_prop_acl_internal() {
+    return array( new DAVACL_Element_ace(
+      DAVACL::PRINCIPAL_AUTHENTICATED, false, array(
+        DAVACL::PRIV_READ, DAVACL::PRIV_READ_ACL
+      ), false, false
+    ));
+  }
 
 
 protected $members = null;
@@ -160,20 +172,6 @@ public function method_MKCOL( $name ) {
   throw new DAV_Status(DAV::HTTP_FORBIDDEN);
 }
 /**#@-*/
-
-
-/**
- * We allow everybody to do everything with this object in the ACL, so we can
- * handle all privileges hard-coded without ACL's interfering.
- * @see BeeHub_Resource::user_prop_acl_internal()
- */
-public function user_prop_acl_internal() {
-  return array( new DAVACL_Element_ace(
-    DAVACL::PRINCIPAL_AUTHENTICATED, false, array(
-      DAVACL::PRIV_READ, DAVACL::PRIV_READ_ACL
-    ), false, false
-  ));
-}
 
 
 } // class BeeHub_Principal
