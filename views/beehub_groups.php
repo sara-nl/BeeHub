@@ -3,21 +3,26 @@
 	 * Available variables:
 	 * $groups     All members of this directory
 	 */
-
 	// TODO custom settings to beehub.css or bootstrap.css
+	// TODO netter maken, dit zorgt ervoor dat het er uitziet zoals ik
+	// wil maar dit kan waarschijnlijk netter/anders
 	$header = '<style type="text/css">
-		#membership, #membershipinvitations, #requestmembership {
+		#membershipgroups, #joingroups, #membershiprequests {
 		  padding-left:30px;
 		}
 			
-		.customaccordion { 
+		.custom-accordion { 
 		  border: 0px solid #E5E5E5 !important;
 		  border-style:dotted !important;
 		  border-top-width:1px !important;
 		  margin-bottom: 0px !important;
 		}
+			
+		.custom-accordion-other-background{
+			background-color: #E6E7E8 !important; 
+		}
 		
-		.customaccordion:hover {
+		.custom-accordion:hover {
 			background-color: #D1E2D3 !important; 
 		  border-style:dotted !important;
 		}
@@ -26,12 +31,12 @@
 			border-top: 1px solid #E5E5E5 !important;
 		}
 			
-		.customaccordionactive {
+		.custom-accordion-active {
 			background-color: #E8F1E9 !important;
 			border: 1px solid #B9D3BA !important;
 		}
 			
-		.customaccordionactive:hover {
+		.custom-accordion-active:hover {
 			background-color: #E8F1E9 !important;
 			border-style:solid !important;
 		}
@@ -41,9 +46,13 @@
 			text-align: right;
 		}
 			
-		.testbutton{
+		.rightbutton{
 			padding: 12px !important;
 			text-align: right;
+		}
+			
+		.custom-btn-primary {
+			width: 130px !important;
 		}
 			
 	</style>';
@@ -51,26 +60,38 @@
 ?>
 
 <div class="container-fluid">
-	<h3>Request membership</h3>
-	<div id="requestmembership">
-		<div class="span3">
-			<input type="text" data-provide="typeahead">
-		</div>
-		<div class="span2">
-			<button class="btn btn-primary" type="button" id="requestmembetshipbutton">Send request</button>
-		</div>
-	</div>
-	<br><br><br>
-  <h3>Membership invitations</h3>
-  <div class="accordion" id="membershipinvitations">
-  	<div class="accordion-group customaccordion">
-	  	<div class="accordion-heading customheader">
+  <h3>Join groups</h3>
+  <div class="accordion" id="joingroups">
+  	<div class="accordion-group custom-accordion custom-accordion-other-background">
+	  	<div class="accordion-heading">
 	  		<div class="row-fluid">
-	    		<div class="accordion-toggle span10" data-toggle="collapse" data-parent="#membershipinvitations" href=#invitation1>
+	    		<div class="accordion-toggle span9" data-toggle="collapse" data-parent="#joingroups" href=#invitation3>
+						<h5>Request membership</h5>
+					</div>
+	    	</div>
+	    </div>
+   		<div id="invitation3" class="accordion-body collapse">
+  			<div class="accordion-inner custom-accordion-inner">
+					<div id="membershiprequests">
+						Hier moet je kunnen zoeken in de lijst<br><br>
+						<div class="span3">
+							<input type="text" data-provide="typeahead">
+						</div>
+						<div class="span2">
+							<button class="btn btn-primary" type="button" id="requestmembershipbutton">Send request</button>
+						</div>
+					</div>
+  			</div>
+			</div>
+		</div>
+  	<div class="accordion-group custom-accordion">
+	  	<div class="accordion-heading">
+	  		<div class="row-fluid">
+	    		<div class="accordion-toggle span9" data-toggle="collapse" data-parent="#joingroups" href=#invitation1>
 							<h5>Groepsnaam</h5>
 					</div>
-					<div class="span2 testbutton">
-						<button class="btn btn-primary " type="button" id="buttontest">Accept</button>
+					<div class="span3 rightbutton">
+						<button class="btn btn-primary custom-btn-primary" type="button" id="acceptinvitationbutton">Accept invitation</button>
 					</div>
 	    	</div>
 	    </div>
@@ -80,17 +101,57 @@
   			</div>
 			</div>
 		</div>
+		<div class="accordion-group custom-accordion">
+	  	<div class="accordion-heading">
+	  		<div class="row-fluid">
+	    		<div class="accordion-toggle span9" data-toggle="collapse" data-parent="#joingroups" href=#invitation2>
+							<h5>Groepsnaam 2 (waiting for approval)</h5>
+					</div>
+					<div class="span3 rightbutton">
+						<button class="btn btn-primary custom-btn-primary" type="button" id="cancelrequestinvitationbutton">Cancel request</button>
+					</div>
+	    	</div>
+	    </div>
+   		<div id="invitation2" class="accordion-body collapse">
+  			<div class="accordion-inner custom-accordion-inner">
+  				Dit is de beschrijving van de group
+  			</div>
+			</div>
+		</div>
+
 	</div>
 	
-
+	<br>
   <h3>Group memberships</h3>
-  <div class="accordion" id="membership">
+  <div class="accordion" id="membershipgroups">
+	  <div class="accordion-group custom-accordion custom-accordion-other-background">
+		  	<div class="accordion-heading">
+		  		<div class="row-fluid">
+		    		<div class="accordion-toggle span9" data-toggle="collapse" data-parent="#joingroups" href=#creategroup>
+								<h5>Create new group</h5>
+						</div>
+		    	</div>
+		    </div>
+	   		<div id="creategroup" class="accordion-body collapse">
+	  			<div class="accordion-inner custom-accordion-inner">
+	  			  <div>
+	  			  		Dit formulier moet nog anders
+    				    <form action="<?= BeeHub::$CONFIG['namespace']['groups_path'] ?>" method="post">
+					      <div>Group name: <input type="text" name="group_name" /></div>
+					      <div>Display name: <input type="text" name="displayname" /></div>
+					      <div>Description: <input type="text" name="description" /></div>
+					      <div><input type="submit" value="Add" /></div>
+					    </form>
+					  </div>
+	  			</div>
+				</div>
+			</div>
 		<?php
       $i=1;
       foreach ($groups as $group) : ?>
-        <div class="accordion-group customaccordion">
+        <div class="accordion-group custom-accordion">
 	        <div class="accordion-heading">
-	          <div class="accordion-toggle" data-toggle="collapse" data-parent="#membership" href=#<?= $group->name ?>>
+	          <div class="accordion-toggle" data-toggle="collapse" data-parent="#membershipgroups" href=#<?= $group->name ?>>
 		          <div class="row-fluid">
 								<div class="span4"><h5><?= $group->prop(DAV::PROP_DISPLAYNAME) ?></h5></div>
 								<div class="span4 offset4 admin"><h6>Administrator</h6></div>
@@ -101,7 +162,8 @@
 	        	<div class="accordion-inner custom-accordion-inner">
 	          	<?= $group->prop(BeeHub::PROP_DESCRIPTION) ?>
 	          	<br><br>
-	            <form id="membership_form_<?= $group->name ?>" method="post">
+	          	Dit moet nog anders<br><br>
+              <form id="membership_form_<?= $group->name ?>" method="post">
 	          		<p>The following users requested for you to sponsor them:</p>
 	          		<table>
 	            		<thead>
@@ -160,15 +222,6 @@
     	$i = $i+1;
     	endforeach;
     ?>
-  </div>
-  <div>
-    <h2>Add new group</h2>
-    <form action="<?= BeeHub::$CONFIG['namespace']['groups_path'] ?>" method="post">
-      <div>Group name: <input type="text" name="group_name" /></div>
-      <div>Display name: <input type="text" name="displayname" /></div>
-      <div>Description: <input type="text" name="description" /></div>
-      <div><input type="submit" value="Add" /></div>
-    </form>
   </div>
 </div>
 <?php $footer=<<<EOS
