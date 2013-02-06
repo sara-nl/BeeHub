@@ -28,7 +28,7 @@ DAV::$ACLPROVIDER = BeeHub_ACL_Provider::inst();
 if (isset($_SERVER['PHP_AUTH_USER'])) {
   # TODO Waarom wordt hier DAV::parseURI aangeroepen? --pieterb
   BeeHub_ACL_Provider::inst()->CURRENT_USER_PRINCIPAL = DAV::parseURI(
-    BeeHub::$CONFIG['webdav_namespace']['users_path'] . $_SERVER['PHP_AUTH_USER']
+    BeeHub::$CONFIG['namespace']['users_path'] . $_SERVER['PHP_AUTH_USER']
   );
 }
 

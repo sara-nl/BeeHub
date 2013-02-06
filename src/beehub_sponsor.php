@@ -193,20 +193,20 @@ EOS;
       $statement_users->bind_result( $result_user_name );
     }
 
-    if (is_null($this->sql_props)) {
-      $this->sql_props = array();
+    if (is_null($this->stored_props)) {
+      $this->stored_props = array();
       $statement_props->execute();
       $statement_props->fetch();
-      $this->sql_props[DAV::PROP_DISPLAYNAME] = $result_displayname;
-      $this->sql_props[BeeHub::PROP_DESCRIPTION] = $result_description;
+      $this->stored_props[DAV::PROP_DISPLAYNAME] = $result_displayname;
+      $this->stored_props[BeeHub::PROP_DESCRIPTION] = $result_description;
       $statement_props->free_result();
       $statement_users->execute();
       $group_member_set = array();
       while( $statement_users->fetch() )
-        $group_member_set[] = BeeHub::$CONFIG['webdav_namespace']['users_path'] .
+        $group_member_set[] = BeeHub::$CONFIG['namespace']['users_path'] .
           rawurlencode($result_user_name);
       $statement_users->free_result();
-      $this->sql_props[DAV::PROP_GROUP_MEMBER_SET] =
+      $this->stored_props[DAV::PROP_GROUP_MEMBER_SET] =
         new DAVACL_Element_href( $members );
     }
   }
@@ -222,15 +222,15 @@ EOS;
     }
 
     // Are database properties set? If so, get the value and unset them
-    if (isset($this->sql_props[DAV::PROP_DISPLAYNAME])) {
-      $displayname = $this->sql_props[DAV::PROP_DISPLAYNAME];
-      unset($this->sql_props[DAV::PROP_DISPLAYNAME]);
+    if (isset($this->stored_props[DAV::PROP_DISPLAYNAME])) {
+      $displayname = $this->stored_props[DAV::PROP_DISPLAYNAME];
+      unset($this->stored_props[DAV::PROP_DISPLAYNAME]);
     } else {
       $displayname = '';
     }
-    if (isset($this->sql_props[BeeHub::PROP_DESCRIPTION])) {
-      $description = $this->sql_props[BeeHub::PROP_DESCRIPTION];
-      unset($this->sql_props[BeeHub::PROP_DESCRIPTION]);
+    if (isset($this->stored_props[BeeHub::PROP_DESCRIPTION])) {
+      $description = $this->stored_props[BeeHub::PROP_DESCRIPTION];
+      unset($this->stored_props[BeeHub::PROP_DESCRIPTION]);
     } else {
       $description = null;
     }
@@ -244,9 +244,9 @@ EOS;
     parent::storeProperties();
 
     // And set the database properties again
-    $this->sql_props[DAV::PROP_DISPLAYNAME] = $displayname;
+    $this->stored_props[DAV::PROP_DISPLAYNAME] = $displayname;
     if (!is_null($description)) {
-      $this->sql_props[BeeHub::PROP_DESCRIPTION] = $description;
+      $this->stored_props[BeeHub::PROP_DESCRIPTION] = $description;
     }
   }
 
@@ -260,6 +260,18 @@ EOS;
       break;
     }
   }
+
+  /**
+   * @param array $properties
+   * @return array an array of (property => isReadable) pairs.
+   */
+  public function property_priv_read($properties) {
+    $retval = parent::property_priv_read($properties);
+    if ( @$retval[DAV::PROP_GROUP_MEMBER_SET] )
+      $retval[DAV::PROP_GROUP_MEMBER_SET] = $this->is_admin();
+    return $retval;
+  }
+
 
   protected function user_set($propname, $value = null) {
     $this->assert(DAVACL::PRIV_WRITE);
@@ -324,17 +336,6 @@ EOS;
       $this->is_admin_cache = !is_null($response);
     }
     return $this->is_admin_cache;
-  }
-
-  // These methods are only available for a limited range of users!
-  public function method_PROPPATCH($propname, $value = null) {
-    if (!$this->is_admin()) {
-      throw new DAV_Status(
-              DAV::HTTP_FORBIDDEN,
-              DAV::COND_NEED_PRIVILEGES
-      );
-    }
-    return parent::method_PROPPATCH($propname, $value);
   }
 
 } // class BeeHub_Sponsor

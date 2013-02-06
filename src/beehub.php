@@ -56,13 +56,24 @@ class BeeHub_Timeout extends BeeHub_MySQL {
  */
 class BeeHub {
 
-  const PROP_NAME          = 'http://beehub.nl/ name';
-  const PROP_PASSWORD        = 'http://beehub.nl/ password';
-  const PROP_EMAIL         = 'http://beehub.nl/ email';
-  const PROP_X509          = 'http://beehub.nl/ x509';
-  const PROP_DESCRIPTION   = 'http://beehub.nl/ description';
-  const PROP_GROUP_ADMIN_SET            = 'http://beehub.nl/ group-admin-set';
-  const PROP_GROUP_REQUESTED_MEMBER_SET = 'http://beehub.nl/ group-requested-member-set';
+  const PROP_PASSWORD          = 'http://beehub.nl/ password';
+  const PROP_EMAIL             = 'http://beehub.nl/ email';
+  const PROP_NEW_EMAIL         = 'http://beehub.nl/ new-email';
+  const PROP_X509              = 'http://beehub.nl/ x509';
+  const PROP_DESCRIPTION       = 'http://beehub.nl/ description';
+
+  public static $USER_PROPS = array(
+    self::PROP_PASSWORD        => false,
+    self::PROP_EMAIL           => true,
+    self::PROP_NEW_EMAIL       => false,
+    self::PROP_X509            => true,
+  );
+  public static $GROUP_PROPS = array(
+    self::PROP_DESCRIPTION     => true,
+  );
+  public static $GROUP_PROPS = array(
+    self::PROP_DESCRIPTION     => true,
+  );
 
   /**#@+
    * These constants define the different environments the code can run in.
@@ -211,3 +222,7 @@ BeeHub::$CONFIG = parse_ini_file(
         dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'config.ini', true
 );
 
+DAV::$PROTECTED_PROPERTIES[ DAV::PROP_GROUP_MEMBER_SET ]     = true;
+DAV::$PROTECTED_PROPERTIES[ BeeHub::PROP_GROUP_ADMIN_SET ]   = true;
+DAV::$PROTECTED_PROPERTIES[ BeeHub::PROP_GROUP_INVITE_SET ]  = true;
+DAV::$PROTECTED_PROPERTIES[ BeeHub::PROP_GROUP_REQUEST_SET ] = true;

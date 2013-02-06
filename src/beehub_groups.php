@@ -54,7 +54,7 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
     $result = BeeHub::query("SELECT `group_name` FROM `beehub_groups` WHERE `displayname` LIKE {$match};");
     $retval = array();
     while ($row = $result->fetch_row()) {
-      $retval[] = BeeHub::$CONFIG['webdav_namespace']['groups_path'] . rawurlencode($row[0]);
+      $retval[] = BeeHub::$CONFIG['namespace']['groups_path'] . rawurlencode($row[0]);
     }
     $result->free();
     return $retval;

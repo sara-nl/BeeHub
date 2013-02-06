@@ -27,6 +27,9 @@
 class BeeHub_Group extends BeeHub_Principal {
 
 
+  private $users = null;
+
+
   /**
    * @return string an HTML file
    * @see DAV_Resource::method_GET()
@@ -181,6 +184,9 @@ EOS;
   protected function init_props() {
     static $param_group_name = null,
            $result_user_name = null,
+           $result_is_invited = null,
+           $result_is_requested = null,
+           $result_is_admin = null,
            $result_displayname = null,
            $result_description = null,
            $statement_props = null,
@@ -200,18 +206,21 @@ EOS;
       );
 
       $statement_members = BeeHub::mysqli()->prepare(
- 'SELECT `user_name`
+ 'SELECT `user_name`, `is_invited`, `is_requested`, `is_admin`
   FROM `beehub_group_members`
  WHERE `group_name` = ?
    AND `is_invited` = 1
    AND `is_requested` = 1'
       );
       $statement_members->bind_param( 's', $param_group_name );
-      $statement_members->bind_result( $result_user_name );
+      $statement_members->bind_result(
+        $result_user_name, $result_is_invited, $result_is_requested,
+        $result_is_admin
+      );
     }
 
-    if (is_null($this->sql_props)) {
-      $this->sql_props = array();
+    if (is_null($this->stored_props)) {
+      $this->stored_props = array();
       $param_group_name = $this->name;
 
       # Query table `beehub_groups`
@@ -221,8 +230,8 @@ EOS;
         throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR, $statement_props->error );
       if ( ! $statement_props->fetch() )
         throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR, $statement_props->error );
-      $this->sql_props[DAV::PROP_DISPLAYNAME] = $result_displayname;
-      $this->sql_props[BeeHub::PROP_DESCRIPTION] = $result_description;
+      $this->stored_props[DAV::PROP_DISPLAYNAME] = $result_displayname;
+      $this->stored_props[BeeHub::PROP_DESCRIPTION] = $result_description;
       $statement_props->free_result();
 
       if ( ! $statement_members->execute() ||
@@ -230,13 +239,21 @@ EOS;
         throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR );
       }
 
-      $members = array();
+      $this->users = array();
+      $this->members = array();
       while ( $statement_members->fetch() ) {
-        $members[] = BeeHub::$CONFIG['webdav_namespace']['users_path'] .
+        $user_path = BeeHub::$CONFIG['namespace']['users_path'] .
           rawurlencode($result_user_name);
+        $this->users[$user_path] = array(
+          'is_invited' => $result_is_invited,
+          'is_requested' => $result_is_requested,
+          'is_admin' => $result_is_admin
+        );
+        if ($result_is_invited && $result_is_requested)
+          $members[] = $user_path;
       }
+      $this->stored_props[DAV::PROP_GROUP_MEMBER_SET] = $members;
       $statement_members->free_result();
-      $this->sql_props[DAV::PROP_GROUP_MEMBER_SET] = new DAV_Element_href($members);
     }
   }
 
@@ -263,8 +280,8 @@ EOS;
       $statement_update->bind_param('sss', $p_displayname, $p_description, $p_group_name);
     }
 
-    $p_displayname = $this->sql_props[DAV::PROP_DISPLAYNAME];
-    $p_description = $this->sql_props[BeeHub::PROP_DESCRIPTION];
+    $p_displayname = $this->stored_props[DAV::PROP_DISPLAYNAME];
+    $p_description = $this->stored_props[BeeHub::PROP_DESCRIPTION];
     $p_group_name = $this->name;
     if ( ! $statement_update->execute() )
       throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR );
@@ -280,7 +297,7 @@ EOS;
   // We allow everybody to do everything with this object in the ACL, so we can handle all privileges hard-coded without ACL's interfering
   public function user_prop_acl() {
     return array(
-      new DAVACL_Element_ace('DAV: all', false, array('DAV: all'), false, true)
+      new DAVACL_Element_ace('DAV: all', false, array('DAV: read'), false, true)
     );
   }
 
@@ -290,20 +307,13 @@ EOS;
    * @TODO extract text content from the 'description' XML fragment.
    */
   protected function user_set($propname, $value = null) {
-    if (!$this->is_admin()) {
-      throw new DAV_Status(
-              DAV::HTTP_FORBIDDEN,
-              DAV::COND_NEED_PRIVILEGES
-      );
-    }
-    $this->init_props();
-    if ( $propname !== BeeHub::PROP_DESCRIPTION || null === $value )
-      throw new DAV_Status(DAV::HTTP_FORBIDDEN);
-    $this->sql_props[$propname] = $value;
+    if (!$this->is_admin())
+      throw DAV::forbidden();
+    //TODO: implement
   }
 
 
-  private $isAdminCache;
+  private $is_admin_cache = null;
 
 
   /**
@@ -312,28 +322,42 @@ EOS;
    * @return  boolean  True if the currently logged in user is an administrator of this group, false otherwise
    */
   public function is_admin() {
-    if (is_null($this->isAdminCache)) {
-      $result = null;
-      $p_user_name = rawurldecode(basename(BeeHub::current_user()));
-      $groupName = $this->name;
-      $statement = BeeHub::mysqli()->prepare(
- 'SELECT `is_admin`
-  FROM `beehub_group_members`
-  WHERE `group_name` = ? AND `user_name` = ?
-    AND `is_admin` = 1');
-      $statement->bind_param('ss', $groupName, $p_user_name);
-      $statement->bind_result($result);
-      $statement->execute();
-      $response = $statement->fetch();
-      $this->isAdminCache = !is_null($response);
+    if (is_null($this->is_admin_cache)) {
+      $this->init_props();
     }
-    return $this->isAdminCache;
+    return $this->is_admin_cache;
   }
 
 
-  // All these methods are forbidden:
-  public function method_ACL($aces) {
-    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
+  private $is_member_cache = null;
+  public function is_member() {
+    if (is_null($this->is_member_cache)) {
+      if ( $current_user = BeeHub_ACL_Provider::inst()->user_prop_current_user_principal() )
+        $this->is_member_cache = in_array(
+          $current_user, $this->user_prop_group_member_set()
+        );
+      else
+        $this->is_member_cache = false;
+    }
+    return $this->is_member_cache;
   }
+
+
+  public function user_propname() {
+    return BeeHub::$GROUP_PROPS;
+  }
+
+
+  /**
+   * @param array $properties
+   * @return array an array of (property => isReadable) pairs.
+   */
+  public function property_priv_read($properties) {
+    $retval = parent::property_priv_read($properties);
+    if ( @$retval[DAV::PROP_GROUP_MEMBER_SET] )
+      $retval[DAV::PROP_GROUP_MEMBER_SET] = $this->is_member();
+    return $retval;
+  }
+
 
 } // class BeeHub_Group

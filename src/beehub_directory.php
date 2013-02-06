@@ -110,7 +110,7 @@ public function method_DELETE( $name )
 public function method_GET() {
   $this->assert(DAVACL::PRIV_READ);
   // This was a switch() statement. I hate those. --pieterb
-  if ( BeeHub::$CONFIG['webdav_namespace']['homepage'] == $this->path ) {
+  if ( BeeHub::$CONFIG['namespace']['homepage'] == $this->path ) {
     $this->include_view('homepage');
   } else {
     $members = array();

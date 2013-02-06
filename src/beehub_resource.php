@@ -32,20 +32,13 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
   protected $touched = false;
 
 
-  public function isVisible() {
-    try {
-      $this->assert(DAVACL::PRIV_READ);
-    } catch (DAV_Status $e) {
-      if (!( $collection = $this->collection() ))
-        return false;
-      try {
-        $collection->assert(DAVACL::PRIV_WRITE);
-      } catch (DAV_Status $f) {
-        return false;
-      }
-    }
-    return true;
-  }
+  /**
+   * @var array Array of propery_name => property_value pairs.
+   */
+  protected $stored_props = null;
+
+
+  abstract protected function init_props();
 
 
   /**
@@ -56,6 +49,52 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
     if (BeeHub_ACL_Provider::inst()->wheel())
       return;
     return parent::assert($privileges);
+  }
+
+
+  /**
+   * @param $name string
+   * @param $value mixed
+   */
+  public function user_set($name, $value = null) {
+    $this->init_props();
+    if (is_null($value)) {
+      if (array_key_exists($name, $this->stored_props)) {
+        unset($this->stored_props[$name]);
+        $this->touched = true;
+      }
+    } else {
+      if ($value !== $this->stored_props[$name]) {
+        $this->stored_props[$name] = $value;
+        $this->touched = true;
+      }
+    }
+  }
+
+
+  public function isVisible() {
+    try {
+      $this->assert(DAVACL::PRIV_READ);
+    } catch (DAV_Status $e) {
+      if (!( $collection = $this->collection() ))
+        return false;
+      try {
+        $collection->assert(DAVACL::PRIV_READ);
+      } catch (DAV_Status $f) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+
+  /**
+   * @param $name string
+   * @param $value mixed
+   */
+  public function user_prop($name) {
+    $this->init_props();
+    return @$this->stored_props[$name];
   }
 
 
@@ -79,8 +118,13 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
       } catch (DAV_Status $e) {
         $retval[DAV::PROP_ACL] = false;
       }
-    if (isset($retval[DAV::PROP_OWNER]))
-      $retval[DAV::PROP_OWNER] = true;
+    foreach( array(
+      DAV::PROP_OWNER,
+      DAV::PROP_RESOURCETYPE,
+      DAV::PROP_DISPLAYNAME
+    ) as $prop )
+      if (array_key_exists($prop, $retval))
+        $retval[$prop] = true;
     return $retval;
   }
 
