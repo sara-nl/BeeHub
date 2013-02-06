@@ -7,7 +7,7 @@ if ( false !== strpos( $this->user_prop_getcontenttype(), 'xml' ) )
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <title>BeeHub</title>
-    <link rel="stylesheet" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" />
+    <link rel="stylesheet" href="/system/jquery/css/surfsara/jquery-ui-1.10.0.custom.min.css" />
     <link rel="stylesheet" href="/system/bootstrap/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/system/bootstrap/css/bootstrap-responsive.min.css" />
     <link rel="stylesheet" href="/system/css/beehub.css"/>
