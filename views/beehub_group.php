@@ -13,8 +13,7 @@ $header = '<style type="text/css">
   text-align: right;
 }
 </style>';
-$footer = '<script type="text/javascript" src="/system/js/group.js"></script>
-<script type="text/javascript" src="/system/js/webdavlib.js"></script>';
+$footer = '<script type="text/javascript" src="/system/js/group.js"></script>';
 
 require 'views/header_bootstrap.php';
 ?>
