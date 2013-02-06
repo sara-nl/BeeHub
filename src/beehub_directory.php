@@ -108,13 +108,15 @@ public function method_DELETE( $name )
  * @see DAV_Resource::method_GET()
  */
 public function method_GET() {
-  $members = array();
+  $this->assert(DAVACL::PRIV_READ);
+ 
   # TODO oops, the document isn't generated as a stream? Here, an object is
   # created for each member resource, and stored in memory. This will crash
   # the server for large directories!
   # It would be nicer if these objects were created one at a time, and then
   # forgotten.
   # @see BeeHub::Registry::forget()
+  $members = array();
   foreach ($this as $member){
     $members[$member] = DAV::$REGISTRY->resource($this->path . $member);
   }

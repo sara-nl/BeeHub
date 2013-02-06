@@ -7,7 +7,7 @@ if ( false !== strpos( $this->user_prop_getcontenttype(), 'xml' ) )
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
     <title>BeeHub</title>
-    <link rel="stylesheet" href="http://code.jquery.com/ui/1.9.2/themes/base/jquery-ui.css" />
+    <link rel="stylesheet" href="/system/jquery-ui/css/surfsara/jquery-ui-1.10.0.custom.min.css" />
     <link rel="stylesheet" href="/system/bootstrap/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/system/bootstrap/css/bootstrap-responsive.min.css" />
     <link rel="stylesheet" href="/system/css/beehub.css"/>
@@ -15,21 +15,6 @@ if ( false !== strpos( $this->user_prop_getcontenttype(), 'xml' ) )
   </head>
   <body>
     <div class="bootstrap">
-      <div class="navbar navbar-inverse navbar-fixed-top">
-        <div class="navbar-inner">
-          <ul class="nav">
-            <?php
-            if (!isset($active)) {
-              $active = 'beehub';
-            }
-            ?>
-            <li<?= ($active == 'beehub' ? ' class="active"' : '') ?>><a href="<?= htmlspecialchars(BeeHub::$CONFIG['namespace']['system_path'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>">BeeHub</a></li>
-            <li<?= ($active == 'profile' ? ' class="active"' : '') ?>><a href="<?= htmlspecialchars(BeeHub_ACL_Provider::inst()->CURRENT_USER_PRINCIPAL, ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>">Profile</a></li>
-            <li<?= ($active == 'groups' ? ' class="active"' : '') ?>><a href="<?= htmlspecialchars(BeeHub::$CONFIG['namespace']['groups_path'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>">Groups</a></li>
-            <li<?= ($active == 'sponsors' ? ' class="active"' : '') ?>><a href="<?= htmlspecialchars(BeeHub::$CONFIG['namespace']['sponsors_path'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>">Sponsors</a></li>
-            <li<?= ($active == 'files' ? ' class="active"' : '') ?>><a href="/">Files</a></li>
-          </ul>
-        </div>
-      </div>
+      <?php require 'views/navbar.php' ?>
+      <a href="http://www.surfsara.nl/"><img src="/system/img/surfsara.png" class="surfsara-logo visible-desktop" /></a>
     </div>
-    <div class="beehub-below-navbar-fixed-top">

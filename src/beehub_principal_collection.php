@@ -35,7 +35,6 @@ public function __construct($path) {
 
 
   public function method_HEAD() {
-    $this->assert(DAVACL::PRIV_READ);
     $retval = array();
     $retval['Cache-Control'] = 'no-cache';
     return $retval;

@@ -41,11 +41,6 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
   abstract protected function init_props();
 
 
-  public function method_HEAD() {
-    $this->assert(DAVACL::PRIV_READ);
-    return array();
-  }
-
 
   /**
    * @param array $privileges
@@ -62,7 +57,7 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
    * @param $name string
    * @param $value mixed
    */
-  protected function user_set($name, $value = null) {
+  public function user_set($name, $value = null) {
     $this->init_props();
     if (is_null($value)) {
       if (array_key_exists($name, $this->stored_props)) {

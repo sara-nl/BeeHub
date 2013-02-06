@@ -317,10 +317,11 @@ EOS;
    * @see DAV_Resource::user_set()
    * @TODO extract text content from the 'description' XML fragment.
    */
-  protected function user_set($propname, $value = null) {
+  public function user_set($propname, $value = null) {
     if (!$this->is_admin())
       throw DAV::forbidden();
-    //TODO: implement
+    // TODO: Is this the correct implementation?
+    return parent::user_set($name, $value);
   }
 
 
@@ -364,10 +365,5 @@ EOS;
       $retval[DAV::PROP_GROUP_MEMBER_SET] = $this->is_member();
     return $retval;
   }
-
-  public function user_set_group_member_set($set) {
-    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
-  }
-
 
 } // class BeeHub_Group

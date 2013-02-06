@@ -8,8 +8,7 @@ div.passwd {
   display: none;
 }
 </style>';
-$footer = '<script type="text/javascript" src="/system/js/user.js"></script>
-<script type="text/javascript" src="/system/js/webdavlib.js"></script>';
+$footer = '<script type="text/javascript" src="/system/js/user.js"></script>';
 require 'views/header_bootstrap.php';
 
 ?><div class="container-fluid">

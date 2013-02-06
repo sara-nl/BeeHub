@@ -35,6 +35,7 @@ if (
 DAV::$REGISTRY = BeeHub_Registry::inst();
 DAV::$LOCKPROVIDER = BeeHub_Lock_Provider::inst();
 DAV::$ACLPROVIDER = BeeHub_ACL_Provider::inst();
+$request = DAV_Request::inst();
 
 // Start authentication
 /* You don't need to authenticate when:
@@ -45,9 +46,10 @@ DAV::$ACLPROVIDER = BeeHub_ACL_Provider::inst();
  *
  * Note that the if-statements below check the inverse of these rules (because, if evaluated to true, it will start the authentication process)
  */
+$path = DAV::unslashify(DAV::$PATH);
 $requireAuth = (
-        (DAV::unslashify($_SERVER['REQUEST_URI']) != DAV::unslashify(BeeHub::$CONFIG['namespace']['users_path']) || !in_array($_SERVER['REQUEST_METHOD'], array('GET', 'HEAD', 'POST'))) &&
-        (DAV::unslashify($_SERVER['REQUEST_URI']) != DAV::unslashify(BeeHub::$CONFIG['namespace']['system_path']) || !in_array($_SERVER['REQUEST_METHOD'], array('GET', 'HEAD'))));
+        ($path != DAV::unslashify(BeeHub::$CONFIG['namespace']['users_path']) || !in_array($_SERVER['REQUEST_METHOD'], array('GET', 'HEAD', 'POST'))) &&
+        ($path != DAV::unslashify(BeeHub::$CONFIG['namespace']['system_path']) || !in_array($_SERVER['REQUEST_METHOD'], array('GET', 'HEAD'))));
 if (
         (!empty($_SERVER['HTTPS']) || (APPLICATION_ENV == BeeHub::ENVIRONMENT_DEVELOPMENT)) &&
         ($_SERVER['REQUEST_METHOD'] != 'OPTIONS')) {
@@ -97,8 +99,10 @@ if (
   }
 }
 
+// Clean up, just because it's nice to do so
+unset($path, $requireAuth, $as, $statement, $storedPassword);
+
 // After bootstrapping and authentication is done, handle the request
-$request = DAV_Request::inst();
 if ($request) {
   $request->handleRequest();
 }

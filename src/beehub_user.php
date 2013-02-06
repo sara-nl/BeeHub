@@ -65,6 +65,7 @@ class BeeHub_User extends BeeHub_Principal {
            $p_user_name = null,
            $r_displayname = null,
            $r_email = null,
+           $r_new_email = null,
            $r_password = null,
            $r_x509 = null,
            $result_group_name = null;
@@ -237,12 +238,17 @@ class BeeHub_User extends BeeHub_Principal {
     return array(
       new DAVACL_Element_ace(
         DAVACL::PRINCIPAL_SELF, false, array(
-          DAVACL::PRIV_WRITE
+          DAVACL::PRIV_READ, DAVACL::PRIV_WRITE
         ), false, false
       ),
       new DAVACL_Element_ace(
-        DAVACL::PRINCIPAL_AUTHENTICATED, false, array(
-          DAVACL::PRIV_READ, DAVACL::PRIV_READ_ACL
+        DAVACL::PRINCIPAL_ALL, false, array(
+          DAVACL::PRIV_READ
+        ), true, false
+      ),
+      new DAVACL_Element_ace(
+        DAVACL::PRINCIPAL_ALL, false, array(
+          DAVACL::PRIV_READ_ACL
         ), false, false
       )
     );
@@ -317,39 +323,19 @@ class BeeHub_User extends BeeHub_Principal {
     return BeeHub::$USER_PROPS;
   }
 
-  public function user_set_group_member_set($set) {
-    return DAV::forbidden();
-  }
-
 
   /**
    * @param $name string
    * @param $value string XML
    */
-  protected function user_set($name, $value = null) {
-    if ( ! $this->is_admin() )
-      throw DAV::forbidden();
-    if ( false !== strpos( "$value", '<' ) )
-      throw new DAV_Status( DAV::HTTP_BAD_REQUEST );
-    if ( ! is_null($value) )
-      $value = htmlspecialchars_decode($value);
-    return $this->user_set_internal($name, $value);
-  }
-
-
-  public function user_set_internal($name, $value = null) {
+  public function user_set($name, $value = null) {
     switch($name) {
       case BeeHub::PROP_EMAIL:
         //TODO: check e-mail format
     }
+    //TODO: check this implementation
+    return parent::user_set($name, $value);
   }
 
-
-  // These methods are only available for a limited range of users!
-//@TODO: Dit is geen functie, maar PROPFIND moet wel beperkt worden!
-//  public function method_PROPFIND($propname, $value = null) {
-//    self: all
-//    others: only display_name
-//  }
 
 } // class BeeHub_User
