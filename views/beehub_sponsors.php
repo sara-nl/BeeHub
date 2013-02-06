@@ -5,7 +5,6 @@
  * $directory  The beehub_directory object representing the current directory
  * $sponsors   All members of this directory
  */
-$active = "sponsors";
 $header = '<style type="text/css">
 .groupname {
   padding: 0.5em;

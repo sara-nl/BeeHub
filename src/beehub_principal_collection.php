@@ -34,6 +34,44 @@ public function __construct($path) {
 }
 
 
+  public function method_HEAD() {
+    $this->assert(DAVACL::PRIV_READ);
+    $retval = array();
+    $retval['Cache-Control'] = 'no-cache';
+    return $retval;
+  }
+
+
+/**
+ * This method renews file .../js/principals.js
+ * @TODO make sure that .../js/principals.js is overwritable by a `rename`
+ * @TODO make sure that this static method is called whenever a principal is
+ *   created, is destroyed, or changes displayname.
+ */
+public static function update_principals_json() {
+  $json = array();
+
+  foreach( array( 'user', 'group', 'sponsor' ) as $thing ) {
+    $things = array();
+    $result = BeeHub::query(
+      "SELECT `{$thing}_name`, `displayname`
+       FROM `beehub_{$thing}s`
+       ORDER BY `displayname`"
+    );
+    while ( $row = $result->fetch_row() )
+      $things[$row[0]] = $row[1];
+    $result->free();
+    $json["{$thing}s"] = $things;
+  }
+
+  $local_js_path = dirname( dirname( __FILE__ ) ) . '/public' .
+    BeeHub::$CONFIG['namespace']['javascript'];
+  $filename = tempnam($local_js_path, 'tmp_principals');
+  file_put_contents( $filename, json_encode($json) );
+  rename( $filename, $local_js_path . 'principals.js' );
+}
+
+
 public function report_principal_match($input) {}
 
 
@@ -50,6 +88,11 @@ protected $current = 0;
 
 
 abstract protected function init_members();
+
+
+protected function init_props() {
+  $this->stored_properties = array();
+}
 
 
 /**
@@ -126,7 +169,11 @@ public function method_MKCOL( $name ) {
  * @see BeeHub_Resource::user_prop_acl_internal()
  */
 public function user_prop_acl_internal() {
-  return array(new DAVACL_Element_ace('DAV: all', false, array('DAV: all'), false, true, null));
+  return array( new DAVACL_Element_ace(
+    DAVACL::PRINCIPAL_AUTHENTICATED, false, array(
+      DAVACL::PRIV_READ, DAVACL::PRIV_READ_ACL
+    ), false, false
+  ));
 }
 
 

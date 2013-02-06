@@ -25,7 +25,7 @@ require 'views/header_bootstrap.php';
   <form method="post">
     <div class="row-fluid">
       <div class="span2 fieldname">Group name</div>
-      <div class="span10 fieldvalue"><?= htmlspecialchars($this->prop(BeeHub::PROP_NAME), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></div>
+      <div class="span10 fieldvalue"><?= htmlspecialchars($this->name, ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></div>
     </div>
     <div class="row-fluid">
       <div class="span2 fieldname">Display name</div>
@@ -53,7 +53,7 @@ require 'views/header_bootstrap.php';
       <tbody>
         <?php foreach ($members as $member) :
           if (!$member['is_accepted']) : ?>
-            <tr class="member_row" id="<?= BeeHub::$CONFIG['webdav_namespace']['users_path'] . rawurlencode($member['user_name']) ?>">
+            <tr class="member_row" id="<?= BeeHub::$CONFIG['namespace']['users_path'] . rawurlencode($member['user_name']) ?>">
               <td><?= htmlspecialchars($member['user_name'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></td>
               <td><?= htmlspecialchars($member['displayname'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></td>
               <td><a href="#" class="accept_link">Accept</a></td>
@@ -78,7 +78,7 @@ require 'views/header_bootstrap.php';
       <tbody id="current_members">
         <?php foreach ($members as $member) :
           if ($member['is_accepted']) : ?>
-            <tr class="member_row" id="<?= BeeHub::$CONFIG['webdav_namespace']['users_path'] . rawurlencode($member['user_name']) ?>">
+            <tr class="member_row" id="<?= BeeHub::$CONFIG['namespace']['users_path'] . rawurlencode($member['user_name']) ?>">
               <td><?= htmlspecialchars($member['user_name'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></td>
               <td><?= htmlspecialchars($member['displayname'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></td>
               <td><?= ($member['is_admin'] ? 'jep <a href="#" class="demote_link">demote</a>' : 'nope <a href="#" class="promote_link">promote</a>') ?></td>

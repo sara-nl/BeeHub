@@ -165,12 +165,19 @@ EOS;
     }
   }
 
+
+  private $users = null;
+
+
   protected function init_props() {
     static $statement_props = null,
            $statement_users = null,
+           $param_sponsor_name = null,
            $result_displayname = null,
            $result_description = null,
-           $result_user_name = null;
+           $result_user_name = null,
+           $result_is_admin = null,
+           $result_is_accepted = null;
     # Lazy initialization:
     if (null === $statement_props) {
       $statement_props = BeeHub::mysqli()->prepare(
@@ -180,34 +187,52 @@ EOS;
          FROM `beehub_sponsors`
          WHERE `sponsor_name` = ?;'
       );
-      $statement_props->bind_param('s', $this->name);
+      $statement_props->bind_param('s', $param_sponsor_name);
       $statement_props->bind_result(
               $result_displayname, $result_description
       );
       $statement_users = BeeHub::mysqli()->prepare(
-        'SELECT `user_name`
+        'SELECT `user_name`, `is_admin`, `is_accepted`
          FROM `beehub_sponsor_members`
          WHERE `sponsor_name` = ?'
       );
-      $statement_users->bind_param('s', $this->name);
-      $statement_users->bind_result( $result_user_name );
+      $statement_users->bind_param('s', $param_sponsor_name);
+      $statement_users->bind_result(
+        $result_user_name, $result_is_admin, $result_is_accepted );
     }
 
-    if (is_null($this->sql_props)) {
-      $this->sql_props = array();
-      $statement_props->execute();
-      $statement_props->fetch();
-      $this->sql_props[DAV::PROP_DISPLAYNAME] = $result_displayname;
-      $this->sql_props[BeeHub::PROP_DESCRIPTION] = $result_description;
+    if (is_null($this->stored_props)) {
+      $param_sponsor_name = $this->name;
+      $this->stored_props = array();
+
+      if ( ! $statement_props->execute() )
+        throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR, $statement_props->error );
+      if ( ! $statement_props->store_result() )
+        throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR, $statement_props->error );
+      $fetch_result = $statement_props->fetch();
+      if ( $fetch_result === false )
+        throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR, $statement_props->error );
+      if ( is_null($fetch_result) )
+        throw new DAV_Status( DAV::HTTP_NOT_FOUND );
+
+      $this->stored_props[DAV::PROP_DISPLAYNAME] = $result_displayname;
+      $this->stored_props[BeeHub::PROP_DESCRIPTION] = $result_description;
       $statement_props->free_result();
-      $statement_users->execute();
-      $group_member_set = array();
-      while( $statement_users->fetch() )
-        $group_member_set[] = BeeHub::$CONFIG['webdav_namespace']['users_path'] .
+
+      $this->users = array();
+      $members = array();
+      while ( $statement_users->fetch() ) {
+        $user_path = BeeHub::$CONFIG['namespace']['users_path'] .
           rawurlencode($result_user_name);
+        $this->users[$user_path] = array(
+          'is_accepted' => $result_is_accepted,
+          'is_admin' => $result_is_admin
+        );
+        if ($result_is_accepted)
+          $members[] = $user_path;
+      }
+      $this->stored_props[DAV::PROP_GROUP_MEMBER_SET] = $members;
       $statement_users->free_result();
-      $this->sql_props[DAV::PROP_GROUP_MEMBER_SET] =
-        new DAVACL_Element_href( $members );
     }
   }
 
@@ -222,15 +247,15 @@ EOS;
     }
 
     // Are database properties set? If so, get the value and unset them
-    if (isset($this->sql_props[DAV::PROP_DISPLAYNAME])) {
-      $displayname = $this->sql_props[DAV::PROP_DISPLAYNAME];
-      unset($this->sql_props[DAV::PROP_DISPLAYNAME]);
+    if (isset($this->stored_props[DAV::PROP_DISPLAYNAME])) {
+      $displayname = $this->stored_props[DAV::PROP_DISPLAYNAME];
+      unset($this->stored_props[DAV::PROP_DISPLAYNAME]);
     } else {
       $displayname = '';
     }
-    if (isset($this->sql_props[BeeHub::PROP_DESCRIPTION])) {
-      $description = $this->sql_props[BeeHub::PROP_DESCRIPTION];
-      unset($this->sql_props[BeeHub::PROP_DESCRIPTION]);
+    if (isset($this->stored_props[BeeHub::PROP_DESCRIPTION])) {
+      $description = $this->stored_props[BeeHub::PROP_DESCRIPTION];
+      unset($this->stored_props[BeeHub::PROP_DESCRIPTION]);
     } else {
       $description = null;
     }
@@ -244,64 +269,43 @@ EOS;
     parent::storeProperties();
 
     // And set the database properties again
-    $this->sql_props[DAV::PROP_DISPLAYNAME] = $displayname;
+    $this->stored_props[DAV::PROP_DISPLAYNAME] = $displayname;
     if (!is_null($description)) {
-      $this->sql_props[BeeHub::PROP_DESCRIPTION] = $description;
+      $this->stored_props[BeeHub::PROP_DESCRIPTION] = $description;
     }
   }
 
-  public function user_prop($propname) {
-    switch ($propname) {
-      case DAV::PROP_GROUP_MEMBER_SET:
-        $retval = $this->user_prop_group_member_set();
-        return $retval ? new DAV_Element_href( $retval ) : '';
-      default:
-        return parent::user_prop($propname);
-      break;
-    }
+
+  /**
+   * @param array $properties
+   * @return array an array of (property => isReadable) pairs.
+   */
+  public function property_priv_read($properties) {
+    $retval = parent::property_priv_read($properties);
+    if ( @$retval[DAV::PROP_GROUP_MEMBER_SET] )
+      $retval[DAV::PROP_GROUP_MEMBER_SET] = $this->is_admin();
+    return $retval;
   }
 
-  protected function user_set($propname, $value = null) {
-    $this->assert(DAVACL::PRIV_WRITE);
+
+  public function user_prop_acl_internal() {
     $this->init_props();
-    switch ($propname) {
-      case DAV::PROP_GROUP_MEMBER_SET:
-        if (is_null($value)) {
-          $value = array();
-        }
-        $set = DAVACL::parse_hrefs($value)->URIs;
-        foreach ($set as &$uri) {
-          $uri = DAV::parseURI($uri, false);
-        }
-        $this->user_set_group_member_set($set);
-        $this->touched = true;
-        break;
-      default:
-        return parent::user_set($propname, $value);
-      break;
+    $retval = array();
+    foreach($this->users as $user_path => $user_info) {
+      if ($user_info['is_admin']) {
+        $retval[] = new DAVACL_Element_ace(
+          $user_path, false, array(
+            DAVACL::PRIV_WRITE
+          ), false, false
+        );
+      }
     }
-  }
-
-
-  public function user_set_group_member_set($set) {
-    throw new DAV_Status(
-      DAV::HTTP_FORBIDDEN,
-      DAV::COND_CANNOT_MODIFY_PROTECTED_PROPERTY
-    );
+    return $retval;
   }
 
 
   public function user_prop_group_member_set() {
     return $this->user_prop(DAV::PROP_GROUP_MEMBER_SET);
-  }
-
-
-  // We allow everybody to do everything with this object in the ACL, so we can
-  // handle all privileges hard-coded without ACL's interfering
-  public function user_prop_acl() {
-    return array( new DAVACL_Element_ace(
-      'DAV: all', false, array('DAV: all'), false, true, null
-    ));
   }
 
 
@@ -326,15 +330,8 @@ EOS;
     return $this->is_admin_cache;
   }
 
-  // These methods are only available for a limited range of users!
-  public function method_PROPPATCH($propname, $value = null) {
-    if (!$this->is_admin()) {
-      throw new DAV_Status(
-              DAV::HTTP_FORBIDDEN,
-              DAV::COND_NEED_PRIVILEGES
-      );
-    }
-    return parent::method_PROPPATCH($propname, $value);
+  public function user_set_group_member_set($set) {
+    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
   }
 
 } // class BeeHub_Sponsor

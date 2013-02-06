@@ -161,6 +161,15 @@
     	endforeach;
     ?>
   </div>
+  <div>
+    <h2>Add new group</h2>
+    <form action="<?= BeeHub::$CONFIG['namespace']['groups_path'] ?>" method="post">
+      <div>Group name: <input type="text" name="group_name" /></div>
+      <div>Display name: <input type="text" name="displayname" /></div>
+      <div>Description: <input type="text" name="description" /></div>
+      <div><input type="submit" value="Add" /></div>
+    </form>
+  </div>
 </div>
 <?php $footer=<<<EOS
 	<script type="text/javascript" src="/system/js/groups.js"></script>

@@ -50,7 +50,6 @@ class BeeHub_Sponsors extends BeeHub_Principal_Collection {
    * @see DAV_Resource::method_GET()
    */
   public function method_GET() {
-    $this->assert(DAVACL::PRIV_READ);
     $sponsors = array();
     foreach ($this as $sponsor)
       $sponsors[] = DAV::$REGISTRY->resource($this->path . $sponsor );
@@ -67,12 +66,6 @@ class BeeHub_Sponsors extends BeeHub_Principal_Collection {
       $this->members[] = rawurlencode($row[0]);
     }
     $result->free();
-  }
-
-
-  // We allow everybody to do everything with this object in the ACL, so we can handle all privileges hard-coded without ACL's interfering
-  public function user_prop_acl() {
-    return array(new DAVACL_Element_ace('DAV: all', false, array('DAV: all'), false, true, null));
   }
 
 
