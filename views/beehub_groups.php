@@ -6,16 +6,15 @@
 
 	// TODO custom settings to beehub.css or bootstrap.css
 	$header = '<style type="text/css">
-		.customaccordion {
+		#membership, #membershipinvitations, #requestmembership {
+		  padding-left:30px;
+		}
+			
+		.customaccordion { 
 		  border: 0px solid #E5E5E5 !important;
 		  border-style:dotted !important;
 		  border-top-width:1px !important;
 		  margin-bottom: 0px !important;
-// 			padding: 4px !important;
-		}
-
-		#membership, #membershipinvitations {
-		  padding-left:30px;
 		}
 		
 		.customaccordion:hover {
@@ -35,7 +34,6 @@
 		.customaccordionactive:hover {
 			background-color: #E8F1E9 !important;
 			border-style:solid !important;
-// 			color: white !important;
 		}
 			
 		.admin{
@@ -53,6 +51,16 @@
 ?>
 
 <div class="container-fluid">
+	<h3>Request membership</h3>
+	<div id="requestmembership">
+		<div class="span3">
+			<input type="text" data-provide="typeahead">
+		</div>
+		<div class="span2">
+			<button class="btn btn-primary" type="button" id="requestmembetshipbutton">Send request</button>
+		</div>
+	</div>
+	<br><br><br>
   <h3>Membership invitations</h3>
   <div class="accordion" id="membershipinvitations">
   	<div class="accordion-group customaccordion">
@@ -73,6 +81,7 @@
 			</div>
 		</div>
 	</div>
+	
 
   <h3>Group memberships</h3>
   <div class="accordion" id="membership">
