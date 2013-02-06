@@ -219,6 +219,10 @@ EOS;
       $this->stored_props[BeeHub::PROP_DESCRIPTION] = $result_description;
       $statement_props->free_result();
 
+      if ( ! $statement_users->execute() )
+        throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR, $statement_users->error );
+      if ( ! $statement_users->store_result() )
+        throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR, $statement_users->error );
       $this->users = array();
       $members = array();
       while ( $statement_users->fetch() ) {
@@ -328,10 +332,6 @@ EOS;
       $this->is_admin_cache = !is_null($response);
     }
     return $this->is_admin_cache;
-  }
-
-  public function user_set_group_member_set($set) {
-    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
   }
 
 } // class BeeHub_Sponsor

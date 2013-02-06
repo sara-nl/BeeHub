@@ -366,9 +366,4 @@ EOS;
     return $retval;
   }
 
-  public function user_set_group_member_set($set) {
-    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
-  }
-
-
 } // class BeeHub_Group

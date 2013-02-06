@@ -70,8 +70,8 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
 
       // Fetch the user and store extra properties
       $user = BeeHub_Registry::inst()->resource(BeeHub::$CONFIG['namespace']['users_path'] . $user_name);
-      $user->set_property(DAV::PROP_DISPLAYNAME, $displayname);
-      $user->set_property(BeeHub::PROP_EMAIL, $email);
+      $user->user_set(DAV::PROP_DISPLAYNAME, $displayname);
+      $user->user_set(BeeHub::PROP_EMAIL, $email);
       $user->storeProperties();
     }else{
       // TODO: Check whether the POST field is filled out correctly
@@ -88,9 +88,9 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
       // If the user doesn't have an e-mail address set yet, it is a new account. So allow setting the password or X509 certificate here
       if (empty($old_email)) {
         $password = $_POST['password'];
-        $user->set_property(BeeHub::PROP_PASSWORD, $password);
+        $user->user_set(BeeHub::PROP_PASSWORD, $password);
         $x509 = $_POST['x509'];
-        $user->set_property(BeeHub::PROP_X509, $x509);
+        $user->user_set(BeeHub::PROP_X509, $x509);
         $user->storeProperties();
       }
     }

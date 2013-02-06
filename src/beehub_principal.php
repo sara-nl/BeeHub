@@ -54,6 +54,7 @@ abstract class BeeHub_Principal extends BeeHub_Resource implements DAVACL_Princi
     return $this->user_prop(DAV::PROP_DISPLAYNAME);
   }
 
+
   protected function user_set_displayname($displayname) {
     $this->user_set(DAV::PROP_DISPLAYNAME, $displayname);
   }
@@ -69,6 +70,9 @@ abstract class BeeHub_Principal extends BeeHub_Resource implements DAVACL_Princi
 
   public function user_prop_group_member_set() {
     return array();
+  }
+
+  public function user_set_group_member_set() {
   }
 
 
