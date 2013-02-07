@@ -250,19 +250,28 @@ EOS;
       return;
     }
 
-    // Are database properties set? If so, get the value and unset them
-    $displayname = @$this->stored_props[DAV::PROP_DISPLAYNAME];
-    $description = DAV::xmlunescape( @$this->stored_props[BeeHub::PROP_DESCRIPTION] );
+    static $statement_update = null,
+           $p_displayname = null,
+           $p_description = null,
+           $p_sponsor_name = null;
+    if (null === $statement_update) {
+      $statement_update = BeeHub::mysqli()->prepare(
+        'UPDATE `beehub_sponsors`
+            SET `displayname` = ?,
+                `description` = ?
+          WHERE `sponsor_name` = ?'
+      );
+      $statement_update->bind_param('sss', $p_displayname, $p_description, $p_sponsor_name);
+    }
 
-    // Write all data to database
-    $updateStatement = BeeHub::mysqli()->prepare(
-      'UPDATE `beehub_sponsors`
-       SET `displayname` = ?, `description` = ?
-       WHERE `sponsor_name` = ?'
-    );
-    $updateStatement->bind_param('sss', $displayname, $description, $this->name);
-    if ( ! $updateStatement->execute() )
+    $p_displayname = @$this->stored_props[DAV::PROP_DISPLAYNAME];
+    $p_description = DAV::xmlunescape( @$this->stored_props[BeeHub::PROP_DESCRIPTION] );
+    $p_sponsor_name = $this->name;
+    if ( ! $statement_update->execute() )
       throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR );
+
+    // Update the json file containing all displaynames of all privileges
+    self::update_principals_json();
     $this->touched = false;
   }
 
