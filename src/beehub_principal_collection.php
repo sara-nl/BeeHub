@@ -66,7 +66,9 @@ public static function update_principals_json() {
   $local_js_path = dirname( dirname( __FILE__ ) ) . '/public' .
     BeeHub::$CONFIG['namespace']['javascript'];
   $filename = tempnam($local_js_path, 'tmp_principals');
-  file_put_contents( $filename, json_encode($json) );
+  file_put_contents( $filename,
+    'nl.sara.principals = ' . json_encode($json) . ';'
+  );
   rename( $filename, $local_js_path . 'principals.js' );
 }
 

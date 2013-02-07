@@ -1,4 +1,4 @@
-<?php require('views/header_bootstrap.php'); ?>
+<?php require('views/header.php'); ?>
 <div class="bootstrap">
   <form action="<?= BeeHub::$CONFIG['namespace']['users_path'] ?>" method="post">
     <div>User name: <input type="text" name="user_name" value="<?= htmlspecialchars(@$_GET['user_name'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>" /></div>
@@ -10,4 +10,4 @@
     <div><input type="submit" value="Verify e-mail address" /></div>
   </form>
 </div>
-<?php require('views/footer_bootstrap.php'); ?>
+<?php require('views/footer.php'); ?>

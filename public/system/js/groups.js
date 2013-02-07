@@ -5,20 +5,34 @@ $('.accordion-group').on('show', function (e) {
 
 // Kleur bij inklappen weer verwijderen
 $('.accordion-group').on('hide', function (e) {
-	$(e.target).parent().removeClass('custom-accordion-active');
+  $(e.target).parent().removeClass('custom-accordion-active');
 });
 
 // TODO accept action uitvoeren
 $('#acceptinvitationbutton').on('click', function (e) {
-	alert("button accept inivtation clicked")
+  alert("button accept inivtation clicked")
 });
 
 // TODO request action uitvoeren
 $('#requestmembershipbutton').on('click', function (e) {
-	alert("button request membership clicked")
+  alert("button request membership clicked")
 });
 
 //TODO request action uitvoeren
 $('#cancelrequestinvitationbutton').on('click', function (e) {
-	alert("button cancel request invitation clicked")
+  alert("button cancel request invitation clicked")
+});
+
+// Pieterb:
+$('ul#beehub-top-tabs a').click(function (e) {
+  e.preventDefault();
+  $(this).tab('show');
+});
+
+$('.accordion-heading a').click(function (e) {
+  e.stopPropagation();
+});
+
+$('.btn-danger').click(function (e) {
+  e.stopPropagation();
 });

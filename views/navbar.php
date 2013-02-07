@@ -24,3 +24,4 @@
       </div>
     </div>
     <div class="beehub-spacer-navbar-fixed-top visible-desktop"></div>
+    <a href="http://www.surfsara.nl/"><img src="/system/img/surfsara.png" class="surfsara-logo visible-desktop" /></a>

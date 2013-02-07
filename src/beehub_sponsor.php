@@ -216,7 +216,7 @@ EOS;
         throw new DAV_Status( DAV::HTTP_NOT_FOUND );
 
       $this->stored_props[DAV::PROP_DISPLAYNAME] = $result_displayname;
-      $this->stored_props[BeeHub::PROP_DESCRIPTION] = $result_description;
+      $this->stored_props[BeeHub::PROP_DESCRIPTION] = DAV::xmlescape($result_description);
       $statement_props->free_result();
 
       if ( ! $statement_users->execute() )
@@ -251,32 +251,19 @@ EOS;
     }
 
     // Are database properties set? If so, get the value and unset them
-    if (isset($this->stored_props[DAV::PROP_DISPLAYNAME])) {
-      $displayname = $this->stored_props[DAV::PROP_DISPLAYNAME];
-      unset($this->stored_props[DAV::PROP_DISPLAYNAME]);
-    } else {
-      $displayname = '';
-    }
-    if (isset($this->stored_props[BeeHub::PROP_DESCRIPTION])) {
-      $description = $this->stored_props[BeeHub::PROP_DESCRIPTION];
-      unset($this->stored_props[BeeHub::PROP_DESCRIPTION]);
-    } else {
-      $description = null;
-    }
+    $displayname = @$this->stored_props[DAV::PROP_DISPLAYNAME];
+    $description = DAV::xmlunescape( @$this->stored_props[BeeHub::PROP_DESCRIPTION] );
 
     // Write all data to database
-    $updateStatement = BeeHub::mysqli()->prepare('UPDATE `beehub_sponsors` SET `displayname`=?, `description`=? WHERE `sponsor_name`=?');
+    $updateStatement = BeeHub::mysqli()->prepare(
+      'UPDATE `beehub_sponsors`
+       SET `displayname` = ?, `description` = ?
+       WHERE `sponsor_name` = ?'
+    );
     $updateStatement->bind_param('sss', $displayname, $description, $this->name);
-    $updateStatement->execute();
-
-    // Store all other properties
-    parent::storeProperties();
-
-    // And set the database properties again
-    $this->stored_props[DAV::PROP_DISPLAYNAME] = $displayname;
-    if (!is_null($description)) {
-      $this->stored_props[BeeHub::PROP_DESCRIPTION] = $description;
-    }
+    if ( ! $updateStatement->execute() )
+      throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR );
+    $this->touched = false;
   }
 
 

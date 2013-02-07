@@ -13,12 +13,7 @@ set -xe
 
 ###### The actual work starts here ######
 
-# Create a debug log file:
-touch debug.txt
-chmod 666 debug.txt
-
-# Create a symlink from bootstrap to our own less-file:
-pushd public/system/bootstrap/less
-ln -sf ../../beehub.less
-popd
-
+# Create principals.js and make it apache-writable:
+PRINCIPALS_JS='public/system/js/principals.js'
+touch $PRINCIPALS_JS
+chmod 666 $PRINCIPALS_JS

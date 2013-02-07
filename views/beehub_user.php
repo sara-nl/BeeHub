@@ -9,9 +9,9 @@ div.passwd {
 }
 </style>';
 $footer = '<script type="text/javascript" src="/system/js/user.js"></script>';
-require 'views/header_bootstrap.php';
+require 'views/header.php';
 
-?><div class="container-fluid">
+?>
 <h1>Profile</h1>
 <form method="post">
   <div class="row-fluid">
@@ -48,5 +48,4 @@ require 'views/header_bootstrap.php';
   </div>
   <button class="btn">Save</button>
 </form>
-</div>
-<?php require 'views/footer_bootstrap.php'; ?>
+<?php require 'views/footer.php'; ?>

@@ -1,6 +1,6 @@
 <?php
 
-/* ·************************************************************************
+/*·************************************************************************
  * Copyright ©2007-2012 SARA b.v., Amsterdam, The Netherlands
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -12,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * ************************************************************************ */
+ **************************************************************************/
 
 /**
  * File documentation (who cares)
@@ -47,7 +47,7 @@ abstract class BeeHub_Principal extends BeeHub_Resource implements DAVACL_Princi
    */
   public function user_prop($propname) {
     $this->init_props();
-    return DAV::xmlescape(@$this->stored_props[$propname]);
+    return @$this->stored_props[$propname];
   }
 
   public function user_prop_displayname() {

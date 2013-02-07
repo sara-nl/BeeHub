@@ -106,4 +106,3 @@ unset($path, $requireAuth, $as, $statement, $storedPassword);
 if ($request) {
   $request->handleRequest();
 }
-//DAV::debug('done!');

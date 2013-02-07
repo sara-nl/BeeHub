@@ -250,7 +250,7 @@ EOS;
       if ( is_null($fetch_result) )
         throw new DAV_Status( DAV::HTTP_NOT_FOUND );
       $this->stored_props[DAV::PROP_DISPLAYNAME] = $result_displayname;
-      $this->stored_props[BeeHub::PROP_DESCRIPTION] = $result_description;
+      $this->stored_props[BeeHub::PROP_DESCRIPTION] = DAV::xmlescape($result_description);
       $statement_props->free_result();
 
       if ( ! $statement_members->execute() ||
@@ -287,21 +287,18 @@ EOS;
       return;
     }
 
-    static $statement_update = null;
-    $p_displayname = $p_description = $p_group_name = '';
-    if (null === $statement_update) {
-      $statement_update = BeeHub::mysqli()->prepare(
- 'UPDATE `beehub_groups`
-     SET `displayname` = ?,
-         `description` = ?
-   WHERE `group_name` = ?'
-      );
-      $statement_update->bind_param('sss', $p_displayname, $p_description, $p_group_name);
-    }
-
     $p_displayname = $this->stored_props[DAV::PROP_DISPLAYNAME];
-    $p_description = $this->stored_props[BeeHub::PROP_DESCRIPTION];
-    $p_group_name = $this->name;
+    $p_description = DAV::xmlunescape( $this->stored_props[BeeHub::PROP_DESCRIPTION] );
+    $statement_update = BeeHub::mysqli()->prepare(
+      'UPDATE `beehub_groups`
+          SET `displayname` = ?,
+              `description` = ?
+        WHERE `group_name` = ?'
+    );
+    $statement_update->bind_param(
+      'sss', $p_displayname, $p_description, $this->name
+    );
+
     if ( ! $statement_update->execute() )
       throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR );
     $this->touched = false;
@@ -309,7 +306,7 @@ EOS;
 
 
   public function user_prop_group_member_set() {
-    return $this->user_prop(DAV::PROP_GROUP_MEMBER_SET);
+    return $this->user_prop( DAV::PROP_GROUP_MEMBER_SET );
   }
 
 
@@ -332,21 +329,17 @@ EOS;
    */
   public function is_admin() {
     $this->init_props();
-    return (isset($this->users[BeeHub::current_user()]) && $this->users[BeeHub::current_user()]['is_admin']);
+    return ( $current_user = $this->user_prop_current_user_principal() ) &&
+           ( $tmp = @$this->users[$current_user] ) &&
+           $tmp['is_admin'];
   }
 
 
-  private $is_member_cache = null;
   public function is_member() {
-    if (is_null($this->is_member_cache)) {
-      if ( $current_user = BeeHub_ACL_Provider::inst()->user_prop_current_user_principal() )
-        $this->is_member_cache = in_array(
-          $current_user, $this->user_prop_group_member_set()
-        );
-      else
-        $this->is_member_cache = false;
-    }
-    return $this->is_member_cache;
+    $this->init_props();
+    return ( $current_user = $this->user_prop_current_user_principal() ) &&
+           ( $tmp = @$this->users[$current_user] ) &&
+           $tmp['is_invited'] && $tmp['is_requested'];
   }
 
 
