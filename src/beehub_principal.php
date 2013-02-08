@@ -23,6 +23,7 @@
  * A class.
  * @package BeeHub
  *
+ * @TODO: How to delete a principal?
  */
 abstract class BeeHub_Principal extends BeeHub_Resource implements DAVACL_Principal {
 
@@ -94,6 +95,34 @@ abstract class BeeHub_Principal extends BeeHub_Resource implements DAVACL_Princi
     $retval = array();
     foreach ($properties as $prop) $retval[$prop] = $allow;
     return $retval;
+  }
+
+
+  /**
+  * This method renews file .../js/principals.js
+  * @TODO make sure that .../js/principals.js is overwritable by a `rename`; consider not writing it to a location inside the document root for security reasons
+  */
+  public static function update_principals_json() {
+    $json = array();
+
+    foreach( array( 'user', 'group', 'sponsor' ) as $thing ) {
+      $things = array();
+      $result = BeeHub::query(
+        "SELECT `{$thing}_name`, `displayname`
+        FROM `beehub_{$thing}s`
+        ORDER BY `displayname`"
+      );
+      while ( $row = $result->fetch_row() )
+        $things[$row[0]] = $row[1];
+      $result->free();
+      $json["{$thing}s"] = $things;
+    }
+
+    $local_js_path = dirname( dirname( __FILE__ ) ) . '/public' .
+      BeeHub::$CONFIG['namespace']['javascript'];
+    $filename = tempnam($local_js_path, 'tmp_principals');
+    file_put_contents( $filename, json_encode($json) );
+    rename( $filename, $local_js_path . 'principals.js' );
   }
 
   /**

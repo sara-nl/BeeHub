@@ -295,6 +295,9 @@ EOS;
     $p_group_name = $this->name;
     if ( ! $statement_update->execute() )
       throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR );
+    
+    // Update the json file containing all displaynames of all privileges
+    self::update_principals_json();
     $this->touched = false;
   }
 

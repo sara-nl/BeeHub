@@ -221,6 +221,8 @@ class BeeHub_User extends BeeHub_Principal {
       die($p_verification_code);
     }
 
+    // Update the json file containing all displaynames of all privileges
+    self::update_principals_json();
     $this->touched = false;
   }
 
