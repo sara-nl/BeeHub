@@ -109,7 +109,7 @@ public function method_DELETE( $name )
  */
 public function method_GET() {
   $this->assert(DAVACL::PRIV_READ);
- 
+
   # TODO oops, the document isn't generated as a stream? Here, an object is
   # created for each member resource, and stored in memory. This will crash
   # the server for large directories!
@@ -120,7 +120,10 @@ public function method_GET() {
   foreach ($this as $member){
     $members[$member] = DAV::$REGISTRY->resource($this->path . $member);
   }
-  $this->include_view(null, array('members' => $members));
+  $this->include_view( null, array(
+      'members' => $members,
+      'CONFINED_BOOTSTRAP' => true
+  ));
 }
 
 

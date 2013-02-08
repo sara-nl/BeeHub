@@ -210,7 +210,7 @@ EOS;
         throw new DAV_Status( DAV::HTTP_NOT_FOUND );
 
       $this->stored_props[DAV::PROP_DISPLAYNAME] = $result_displayname;
-      $this->stored_props[BeeHub::PROP_DESCRIPTION] = $result_description;
+      $this->stored_props[BeeHub::PROP_DESCRIPTION] = DAV::xmlescape($result_description);
       $statement_props->free_result();
 
       if ( ! $statement_users->execute() )
@@ -244,20 +244,22 @@ EOS;
       return;
     }
 
-    static $statement_update = null;
-    $p_displayname = $p_description = $p_sponsor_name = '';
+    static $statement_update = null,
+           $p_displayname = null,
+           $p_description = null,
+           $p_sponsor_name = null;
     if (null === $statement_update) {
       $statement_update = BeeHub::mysqli()->prepare(
- 'UPDATE `beehub_sponsors`
-     SET `displayname` = ?,
-         `description` = ?
-   WHERE `sponsor_name` = ?'
+        'UPDATE `beehub_sponsors`
+            SET `displayname` = ?,
+                `description` = ?
+          WHERE `sponsor_name` = ?'
       );
       $statement_update->bind_param('sss', $p_displayname, $p_description, $p_sponsor_name);
     }
 
-    $p_displayname = $this->stored_props[DAV::PROP_DISPLAYNAME];
-    $p_description = $this->stored_props[BeeHub::PROP_DESCRIPTION];
+    $p_displayname = @$this->stored_props[DAV::PROP_DISPLAYNAME];
+    $p_description = DAV::xmlunescape( @$this->stored_props[BeeHub::PROP_DESCRIPTION] );
     $p_sponsor_name = $this->name;
     if ( ! $statement_update->execute() )
       throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR );

@@ -96,11 +96,19 @@ public function user_prop_principal_collection_set() {
  * @return bool true if a response has been sent to the user.
  */
 public function unauthorized() {
-  return false;
-  DAV::redirect(
-    DAV::HTTP_TEMPORARY_REDIRECT,
-    'webdav.php' . DAV::$PATH
-  );
+  DAV::header( array(
+      'status' => DAV::HTTP_UNAUTHORIZED,
+      'WWW-Authenticate' => 'Basic realm="' . BeeHub::$CONFIG['authentication']['realm'] . '"',
+      'Content-Type' => BeeHub::best_xhtml_type()
+  ) );
+  echo <<<EOS
+<html><head>
+  <title>HTTP/1.1 Unauthorized</title>
+</head><body>
+  <h1>HTTP/1.1 Unauthorized</h1>
+  <p>Sorry…</p>
+</body></html>
+EOS;
   return true;
 }
 

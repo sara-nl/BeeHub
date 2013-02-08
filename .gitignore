@@ -5,3 +5,4 @@ devel
 client
 config.ini
 /views/beehub_directory.php
+/public/system/js/principals.js

@@ -1,5 +1,6 @@
 <?php
-/* ·************************************************************************
+
+/*·************************************************************************
  * Copyright ©2007-2012 SARA b.v., Amsterdam, The Netherlands
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
@@ -11,7 +12,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- * ************************************************************************ */
+ **************************************************************************/
 
 /**
  * The system directory (/system/) is a virtual collection
@@ -43,7 +44,7 @@ class BeeHub_System_Collection extends BeeHub_Resource implements DAV_Collection
       $this->stored_props = array();
     }
   }
-  
+
 
   public function create_member($name) {
     throw DAV::forbidden();
@@ -60,11 +61,11 @@ class BeeHub_System_Collection extends BeeHub_Resource implements DAV_Collection
     );
   }
 
-  
+
   public function method_GET() {
     $this->include_view();
   }
-  
+
 
   public function method_DELETE($name) {
     throw DAV::forbidden();
@@ -74,7 +75,7 @@ class BeeHub_System_Collection extends BeeHub_Resource implements DAV_Collection
   public function method_MKCOL($name) {
     throw DAV::forbidden();
   }
- 
+
 
   public function method_MOVE($member, $destination) {
     throw DAV::forbidden();
@@ -94,12 +95,12 @@ class BeeHub_System_Collection extends BeeHub_Resource implements DAV_Collection
   public function next() {
     $this->current_key++;
   }
-  
+
 
   public function rewind() {
     $this->current_key = 0;
   }
-  
+
 
   public function valid() {
     return isset($this->members[$this->current_key]);

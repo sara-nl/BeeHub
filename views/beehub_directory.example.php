@@ -5,7 +5,7 @@
  * $this       The beehub_directory object representing the current directory
  */
 $active = 'files';
-require 'views/header_bootstrap.php';
+require 'views/header.php';
 ?><div class="container-fluid">
 <h1>Directory index</h1>
 <?php if ( '/' != $this->path ) : ?>
@@ -17,4 +17,4 @@ require 'views/header_bootstrap.php';
   <?php endforeach; ?>
 </ul>
 </div>
-<?php require 'views/footer_bootstrap.php'; ?>
+<?php require 'views/footer.php'; ?>
