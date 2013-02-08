@@ -9,14 +9,36 @@
           <a class="brand" href="<?= htmlspecialchars(BeeHub::$CONFIG['namespace']['system_path'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>">BeeHub<sup><small><strong><em>RC1</em></strong></small></sup></a>
           <div class="nav-collapse collapse">
             <ul class="nav">
-              <li id="navbar-li-profile"><a href="<?= htmlspecialchars(BeeHub_ACL_Provider::inst()->CURRENT_USER_PRINCIPAL, ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>">Profile</a></li>
+              <li id="navbar-li-users"><a href="<?= htmlspecialchars(BeeHub_ACL_Provider::inst()->CURRENT_USER_PRINCIPAL, ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>">Users</a></li>
               <li id="navbar-li-groups"><a href="<?= htmlspecialchars(BeeHub::$CONFIG['namespace']['groups_path'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>">Groups</a></li>
               <li id="navbar-li-sponsors"><a href="<?= htmlspecialchars(BeeHub::$CONFIG['namespace']['sponsors_path'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>">Sponsors</a></li>
               <li id="navbar-li-files"><a href="/">Files</a></li>
             </ul>
             <ul class="nav pull-right">
-              <li id="navbar-li-signup"><a href="<?= BeeHub::$CONFIG['namespace']['users_path'] ?>">Sign up</a></li>
-              <li><a href="#">Log in</a></li>
+              <?php if ( ( $me = $this->user_prop_current_user_principal() ) &&
+                         ( $meResource = BeeHub_Registry::inst()->resource($me) ) ) : ?>
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                  <?= $meResource->prop_displayname() ?> <span class="caret"></span>
+                </a>
+                <ul class="dropdown-menu">
+                  <li><a href="<?= DAV::xmlescape($me) ?>">Profile</a></li>
+                  <?php if (@$GLOBALS['CONEXT']) : ?>
+                  <li><a href="<?= $this->path . '?logout=yes' ?>">Log out</a></li>
+                  <?php endif ?>
+                  <li><a href="<?= BeeHub::urlbase(false) . BeeHub::$CONFIG['namespace']['system_path'] ?>">Go anonymous</a></li>
+                </ul>
+              </li>
+              <?php else : ?>
+              <li><a href="<?= BeeHub::$CONFIG['namespace']['users_path'] ?>">Sign up</a></li>
+              <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Log in <span class="caret"></span></a>
+                <ul class="dropdown-menu">
+                  <li><a href="<?= BeeHub::urlbase(true) . $this->path . '?login=passwd' ?>">With username/password</a></li>
+                  <li><a href="<?= BeeHub::urlbase(true) . $this->path . '?login=conext' ?>">With SURFconext</a></li>
+                </ul>
+              </li>
+              <?php endif ?>
               <li class="beehub-spacer-surfsara-logo visible-desktop"></li>
             </ul>
           </div>

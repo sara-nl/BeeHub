@@ -87,6 +87,35 @@ class BeeHub {
 
   public static $CONFIG;
 
+
+  /**
+   * Returns the base URI.
+   * The base URI is 'protocol://server.name:port'
+   * @return string
+   */
+  public static function urlbase($https = null) {
+    static $URLBASE = array();
+    if ( !@$URLBASE[$https] ) {
+      if ( true === $https || ! empty($_SERVER['HTTPS']) && null === $https )
+        $tmp = 'https://';
+      else
+        $tmp = 'http://';
+      $tmp .= $_SERVER['SERVER_NAME'];
+      if ( !empty($_SERVER['HTTPS']) && $_SERVER['SERVER_PORT'] != 443 or
+            empty($_SERVER['HTTPS']) && $_SERVER['SERVER_PORT'] != 80 ) {
+        $server_port = intval($_SERVER['SERVER_PORT'], 10);
+        if ( true === $https && empty($_SERVER['HTTPS']) )
+          $server_port += 443 - 80;
+        elseif ( false === $https && ! empty($_SERVER['HTTPS']) )
+          $server_port -= 443 - 80;
+        $tmp .= ":{$server_port}";
+      }
+      $URLBASE[$https] = $tmp;
+    }
+    return $URLBASE[$https];
+  }
+
+
   /**
    * A better escapeshellarg.
    * The default PHP version seems not to work for UTF-8 strings...

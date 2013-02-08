@@ -30,9 +30,12 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
    * @see DAV_Resource::method_GET
    */
   public function method_GET() {
-    if (empty($_SERVER['HTTPS']) && APPLICATION_ENV != BeeHub::ENVIRONMENT_DEVELOPMENT) {
-      header('location: https://' . $_SERVER['SERVER_NAME'] . $_SERVER['REQUEST_URI']);
-      die();
+    if ( empty($_SERVER['HTTPS']) &&
+         APPLICATION_ENV != BeeHub::ENVIRONMENT_DEVELOPMENT ) {
+      throw new DAV_Status(
+        DAV::HTTP_MOVED_PERMANENTLY,
+        BeeHub::urlbase(true) . $_SERVER['REQUEST_URI']
+      );
     }
     if (!isset($_GET['verify']) && !isset($_GET['verify_user'])) {
       $this->include_view('new_user');

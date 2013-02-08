@@ -39,7 +39,7 @@ $request = DAV_Request::inst();
 
 // Start authentication
 /* You don't need to authenticate when:
- * - Accessing over regular HTTP (as opposed to HTTPS), unless you're in a development environment
+ * - Accessing over regular HTTP (as opposed to HTTPS)
  * - An OPTIONS request never requires authentication
  * - GET (or HEAD) or POST on the users collection (required to create a new user)
  * - GET (or HEAD) on the system collection (required to read the 'homepage')
@@ -47,53 +47,61 @@ $request = DAV_Request::inst();
  * Note that the if-statements below check the inverse of these rules (because, if evaluated to true, it will start the authentication process)
  */
 $path = DAV::unslashify(DAV::$PATH);
-$requireAuth = (
-        ($path != DAV::unslashify(BeeHub::$CONFIG['namespace']['users_path']) || !in_array($_SERVER['REQUEST_METHOD'], array('GET', 'HEAD', 'POST'))) &&
-        ($path != DAV::unslashify(BeeHub::$CONFIG['namespace']['system_path']) || !in_array($_SERVER['REQUEST_METHOD'], array('GET', 'HEAD'))));
-if (
-        (!empty($_SERVER['HTTPS']) || (APPLICATION_ENV == BeeHub::ENVIRONMENT_DEVELOPMENT)) &&
-        ($_SERVER['REQUEST_METHOD'] != 'OPTIONS')) {
+$noRequireAuth = (
+  (
+    $path === DAV::unslashify( BeeHub::$CONFIG['namespace']['users_path'] ) &&
+    in_array( $_SERVER['REQUEST_METHOD'], array('GET', 'HEAD') )
+  ) ||
+  (
+    $path === DAV::unslashify( BeeHub::$CONFIG['namespace']['system_path'] ) &&
+    in_array($_SERVER['REQUEST_METHOD'], array('GET', 'HEAD') )
+  )
+);
+$requireAuth = !$noRequireAuth;
+
+if ( !empty( $_SERVER['HTTPS'] ) &&
+     $_SERVER['REQUEST_METHOD'] !== 'OPTIONS' ) {
   require_once(BeeHub::$CONFIG['environment']['simplesamlphp_autoloader']);
   $as = new SimpleSAML_Auth_Simple('default-sp');
 
-  if (isset($_GET['_web_logout']) && $as->isAuthenticated()) {
+  if (isset($_GET['logout']) && $as->isAuthenticated()) {
     $as->logout();
   }
-  if (isset($_GET['_web_login']) && !$as->isAuthenticated()) {
+  if ('conext' === @$_GET['login'] && !$as->isAuthenticated()) {
     $as->login(array('saml:idp'=>'https://engine.surfconext.nl/authentication/idp/metadata'));
   }
 
-  if ($as->isAuthenticated()) {
+  if ( $as->isAuthenticated() ) {
     // @TODO: Retrieve and store the correct user (name) when authenticated through SimpleSamlPHP
-  }else{ // If we are not authenticated through SimpleSamlPHP, require HTTP basic authentication
-    if (isset($_SERVER['PHP_AUTH_USER']) && isset($_SERVER['PHP_AUTH_PW'])) { // The user already sent username and password: check them!
-      $statement = BeeHub::mysqli()->prepare('SELECT `password` FROM `beehub_users` WHERE `user_name`=?');
+    $CONEXT = true;
+  } else { // If we are not authenticated through SimpleSamlPHP, require HTTP basic authentication
+    DAV::debug($_SERVER['PHP_AUTH_PW']);
+    if ( isset($_SERVER['PHP_AUTH_PW'])) { // The user already sent username and password: check them!
+      $statement = BeeHub::mysqli()->prepare('SELECT `password` FROM `beehub_users` WHERE `user_name` = ?');
       $statement->bind_param('s', $_SERVER['PHP_AUTH_USER']);
       $storedPassword = null;
       $statement->bind_result($storedPassword);
-      if (!$statement->execute()) {
+      if (!$statement->execute())
         throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
-      }
-      if (!$statement->fetch() || ($storedPassword != crypt($_SERVER['PHP_AUTH_PW'], $storedPassword))) { // If authentication fails, respond accordingly
-        if ($requireAuth) { // User could not be authenticated with supplied credentials, but we require authentication, so we ask again!
-          DAV::header(array(
-              'status' => DAV::HTTP_UNAUTHORIZED,
-              'WWW-Authenticate' => 'Basic realm="' . BeeHub::$CONFIG['authentication']['realm'] . '"')
-                  );
+      if ( !$statement->fetch() ||
+           $storedPassword != crypt($_SERVER['PHP_AUTH_PW'], $storedPassword)) {
+        // If authentication fails, respond accordingly
+        if ($requireAuth) {
+          $statement->free_result();
+          // User could not be authenticated with supplied credentials, but we
+          // require authentication, so we ask again!
+          BeeHub_ACL_Provider::inst()->unauthorized();
           die();
         }
-      }else{ // Authentication succeeded: store credentials!
-        # TODO Waarom wordt hier DAV::parseURI aangeroepen? --pieterb
-        BeeHub_ACL_Provider::inst()->CURRENT_USER_PRINCIPAL = DAV::parseURI(
-          BeeHub::$CONFIG['namespace']['users_path'] . $_SERVER['PHP_AUTH_USER']
-        );
+      } else { // Authentication succeeded: store credentials!
+        BeeHub_ACL_Provider::inst()->CURRENT_USER_PRINCIPAL =
+          BeeHub::$CONFIG['namespace']['users_path'] .
+          rawurlencode( $_SERVER['PHP_AUTH_USER'] );
       }
       $statement->free_result();
-    }elseif ($requireAuth) { // If the user didn't send any credentials, but we require authentication, ask for it!
-      DAV::header(array(
-          'status' => DAV::HTTP_UNAUTHORIZED,
-          'WWW-Authenticate' => 'Basic realm="' . BeeHub::$CONFIG['authentication']['realm'] . '"')
-              );
+    } elseif ( $requireAuth || 'passwd' === @$_GET['login'] ) {
+      // If the user didn't send any credentials, but we require authentication, ask for it!
+      BeeHub_ACL_Provider::inst()->unauthorized();
       die();
     }
   }
