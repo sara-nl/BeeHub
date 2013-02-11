@@ -35,6 +35,14 @@ abstract class BeeHub_Principal extends BeeHub_Resource implements DAVACL_Princi
     $this->name = rawurldecode(basename($path));
   }
 
+
+  public function method_HEAD() {
+    $retval = parent::method_HEAD();
+    $retval['Cache-Control'] = 'no-cache';
+    return $retval;
+  }
+
+
   public function user_prop_alternate_uri_set() {
     return array();
   }

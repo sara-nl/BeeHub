@@ -138,4 +138,16 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
   }
 
 
+  /**
+  * @see BeeHub_Resource::user_prop_acl_internal()
+  */
+  public function user_prop_acl_internal() {
+    return array( new DAVACL_Element_ace(
+      DAVACL::PRINCIPAL_ALL, false, array(
+        DAVACL::PRIV_READ, DAVACL::PRIV_READ_ACL
+      ), false, true
+    ));
+  }
+
+
 } // class BeeHub_Users

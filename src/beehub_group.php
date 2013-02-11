@@ -78,15 +78,6 @@ EOS;
   }
 
 
-  public function method_HEAD() {
-    // Only group admins are allowed to HEAD and GET.
-    if (!$this->is_admin()) {
-      throw new DAV_Status( DAV::HTTP_FORBIDDEN, DAV::COND_NEED_PRIVILEGES );
-    }
-    return array('Cache-Control' => 'no-cache');
-  }
-
-
   public function method_POST ( &$headers ) {
     //First add members, admins and requests
     foreach (array('add_requests', 'add_members', 'add_admins', 'delete_admins', 'delete_members', 'delete_requests') as $key) {

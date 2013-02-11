@@ -49,16 +49,7 @@ class BeeHub_User extends BeeHub_Principal {
   public function method_GET() {
     $this->include_view();
   }
-
-  public function method_HEAD() {
-    if (!$this->is_admin()) {
-      throw new DAV_Status(
-              DAV::HTTP_FORBIDDEN,
-              DAV::COND_NEED_PRIVILEGES
-      );
-    }
-    return array( 'Cache-Control' => 'no-cache' );
-  }
+  
 
   protected function init_props() {
     if (is_null($this->stored_props)) {
@@ -208,18 +199,8 @@ class BeeHub_User extends BeeHub_Principal {
     return array(
       new DAVACL_Element_ace(
         DAVACL::PRINCIPAL_SELF, false, array(
-          DAVACL::PRIV_READ, DAVACL::PRIV_WRITE
-        ), false, false
-      ),
-      new DAVACL_Element_ace(
-        DAVACL::PRINCIPAL_ALL, false, array(
-          DAVACL::PRIV_READ
-        ), true, false
-      ),
-      new DAVACL_Element_ace(
-        DAVACL::PRINCIPAL_ALL, false, array(
-          DAVACL::PRIV_READ_ACL
-        ), false, false
+          DAVACL::PRIV_WRITE
+        ), false, true
       )
     );
   }

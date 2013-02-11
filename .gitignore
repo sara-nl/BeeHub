@@ -1,11 +1,8 @@
 .buildpath
 .project
 .settings
-debug.txt
 devel
 client
-secret.php
 config.ini
-simplesaml
 /views/beehub_directory.php
 /public/system/js/principals.js

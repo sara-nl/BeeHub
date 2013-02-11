@@ -58,12 +58,6 @@ EOS;
     $this->include_view( null, array( 'members' => $members ) );
   }
 
-  public function method_HEAD() {
-    // Test if the current user is admin of this sponsor, only those are allowed to HEAD and GET.
-    if (!$this->is_admin())
-      throw DAV::forbidden();
-    return array( 'Cache-Control' => 'no-cache' );
-  }
 
   public function method_POST ( &$headers ) {
     //First add members, admins and requests
