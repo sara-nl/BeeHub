@@ -46,13 +46,6 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
   }
 
 
-  public function method_HEAD() {
-    $retval = array();
-    $retval['Cache-Control'] = 'no-cache';
-    return $retval;
-  }
-
-
   /**
    * Handles both the form to register a new user and the form to verify an e-mail address. No authentication required.
    * @see DAV_Resource::method_POST()
