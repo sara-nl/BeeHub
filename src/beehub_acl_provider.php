@@ -40,8 +40,10 @@ static public function inst() {
 public $CURRENT_USER_PRINCIPAL = null;
 
 
+/**
+ * @see DAVACL_ACL_Provider::user_prop_current_user_principal
+ */
 public function user_prop_current_user_principal() {
-  // return BeeHub::current_user();
   return $this->CURRENT_USER_PRINCIPAL;
 }
 

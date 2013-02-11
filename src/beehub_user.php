@@ -32,6 +32,7 @@
  * We won't allow user data to be sent (GET, PROPFIND) or manipulated (PROPPATCH) over regular HTTP, so we require HTTPS! But this is arranged, because only an authenticated user can perform this GET request and you can only be authenticated over HTTPS.
  *
  * @TODO Checken of de properties in de juiste gevallen afschermd worden
+ * @TODO toevoegen user_prop_sponsor();
  * @package BeeHub
  */
 class BeeHub_User extends BeeHub_Principal {
@@ -60,80 +61,47 @@ class BeeHub_User extends BeeHub_Principal {
   }
 
   protected function init_props() {
-    static $statement_props = null,
-           $statement_groups = null,
-           $p_user_name = null,
-           $r_displayname = null,
-           $r_email = null,
-           $r_new_email = null,
-           $r_password = null,
-           $r_x509 = null,
-           $result_group_name = null;
+    if (is_null($this->stored_props)) {
+      $this->stored_props = array();
 
-    # Lazy initialization of prepared statement:
-    if (null === $statement_props) {
-      $statement_props = BeeHub::mysqli()->prepare(
+      $statement_props = BeeHub_DB::execute(
         'SELECT
           `displayname`,
           `email`,
           `password`,
           `x509`
          FROM `beehub_users`
-         WHERE `user_name` = ?;'
+         WHERE `user_name` = ?', 's', $this->name
       );
-      $statement_props->bind_param('s', $p_user_name);
-      $statement_props->bind_result(
-        $r_displayname,
-        $r_email,
-        $r_password,
-        $r_x509
-      );
-
-      $statement_groups = BeeHub::mysqli()->prepare(
-        'SELECT `group_name`
-           FROM `beehub_group_members`
-          WHERE `user_name` = ?
-            AND `is_invited` = 1
-            AND `is_requested` = 1'
-      );
-      $statement_groups->bind_param('s', $p_user_name);
-      $statement_groups->bind_result($result_group_name);
-    }
-
-    if (is_null($this->stored_props)) {
-      $this->stored_props = array();
-      $p_user_name = $this->name;
-
-      if ( ! $statement_props->execute() )
-        throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR, $statement_props->error );
-      if ( ! $statement_props->store_result() )
-        throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR, $statement_props->error );
-      $fetch_result = $statement_props->fetch();
-      if ( $fetch_result === false )
-        throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR, $statement_props->error );
-      if ( is_null($fetch_result) )
+      $row = $statement_props->fetch_row();
+      if ( is_null($row) )
         throw new DAV_Status( DAV::HTTP_NOT_FOUND );
-      
-      $this->stored_props[DAV::PROP_DISPLAYNAME] = $r_displayname;
-      if (!is_null($r_email)) {
-        $this->stored_props[BeeHub::PROP_EMAIL]  = $r_email;
-        $this->original_email                    = $r_email;
+
+      $this->stored_props[DAV::PROP_DISPLAYNAME] = $row[0];
+      if (!is_null($row[1])) {
+        $this->stored_props[BeeHub::PROP_EMAIL]  = $row[1];
+        $this->original_email                    = $row[1];
       }
-      if (!is_null($r_x509)) {
-        $this->stored_props[BeeHub::PROP_X509]   = $r_x509;
+      if (!is_null($row[3])) {
+        $this->stored_props[BeeHub::PROP_X509]   = $row[3];
       }
-      if ($r_password) {
+      // TODO: if the password = '0hallo', this goes wrong:
+      if ($row[2]) {
         $this->stored_props[BeeHub::PROP_PASSWORD] = true; // Nobody should have read access to this property. But just in case, we always set it to true.
       }
       $statement_props->free_result();
 
-      if ( ! $statement_groups->execute() )
-        throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR, $statement_groups->error );
-      if ( ! $statement_groups->store_result() )
-        throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR, $statement_groups->error );
+      $statement_groups = BeeHub_DB::execute(
+        'SELECT `group_name`
+           FROM `beehub_group_members`
+          WHERE `user_name` = ?
+            AND `is_invited` = 1
+            AND `is_requested` = 1', 's', $this->name
+      );
       $groups = array();
-      while ($statement_groups->fetch()) {
-        $groups[] = BeeHub::$CONFIG['namespace']['groups_path'] . rawurlencode($result_group_name);
+      while ($row = $statement_groups->fetch_row()) {
+        $groups[] = BeeHub::$CONFIG['namespace']['groups_path'] .
+          rawurlencode($row[0]);
       }
       $statement_groups->free_result();
       $this->stored_props[DAV::PROP_GROUP_MEMBERSHIP] = $groups;
@@ -172,7 +140,7 @@ class BeeHub_User extends BeeHub_Principal {
     }
 
     // Write all data to database
-    $updateStatement = BeeHub::mysqli()->prepare(
+    $updateStatement = BeeHub_DB::mysqli()->prepare(
       'UPDATE `beehub_users`
           SET `displayname` = ?,
               `x509` = ?' .
@@ -263,31 +231,18 @@ class BeeHub_User extends BeeHub_Principal {
    * @return  boolean        True if the code verified correctly, false if the code was wrong
    */
   public function verify_email_address($code) {
-    $updateStatement = BeeHub::mysqli()->prepare(
+    $updateStatement = BeeHub_DB::execute(
       'UPDATE `beehub_users`
-          SET `email`=`unverified_email`
-       WHERE `user_name`=? AND `verification_code`=? AND `verification_expiration`>NOW()'
+          SET `email` = `unverified_email`,
+              `unverified_email` = null,
+              `verification_code` = null,
+              `verification_expiration` = null
+        WHERE `user_name` = ?
+          AND `verification_code` = ?
+          AND `verification_expiration` > NOW()',
+      'ss', $this->name, $code
     );
-    $updateStatement->bind_param('ss', $this->name, $code);
-    if (!$updateStatement->execute()) {
-      throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
-    }
-    if ($updateStatement->affected_rows > 0) {
-      $updateStatement = BeeHub::mysqli()->prepare(
-        'UPDATE `beehub_users`
-            SET `unverified_email`=null,
-                `verification_code`=null,
-                `verification_expiration`=null
-        WHERE `user_name` = ?'
-      );
-      $updateStatement->bind_param('s', $this->name);
-      if (!$updateStatement->execute()) {
-        throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
-      }
-      return true;
-    }else{
-      return false;
-    }
+    return $updateStatement->affected_rows > 0;
   }
 
 
@@ -299,10 +254,10 @@ class BeeHub_User extends BeeHub_Principal {
     return $this->stored_props[DAV::PROP_GROUP_MEMBERSHIP];
   }
 
-  
+
   public function is_admin() {
     return BeeHub_ACL_Provider::inst()->wheel() ||
-      ( $this->path == BeeHub::current_user() );
+      ( $this->path == $this->user_prop_current_user_principal() );
   }
 
 

@@ -62,25 +62,18 @@ INNER JOIN `beehub_group_members`
      USING (`user_name`)
      WHERE `group_name` = ?;
 EOS;
-    $statement = BeeHub::mysqli()->prepare($query);
-    $statement->bind_param('s', $this->name);
-    $user_name = null;
-    $displayname = null;
-    $admin = null;
-    $invited = null;
-    $requested = null;
-    $statement->bind_result($user_name, $displayname, $admin, $invited, $requested);
-    $statement->execute();
+    $statement = BeeHub_DB::execute($query, 's', $this->name);
     $members = array();
-    while ($statement->fetch()) {
+    while ($row = $statement->fetch_row()) {
       $members[] = Array(
-        'user_name' => $user_name,
-        'displayname' => $displayname,
-        'admin' => ($admin == 1),
-        'invited' => ($invited == 1),
-        'requested' => ($requested == 1)
+        'user_name' => $row[0],
+        'displayname' => $row[1],
+        'is_admin' => ($row[2] == 1),
+        'is_invited' => ($row[3] == 1),
+        'is_requested' => ($row[4] == 1)
       );
     }
+    $statement->free_result();
     $this->include_view( null, array( 'members' => $members ) );
   }
 
@@ -164,15 +157,25 @@ EOS;
     }else{
       $existingAdmin = ($existingAdmin ? 1 : 0);
     }
-    $statement = BeeHub::mysqli()->prepare(
-            'INSERT INTO `beehub_group_members` (`group_name`, `user_name`, `is_invited`, `is_requested`, `is_admin`)
-                  VALUES (?, ?, ' . $newInvited . ', ' . $newRequested . ', ' . $newAdmin . ')
- ON DUPLICATE KEY UPDATE `is_invited`=' . $existingInvited . ', `is_requested`=' . $existingRequested . ', `is_admin`=' . $existingAdmin);
-    $user_name = null;
-    $statement->bind_param('ss', $this->name, $user_name);
     foreach ($members as $member) {
       $user_name = rawurldecode(basename($member));
-      $statement->execute();
+      $statement = BeeHub_DB::execute(
+        'INSERT INTO `beehub_group_members` (
+           `group_name`, `user_name`, `is_invited`,
+           `is_requested`, `is_admin`
+         )
+         VALUES (?, ?, ?, ?, ?)
+         ON DUPLICATE KEY
+           UPDATE `is_invited`   = ?,
+                  `is_requested` = ?,
+                  `is_admin`     = ?',
+        'ssiiiiii',
+        $this->name, $user_name, $newInvited,
+        $newRequested, $newAdmin,
+        $existingInvited,
+        $existingRequested,
+        $existingAdmin
+      );
       // TODO: sent the user an e-mail
     }
   }
@@ -187,92 +190,60 @@ EOS;
     if (count($members) == 0) {
       return;
     }
-    $statement = BeeHub::mysqli()->prepare('DELETE FROM `beehub_group_members` WHERE `group_name`=? AND `user_name`=?');
-    $user_name = null;
-    $statement->bind_param('ss', $this->name, $user_name);
     foreach ($members as $member) {
       $user_name = rawurldecode(basename($path));
-      $statement->execute();
+      BeeHub_DB::execute(
+        'DELETE FROM `beehub_group_members`
+         WHERE `group_name` = ?
+           AND `user_name`  = ?',
+        'ss', $this->name, $user_name
+      );
     }
   }
 
 
   protected function init_props() {
-    static $param_group_name = null,
-           $result_user_name = null,
-           $result_is_invited = null,
-           $result_is_requested = null,
-           $result_is_admin = null,
-           $result_displayname = null,
-           $result_description = null,
-           $statement_props = null,
-           $statement_members = null,
-           $statement_admins = null;
-
-    // Lazy initialization of prepared statements:
-    if (null === $statement_props) {
-      $statement_props = BeeHub::mysqli()->prepare(
-'SELECT `displayname`, `description`
- FROM `beehub_groups`
- WHERE `group_name` = ?'
-      );
-      $statement_props->bind_param( 's', $param_group_name );
-      $statement_props->bind_result(
-        $result_displayname, $result_description
-      );
-
-      $statement_members = BeeHub::mysqli()->prepare(
- 'SELECT `user_name`, `is_invited`, `is_requested`, `is_admin`
-  FROM `beehub_group_members`
- WHERE `group_name` = ?
-   AND `is_invited` = 1
-   AND `is_requested` = 1'
-      );
-      $statement_members->bind_param( 's', $param_group_name );
-      $statement_members->bind_result(
-        $result_user_name, $result_is_invited, $result_is_requested,
-        $result_is_admin
-      );
-    }
-
     if (is_null($this->stored_props)) {
       $this->stored_props = array();
-      $param_group_name = $this->name;
+      $stmt = BeeHub_DB::execute(
+'SELECT `displayname`, `description`
+ FROM `beehub_groups`
+ WHERE `group_name` = ?', 's', $this->name
+      );
 
       # Query table `beehub_groups`
-      if ( ! $statement_props->execute() )
-        throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR, $statement_props->error );
-      if ( ! $statement_props->store_result() )
-        throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR, $statement_props->error );
-      $fetch_result = $statement_props->fetch();
-      if ( $fetch_result === false )
-        throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR, $statement_props->error );
-      if ( is_null($fetch_result) )
+      $row = $stmt->fetch_row();
+      if ( $row === null )
         throw new DAV_Status( DAV::HTTP_NOT_FOUND );
-      $this->stored_props[DAV::PROP_DISPLAYNAME] = $result_displayname;
-      $this->stored_props[BeeHub::PROP_DESCRIPTION] = DAV::xmlescape($result_description);
-      $statement_props->free_result();
+      $this->stored_props[DAV::PROP_DISPLAYNAME] = $row[0];
+      $this->stored_props[BeeHub::PROP_DESCRIPTION] =
+        DAV::xmlescape($row[1]);
+      $stmt->free_result();
 
-      if ( ! $statement_members->execute() ||
-           ! $statement_members->store_result() ) {
-        throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR );
-      }
-
+      # Query table `beehub_group_members`
+      $stmt = BeeHub_DB::execute(
+ 'SELECT `user_name`, `is_invited`, `is_requested`, `is_admin`
+    FROM `beehub_group_members`
+   WHERE `group_name` = ?
+     AND `is_invited` = 1
+     AND `is_requested` = 1',
+        's', $this->name
+      );
       $this->users = array();
       $members = array();
-      while ( $statement_members->fetch() ) {
+      while ( $row = $stmt->fetch() ) {
         $user_path = BeeHub::$CONFIG['namespace']['users_path'] .
-          rawurlencode($result_user_name);
+          rawurlencode($row[0]);
         $this->users[$user_path] = array(
-          'is_invited' => $result_is_invited,
-          'is_requested' => $result_is_requested,
-          'is_admin' => $result_is_admin
+          'is_invited' => !!$row[1],
+          'is_requested' => !!$row[2],
+          'is_admin' => !!$row[3]
         );
-        if ($result_is_invited && $result_is_requested)
+        if ($row[1] && $row[2])
           $members[] = $user_path;
       }
       $this->stored_props[DAV::PROP_GROUP_MEMBER_SET] = $members;
-      $statement_members->free_result();
+      $stmt->free_result();
     }
   }
 
@@ -289,19 +260,13 @@ EOS;
 
     $p_displayname = $this->stored_props[DAV::PROP_DISPLAYNAME];
     $p_description = DAV::xmlunescape( $this->stored_props[BeeHub::PROP_DESCRIPTION] );
-    $statement_update = BeeHub::mysqli()->prepare(
+    $stmt = BeeHub_DB::execute(
       'UPDATE `beehub_groups`
           SET `displayname` = ?,
               `description` = ?
-        WHERE `group_name` = ?'
-    );
-    $statement_update->bind_param(
+        WHERE `group_name` = ?',
       'sss', $p_displayname, $p_description, $this->name
     );
-
-    if ( ! $statement_update->execute() )
-      throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR );
-    
     // Update the json file containing all displaynames of all privileges
     self::update_principals_json();
     $this->touched = false;
@@ -331,6 +296,7 @@ EOS;
    * @return  boolean  True if the currently logged in user is an administrator of this group, false otherwise
    */
   public function is_admin() {
+    if ( BeeHub_ACL_Provider::inst()->wheel() ) return true;
     $this->init_props();
     return ( $current_user = $this->user_prop_current_user_principal() ) &&
            ( $tmp = @$this->users[$current_user] ) &&

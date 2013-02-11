@@ -108,26 +108,22 @@ class BeeHub_Registry implements DAV_Registry {
   public function shallowLock($write, $read) {
     $whashes = $rhashes = array();
     foreach ($write as $value)
-      $whashes[] = BeeHub::escape_string(hash('sha256', $value, true));
+      $whashes[] = BeeHub_DB::escape_string(hash('sha256', $value, true));
     foreach ($read as $value)
-      $rhashes[] = BeeHub::escape_string(hash('sha256', $value, true));
+      $rhashes[] = BeeHub_DB::escape_string(hash('sha256', $value, true));
     sort($whashes, SORT_STRING);
     sort($rhashes, SORT_STRING);
     if (!empty($whashes)) {
-      BeeHub::query('INSERT IGNORE INTO `shallowLocks` VALUES (' . implode('),(', $whashes) . ');');
+      BeeHub_DB::query('INSERT IGNORE INTO `shallowLocks` VALUES (' . implode('),(', $whashes) . ');');
       $whashes = implode(',', $whashes);
-      $whashes = BeeHub::mysqli()->prepare(
-              "SELECT * FROM `shallowLocks` WHERE `pathhash` IN ($whashes) FOR UPDATE;"
-      );
+      $whashes = "SELECT * FROM `shallowLocks` WHERE `pathhash` IN ($whashes) FOR UPDATE;";
     }
     else
       $whashes = null;
     if (!empty($rhashes)) {
-      BeeHub::query('INSERT IGNORE INTO `shallowLocks` VALUES (' . implode('),(', $rhashes) . ');');
+      BeeHub_DB::query('INSERT IGNORE INTO `shallowLocks` VALUES (' . implode('),(', $rhashes) . ');');
       $rhashes = implode(',', $rhashes);
-      $rhashes = BeeHub::mysqli()->prepare(
-              "SELECT * FROM `shallowLocks` WHERE `pathhash` IN ($rhashes) LOCK IN SHARE MODE;"
-      );
+      $rhashes = "SELECT * FROM `shallowLocks` WHERE `pathhash` IN ($rhashes) LOCK IN SHARE MODE;";
     }
     else
       $rhashes = null;
@@ -135,31 +131,29 @@ class BeeHub_Registry implements DAV_Registry {
     while ($microsleeptimer) {
       if ($microsleeptimer > 1280000)
         $microsleeptimer = 1280000;
-      BeeHub::query('START TRANSACTION');
+      BeeHub_DB::query('START TRANSACTION');
       if ($whashes)
         try {
-          $whashes->execute();
-          $whashes->free_result();
+          BeeHub_DB::query($whashes)->free_result();
         } catch (BeeHub_Deadlock $e) {
-          BeeHub::query('ROLLBACK');
+          BeeHub_DB::query('ROLLBACK');
           usleep($microsleeptimer);
           $microsleeptimer *= 2;
           continue;
         } catch (BeeHub_Timeout $e) {
-          BeeHub::query('ROLLBACK');
+          BeeHub_DB::query('ROLLBACK');
           throw new DAV_Status(DAV::HTTP_SERVICE_UNAVAILABLE);
         }
       if ($rhashes)
         try {
-          $rhashes->execute();
-          $rhashes->free_result();
+          BeeHub_DB::query($rhashes)->free_result();
         } catch (BeeHub_Deadlock $e) {
-          BeeHub::query('ROLLBACK');
+          BeeHub_DB::query('ROLLBACK');
           usleep($microsleeptimer);
           $microsleeptimer *= 2;
           continue;
         } catch (BeeHub_Timeout $e) {
-          BeeHub::query('ROLLBACK');
+          BeeHub_DB::query('ROLLBACK');
           throw new DAV_Status(DAV::HTTP_SERVICE_UNAVAILABLE);
         }
       $microsleeptimer = 0;
@@ -171,7 +165,7 @@ class BeeHub_Registry implements DAV_Registry {
    * @param array $read paths to read-lock
    */
   public function shallowUnlock() {
-    BeeHub::query('COMMIT;');
+    BeeHub_DB::query('COMMIT;');
   }
 
 } // class

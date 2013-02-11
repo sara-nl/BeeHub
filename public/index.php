@@ -8,3 +8,4 @@ defined('ENT_HTML5') || define('ENT_HTML5', 0);
 
 // Then start the application
 require_once '../src/beehub_run.php';
+

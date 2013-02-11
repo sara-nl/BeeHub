@@ -14,6 +14,4 @@ set -xe
 ###### The actual work starts here ######
 
 # Create principals.js and make it apache-writable:
-PRINCIPALS_JS='public/system/js/principals.js'
-touch $PRINCIPALS_JS
-chmod 666 $PRINCIPALS_JS
+chmod a+rwx 'public/system/js/server'

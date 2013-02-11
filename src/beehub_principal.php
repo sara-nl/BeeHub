@@ -99,22 +99,23 @@ abstract class BeeHub_Principal extends BeeHub_Resource implements DAVACL_Princi
 
     foreach( array( 'user', 'group', 'sponsor' ) as $thing ) {
       $things = array();
-      $result = BeeHub::query(
-        "SELECT `{$thing}_name`, `displayname`
-        FROM `beehub_{$thing}s`
-        ORDER BY `displayname`"
+      $stmt = BeeHub_DB::execute(
+        "SELECT   `{$thing}_name`, `displayname`
+         FROM     `beehub_{$thing}s`
+         ORDER BY `displayname`"
       );
-      while ( $row = $result->fetch_row() )
+      while ( $row = $stmt->fetch_row() )
         $things[$row[0]] = $row[1];
-      $result->free();
+      $stmt->free_result();
       $json["{$thing}s"] = $things;
     }
 
     $local_js_path = dirname( dirname( __FILE__ ) ) . '/public' .
-      BeeHub::$CONFIG['namespace']['javascript'];
+      BeeHub::$CONFIG['namespace']['server_js'];
     $filename = tempnam($local_js_path, 'tmp_principals');
     file_put_contents( $filename, json_encode($json) );
     rename( $filename, $local_js_path . 'principals.js' );
+    chmod($local_js_path . 'principals.js', 0664);
   }
 
   /**

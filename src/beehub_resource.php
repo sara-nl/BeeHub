@@ -65,7 +65,7 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
         $this->touched = true;
       }
     } else {
-      if ($value !== $this->stored_props[$name]) {
+      if ($value !== @$this->stored_props[$name]) {
         $this->stored_props[$name] = $value;
         $this->touched = true;
       }
@@ -96,6 +96,28 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
   public function user_prop($name) {
     $this->init_props();
     return @$this->stored_props[$name];
+  }
+
+
+  /**
+   * @return array of principals (either paths or properties),
+   *         indexed by their own value.
+   */
+  final public function current_user_sponsors() {
+    $retval = array();
+    $user = $this->user_prop_current_user_principal();
+    if (null === $user)
+      return $retval;
+    $statement =
+    $retval = array(DAVACL::PRINCIPAL_ALL => DAVACL::PRINCIPAL_ALL);
+    if ( $current_user_principal = $this->user_prop_current_user_principal() ) {
+      $retval = array_merge($retval, self::current_user_principals_recursive($current_user_principal));
+      $retval[DAVACL::PRINCIPAL_AUTHENTICATED] = DAVACL::PRINCIPAL_AUTHENTICATED;
+    }
+    else {
+      $retval[DAVACL::PRINCIPAL_UNAUTHENTICATED] = DAVACL::PRINCIPAL_UNAUTHENTICATED;
+    }
+    return $retval;
   }
 
 
@@ -157,6 +179,48 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
     return array_merge(
       $protected, $this->user_prop_acl_internal(), $inherited
     );
+  }
+
+
+  public function user_prop_owner() {
+    $retval = $this->user_prop(DAV::PROP_OWNER);
+    return $retval ? $retval : BeeHub::$CONFIG['namespace']['wheel_path'];
+  }
+
+
+  /**
+   * @return DAV_Element_href
+   */
+  final public function prop_sponsor() {
+    $retval = $this->user_prop_sponsor();
+    return $retval ? new DAV_Element_href($retval) : '';
+  }
+
+
+  final public function set_sponsor($sponsor) {
+    $sponsor = DAVACL::parse_hrefs($sponsor);
+    if (1 != count($sponsor->URIs))
+      throw new DAV_Status(
+        DAV::HTTP_BAD_REQUEST,
+        'Illegal value for property sponsor.'
+      );
+    $this->user_set_sponsor(DAV::parseURI($sponsor->URIs[0]));
+  }
+
+
+  /**
+   * @return string path
+   */
+  public function user_prop_sponsor() {
+    return $this->user_prop(BeeHub::PROP_SPONSOR);
+  }
+
+
+  /**
+   * @param string $sponsor path
+   */
+  protected function user_set_sponsor($sponsor) {
+    throw new DAV_Status( DAV::HTTP_FORBIDDEN );
   }
 
 

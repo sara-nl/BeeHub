@@ -65,14 +65,17 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
       $email = $_POST['email'];
 
       // Store in the database
-      $statement = BeeHub::mysqli()->prepare("INSERT INTO `beehub_users` (`user_name`, `surfconext_id`) VALUES (?, ?)");
-      $statement->bind_param('ss', $user_name, $surfconext_id);
-      if (!$statement->execute()) {
-        throw new Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
-      }
+      $statement = BeeHub_DB::execute(
+        'INSERT INTO `beehub_users`
+           (`user_name`, `surfconext_id`)
+         VALUES (?, ?)',
+        'ss', $user_name, $surfconext_id
+      );
 
       // Fetch the user and store extra properties
-      $user = BeeHub_Registry::inst()->resource(BeeHub::$CONFIG['namespace']['users_path'] . $user_name);
+      $user = BeeHub_Registry::inst()->resource(
+        BeeHub::$CONFIG['namespace']['users_path'] . rawurlencode($user_name)
+      );
       $user->user_set(DAV::PROP_DISPLAYNAME, $displayname);
       $user->user_set(BeeHub::PROP_EMAIL, $email);
       $user->storeProperties();
@@ -110,24 +113,28 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
       );
     $match = $properties[DAV::PROP_DISPLAYNAME][0];
     $match = str_replace(array('_', '%'), array('\\_', '\\%'), $match) . '%';
-    $match = BeeHub::escape_string($match);
-    $result = BeeHub::query("SELECT `user_name` FROM `beehub_users` WHERE `displayname` LIKE {$match};");
+    $stmt = BeeHub_DB::execute(
+      'SELECT `user_name`
+       FROM `beehub_users`
+       WHERE `displayname` LIKE ?', 's', $match
+    );
     $retval = array();
-    while ($row = $result->fetch_row()) {
-      $retval[] = BeeHub::$CONFIG['namespace']['users_path'] . rawurlencode($row[0]);
+    while ($row = $stmt->fetch_row()) {
+      $retval[] = BeeHub::$CONFIG['namespace']['users_path'] .
+        rawurlencode($row[0]);
     }
-    $result->free();
+    $stmt->free_result();
     return $retval;
   }
 
 
   protected function init_members() {
-    $result = BeeHub::query('SELECT `user_name` FROM `beehub_users`;');
+    $stmt = BeeHub_DB::execute('SELECT `user_name` FROM `beehub_users`');
     $this->members = array();
-    while ($row = $result->fetch_row()) {
+    while ($row = $stmt->fetch_row()) {
       $this->members[] = rawurlencode($row[0]);
     }
-    $result->free();
+    $stmt->free_result();
   }
 
 

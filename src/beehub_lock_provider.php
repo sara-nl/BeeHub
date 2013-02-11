@@ -95,10 +95,10 @@ public function setlock($lockroot, $depth, $owner, $timeout) {
 //   if (preg_match("@^(?:{BeeHub::$USERS_PATH}|{BeeHub::$GROUPS_PATH}).+\$@", $lockroot))
 //     throw new DAV_Status(DAV::HTTP_FORBIDDEN);
   $timeout = self::timeout($timeout);
-  $result = BeeHub::query('SELECT UUID();');
-  $row = $result->fetch_row();
+  $stmt = BeeHub_DB::execute('SELECT UUID()');
+  $row = $stmt->fetch_row();
   $locktoken = 'opaquelocktoken:' . $row[0];
-  $result->free();
+  $stmt->free_result();
   $activelock = new DAV_Element_activelock( array(
     'lockroot'  => $lockroot,
     'depth'     => $depth,

@@ -59,7 +59,7 @@ private function internal_create_member( $name, $collection = false ) {
   $result = $collection ? @mkdir($localPath) : touch($localPath);
   if ( !$result )
     throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
-  xattr_set( $localPath, rawurlencode( DAV::PROP_GETETAG), BeeHub::ETag(0) );
+  xattr_set( $localPath, rawurlencode( DAV::PROP_GETETAG), BeeHub_DB::ETag() );
   xattr_set( $localPath, rawurlencode( DAV::PROP_OWNER  ), $this->user_prop_current_user_principal() );
   xattr_set( $localPath, rawurlencode( DAV::PROP_GROUP  ), $group );
   return DAV::$REGISTRY->resource($path);

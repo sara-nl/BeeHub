@@ -104,60 +104,76 @@ class BeeHub_XFSResource extends BeeHub_Resource {
 
 
   /**
-   * @TODO rewrite to BeeHub::PROP_SPONSOR
+   * @see BeeHub_Resource::user_set_sponsor()
    */
-  protected function user_set_group($group) {
+  protected function user_set_sponsor($sponsor) {
     $this->assert(DAVACL::PRIV_READ);
-    if (!( $group = DAV::$REGISTRY->resource($group) ) ||
-            !$group instanceof BeeHub_Group ||
-            !$group->isVisible())
+    if ( ! ( $sponsor = DAV::$REGISTRY->resource($sponsor) ) ||
+         ! $sponsor instanceof BeeHub_Sponsor ||
+         ! $sponsor->isVisible() )
       throw new DAV_Status(
-              DAV::HTTP_BAD_REQUEST,
-              DAV::COND_RECOGNIZED_PRINCIPAL
+        DAV::HTTP_BAD_REQUEST
       );
-    if (!$group->user_prop_executable())
-      throw new DAV_Status(
-              DAV::HTTP_BAD_REQUEST,
-              DAV::COND_ALLOWED_PRINCIPAL
-      );
-    if ($this->user_prop_owner() != $this->user_prop_current_user_principal() &&
-            !BeeHub_ACL_Provider::inst()->wheel())
-      throw DAV::forbidden( 'Only the owner can change the group of a resource.' );
-    if (!in_array($group->path, $this->current_user_principals()))
-      throw DAV::forbidden( "You're not a member of group {$group->path}" );
-    return $this->user_set(DAV::PROP_GROUP, $group->path);
-  }
-
-
-  public function user_prop_owner() {
-    return $this->user_prop(DAV::PROP_OWNER);
+    if ( $this->user_prop_owner() !=
+           $this->user_prop_current_user_principal() &&
+         ! BeeHub_ACL_Provider::inst()->wheel() )
+      throw DAV::forbidden( 'Only the owner can change the sponsor of a resource.' );
+    if (!in_array($sponsor->path, $this->current_user_sponsors()))
+      throw DAV::forbidden( "You're not sponsored by {$sponsor->path}" );
+    return $this->user_set( BeeHub::PROP_SPONSOR, $sponsor->path);
   }
 
 
   /**
-   * @TODO check this implementation
+   * @see DAVACL_Resource::user_set_owner()
    */
   protected function user_set_owner($owner) {
     $this->assert(DAVACL::PRIV_READ);
-    $cups = BeeHub_Registry::inst()->resource($this->user_prop_current_user_principal());
-    if ($this->user_prop_owner() != $this->user_prop_current_user_principal() and
-            !BeeHub_ACL_Provider::inst()->wheel())
-      throw DAV::forbidden( 'Only the resource owner can grant ownership.' );
-    if (!( $owner = DAV::$REGISTRY->resource($owner) ) ||
-            !$owner->isVisible() ||
-            !$owner instanceof BeeHub_User)
+    if ( ! ( $owner = DAV::$REGISTRY->resource($owner) ) ||
+         ! $owner->isVisible() ||
+         ! $owner instanceof BeeHub_User)
       throw new DAV_Status(
-              DAV::HTTP_BAD_REQUEST,
-              DAV::COND_RECOGNIZED_PRINCIPAL
+        DAV::HTTP_BAD_REQUEST,
+        DAV::COND_RECOGNIZED_PRINCIPAL
       );
-    if (!in_array($this->user_prop_group(), $owner->current_user_principals()))
-      throw DAV::forbidden( 'User ' . $owner->path . ' is not a member of group ' . $this->user_prop_group() . '.' );
-    return $this->user_set(DAV::PROP_OWNER, $owner->path);
+    if ( !( $cup = $this->user_prop_current_user_principal() ) ||
+         !( $cup = BeeHub_Registry::inst()->resource($cup) ) )
+      throw DAV::forbidden();
+    if ( ($sponsor = $this->user_prop_sponsor()) )
+      $sponsor = BeeHub_Registry::inst()->resource($sponsor);
+    if ( $this->user_prop_owner() === $cup->path &&
+         in_array( $owner->path, $sponsor->user_prop_group_member_set() ) )
+      return $this->user_set(DAV::PROP_OWNER, $owner->path);
+    if ( $this->user_prop_owner() !== $cup->path &&
+         $owner->path === $cup->path &&
+         ( $this->assert(DAVACL::PRIV_WRITE) ||
+           $this->collection() &&
+           $this->collection()->assert(DAVACL::PRIV_WRITE) ) ) {
+      if ( !in_array( $this->user_prop_sponsor(),
+                      $this->current_user_sponsors() ) ) {
+        if ( !in_array( $this->collection()->user_prop_sponsor(),
+                        $this->current_user_sponsors() ) ) {
+          if ( !$cup->user_prop_sponsor() ) {
+            throw DAV::forbidden();
+          } else {
+            $this->user_set(BeeHub::PROP_SPONSOR, $cup->user_prop_sponsor());
+          }
+        } else {
+          $this->user_set( BeeHub::PROP_SPONSOR,
+                           $this->collection()->user_prop_sponsor() );
+        }
+      }
+      return $this->user_set(DAV::PROP_OWNER, $owner->path);
+    }
+    throw DAV::forbidden();
   }
 
 
   protected function user_set_displayname($value) {
-    return $this->user_set(DAV::PROP_DISPLAYNAME, $value);
+    throw new DAV_Status(
+      DAV::HTTP_FORBIDDEN,
+      DAV::COND_CANNOT_MODIFY_PROTECTED_PROPERTY
+    );
   }
 
 

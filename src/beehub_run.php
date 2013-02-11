@@ -23,18 +23,25 @@
 require_once dirname(__FILE__) . '/beehub.php';
 BeeHub::handle_method_spoofing();
 
-// If a GET request on the root doesn't have this server as a referer, redirect to the homepage
-if (
-        (DAV::unslashify($_SERVER['REQUEST_URI']) == '/') &&
-        ($_SERVER['REQUEST_METHOD'] == 'GET') &&
-        (!isset($_SERVER['HTTP_REFERER']) || (parse_url($_SERVER['HTTP_REFERER'], PHP_URL_HOST) != $_SERVER['SERVER_NAME']))){
-  header('Location: ' . BeeHub::$CONFIG['namespace']['system_path'], true, DAV::HTTP_SEE_OTHER);
-  die();
+// If a GET request on the root doesn't have this server as a referer, redirect to the homepage:
+// TODO: This can also be done in the apache configuration...
+if ( DAV::$PATH === '/' &&
+     $_SERVER['REQUEST_METHOD'] === 'GET' &&
+     ( ! isset( $_SERVER['HTTP_REFERER'] ) ||
+       $_SERVER['SERVER_NAME'] !== parse_url(
+         $_SERVER['HTTP_REFERER'], PHP_URL_HOST
+       ) ) ) {
+  DAV::redirect(
+    DAV::HTTP_SEE_OTHER,
+    BeeHub::$CONFIG['namespace']['system_path']
+  );
+  exit;
 }
 
 DAV::$REGISTRY = BeeHub_Registry::inst();
 DAV::$LOCKPROVIDER = BeeHub_Lock_Provider::inst();
 DAV::$ACLPROVIDER = BeeHub_ACL_Provider::inst();
+
 $request = DAV_Request::inst();
 
 // Start authentication
@@ -75,34 +82,33 @@ if ( !empty( $_SERVER['HTTPS'] ) &&
     // @TODO: Retrieve and store the correct user (name) when authenticated through SimpleSamlPHP
     $CONEXT = true;
   } else { // If we are not authenticated through SimpleSamlPHP, require HTTP basic authentication
-    DAV::debug($_SERVER['PHP_AUTH_PW']);
     if ( isset($_SERVER['PHP_AUTH_PW'])) { // The user already sent username and password: check them!
-      $statement = BeeHub::mysqli()->prepare('SELECT `password` FROM `beehub_users` WHERE `user_name` = ?');
-      $statement->bind_param('s', $_SERVER['PHP_AUTH_USER']);
-      $storedPassword = null;
-      $statement->bind_result($storedPassword);
-      if (!$statement->execute())
-        throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
-      if ( !$statement->fetch() ||
-           $storedPassword != crypt($_SERVER['PHP_AUTH_PW'], $storedPassword)) {
+      $stmt = BeeHub_DB::execute(
+        'SELECT `password`
+         FROM `beehub_users`
+         WHERE `user_name` = ?',
+        's', $_SERVER['PHP_AUTH_USER']
+      );
+      if ( !( $row = $stmt->fetch_row() ) ||
+           $row[0] != crypt($_SERVER['PHP_AUTH_PW'], $row[0]) ) {
         // If authentication fails, respond accordingly
         if ($requireAuth) {
-          $statement->free_result();
+          $stmt->free_result();
           // User could not be authenticated with supplied credentials, but we
           // require authentication, so we ask again!
           BeeHub_ACL_Provider::inst()->unauthorized();
-          die();
+          exit;
         }
       } else { // Authentication succeeded: store credentials!
         BeeHub_ACL_Provider::inst()->CURRENT_USER_PRINCIPAL =
           BeeHub::$CONFIG['namespace']['users_path'] .
           rawurlencode( $_SERVER['PHP_AUTH_USER'] );
       }
-      $statement->free_result();
+      $stmt->free_result();
     } elseif ( $requireAuth || 'passwd' === @$_GET['login'] ) {
       // If the user didn't send any credentials, but we require authentication, ask for it!
       BeeHub_ACL_Provider::inst()->unauthorized();
-      die();
+      exit;
     }
   }
 }
@@ -111,6 +117,4 @@ if ( !empty( $_SERVER['HTTPS'] ) &&
 unset($path, $requireAuth, $as, $statement, $storedPassword);
 
 // After bootstrapping and authentication is done, handle the request
-if ($request) {
-  $request->handleRequest();
-}
+$request->handleRequest();

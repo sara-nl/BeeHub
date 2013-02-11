@@ -58,14 +58,16 @@ class BeeHub_Sponsors extends BeeHub_Principal_Collection {
 
 
   protected function init_members() {
-    $result = BeeHub::query(
-      'SELECT `sponsor_name` FROM `beehub_sponsors` ORDER BY `displayname`'
+    $stmt = BeeHub_DB::execute(
+      'SELECT `sponsor_name`
+       FROM `beehub_sponsors`
+       ORDER BY `displayname`'
     );
     $this->members = array();
-    while ($row = $result->fetch_row()) {
+    while ($row = $stmt->fetch_row()) {
       $this->members[] = rawurlencode($row[0]);
     }
-    $result->free();
+    $stmt->free_result();
   }
 
 

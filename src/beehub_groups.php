@@ -40,26 +40,28 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
 
 
   public function method_POST() {
-      // TODO: translate group_name to ASCII and check for double group names
-      $group_name = $_POST['group_name'];
-      $displayname = $_POST['displayname'];
-      $description = $_POST['description'];
+    // TODO: translate group_name to ASCII and check for double group names
+    $group_name = $_POST['group_name'];
+    $displayname = $_POST['displayname'];
+    $description = $_POST['description'];
 
-      // Store in the database
-      $statement = BeeHub::mysqli()->prepare("INSERT INTO `beehub_groups` (`group_name`) VALUES (?)");
-      $statement->bind_param('s', $group_name);
-      if (!$statement->execute()) {
-        throw new Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
-      }
+    // Store in the database
+    $statement = BeeHub_DB::execute(
+      'INSERT INTO `beehub_groups` (`group_name`) VALUES (?)',
+      's', $group_name
+    );
 
-      // Fetch the user and store extra properties
-      $group = BeeHub_Registry::inst()->resource(BeeHub::$CONFIG['namespace']['groups_path'] . $group_name);
-      $group->set_property(DAV::PROP_DISPLAYNAME, $displayname);
-      $group->set_property(BeeHub::PROP_DESCRIPTION, $description);
-      $group->storeProperties();
+    // Fetch the user and store extra properties
+    $group = BeeHub_Registry::inst()->resource(BeeHub::$CONFIG['namespace']['groups_path'] . $group_name);
+    $group->set_property(DAV::PROP_DISPLAYNAME, $displayname);
+    $group->set_property(BeeHub::PROP_DESCRIPTION, $description);
+    $group->storeProperties();
 
-      // Add the current user as admin of the group
-      $group->change_memberships(array(BeeHub::current_user()), true, true, true);
+    // Add the current user as admin of the group
+    $group->change_memberships(
+      array( $this->user_prop_current_user_principal() ),
+      true, true, true
+    );
   }
 
 
@@ -73,23 +75,23 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
       );
     $match = $properties[DAV::PROP_DISPLAYNAME][0];
     $match = str_replace(array('_', '%'), array('\\_', '\\%'), $match) . '%';
-    $match = BeeHub::escape_string($match);
-    $result = BeeHub::query("SELECT `group_name` FROM `beehub_groups` WHERE `displayname` LIKE {$match};");
+    $stmt = BeeHub_DB::execute('SELECT `group_name` FROM `beehub_groups` WHERE `displayname` LIKE ?', 's', $match);
     $retval = array();
-    while ($row = $result->fetch_row()) {
-      $retval[] = BeeHub::$CONFIG['namespace']['groups_path'] . rawurlencode($row[0]);
+    while ($row = $stmt->fetch_row()) {
+      $retval[] = BeeHub::$CONFIG['namespace']['groups_path'] .
+        rawurlencode($row[0]);
     }
-    $result->free();
+    $stmt->free_result();
     return $retval;
   }
 
 
   protected function init_members() {
-    $result = BeeHub::query('SELECT `group_name` FROM `beehub_groups` ORDER BY `displayname`');
+    $stmt = BeeHub_DB::execute('SELECT `group_name` FROM `beehub_groups` ORDER BY `displayname`');
     $this->members = array();
-    while ($row = $result->fetch_row())
+    while ($row = $stmt->fetch_row())
       $this->members[] = rawurlencode($row[0]);
-    $result->free();
+    $stmt->free_result();
   }
 
 

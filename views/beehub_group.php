@@ -48,7 +48,7 @@ require 'views/header.php';
     </thead>
     <tbody>
       <?php foreach ($members as $member) :
-        if (!$member['invited']) : ?>
+        if (!$member['is_invited']) : ?>
           <tr class="member_row" id="<?= BeeHub::$CONFIG['namespace']['users_path'] . rawurlencode($member['user_name']) ?>">
             <td><?= htmlspecialchars($member['user_name'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></td>
             <td><?= htmlspecialchars($member['displayname'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></td>
@@ -73,11 +73,11 @@ require 'views/header.php';
     </thead>
     <tbody id="current_members">
       <?php foreach ($members as $member) :
-        if ($member['invited']) : ?>
+        if ($member['is_invited']) : ?>
           <tr class="member_row" id="<?= BeeHub::$CONFIG['namespace']['users_path'] . rawurlencode($member['user_name']) ?>">
             <td><?= htmlspecialchars($member['user_name'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></td>
             <td><?= htmlspecialchars($member['displayname'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></td>
-            <td><?= ($member['admin'] ? 'jep <a href="#" class="demote_link">demote</a>' : 'nope <a href="#" class="promote_link">promote</a>') ?></td>
+            <td><?= ($member['is_admin'] ? 'jep <a href="#" class="demote_link">demote</a>' : 'nope <a href="#" class="promote_link">promote</a>') ?></td>
             <td><a href="#" class="remove_link">Delete</a></td>
           </tr>
         <?php endif;
