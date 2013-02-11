@@ -24,7 +24,7 @@ require 'views/header.php';
   </div>
   <div class="row-fluid">
     <div class="span2 fieldname">E-mail address</div>
-    <div class="span10 fieldvalue"><input type="text" name="email" value="<?= htmlspecialchars($this->prop(BeeHub::PROP_EMAIL), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>" /></div>
+    <div class="span10 fieldvalue"><input type="email" name="email" value="<?= htmlspecialchars($this->prop(BeeHub::PROP_EMAIL), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>" /></div>
   </div>
   <div class="row-fluid">
     <div class="span2 fieldname"><label class="checkbox" for="change_password">Change my password</label></div>

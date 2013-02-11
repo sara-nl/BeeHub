@@ -49,7 +49,7 @@ class BeeHub_User extends BeeHub_Principal {
   public function method_GET() {
     $this->include_view();
   }
-  
+
 
   protected function init_props() {
     if (is_null($this->stored_props)) {
@@ -186,7 +186,6 @@ class BeeHub_User extends BeeHub_Principal {
     // Notify the user if needed
     if ($change_email) {
       //TODO: send e-mail
-      die($p_verification_code);
     }
 
     // Update the json file containing all displaynames of all privileges
@@ -199,7 +198,7 @@ class BeeHub_User extends BeeHub_Principal {
     return array(
       new DAVACL_Element_ace(
         DAVACL::PRINCIPAL_SELF, false, array(
-          DAVACL::PRIV_WRITE
+          DAVACL::PRIV_READ, DAVACL::PRIV_WRITE
         ), false, true
       )
     );

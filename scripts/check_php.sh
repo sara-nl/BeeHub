@@ -16,3 +16,8 @@ echo
 echo 'htmlspecialchars()/htmlentities() instead of DAV::xml_escape():'
 grep -P '\bhtml(specialchars|entities)\b' *.php
 [ $? -eq 0 ] || echo OK
+
+echo
+echo 'Never call die() or exit():'
+grep -P '\b(die|exit)\b' *.php
+[ $? -eq 0 ] || echo OK

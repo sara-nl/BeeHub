@@ -35,7 +35,7 @@ if ( DAV::$PATH === '/' &&
     DAV::HTTP_SEE_OTHER,
     BeeHub::$CONFIG['namespace']['system_path']
   );
-  exit;
+  return;
 }
 
 DAV::$REGISTRY = BeeHub_Registry::inst();
@@ -97,7 +97,7 @@ if ( !empty( $_SERVER['HTTPS'] ) &&
           // User could not be authenticated with supplied credentials, but we
           // require authentication, so we ask again!
           BeeHub_ACL_Provider::inst()->unauthorized();
-          exit;
+          return;
         }
       } else { // Authentication succeeded: store credentials!
         BeeHub_ACL_Provider::inst()->CURRENT_USER_PRINCIPAL =
@@ -108,7 +108,7 @@ if ( !empty( $_SERVER['HTTPS'] ) &&
     } elseif ( $requireAuth || 'passwd' === @$_GET['login'] ) {
       // If the user didn't send any credentials, but we require authentication, ask for it!
       BeeHub_ACL_Provider::inst()->unauthorized();
-      exit;
+      return;
     }
   }
 }
