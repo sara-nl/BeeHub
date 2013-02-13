@@ -99,7 +99,7 @@ class BeeHub_XFSResource extends BeeHub_Resource {
    * @see DAV_Resource::user_prop_displayname()
    */
   public function user_prop_displayname() {
-    return $this->user_prop(DAV::PROP_DISPLAYNAME);
+    return rawurldecode(basename($this->path));
   }
 
 
@@ -195,9 +195,9 @@ class BeeHub_XFSResource extends BeeHub_Resource {
 
 
   /**
-   * @see DAVACL_Resource::method_ACL()
+   * @see DAVACL_Resource::user_set_acl()
    */
-  public function method_ACL($aces) {
+  public function user_set_acl($aces) {
     $this->assert(DAVACL::PRIV_WRITE_ACL);
     $this->user_set(DAV::PROP_ACL, $aces ? DAVACL_Element_ace::aces2json($aces) : null);
     $this->storeProperties();

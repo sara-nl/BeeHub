@@ -1,14 +1,13 @@
 #!/bin/bash
 
-cd "$( dirname "$0" )/../"
-DIRNAME="$PWD"
-mkdir docs 2>/dev/null
-rm -rf docs/* 2>/dev/null
+cd "$( dirname "${BASH_SOURCE[0]}" )/../"
+DOCDIR=public/system/phpdoc
+mkdir -p "$DOCDIR" 2>/dev/null
+rm -rf "$DOCDIR"/* 2>/dev/null
 
 phpdoc \
-  --directory 'src,webdav-php/lib' \
-  --filename '*.php' \
-  --target "${DIRNAME}/docs" \
+  --filename 'src/*.php,webdav-php/lib/*.php' \
+  --target "$DOCDIR" \
   --parseprivate \
   --sourcecode \
   --defaultpackagename BeeHub \
