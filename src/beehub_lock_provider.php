@@ -52,7 +52,11 @@ private static function timeout($timeout) {
 
 
 public function memberLocks($path) {
-  $match = str_replace(array('_', '%'), array('\\_', '\\%'), $path) . '/%';
+  $match = str_replace(
+    array('_', '%'),
+    array('\\_', '\\%'),
+    DAV::slashify( $path )
+  ) . '_%';
   $stmt = BeeHub_DB::execute(
     'SELECT `lock_token`, `lock_root`, `lock_owner`, `lock_depth`, `lock_timeout`
        FROM `Locks`
