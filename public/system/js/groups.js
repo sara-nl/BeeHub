@@ -13,9 +13,16 @@ $('.accordion-group').on('hide', function (e) {
   $(e.target).parent().removeClass('accordion-group-active');
 });
 
-// TODO accept action uitvoeren
-$('#acceptinvitationbutton').on('click', function (e) {
-  alert("button accept inivtation clicked")
+// TODO leave action uitvoeren
+// Hier verder gaan, alleen de eerste leave button werkt.
+// Uitzoeken hoe je alle buttons benadert
+$('#leave').on('click', function (e) {
+  // Send leave request to server
+  // remove div from list
+ console.log("clicked");
+ console.log($(this).closest('.accordion-group'));
+//  $(this).closest('.accordion-group').hide();
+//  $(this).remove();
 });
 
 // TODO request action uitvoeren
@@ -34,7 +41,9 @@ $('ul#beehub-top-tabs a').click(function (e) {
   $(this).tab('show');
 });
 
-
+$('.accordion-heading a').click(function (e) { 
+  e.stopPropagation(); 
+});
 
 $('.btn-danger').click(function (e) {
   e.stopPropagation();

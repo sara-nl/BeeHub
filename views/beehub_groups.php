@@ -13,7 +13,6 @@
     border: 0px solid #E5E5E5 !important;
     border-style:dotted !important;
     border-top-width:1px !important;
-    margin-bottom: 0px !important;
   }
 
   .accordion-group:hover {
@@ -31,7 +30,7 @@
   }
 
   .accordion-group-active:hover {
-    background-color: #E8F1E9 !important;
+    background-color: #D1E2D3 !important;
     border-style:solid !important;
   }
 
@@ -86,7 +85,7 @@
                   <a href="<?= $group->path ?>" class="btn">View</a>
                   <?php endif; ?>
                   <!--    Leave button -->
-                  <button type="button" name="leave" value="<?= $this->user_prop_current_user_principal() ?>" class="btn btn-danger">Leave</button>
+                  <button type="button" id="leave" name="leave" value="<?= $this->user_prop_current_user_principal() ?>" class="btn btn-danger">Leave</button>
                 </td>
               </tr></tbody></table>
             </div>
