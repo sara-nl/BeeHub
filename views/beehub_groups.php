@@ -70,7 +70,7 @@
         <?php
       $i = 1;
       foreach ($groups as $group) :
-//           if ( $group->is_member() ) :
+           if ( $group->is_member() ) :
       ?>
         <div class="accordion-group">
           <div class="accordion-heading">
@@ -100,7 +100,7 @@
         </div>
      <?php
       $i = $i + 1;
-//         endif;
+         endif;
         endforeach;
      ?>        
     </div>

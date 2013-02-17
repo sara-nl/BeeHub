@@ -126,7 +126,7 @@ class BeeHub {
    * @todo deprecate?
    */
   public static function current_user() {
-    $cup = BeeHub_ACL_Provider::inst()->current_user_principal();
+    $cup = BeeHub_ACL_Provider::inst()->user_prop_current_user_principal();
     return $cup ? self::user($cup) : null;
   }
 

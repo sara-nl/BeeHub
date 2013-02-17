@@ -222,7 +222,7 @@ EOS;
       );
       $this->users = array();
       $members = array();
-      while ( $row = $stmt->fetch() ) {
+      while ( $row = $stmt->fetch_row() ) {
         $user_path = BeeHub::$CONFIG['namespace']['users_path'] .
           rawurlencode($row[0]);
         $this->users[$user_path] = array(
@@ -230,7 +230,7 @@ EOS;
           'is_requested' => !!$row[2],
           'is_admin' => !!$row[3]
         );
-        if ($row[1] && $row[2])
+        if (!!$row[1] && !!$row[2])
           $members[] = $user_path;
       }
       $this->stored_props[DAV::PROP_GROUP_MEMBER_SET] = $members;
@@ -289,16 +289,16 @@ EOS;
   public function is_admin() {
     if ( BeeHub_ACL_Provider::inst()->wheel() ) return true;
     $this->init_props();
-    return ( $current_user = $this->user_prop_current_user_principal() ) &&
-           ( $tmp = @$this->users[$current_user] ) &&
+    return ( $current_user = BeeHub::current_user() ) &&
+           ( $tmp = @$this->users[$current_user->path] ) &&
            $tmp['is_admin'];
   }
 
 
   public function is_member() {
     $this->init_props();
-    return ( $current_user = $this->user_prop_current_user_principal() ) &&
-           ( $tmp = @$this->users[$current_user] ) &&
+    return ( $current_user = BeeHub::current_user() ) &&
+           ( $tmp = @$this->users[$current_user->path] ) &&
            $tmp['is_invited'] && $tmp['is_requested'];
   }
 
