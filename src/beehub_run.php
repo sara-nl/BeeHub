@@ -96,19 +96,29 @@ if ( !empty( $_SERVER['HTTPS'] ) &&
   else {
     // Try SimpleSaml:
     require_once(BeeHub::$CONFIG['environment']['simplesamlphp_autoloader']);
-    $as = new SimpleSAML_Auth_Simple('default-sp');
+    $as = new SimpleSAML_Auth_Simple('SURFconext');
 
     if (isset($_GET['logout']) && $as->isAuthenticated()) {
       $as->logout();
     }
     if ('conext' === @$_GET['login'] && !$as->isAuthenticated()) {
-      $as->login(array('saml:idp'=>'https://engine.surfconext.nl/authentication/idp/metadata'));
+      $as->login();
     }
 
     if ( $as->isAuthenticated() ) {
       // @TODO: Retrieve and store the correct user (name) when authenticated through SimpleSamlPHP
       $CONEXT = true;
-      throw new DAV_Status(DAV::HTTP_NOT_IMPLEMENTED);
+      $surfId = $as->getAuthData("saml:sp:NameID");
+      $surfId = $surfId['Value'];
+      $statement = BeeHub_DB::execute('SELECT `user_name` FROM `beehub_users` WHERE `surfconext_id`=?', 's', $surfId);
+      if ( $row = $statement->fetch_row() ) {
+        BeeHub_ACL_Provider::inst()->CURRENT_USER_PRINCIPAL =
+          BeeHub::$CONFIG['namespace']['users_path'] .
+          rawurlencode( $row[0] );
+      }else{
+        // TODO: What to do if we don't know this surf ID yet? Match based on e-mail address? Create a new account?
+        throw new DAV_Status(DAV::HTTP_NOT_IMPLEMENTED);
+      }
     } else {
       // If we are not authenticated through SimpleSamlPHP,
       // see if HTTP basic authentication is required:
