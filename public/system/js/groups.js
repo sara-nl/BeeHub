@@ -1,16 +1,28 @@
+// prevent hide previous collaped item
+$('.accordion-heading').click(function (e) {
+  $(this).next().collapse("toggle");
+});
+
 // Kleur bij openklappen aanpassen
 $('.accordion-group').on('show', function (e) {
-   $(e.target).parent().addClass('custom-accordion-active');
+   $(e.target).parent().addClass('accordion-group-active');
 });
 
 // Kleur bij inklappen weer verwijderen
 $('.accordion-group').on('hide', function (e) {
-  $(e.target).parent().removeClass('custom-accordion-active');
+  $(e.target).parent().removeClass('accordion-group-active');
 });
 
-// TODO accept action uitvoeren
-$('#acceptinvitationbutton').on('click', function (e) {
-  alert("button accept inivtation clicked")
+// TODO leave action uitvoeren
+// Hier verder gaan, alleen de eerste leave button werkt.
+// Uitzoeken hoe je alle buttons benadert
+$('#leave').on('click', function (e) {
+  // Send leave request to server
+  // remove div from list
+ console.log("clicked");
+ console.log($(this).closest('.accordion-group'));
+//  $(this).closest('.accordion-group').hide();
+//  $(this).remove();
 });
 
 // TODO request action uitvoeren
@@ -29,8 +41,8 @@ $('ul#beehub-top-tabs a').click(function (e) {
   $(this).tab('show');
 });
 
-$('.accordion-heading a').click(function (e) {
-  e.stopPropagation();
+$('.accordion-heading a').click(function (e) { 
+  e.stopPropagation(); 
 });
 
 $('.btn-danger').click(function (e) {

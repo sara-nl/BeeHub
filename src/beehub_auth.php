@@ -166,7 +166,7 @@ class BeeHub_Auth {
    * @return  BeeHub_User  The currently logged in user or NULL if no user is logged in.
    */
   public function current_user() {
-    $cup = BeeHub_ACL_Provider::inst()->current_user_principal();
+    $cup = BeeHub_ACL_Provider::inst()->user_prop_current_user_principal();
     return $cup ? BeeHub::user($cup) : null;
   }
 
