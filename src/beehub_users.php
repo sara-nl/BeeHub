@@ -60,9 +60,9 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
       // Store in the database
       $statement = BeeHub_DB::execute(
         'INSERT INTO `beehub_users`
-           (`user_name`, `surfconext_id`)
-         VALUES (?, ?)',
-        'ss', $user_name, $surfconext_id
+           (`user_name`)
+         VALUES (?)',
+        's', $user_name
       );
 
       // Fetch the user and store extra properties

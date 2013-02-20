@@ -121,16 +121,6 @@ class BeeHub {
   }
 
 
-  /**
-   * @todo implement
-   * @todo deprecate?
-   */
-  public static function current_user() {
-    $cup = BeeHub_ACL_Provider::inst()->current_user_principal();
-    return $cup ? self::user($cup) : null;
-  }
-
-
   public static function handle_method_spoofing() {
     $_SERVER['ORIGINAL_REQUEST_METHOD'] = $_SERVER['REQUEST_METHOD'];
     if ($_SERVER['REQUEST_METHOD'] == 'POST' and
