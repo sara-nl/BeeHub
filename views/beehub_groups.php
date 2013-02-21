@@ -8,30 +8,20 @@
   // wil maar dit kan waarschijnlijk netter/anders
   $header = '
 <style type="text/css">
-  		
   .accordion-group {
-    border: 0px solid #E5E5E5 !important;
-    border-style:dotted !important;
-    border-top-width:1px !important;
+  		 background-color: #E6E7E8 !important;
   }
-
+  		
   .accordion-group:hover {
     background-color: #D1E2D3 !important;
-    border-style:dotted !important;
-  }
-
-  .accordion-group-inner {
-    border-top: 1px solid #E5E5E5 !important;
   }
 
   .accordion-group-active {
     background-color: #E8F1E9 !important;
-    border: 1px solid #B9D3BA !important;
   }
 
   .accordion-group-active:hover {
     background-color: #D1E2D3 !important;
-    border-style:solid !important;
   }
 
   .admin{
@@ -85,7 +75,7 @@
                   <a href="<?= $group->path ?>" class="btn">View</a>
                   <?php endif; ?>
                   <!--    Leave button -->
-                  <button type="button" id="leave" name="leave" value="<?= $this->user_prop_current_user_principal() ?>" class="btn btn-danger">Leave</button>
+                  <button type="button" value="<?= $group->path ?>" class="btn btn-danger leavebutton" data-dismiss="alert">Leave</button>
                 </td>
               </tr></tbody></table>
             </div>
@@ -93,7 +83,6 @@
           <div id="membershipgroups-<?= $i ?>" class="accordion-body collapse">
 
             <div class="accordion-inner">
-            	Member is <?= ($group->is_member()?'true':'false') ?> klaar<br>
               <?= $group->prop(BeeHub::PROP_DESCRIPTION) ?>
             </div>
           </div>
