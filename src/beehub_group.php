@@ -79,7 +79,14 @@ EOS;
 
 
   public function method_POST ( &$headers ) {
-    //First add members, admins and requests
+    // Allow users to request or remove membership
+    if (isset($_POST['decline']) || isset($_POST['leave'])) {
+      $this->delete_members(array(BeeHub_Auth::inst()->current_user()->path));
+    }
+    if (isset($_POST['request'])) {
+      $this->change_memberships(array(BeeHub_Auth::inst()->current_user()->path), false, true, false, null, true);
+    }
+    // Run administrator actions: add members, admins and requests
     foreach (array('add_requests', 'add_members', 'add_admins', 'delete_admins', 'delete_members', 'delete_requests') as $key) {
       if (isset($_POST[$key])) {
         $members = array();
@@ -96,9 +103,6 @@ EOS;
           case 'add_admins':
             $this->change_memberships($members, true, false, true, true, null, true);
             break;
-          case 'add_requests':
-            $this->change_memberships($members, false, true, false, null, true);
-            break;
           case 'delete_admins':
             $this->change_memberships($members, true, false, false, null, null, false);
             break;
@@ -106,7 +110,7 @@ EOS;
           case 'delete_requests':
             $this->delete_members($members);
             break;
-          default: //Should/cloud never happen
+          default: //Should/could never happen
             throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
           break;
         }
@@ -215,9 +219,7 @@ EOS;
       $stmt = BeeHub_DB::execute(
  'SELECT `user_name`, `is_invited`, `is_requested`, `is_admin`
     FROM `beehub_group_members`
-   WHERE `group_name` = ?
-     AND `is_invited` = 1
-     AND `is_requested` = 1',
+   WHERE `group_name` = ?',
         's', $this->name
       );
       $this->users = array();
@@ -300,6 +302,22 @@ EOS;
     return ( $current_user = BeeHub::current_user() ) &&
            ( $tmp = @$this->users[$current_user->path] ) &&
            $tmp['is_invited'] && $tmp['is_requested'];
+  }
+
+
+  public function is_invited() {
+    $this->init_props();
+    return ( $current_user = BeeHub::current_user() ) &&
+           ( $tmp = @$this->users[$current_user->path] ) &&
+           $tmp['is_invited'] && !$tmp['is_requested'];
+  }
+
+
+  public function is_requested() {
+    $this->init_props();
+    return ( $current_user = BeeHub::current_user() ) &&
+           ( $tmp = @$this->users[$current_user->path] ) &&
+           !$tmp['is_invited'] && $tmp['is_requested'];
   }
 
 
