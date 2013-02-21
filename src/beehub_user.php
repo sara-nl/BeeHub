@@ -51,6 +51,15 @@ class BeeHub_User extends BeeHub_Principal {
   }
 
 
+  public function method_POST() {
+    // Now verify the e-mail address
+    if (!$this->verify_email_address(@$_POST['verification_code'])){
+      throw DAV::forbidden();
+    }
+    $this->include_view('email_verified');
+  }
+
+
   protected function init_props() {
     if (is_null($this->stored_props)) {
       $this->stored_props = array();
@@ -60,6 +69,7 @@ class BeeHub_User extends BeeHub_Principal {
           `displayname`,
           `email`,
           `password`,
+          `surfconext_id`,
           `x509`
          FROM `beehub_users`
          WHERE `user_name` = ?', 's', $this->name
@@ -74,10 +84,13 @@ class BeeHub_User extends BeeHub_Principal {
         $this->original_email                    = $row[1];
       }
       if (!is_null($row[3])) {
-        $this->stored_props[BeeHub::PROP_X509]   = $row[3];
+        $this->stored_props[BeeHub::PROP_SURFCONEXT] = $row[3];
+      }
+      if (!is_null($row[4])) {
+        $this->stored_props[BeeHub::PROP_X509]   = $row[4];
       }
       // TODO: if the password = '0hallo', this goes wrong:
-      if ($row[2]) {
+      if (!empty($row[2])) {
         $this->stored_props[BeeHub::PROP_PASSWORD] = true; // Nobody should have read access to this property. But just in case, we always set it to true.
       }
       $statement_props->free_result();
@@ -121,6 +134,7 @@ class BeeHub_User extends BeeHub_Principal {
     }
 
     $p_displayname = @$this->stored_props[DAV::PROP_DISPLAYNAME];
+    $p_surfconext  = @$this->stored_props[BeeHub::PROP_SURFCONEXT];
     $p_x509        = @$this->stored_props[BeeHub::PROP_X509];
 
     $change_email = false;
@@ -134,6 +148,7 @@ class BeeHub_User extends BeeHub_Principal {
     $updateStatement = BeeHub_DB::mysqli()->prepare(
       'UPDATE `beehub_users`
           SET `displayname` = ?,
+              `surfconext_id` = ?,
               `x509` = ?' .
               ($change_email ? ',`unverified_email`=?,`verification_code`=?,`verification_expiration`=NOW() + INTERVAL 1 DAY' : '') .
               (($p_password !== true) ? ',`password`=?' : '') .
@@ -142,8 +157,9 @@ class BeeHub_User extends BeeHub_Principal {
     if ($p_password === true) {
       if ($change_email) { // No new password, but there is a new e-mail address
         $updateStatement->bind_param(
-          'sssss',
+          'ssssss',
           $p_displayname,
+          $p_surfconext,
           $p_x509,
           $p_email,
           $p_verification_code,
@@ -151,8 +167,9 @@ class BeeHub_User extends BeeHub_Principal {
         );
       }else{ // No new password, no new e-mail address
         $updateStatement->bind_param(
-          'sss',
+          'ssss',
           $p_displayname,
+          $p_surfconext,
           $p_x509,
           $this->name
         );
@@ -160,8 +177,9 @@ class BeeHub_User extends BeeHub_Principal {
     }else{
       if ($change_email) { // A new password, and a new e-mail address
         $updateStatement->bind_param(
-          'ssssss',
+          'sssssss',
           $p_displayname,
+          $p_surfconext,
           $p_x509,
           $p_email,
           $p_verification_code,
@@ -170,8 +188,9 @@ class BeeHub_User extends BeeHub_Principal {
         );
       }else{ // A new password, but no new e-mail address
         $updateStatement->bind_param(
-          'ssss',
+          'sssss',
           $p_displayname,
+          $p_surfconext,
           $p_x509,
           $p_password,
           $this->name
@@ -222,7 +241,18 @@ class BeeHub_User extends BeeHub_Principal {
           AND `verification_expiration` > NOW()',
       'ss', $this->name, $code
     );
-    return $updateStatement->affected_rows > 0;
+    if ($updateStatement->affected_rows > 0) {
+      $propStatement = BeeHub_DB::execute(
+        'SELECT `email` FROM `beehub_users` WHERE `user_name`=?',
+        's', $this->name
+      );
+      $row = $propStatement->fetch_row();
+      $this->stored_props[BeeHub::PROP_EMAIL]  = $row[0];
+      $this->original_email                    = $row[0];
+      return true;
+    }else{
+      return false;
+    }
   }
 
 

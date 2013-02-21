@@ -35,6 +35,11 @@ class BeeHub_Auth {
   private $SURFconext = false;
 
   /**
+   * @var  SimpleSAML_Auth_Simple  The SimpleSAML_Auth_Simple instance used for authentication
+   */
+  private $simpleSAML_authentication = null;
+
+  /**
    * This class is a singleton, so the constructor is private. Instantiate through BeeHub_Auth::inst()
    */
   private function __construct() {
@@ -59,6 +64,17 @@ class BeeHub_Auth {
    * @return  void
    */
   public function handle_authentication($requireAuth = true) {
+    $this->simpleSAML_authentication = new SimpleSAML_Auth_Simple('SURFconext');
+    if (isset($_GET['logout'])) {
+      if ($this->simpleSAML_authentication->isAuthenticated()) {
+        $this->simpleSAML_authentication->logout();
+      }
+      return;
+    }
+    if (('conext' === @$_GET['login']) && !$this->simpleSAML_authentication->isAuthenticated()) {
+      $this->simpleSAML_authentication->login();
+    }
+
     if ( isset($_SERVER['PHP_AUTH_PW'])) {
       // The user already sent username and password: check them!
       $stmt = BeeHub_DB::execute(
@@ -81,73 +97,41 @@ class BeeHub_Auth {
         $this->set_user(rawurlencode( $_SERVER['PHP_AUTH_USER'] ));
       }
       $stmt->free_result();
-    } // end of: if (user sent username/passwd)
-    else {
-      // Try SimpleSaml:
-      require_once(BeeHub::$CONFIG['environment']['simplesamlphp_autoloader']);
-      $as = new SimpleSAML_Auth_Simple('SURFconext');
-  
-      if (isset($_GET['logout']) && $as->isAuthenticated()) {
-        $as->logout();
-      }
-      if ('conext' === @$_GET['login'] && !$as->isAuthenticated()) {
-        $as->login();
-      }
-  
-      if ( $as->isAuthenticated() ) { // Retrieve and store the correct user (name) when authenticated through SimpleSamlPHP
+      // end of: if (user sent username/passwd)
+    } elseif ( ( 'passwd' === @$_GET['login'] ) || (!$this->simpleSAML_authentication->isAuthenticated() && $requireAuth ) ) {
+      // If the user didn't send any credentials, but we require authentication, ask for it!
+      BeeHub_ACL_Provider::inst()->unauthorized();
+      return;
+    } else { // Retrieve and store the correct user (name) when authenticated through SimpleSamlPHP
+      $surfId = $this->simpleSAML_authentication->getAuthData("saml:sp:NameID");
+      $surfId = $surfId['Value'];
+      $statement = BeeHub_DB::execute('SELECT `user_name` FROM `beehub_users` WHERE `surfconext_id`=?', 's', $surfId);
+      if ( $row = $statement->fetch_row() ) { // We found a user, this is the one that's logged in!
         $this->SURFconext = true;
-        $surfId = $as->getAuthData("saml:sp:NameID");
-        $surfId = $surfId['Value'];
-        $statement = BeeHub_DB::execute('SELECT `user_name` FROM `beehub_surfconext_ids` WHERE `surfconext_id`=?', 's', $surfId);
-        if ( $row = $statement->fetch_row() ) { // We found a user, this is the one that's logged in!
-          $this->set_user( $row[0] );
-        }elseif (!$this->match_conext_on_email($as)) { // We don't know this SURFconext ID and can't match based on e-mail address; this is a new user
-          $this->new_conext_user($as);
-        }
-      } else {
-        // If we are not authenticated through SimpleSamlPHP,
-        // see if HTTP basic authentication is required:
-        if ( $requireAuth || 'passwd' === @$_GET['login'] ) {
-          // If the user didn't send any credentials, but we require authentication, ask for it!
-          BeeHub_ACL_Provider::inst()->unauthorized();
-          return;
-        }
-      }
-    }
-  }
-
-  /**
-   * See if we can match the SURFconext user based on his e-mail address
-   *
-   * @param   SimpleSAML_Auth_Simple  $simpleSAML_authentication  The SimpleSAML_Auth_Simple instance used for authentication
-   * @return  boolean                                             True if a match was found, false otherwise
-   */
-  private function match_conext_on_email(SimpleSAML_Auth_Simple $simpleSAML_authentication) {
-    $attributes = $simpleSAML_authentication->getAttributes();
-    $email_addresses = $attributes['urn:mace:dir:attribute-def:mail'];
-    $surfId = $simpleSAML_authentication->getAuthData("saml:sp:NameID");
-    $surfId = $surfId['Value'];
-
-    // Check if one of the e-mail addresses is known
-    foreach ($email_addresses as $email) {
-      $statement = BeeHub_DB::execute('SELECT `user_name` FROM `beehub_users` WHERE `email`=?', 's', $email);
-      if ( $row = $statement->fetch_row() ) { // We found a user with this e-mail address
-        BeeHub_DB::execute('INSERT INTO `beehub_surfconext_ids` (`user_name`, `surfconext_id`) VALUES (?, ?)', 'ss', $row[0], $surfId);
         $this->set_user( $row[0] );
-        return true;
+      } elseif ($_SERVER['REQUEST_URI'] != BeeHub::$CONFIG['namespace']['users_path']) { // We don't know this SURFconext ID, this is a new user
+        throw new DAV_Status(
+          DAV::HTTP_TEMPORARY_REDIRECT,
+          BeeHub::urlbase(true) . BeeHub::$CONFIG['namespace']['users_path']
+        );
       }
     }
 
-    return false;
-  }
-
-  /**
-   * Creates a new user based on SURFconext details
-   * @param   SimpleSAML_Auth_Simple  $simpleSAML_authentication  The SimpleSAML_Auth_Simple instance used for authentication
-   * @return  void
-   */
-  private function new_conext_user(SimpleSAML_Auth_Simple $simpleSAML_authentication){
-    throw new DAV_Status(DAV::HTTP_NOT_IMPLEMENTED);
+    // If the current user is logged in, but has no verified e-mail address.
+    // He/she is not authorized to do anything, but will get a message that we
+    // want a verified e-mail address. Although he has to be able to verify
+    // his e-mail address of course (so GET and POST on /system/users/username
+    // is allowed
+    $user = $this->current_user();
+    if (!is_null($user)) {
+      $email = $user->prop(BeeHub::PROP_EMAIL);
+      if (empty($email) &&
+          (DAV::unslashify(DAV::$PATH) != DAV::unslashify($user->path))) {
+        // TODO: how to sent this message with this status code in a webDAV/Pieter friendly way?
+        header('HTTP/1.1 ' . DAV::status_code(DAV::HTTP_FORBIDDEN));
+        die("Your e-mail address is not verified yet. Note that if you don't verify your e-mail address within 24 hours after creating your account, your accout will be deleted. Please check your mailbox for the verification e-mail with instructions on how to proceed. Or copy the verification code from that e-mail and fill it out in your profile page: " . BeeHub::urlbase(true) . $user->path);
+      }
+    }
   }
 
   /**
@@ -176,6 +160,14 @@ class BeeHub_Auth {
    */
   public function surfconext() {
     return $this->SURFconext;
+  }
+
+  /**
+   * Fetches the SimpleSaml object
+   * @return  SimpleSAML_Auth_Simple  The SimpleSAML_Auth_Simple instance used for authentication
+   */
+  public function simpleSaml() {
+    return $this->simpleSAML_authentication;
   }
 
 } // class BeeHub_Auth

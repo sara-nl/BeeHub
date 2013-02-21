@@ -41,6 +41,7 @@ if ( DAV::$PATH === '/' &&
 DAV::$REGISTRY = BeeHub_Registry::inst();
 DAV::$LOCKPROVIDER = BeeHub_Lock_Provider::inst();
 DAV::$ACLPROVIDER = BeeHub_ACL_Provider::inst();
+require_once(BeeHub::$CONFIG['environment']['simplesamlphp_autoloader']);
 
 $request = DAV_Request::inst();
 
@@ -67,7 +68,19 @@ $noRequireAuth = (
 
 if ( !empty( $_SERVER['HTTPS'] ) &&
      $_SERVER['REQUEST_METHOD'] !== 'OPTIONS' ) {
-  BeeHub_Auth::inst()->handle_authentication(!$noRequireAuth);
+  try {
+    BeeHub_Auth::inst()->handle_authentication(!$noRequireAuth);
+  }catch (Exception $e) {
+    if ($e instanceof DAV_Status) {
+      $e->output();
+    } else {
+      $e = new DAV_Status(
+             DAV::HTTP_INTERNAL_SERVER_ERROR,
+             "$e"
+           );
+      $e->output();
+    }
+  }
 }
 
 // Clean up, just because it's nice to do so
