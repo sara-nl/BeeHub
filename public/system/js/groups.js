@@ -13,23 +13,61 @@ $('.accordion-group').on('hide', function (e) {
   $(e.target).parent().removeClass('accordion-group-active');
 });
 
-var joinListener = function(){
-	console.log("joinbutton clicked");
+/*
+ * Action when the join button at a group is clicked
+ */
+var cancelRequestListener = function(){
+	console.log("cancel request clicked");
+//	var button = $(this);
+//	// Send leave request to server
+//	var client = new nl.sara.webdav.Client();
+//	client.post(button.val(), function(status){
+//	  if (status != 200) {
+//			alert('Something went wrong on the server. No changes were made.');
+//			return;
+//	  };
+//	  // Change button to join button
+//	  button.html('Cancel request');
+//	  button.removeClass('joinbutton');
+//	  button.addClass('cancelrequestbutton');
+//	  button.on('click',cancelRequestListener);
+//	}, 'leave=1');
 }
+
+$('.cancelrequestbutton').on('click', function (e) {
+	cancelRequestListener();
+});
 
 /*
  * Action when the join button at a group is clicked
  */
+var joinListener = function(button){
+	// Send leave request to server
+	var client = new nl.sara.webdav.Client();
+	client.post(button.val(), function(status){
+	  if (status != 200) {
+			alert('Something went wrong on the server. No changes were made.');
+			return;
+	  };
+	  // Change button to join button
+	  button.html('Cancel request');
+	  button.removeClass('joinbutton');
+	  button.removeClass('btn-info');
+	  button.addClass('btn-danger');
+	  button.addClass('cancelrequestbutton');
+	  button.on('click',cancelRequestListener);
+	}, 'join=1');
+}
+
 $('.joinbutton').on('click', function (e) {
-	joinListener();
+	joinListener($(this));
 });
 
 /*
- * Action when the leave button at a group is clicked
+ * Action when the leave button in a group is clicked
  */
 $('.leavebutton').on('click', function (e) {
 	var button = $(this);
-	console.log(button.val());
    // Are you sure?
 	if (confirm('Are you sure you want to leave the group '+button.parent().prev().html()+' ?')) {
 		// Send leave request to server
