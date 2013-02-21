@@ -35,6 +35,7 @@ class BeeHub {
 
   const PROP_PASSWORD          = 'http://beehub.nl/ password';
   const PROP_EMAIL             = 'http://beehub.nl/ email';
+  const PROP_SURFCONEXT        = 'http://beehub.nl/ surfconext';
   const PROP_X509              = 'http://beehub.nl/ x509';
   const PROP_DESCRIPTION       = 'http://beehub.nl/ description';
   const PROP_SPONSOR           = 'http://beehub.nl/ sponsor';
@@ -118,16 +119,6 @@ class BeeHub {
     return ( false === strstr(@$_SERVER['HTTP_USER_AGENT'], 'MSIE') &&
             false === strstr(@$_SERVER['HTTP_USER_AGENT'], 'Microsoft') ) ?
             'application/xhtml+xml' : 'text/html';
-  }
-
-
-  /**
-   * @todo implement
-   * @todo deprecate?
-   */
-  public static function current_user() {
-    $cup = BeeHub_ACL_Provider::inst()->user_prop_current_user_principal();
-    return $cup ? self::user($cup) : null;
   }
 
 

@@ -41,6 +41,7 @@ if ( DAV::$PATH === '/' &&
 DAV::$REGISTRY = BeeHub_Registry::inst();
 DAV::$LOCKPROVIDER = BeeHub_Lock_Provider::inst();
 DAV::$ACLPROVIDER = BeeHub_ACL_Provider::inst();
+require_once(BeeHub::$CONFIG['environment']['simplesamlphp_autoloader']);
 
 $request = DAV_Request::inst();
 
@@ -64,65 +65,26 @@ $noRequireAuth = (
     in_array($_SERVER['REQUEST_METHOD'], array('GET', 'HEAD') )
   )
 );
-$requireAuth = !$noRequireAuth;
 
 if ( !empty( $_SERVER['HTTPS'] ) &&
      $_SERVER['REQUEST_METHOD'] !== 'OPTIONS' ) {
-  if ( isset($_SERVER['PHP_AUTH_PW'])) {
-    // The user already sent username and password: check them!
-    $stmt = BeeHub_DB::execute(
-      'SELECT `password`
-       FROM `beehub_users`
-       WHERE `user_name` = ?',
-      's', $_SERVER['PHP_AUTH_USER']
-    );
-    if ( !( $row = $stmt->fetch_row() ) ||
-         $row[0] != crypt($_SERVER['PHP_AUTH_PW'], $row[0]) ) {
-      // If authentication fails, respond accordingly
-      if ($requireAuth) {
-        $stmt->free_result();
-        // User could not be authenticated with supplied credentials, but we
-        // require authentication, so we ask again!
-        BeeHub_ACL_Provider::inst()->unauthorized();
-        return;
-      }
-    } else { // Authentication succeeded: store credentials!
-      BeeHub_ACL_Provider::inst()->CURRENT_USER_PRINCIPAL =
-        BeeHub::$CONFIG['namespace']['users_path'] .
-        rawurlencode( $_SERVER['PHP_AUTH_USER'] );
-    }
-    $stmt->free_result();
-  } // end of: if (user sent username/passwd)
-  else {
-    // Try SimpleSaml:
-    require_once(BeeHub::$CONFIG['environment']['simplesamlphp_autoloader']);
-    $as = new SimpleSAML_Auth_Simple('default-sp');
-
-    if (isset($_GET['logout']) && $as->isAuthenticated()) {
-      $as->logout();
-    }
-    if ('conext' === @$_GET['login'] && !$as->isAuthenticated()) {
-      $as->login(array('saml:idp'=>'https://engine.surfconext.nl/authentication/idp/metadata'));
-    }
-
-    if ( $as->isAuthenticated() ) {
-      // @TODO: Retrieve and store the correct user (name) when authenticated through SimpleSamlPHP
-      $CONEXT = true;
-      throw new DAV_Status(DAV::HTTP_NOT_IMPLEMENTED);
+  try {
+    BeeHub_Auth::inst()->handle_authentication(!$noRequireAuth);
+  }catch (Exception $e) {
+    if ($e instanceof DAV_Status) {
+      $e->output();
     } else {
-      // If we are not authenticated through SimpleSamlPHP,
-      // see if HTTP basic authentication is required:
-      if ( $requireAuth || 'passwd' === @$_GET['login'] ) {
-        // If the user didn't send any credentials, but we require authentication, ask for it!
-        BeeHub_ACL_Provider::inst()->unauthorized();
-        return;
-      }
+      $e = new DAV_Status(
+             DAV::HTTP_INTERNAL_SERVER_ERROR,
+             "$e"
+           );
+      $e->output();
     }
   }
 }
 
 // Clean up, just because it's nice to do so
-unset($path, $requireAuth, $as, $statement, $storedPassword);
+unset($path, $noRequireAuth);
 
 // After bootstrapping and authentication is done, handle the request
 $request->handleRequest();

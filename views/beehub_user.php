@@ -48,4 +48,9 @@ require 'views/header.php';
   </div>
   <button class="btn">Save</button>
 </form>
+
+<form method="post">
+  <div>Verification code: <input type="text" name="verification_code" value="<?= htmlspecialchars(@$_GET['verification_code'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>" /></div>
+  <div><input type="submit" value="Verify e-mail address" /></div>
+</form>
 <?php require 'views/footer.php'; ?>

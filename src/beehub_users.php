@@ -37,12 +37,15 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
         BeeHub::urlbase(true) . $_SERVER['REQUEST_URI']
       );
     }
-    if (!isset($_GET['verify']) && !isset($_GET['verify_user'])) {
-      $this->include_view('new_user');
-    }else{
-      $setPassword = isset($_GET['verify_user']);
-      $this->include_view('verify_email', array('setPassword'=>$setPassword));
+    $as = BeeHub_Auth::inst()->simpleSaml();
+    $display_name = '';
+    $email_address = '';
+    if (!is_null($as)) {
+      $attrs = $as->getAttributes();
+      $display_name = $attrs['urn:mace:dir:attribute-def:displayName'][0];
+      $email_address = $attrs['urn:mace:dir:attribute-def:mail'][0];
     }
+    $this->include_view('new_user', array('display_name'=>$display_name, 'email_address'=>$email_address));
   }
 
 
@@ -51,50 +54,37 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
    * @see DAV_Resource::method_POST()
    */
   public function method_POST(&$headers) {
-    if (!isset($_POST['verification_code'])) {
-      // TODO: translate user_name to ASCII and check for double usernames
-      $user_name = $_POST['user_name'];
-      $displayname = $_POST['displayname'];
-      $email = $_POST['email'];
+    // TODO: translate user_name to ASCII and check for double usernames
+    $user_name = $_POST['user_name'];
+    $displayname = $_POST['displayname'];
+    $email = $_POST['email'];
+    $password = (!empty($_POST['password']) ? $_POST['password'] : null);
 
-      // Store in the database
-      $statement = BeeHub_DB::execute(
-        'INSERT INTO `beehub_users`
-           (`user_name`, `surfconext_id`)
-         VALUES (?, ?)',
-        'ss', $user_name, $surfconext_id
-      );
+    // Store in the database
+    $statement = BeeHub_DB::execute(
+      'INSERT INTO `beehub_users`
+          (`user_name`)
+        VALUES (?)',
+      's', $user_name
+    );
 
-      // Fetch the user and store extra properties
-      $user = BeeHub_Registry::inst()->resource(
-        BeeHub::$CONFIG['namespace']['users_path'] . rawurlencode($user_name)
-      );
-      $user->user_set(DAV::PROP_DISPLAYNAME, $displayname);
-      $user->user_set(BeeHub::PROP_EMAIL, $email);
-      $user->storeProperties();
-    }else{
-      // TODO: Check whether the POST field is filled out correctly
-      $verification_code = $_POST['verification_code'];
-      $user_name = $_POST['user_name'];
-      $user = BeeHub_Registry::inst()->resource(BeeHub::$CONFIG['namespace']['users_path'] . $user_name);
-      $old_email = $user->prop(BeeHub::PROP_EMAIL);
-
-      // Now verify the e-mail address
-      if (!$user->verify_email_address($verification_code)){
-        throw DAV::HTTP_UNAUTHORIZED;
-      }
-
-      // If the user doesn't have an e-mail address set yet, it is a new account. So allow setting the password or X509 certificate here
-      if (empty($old_email)) {
-        $password = $_POST['password'];
-        $user->user_set(BeeHub::PROP_PASSWORD, $password);
-        $x509 = $_POST['x509'];
-        $user->user_set(BeeHub::PROP_X509, $x509);
-        $user->storeProperties();
-      }
+    // Fetch the user and store extra properties
+    $user = BeeHub_Registry::inst()->resource(
+      BeeHub::$CONFIG['namespace']['users_path'] . rawurlencode($user_name)
+    );
+    $user->user_set(BeeHub::PROP_PASSWORD, $password);
+    $user->user_set(DAV::PROP_DISPLAYNAME, $displayname);
+    $user->user_set(BeeHub::PROP_EMAIL, $email);
+    $auth = BeeHub_Auth::inst();
+    if ($auth->surfconext()) {
+      $surfId = $auth->simpleSaml()->getAuthData("saml:sp:NameID");
+      $surfId = $surfId['Value'];
+      $user->user_set(BeeHub::PROP_SURFCONEXT, $surfId);
     }
-  }
+    $user->storeProperties();
 
+    $this->include_view('new_user_confirmation', array('email_address'=>$email_address));
+  }
 
   public function report_principal_property_search($properties) {
     if ( 1 != count( $properties ) ||

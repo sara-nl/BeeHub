@@ -291,7 +291,7 @@ EOS;
   public function is_admin() {
     if ( BeeHub_ACL_Provider::inst()->wheel() ) return true;
     $this->init_props();
-    return ( $current_user = BeeHub::current_user() ) &&
+    return ( $current_user = BeeHub_Auth::current_user() ) &&
            ( $tmp = @$this->users[$current_user->path] ) &&
            $tmp['is_admin'];
   }
@@ -299,7 +299,7 @@ EOS;
 
   public function is_member() {
     $this->init_props();
-    return ( $current_user = BeeHub::current_user() ) &&
+    return ( $current_user = BeeHub_Auth::current_user() ) &&
            ( $tmp = @$this->users[$current_user->path] ) &&
            $tmp['is_invited'] && $tmp['is_requested'];
   }
