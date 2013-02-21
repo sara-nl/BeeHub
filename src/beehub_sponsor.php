@@ -60,8 +60,29 @@ EOS;
 
 
   public function method_POST ( &$headers ) {
+    $auth = BeeHub_Auth::inst();
+    if (!$auth->is_authenticated()) {
+      throw DAV::forbidden();
+    }
+    $admin_functions = array('add_members', 'add_admins', 'delete_admins', 'delete_members', 'delete_requests');
+    if (!$this->is_admin()) {
+      foreach ($admin_functions as $function) {
+        if (isset($_POST[$function])) {
+          throw DAV::forbidden();
+        }
+      }
+    }
+
+    // Allow users to request or remove membership
+    if (isset($_POST['leave'])) {
+      $this->delete_members(array(BeeHub_Auth::inst()->current_user()->path));
+    }
+    if (isset($_POST['join'])) {
+      $this->change_memberships(array(BeeHub_Auth::inst()->current_user()->path), false, true, false, null, true);
+    }
+
     //First add members, admins and requests
-    foreach (array('add_requests', 'add_members', 'add_admins', 'delete_admins', 'delete_members', 'delete_requests') as $key) {
+    foreach ($admin_functions as $key) {
       if (isset($_POST[$key])) {
         $members = array();
         if (!is_array($_POST[$key])) {
@@ -76,9 +97,6 @@ EOS;
             break;
           case 'add_admins':
             $this->change_memberships($members, true, true, true, true);
-            break;
-          case 'add_requests':
-            $this->change_memberships($members, false, false, false, false);
             break;
           case 'delete_admins':
             $this->change_memberships($members, true, false, true, false);
@@ -147,7 +165,7 @@ EOS;
       return;
     }
     foreach ($members as $member) {
-      $user_name = rawurldecode(basename($path));
+      $user_name = rawurldecode(basename($member));
       BeeHub_DB::execute(
         'DELETE FROM `beehub_sponsor_members`
          WHERE `sponsor_name` = ?

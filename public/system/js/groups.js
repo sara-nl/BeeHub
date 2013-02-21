@@ -13,12 +13,24 @@ $('.accordion-group').on('hide', function (e) {
   $(e.target).parent().removeClass('accordion-group-active');
 });
 
+var joinListener = function(){
+	console.log("joinbutton clicked");
+}
+
+/*
+ * Action when the join button at a group is clicked
+ */
+$('.joinbutton').on('click', function (e) {
+	joinListener();
+});
+
 /*
  * Action when the leave button at a group is clicked
  */
 $('.leavebutton').on('click', function (e) {
 	var button = $(this);
-  // Are you sure?
+	console.log(button.val());
+   // Are you sure?
 	if (confirm('Are you sure you want to leave the group '+button.parent().prev().html()+' ?')) {
 		// Send leave request to server
 		var client = new nl.sara.webdav.Client();
@@ -27,8 +39,20 @@ $('.leavebutton').on('click', function (e) {
 					alert('Something went wrong on the server. No changes were made.');
 					return;
 			  };
-			  button.closest('.accordion-group').hide();
-		}, 'delete_members[]=' + encodeURIComponent('/system/users/marja'));
+			  // Actions to take depending on tab panel
+			  if (button.closest('.tab-pane').attr('id') == 'panel-mygroups') {
+				// remove group from mygroups view
+				  button.closest('.accordion-group').hide(); 
+			  } else if (button.closest('.tab-pane').attr('id') == 'panel-join') {
+				// Change button to join button
+				button.html('Join');
+				button.removeClass('leavebutton');
+				button.removeClass('btn-danger');
+				button.addClass('btn-info');
+				button.addClass('joinbutton');
+				button.on('click',joinListener);
+			  }
+		}, 'leave=1');
     }
 });
 

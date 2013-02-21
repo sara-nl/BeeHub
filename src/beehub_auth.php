@@ -155,6 +155,16 @@ class BeeHub_Auth {
   }
 
   /**
+   * Is the current user authenticated?
+   *
+   * @return  boolean  True if the user is authenticated, false otherwise
+   */
+  public function is_authenticated() {
+    $cup = BeeHub_ACL_Provider::inst()->user_prop_current_user_principal();
+    return (boolean) $cup;
+  }
+
+  /**
    * Checks if this user is logged in through SURFconext
    * @return  boolean  True if the user is logged in through SURFconext, false otherwise
    */
