@@ -13,16 +13,23 @@ $('.accordion-group').on('hide', function (e) {
   $(e.target).parent().removeClass('accordion-group-active');
 });
 
-// TODO leave action uitvoeren
-// Hier verder gaan, alleen de eerste leave button werkt.
-// Uitzoeken hoe je alle buttons benadert
-$('#leave').on('click', function (e) {
-  // Send leave request to server
-  // remove div from list
- console.log("clicked");
- console.log($(this).closest('.accordion-group'));
-//  $(this).closest('.accordion-group').hide();
-//  $(this).remove();
+/*
+ * Action when the leave button at a group is clicked
+ */
+$('.leavebutton').on('click', function (e) {
+	var button = $(this);
+  // Are you sure?
+	if (confirm('Are you sure you want to leave the group '+button.parent().prev().html()+' ?')) {
+		// Send leave request to server
+		var client = new nl.sara.webdav.Client();
+		client.post(button.val(), function(status){
+			  if (status != 200) {
+					alert('Something went wrong on the server. No changes were made.');
+					return;
+			  };
+			  button.closest('.accordion-group').hide();
+		}, 'delete_members[]=' + encodeURIComponent('/system/users/marja'));
+    }
 });
 
 // TODO request action uitvoeren
