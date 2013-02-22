@@ -140,7 +140,7 @@ class BeeHub_User extends BeeHub_Principal {
     $p_displayname = @$this->stored_props[DAV::PROP_DISPLAYNAME];
     $p_surfconext  = @$this->stored_props[BeeHub::PROP_SURFCONEXT];
     $p_x509        = @$this->stored_props[BeeHub::PROP_X509];
-    $p_sponsor        = @$this->stored_props[BeeHub::PROP_SPONSOR];
+    $p_sponsor     = @$this->stored_props[BeeHub::PROP_SPONSOR];
 
     $change_email = false;
     if (@$this->stored_props[BeeHub::PROP_EMAIL] !== $this->original_email) {
