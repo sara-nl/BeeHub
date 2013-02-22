@@ -98,6 +98,8 @@ $(function() {
 	    }
 	});
 	
+	// TODO listerer aan erase icon hangen 
+	// gewoon om de laatste te zijn
 	 $('#filterbyname').keyup(function () {
 		var value = $(this).val();
 		// when field is empty, filter icon
