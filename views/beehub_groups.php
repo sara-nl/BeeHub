@@ -75,7 +75,7 @@
                   <a href="<?= $group->path ?>" class="btn">View</a>
                   <?php endif; ?>
                   <!--    Leave button -->
-                  <button type="button" value="<?= $group->path ?>" class="btn btn-danger leavebutton">Leave</button>
+                  <button type="button" value="<?= $group->path ?>" class="btn btn-danger mygroupsleavebutton">Leave</button> 
                 </td>
               </tr></tbody></table>
             </div>
@@ -112,14 +112,14 @@
                 <td align="right">
                   <!--    Leave, Cancel request or Join button -->
                   <?php if ( $group->is_member() ) : ?>
-                  <a><button type="button" value="<?= $group->path ?>" class="btn btn-danger leavebutton">Leave</button></a>
+                  <a><button type="button" value="<?= $group->path ?>" class="btn btn-danger joinleavebutton">Leave</button></a>
                   <?php elseif ($group->is_invited()) : ?>
                   <a><button type="button" value="<?= $group->path ?>" class="btn btn-success joinbutton">Accept invitation</button></a>
                   <a><button type="button" value="<?= $group->path ?>" class="btn btn-danger denyinvitationbutton">Deny invitation</button></a>
                    <?php elseif ($group->is_requested()) : ?>
-                  <a><button type="button" value="<?= $group->path ?>" class="btn btn-danger cancelrequestbutton">Cancel request</button></a>
+                  <a><button type="button" value="<?= $group->path ?>" class="btn btn-danger joinleavebutton">Cancel request</button></a>
                   <?php else : ?>
-                  <a><button type="button" value="<?= $group->path ?>" class="btn btn-info joinbutton">Join</button></a>
+                  <a><button type="button" value="<?= $group->path ?>" class="btn btn-success joinbutton">Join</button></a>
                   <?php endif; ?>
                 </td>
               </tr></tbody></table>
