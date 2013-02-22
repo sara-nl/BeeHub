@@ -9,7 +9,7 @@
   $header = '
 <style type="text/css">
   .accordion-group {
-  		 background-color: #E6E7E8 !important;
+//   		 background-color: #E6E7E8 !important;
   }
   		
   .accordion-group:hover {
@@ -56,7 +56,7 @@
 	<!-- My Groups tab -->
   <div id="panel-mygroups" class="tab-pane fade in active">
   	<!--    List with my groups -->
-    <div class="accordion" id="membershipgroups">
+    <div class="accordion" id="mygroups">
         <?php
       $i = 1;
       foreach ($groups as $group) :
@@ -64,7 +64,7 @@
       ?>
         <div class="accordion-group">
           <div class="accordion-heading">
-            <div class="accordion-toggle" data-toggle="collapse" data-parent="#membershipgroups" href="#membershipgroups-<?= $i ?>">
+            <div class="accordion-toggle" data-toggle="collapse" data-parent="#mygroups" href="#mygroups-<?= $i ?>">
               <table width="100%"><tbody><tr>
                 <th align="left"><?= $group->prop_displayname() ?></th>
                 <td align="right">
@@ -75,12 +75,12 @@
                   <a href="<?= $group->path ?>" class="btn">View</a>
                   <?php endif; ?>
                   <!--    Leave button -->
-                  <button type="button" value="<?= $group->path ?>" class="btn btn-danger leavebutton" data-dismiss="alert">Leave</button>
+                  <button type="button" value="<?= $group->path ?>" class="btn btn-danger leavebutton">Leave</button>
                 </td>
               </tr></tbody></table>
             </div>
           </div>
-          <div id="membershipgroups-<?= $i ?>" class="accordion-body collapse">
+          <div id="mygroups-<?= $i ?>" class="accordion-body collapse">
 
             <div class="accordion-inner">
               <?= $group->prop(BeeHub::PROP_DESCRIPTION) ?>
@@ -98,7 +98,45 @@
 
 	<!-- Join tab -->
   <div id="panel-join" class="tab-pane fade">
-		Join
+		<!--    List with all groups -->
+    <div class="accordion" id="joingroups">
+        <?php
+      $i = 1;
+      foreach ($groups as $group) :
+      ?>
+        <div class="accordion-group">
+          <div class="accordion-heading">
+            <div class="accordion-toggle" data-toggle="collapse" data-parent="#joingroups" href="#joingroups-<?= $i ?>">
+              <table width="100%"><tbody><tr>
+                <th align="left"><?= $group->prop_displayname() ?></th>
+                <td align="right">
+                  <!--    Leave, Cancel request or Join button -->
+                  <?php if ( $group->is_member() ) : ?>
+                  <a><button type="button" value="<?= $group->path ?>" class="btn btn-danger leavebutton">Leave</button></a>
+                  <?php elseif ($group->is_invited()) : ?>
+                  <a><button type="button" value="<?= $group->path ?>" class="btn btn-success joinbutton">Accept invitation</button></a>
+                  <a><button type="button" value="<?= $group->path ?>" class="btn btn-danger denyinvitationbutton">Deny invitation</button></a>
+                   <?php elseif ($group->is_requested()) : ?>
+                  <a><button type="button" value="<?= $group->path ?>" class="btn btn-danger cancelrequestbutton">Cancel request</button></a>
+                  <?php else : ?>
+                  <a><button type="button" value="<?= $group->path ?>" class="btn btn-info joinbutton">Join</button></a>
+                  <?php endif; ?>
+                </td>
+              </tr></tbody></table>
+            </div>
+          </div>
+          <div id="joingroups-<?= $i ?>" class="accordion-body collapse">
+
+            <div class="accordion-inner">
+              <?= $group->prop(BeeHub::PROP_DESCRIPTION) ?>
+            </div>
+          </div>
+        </div>
+     <?php
+      $i = $i + 1;
+        endforeach;
+     ?>        
+    </div>
   </div>
 	<!--   End join tab
 
