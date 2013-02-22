@@ -99,6 +99,7 @@ class BeeHub_User extends BeeHub_Principal {
       }
       $statement_props->free_result();
 
+      // Fetch all group memberships
       $statement_groups = BeeHub_DB::execute(
         'SELECT `group_name`
            FROM `beehub_group_members`
@@ -113,6 +114,21 @@ class BeeHub_User extends BeeHub_Principal {
       }
       $statement_groups->free_result();
       $this->stored_props[DAV::PROP_GROUP_MEMBERSHIP] = $groups;
+
+      // Fetch all sponsor memberships
+      $statement_sponsors = BeeHub_DB::execute(
+        'SELECT `sponsor_name`
+           FROM `beehub_sponsor_members`
+          WHERE `user_name` = ?
+            AND `is_accepted` = 1', 's', $this->name
+      );
+      $sponsors = array();
+      while ($row = $statement_sponsors->fetch_row()) {
+        $sponsors[] = BeeHub::$CONFIG['namespace']['sponsors_path'] .
+          rawurlencode($row[0]);
+      }
+      $statement_sponsors->free_result();
+      $this->stored_props[BeeHub::PROP_SPONSOR_MEMBERSHIP] = $sponsors;
     }
   }
 
@@ -293,6 +309,25 @@ class BeeHub_User extends BeeHub_Principal {
     $retval[BeeHub::PROP_X509]          = $is_admin;
     $retval[BeeHub::PROP_SPONSOR]       = $is_admin;
     $retval[DAV::PROP_GROUP_MEMBERSHIP] = $is_admin;
+    $retval[BeeHub::PROP_PASSWORD]      = false;
+    return $retval;
+  }
+
+
+  /**
+  * The user has write privileges on all properties if he is the administrator of this principal
+  * @param array $properties
+  * @return array an array of (property => isWritable) pairs.
+  */
+  public function property_priv_write($properties) {
+    $retval = parent::property_priv_read($properties);
+    $is_admin = $this->is_admin();
+    $retval[BeeHub::PROP_EMAIL]         = $is_admin;
+    $retval[BeeHub::PROP_SURFCONEXT]    = false;
+    $retval[BeeHub::PROP_X509]          = $is_admin;
+    $retval[BeeHub::PROP_SPONSOR]       = $is_admin;
+    $retval[DAV::PROP_GROUP_MEMBERSHIP] = false;
+    $retval[BeeHub::PROP_SPONSOR_MEMBERSHIP] = false;
     $retval[BeeHub::PROP_PASSWORD]      = false;
     return $retval;
   }

@@ -43,7 +43,7 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
     $displayname = $_POST['displayname'];
     $description = $_POST['description'];
     $group_name = $_POST['group_name'];
-    $user_sponsor = BeeHub_Auth::inst()->current_user()->prop( BeeHub::PROP_SPONSOR );
+    $user_sponsor = BeeHub_Auth::inst()->current_user()->user_prop( BeeHub::PROP_SPONSOR );
     // Group name must be one of the following characters a-zA-Z0-9_-. and must at least be 1 character long and can't be 'system'
     if (empty($user_sponsor) ||
         ($group_name == 'system') ||

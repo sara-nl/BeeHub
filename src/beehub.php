@@ -33,12 +33,13 @@ require_once dirname(dirname(__FILE__)) . '/webdav-php/lib/dav.php';
 class BeeHub {
 
 
-  const PROP_PASSWORD          = 'http://beehub.nl/ password';
-  const PROP_EMAIL             = 'http://beehub.nl/ email';
-  const PROP_SURFCONEXT        = 'http://beehub.nl/ surfconext';
-  const PROP_X509              = 'http://beehub.nl/ x509';
-  const PROP_DESCRIPTION       = 'http://beehub.nl/ description';
-  const PROP_SPONSOR           = 'http://beehub.nl/ sponsor';
+  const PROP_PASSWORD           = 'http://beehub.nl/ password';
+  const PROP_EMAIL              = 'http://beehub.nl/ email';
+  const PROP_SURFCONEXT         = 'http://beehub.nl/ surfconext';
+  const PROP_X509               = 'http://beehub.nl/ x509';
+  const PROP_DESCRIPTION        = 'http://beehub.nl/ description';
+  const PROP_SPONSOR            = 'http://beehub.nl/ sponsor';
+  const PROP_SPONSOR_MEMBERSHIP = 'http://beehub.nl/ sponsor-membership';
 
 
   public static $USER_PROPS = array(

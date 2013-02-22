@@ -43,25 +43,34 @@ public function create_member( $name ) {
 }
 
 
-/**
- * @TODO Sponsor stuff
- */
 private function internal_create_member( $name, $collection = false ) {
   $this->assert(DAVACL::PRIV_WRITE);
   $path = $this->path . $name;
   $localPath = BeeHub::localPath( $path );
   $cups = $this->current_user_principals();
-  $group = $this->user_prop_group();
-  if (!isset($cups[$group]))
-    $group = DAV::$REGISTRY->resource($this->user_prop_current_user_principal())->user_prop_group();
+
+  // Determine the sponsor
+  $user = BeeHub_Auth::inst()->current_user();
+  $user_sponsors = $user->prop(BeeHub::PROP_SPONSOR_MEMBERSHIP);
+  if (count($user_sponsors) == 0) { // If the user doesn't have any sponsors, he/she can't create files and directories
+    throw DAV::forbidden();
+  }
+  $sponsor = $this->prop(BeeHub::PROP_SPONSOR); // The default is the directory sponsor
+  if (!in_array($sponsor, $user_sponsors)) { //But a user can only create files sponsored by his own sponsors
+    $sponsor = $user->user_prop(BeeHub::PROP_SPONSOR);
+  }
+
+  // Create the subdirectory or file
   if (file_exists($localPath))
     throw DAV::forbidden();
   $result = $collection ? @mkdir($localPath) : touch($localPath);
   if ( !$result )
     throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
+
+  // And set the xattributes
   xattr_set( $localPath, rawurlencode( DAV::PROP_GETETAG), BeeHub_DB::ETag() );
   xattr_set( $localPath, rawurlencode( DAV::PROP_OWNER  ), $this->user_prop_current_user_principal() );
-  xattr_set( $localPath, rawurlencode( DAV::PROP_GROUP  ), $group );
+  xattr_set( $localPath, rawurlencode( BeeHub::PROP_SPONSOR ), $sponsor );
   return DAV::$REGISTRY->resource($path);
 }
 
