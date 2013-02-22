@@ -98,6 +98,15 @@ $(function() {
 	    }
 	});
 	
+	 $('#filterbyname').keyup(function () {
+		var value = $(this).val();
+		var regex = new RegExp( $(this).val(), 'gi' );
+		$('div#joingroups.accordion').find('.accordion-group').filter(function(index) {
+			$(this).hide();
+			return $(this).find('th').html().match(regex) != null;
+		}).show(); 
+	 });
+	
 	// TODO request action uitvoeren
 	$('#requestmembershipbutton').on('click', function (e) {
 	  alert("button request membership clicked")

@@ -98,7 +98,20 @@
 
 	<!-- Join tab -->
   <div id="panel-join" class="tab-pane fade">
+	  <br>
+	  <div class="control-group">
+<!-- 	    <label class="control-label" for="inputIcon">Filter by name:</label> -->
+		    <div class="controls">
+			    <div class="input-prepend">
+ 				    <span class="add-on"><i class="icon-filter"></i></span>
+				    <input class="span3" id="filterbyname" type="text" placeholder="Filter by name..."/>
+			    </div>
+	    </div>
+    </div>
+  	<br>
+  	
 		<!--    List with all groups -->
+<!-- 		<h3>Groups</h3> -->
     <div class="accordion" id="joingroups">
         <?php
       $i = 1;
@@ -115,7 +128,7 @@
                   <a><button type="button" value="<?= $group->path ?>" class="btn btn-danger joinleavebutton">Leave</button></a>
                   <?php elseif ($group->is_invited()) : ?>
                   <a><button type="button" value="<?= $group->path ?>" class="btn btn-success joinbutton">Accept invitation</button></a>
-                  <a><button type="button" value="<?= $group->path ?>" class="btn btn-danger denyinvitationbutton">Deny invitation</button></a>
+                  <a><button type="button" value="<?= $group->path ?>" class="btn btn-danger joinleavebutton">Deny invitation</button></a>
                    <?php elseif ($group->is_requested()) : ?>
                   <a><button type="button" value="<?= $group->path ?>" class="btn btn-danger joinleavebutton">Cancel request</button></a>
                   <?php else : ?>
