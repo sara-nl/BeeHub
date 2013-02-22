@@ -55,7 +55,7 @@ class BeeHub_System_Collection extends BeeHub_Resource implements DAV_Collection
     return array(
       new DAVACL_Element_ace(
         DAVACL::PRINCIPAL_ALL, false, array(
-          DAVACL::PRIV_READ
+          DAVACL::PRIV_READ, DAVACL::PRIV_READ_ACL
         ), false, true
       )
     );
@@ -78,6 +78,11 @@ class BeeHub_System_Collection extends BeeHub_Resource implements DAV_Collection
 
 
   public function method_MOVE($member, $destination) {
+    throw DAV::forbidden();
+  }
+
+
+  public function method_PROPPATCH($propname, $value = null) {
     throw DAV::forbidden();
   }
 

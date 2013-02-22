@@ -163,52 +163,69 @@ public function method_MOVE( $member, $destination ) {
 
 
 /**
- * @var DirectoryIterator;
+ * @var array
  */
-private $dir = null;
+private $members = null;
 /**
- * @return DirectoryIterator
+ * @var integer
+ */
+private $current_key = 0;
+/**
+ * @return void
  */
 private function dir() {
-  if (is_null($this->dir)) {
-    $this->dir = new DirectoryIterator( $this->localPath );
-    $this->skipInvalidMembers();
+  if (is_null($this->members)) {
+    $this->members = array();
+    // The root directory has one 'virtual' directory
+    if ($this->path === '/') {
+      $this->members[] = 'system/';
+    }
+
+    // Read the directory and add the contents
+    if ($dh = opendir($this->localPath)) {
+      while (($file = readdir($dh)) !== false) {
+        $invisible = !BeeHub_Registry::inst()->resource( $this->path . $file )->isVisible();
+        BeeHub_Registry::inst()->forget( $this->path . $file );
+        if ( ($file === '.') ||
+             ($file === '..') ||
+             $invisible ) {
+          continue;
+        }
+        $this->members[] = $file;
+      }
+      closedir($dh);
+    }
   }
-  return $this->dir;
 }
 
-private function skipInvalidMembers() {
-  while (
-    $this->dir()->valid() && (
-      $this->dir()->isDot() ||
-      !BeeHub_Registry::inst()->resource(
-        $this->path . $this->current()
-      )->isVisible()
-  ) ) {
-    BeeHub_Registry::inst()->forget(
-      $this->path . $this->current()
-    );
-    $this->dir->next();
-  }
-}
 
-public function current() {
-  $retval = rawurlencode($this->dir()->getFilename());
-  if ('dir' == $this->dir()->getType())
-    $retval .= '/';
-  return $retval;
-}
-public function key()     { return $this->dir()->key(); }
-public function next()    {
-  $this->dir()->next();
-  $this->skipInvalidMembers();
-}
-public function rewind()  {
-  $this->dir()->rewind();
-  $this->skipInvalidMembers();
-}
-public function valid()   { return $this->dir()->valid(); }
+  public function current() {
+    $this->dir();
+    return $this->members[$this->current_key];
+  }
+
+
+  public function key() {
+    $this->dir();
+    return $this->current_key;
+  }
+
+
+  public function next() {
+    $this->dir();
+    $this->current_key++;
+  }
+
+
+  public function rewind() {
+    $this->dir();
+    $this->current_key = 0;
+  }
+
+
+  public function valid() {
+    $this->dir();
+    return isset($this->members[$this->current_key]);
+  }
 
 } // class BeeHub_Directory
-
-

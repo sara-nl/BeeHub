@@ -111,7 +111,7 @@ public function unauthorized() {
   <p>Sorry…</p>
 </body></html>
 EOS;
-  return true;
+  die();
 }
 
 

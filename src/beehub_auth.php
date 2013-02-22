@@ -109,7 +109,7 @@ class BeeHub_Auth {
       if ( $row = $statement->fetch_row() ) { // We found a user, this is the one that's logged in!
         $this->SURFconext = true;
         $this->set_user( $row[0] );
-      } elseif ($_SERVER['REQUEST_URI'] != BeeHub::$CONFIG['namespace']['users_path']) { // We don't know this SURFconext ID, this is a new user
+      } elseif ($requireAuth || ('conext' === @$_GET['login'])) { // We don't know this SURFconext ID, this is a new user
         throw new DAV_Status(
           DAV::HTTP_TEMPORARY_REDIRECT,
           BeeHub::urlbase(true) . BeeHub::$CONFIG['namespace']['users_path']

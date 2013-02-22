@@ -37,10 +37,10 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
         BeeHub::urlbase(true) . $_SERVER['REQUEST_URI']
       );
     }
-    $as = BeeHub_Auth::inst()->simpleSaml();
     $display_name = '';
     $email_address = '';
-    if (!is_null($as)) {
+    if (BeeHub_Auth::inst()->surfconext()) {
+      $as = BeeHub_Auth::inst()->simpleSaml();
       $attrs = $as->getAttributes();
       $display_name = $attrs['urn:mace:dir:attribute-def:displayName'][0];
       $email_address = $attrs['urn:mace:dir:attribute-def:mail'][0];
@@ -100,7 +100,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
     xattr_set( $userdir, rawurlencode(BeeHub::PROP_SPONSOR), '/system/sponsors/e-infra' );
 
     // Show the confirmation
-    $this->include_view('new_user_confirmation', array('email_address'=>$email_address));
+    $this->include_view('new_user_confirmation', array('email_address'=>$email));
   }
 
   public function report_principal_property_search($properties) {
