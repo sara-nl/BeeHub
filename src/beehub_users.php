@@ -55,10 +55,16 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
    */
   public function method_POST(&$headers) {
     // TODO: translate user_name to ASCII and check for double usernames
-    $user_name = $_POST['user_name'];
     $displayname = $_POST['displayname'];
     $email = $_POST['email'];
     $password = (!empty($_POST['password']) ? $_POST['password'] : null);
+    $user_name = $_POST['user_name'];
+    // User name must be one of the following characters a-zA-Z0-9_-. and must at least be 1 character long
+    if (!preg_match('/^[a-zA-Z0-9_\-\.]+$/D', $user_name)) {
+      throw DAV::forbidden();
+    }
+    $userdir = DAV::unslashify(BeeHub::$CONFIG['environment']['datadir']) . DIRECTORY_SEPARATOR . 'home' . DIRECTORY_SEPARATOR . $user_name;
+    // TODO: check for double user names and existing userdir
 
     // Store in the database
     $statement = BeeHub_DB::execute(
@@ -75,6 +81,8 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
     $user->user_set(BeeHub::PROP_PASSWORD, $password);
     $user->user_set(DAV::PROP_DISPLAYNAME, $displayname);
     $user->user_set(BeeHub::PROP_EMAIL, $email);
+    // TODO: This should not be hard coded, a new user should not have a sponsor but request one after his account is created, but I want to inform the user about his through the not-yet-existing notification system
+    $user->user_set(BeeHub::PROP_SPONSOR, '/system/sponsors/e-infra');
     $auth = BeeHub_Auth::inst();
     if ($auth->surfconext()) {
       $surfId = $auth->simpleSaml()->getAuthData("saml:sp:NameID");
@@ -83,6 +91,15 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
     }
     $user->storeProperties();
 
+    // And create a user directory
+    if (!mkdir($userdir)) {
+      throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
+    }
+    xattr_set( $userdir, rawurlencode('DAV: owner'), BeeHub::$CONFIG['namespace']['users_path'] . rawurlencode($user_name) );
+    // TODO: this should not be hard coded. When a users is accepted by his/her first sponsor, this should automatically be set.
+    xattr_set( $userdir, rawurlencode(BeeHub::PROP_SPONSOR), '/system/sponsors/e-infra' );
+
+    // Show the confirmation
     $this->include_view('new_user_confirmation', array('email_address'=>$email_address));
   }
 
