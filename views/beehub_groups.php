@@ -103,7 +103,7 @@
 <!-- 	    <label class="control-label" for="inputIcon">Filter by name:</label> -->
 		    <div class="controls">
 			    <div class="input-prepend">
- 				    <span class="add-on"><i class="icon-filter"></i></span>
+ 				    <span class="add-on" id="iconfilter"><i class="icon-filter"></i></span>
 				    <input class="span3" id="filterbyname" type="text" placeholder="Filter by name..."/>
 			    </div>
 	    </div>
@@ -111,7 +111,6 @@
   	<br>
   	
 		<!--    List with all groups -->
-<!-- 		<h3>Groups</h3> -->
     <div class="accordion" id="joingroups">
         <?php
       $i = 1;

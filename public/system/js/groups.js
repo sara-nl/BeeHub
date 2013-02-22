@@ -100,6 +100,17 @@ $(function() {
 	
 	 $('#filterbyname').keyup(function () {
 		var value = $(this).val();
+		// when field is empty, filter icon
+		$(this).parent().find('[id="iconerase"]').remove();
+		$(this).parent().find('[id="iconfilter"]').remove();
+		if (value.length == 0){
+			var iconfilter = $('<span class="add-on" id="iconfilter"><i class="icon-filter" ></i></span>');
+			$(this).parent().prepend(iconfilter);
+		// when field is not empty, erase icon with listener
+		} else {
+			var iconerase = $('<span class="add-on" id="iconerase"><i class="icon-remove-circle" ></i></span>');
+			$(this).parent().prepend(iconerase);
+		}
 		var regex = new RegExp( $(this).val(), 'gi' );
 		$('div#joingroups.accordion').find('.accordion-group').filter(function(index) {
 			$(this).hide();
