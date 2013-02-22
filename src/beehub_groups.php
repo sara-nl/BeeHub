@@ -40,10 +40,18 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
 
 
   public function method_POST() {
-    // TODO: translate group_name to ASCII and check for double group names
-    $group_name = $_POST['group_name'];
     $displayname = $_POST['displayname'];
     $description = $_POST['description'];
+    $group_name = $_POST['group_name'];
+    $user_sponsor = BeeHub_Auth::inst()->current_user()->prop( BeeHub::PROP_SPONSOR );
+    // Group name must be one of the following characters a-zA-Z0-9_-. and must at least be 1 character long and can't be 'system'
+    if (empty($user_sponsor) ||
+        ($group_name == 'system') ||
+        !preg_match('/^[a-zA-Z0-9_\-\.]+$/D', $group_name)) {
+      throw DAV::forbidden();
+    }
+    $groupdir = DAV::unslashify(BeeHub::$CONFIG['environment']['datadir']) . DIRECTORY_SEPARATOR . $group_name;
+    // TODO: check for double groups and existing groupdir
 
     // Store in the database
     $statement = BeeHub_DB::execute(
@@ -53,8 +61,8 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
 
     // Fetch the user and store extra properties
     $group = BeeHub_Registry::inst()->resource(BeeHub::$CONFIG['namespace']['groups_path'] . $group_name);
-    $group->set_property(DAV::PROP_DISPLAYNAME, $displayname);
-    $group->set_property(BeeHub::PROP_DESCRIPTION, $description);
+    $group->user_set(DAV::PROP_DISPLAYNAME, $displayname);
+    $group->user_set(BeeHub::PROP_DESCRIPTION, $description);
     $group->storeProperties();
 
     // Add the current user as admin of the group
@@ -62,6 +70,14 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
       array( $this->user_prop_current_user_principal() ),
       true, true, true
     );
+
+    // And create a group directory
+    if (!mkdir($groupdir)) {
+      throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
+    }
+    xattr_set( $groupdir, rawurlencode('DAV: owner'), BeeHub::$CONFIG['namespace']['wheel_path'] );
+    xattr_set( $groupdir, rawurlencode('DAV: acl'), '[["' . BeeHub::$CONFIG['namespace']['groups_path'] . rawurlencode($group->name) . '",false,["DAV: read", "DAV: write", "DAV: read-acl"],false]]' );
+    xattr_set( $groupdir, rawurlencode(BeeHub::PROP_SPONSOR), $user_sponsor );
   }
 
 

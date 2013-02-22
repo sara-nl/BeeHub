@@ -270,18 +270,6 @@ EOS;
 
 
   /**
-   * @see DAV_Resource::user_set()
-   * @TODO extract text content from the 'description' XML fragment.
-   */
-  public function user_set($propname, $value = null) {
-    if (!$this->is_admin())
-      throw DAV::forbidden();
-    // TODO: Is this the correct implementation?
-    return parent::user_set($name, $value);
-  }
-
-
-  /**
    * Determines whether the currently logged in user is an administrator of this group or not.
    *
    * @return  boolean  True if the currently logged in user is an administrator of this group, false otherwise

@@ -68,9 +68,10 @@ class BeeHub_User extends BeeHub_Principal {
         'SELECT
           `displayname`,
           `email`,
-          `password`,
+          `password` IS NULL,
           `surfconext_id`,
-          `x509`
+          `x509`,
+          `sponsor_name`
          FROM `beehub_users`
          WHERE `user_name` = ?', 's', $this->name
       );
@@ -88,6 +89,9 @@ class BeeHub_User extends BeeHub_Principal {
       }
       if (!is_null($row[4])) {
         $this->stored_props[BeeHub::PROP_X509]   = $row[4];
+      }
+      if (!is_null($row[5])) {
+        $this->stored_props[BeeHub::PROP_SPONSOR]   = $row[5];
       }
       // TODO: if the password = '0hallo', this goes wrong:
       if (!empty($row[2])) {
@@ -136,6 +140,7 @@ class BeeHub_User extends BeeHub_Principal {
     $p_displayname = @$this->stored_props[DAV::PROP_DISPLAYNAME];
     $p_surfconext  = @$this->stored_props[BeeHub::PROP_SURFCONEXT];
     $p_x509        = @$this->stored_props[BeeHub::PROP_X509];
+    $p_sponsor        = @$this->stored_props[BeeHub::PROP_SPONSOR];
 
     $change_email = false;
     if (@$this->stored_props[BeeHub::PROP_EMAIL] !== $this->original_email) {
@@ -149,7 +154,8 @@ class BeeHub_User extends BeeHub_Principal {
       'UPDATE `beehub_users`
           SET `displayname` = ?,
               `surfconext_id` = ?,
-              `x509` = ?' .
+              `x509` = ?,
+              `sponsor_name` = ?' .
               ($change_email ? ',`unverified_email`=?,`verification_code`=?,`verification_expiration`=NOW() + INTERVAL 1 DAY' : '') .
               (($p_password !== true) ? ',`password`=?' : '') .
       ' WHERE `user_name` = ?'
@@ -157,30 +163,33 @@ class BeeHub_User extends BeeHub_Principal {
     if ($p_password === true) {
       if ($change_email) { // No new password, but there is a new e-mail address
         $updateStatement->bind_param(
-          'ssssss',
+          'sssssss',
           $p_displayname,
           $p_surfconext,
           $p_x509,
+          $p_sponsor,
           $p_email,
           $p_verification_code,
           $this->name
         );
       }else{ // No new password, no new e-mail address
         $updateStatement->bind_param(
-          'ssss',
+          'sssss',
           $p_displayname,
           $p_surfconext,
           $p_x509,
+          $p_sponsor,
           $this->name
         );
       }
     }else{
       if ($change_email) { // A new password, and a new e-mail address
         $updateStatement->bind_param(
-          'sssssss',
+          'ssssssss',
           $p_displayname,
           $p_surfconext,
           $p_x509,
+          $p_sponsor,
           $p_email,
           $p_verification_code,
           $p_password,
@@ -188,10 +197,11 @@ class BeeHub_User extends BeeHub_Principal {
         );
       }else{ // A new password, but no new e-mail address
         $updateStatement->bind_param(
-          'sssss',
+          'ssssss',
           $p_displayname,
           $p_surfconext,
           $p_x509,
+          $p_sponsor,
           $p_password,
           $this->name
         );
@@ -279,7 +289,9 @@ class BeeHub_User extends BeeHub_Principal {
     $retval = parent::property_priv_read($properties);
     $is_admin = $this->is_admin();
     $retval[BeeHub::PROP_EMAIL]         = $is_admin;
+    $retval[BeeHub::PROP_SURFCONEXT]    = $is_admin;
     $retval[BeeHub::PROP_X509]          = $is_admin;
+    $retval[BeeHub::PROP_SPONSOR]       = $is_admin;
     $retval[DAV::PROP_GROUP_MEMBERSHIP] = $is_admin;
     $retval[BeeHub::PROP_PASSWORD]      = false;
     return $retval;
