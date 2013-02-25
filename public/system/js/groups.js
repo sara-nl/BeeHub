@@ -122,6 +122,50 @@ $(function() {
 		}).show(); 
 	 });
 	
+	 $('#groupName').change(function () {
+		 var groupNameField = $(this);
+		 // TODO make tooltip with field specifications
+		 // clear error
+		 groupNameField.next().remove();
+		 groupNameField.parent().parent().removeClass('error');
+		 // value not empty, else return
+		 if (groupNameField.val().length == 0) {
+			 groupNameField.parent().parent().addClass('error');
+			 var error = $('<span class="help-inline">This field can not be empty.</span>');
+			 groupNameField.parent().append(error);
+			 return;
+		 }
+		// Seperate regular expressions to make the errors more specific.
+		// value starts with a-zA-Z0-9, else return
+		 if (!RegExp('^[a-zA-Z0-9]{1}.*$').test(groupNameField.val())) {
+			 groupNameField.parent().parent().addClass('error');
+			 var error = $('<span class="help-inline">First character must be a aphanumeric character or number!.</span>');
+			 groupNameField.parent().append(error);
+			 return;
+		 }
+		// value only contain a-zA-Z0-9_-., else return
+		 if (!RegExp('^[a-zA-Z0-9]{1}[a-zA-Z0-9_\\-\\.]*$').test(groupNameField.val())) {
+			 groupNameField.parent().parent().addClass('error');
+			 var error = $('<span class="help-inline">This field can contain aphanumeric characters, numbers, "-", "_" and "."!</span>');
+			 groupNameField.parent().append(error);
+			 return;
+		 }
+		// value contain 1-255 characters, else return
+		 if (!RegExp('^[a-zA-Z0-9]{1}[a-zA-Z0-9_\\-\\.]{0,5}$').test(groupNameField.val())) {
+			 groupNameField.parent().parent().addClass('error');
+			 var error = $('<span class="help-inline">This field can contain maximal 255 characters!</span>');
+			 groupNameField.parent().append(error);
+			 return;
+		 }
+			 
+		// value is unique?, send ajax request
+		 // callback
+		 // if value not unique
+			 groupNameField.parent().parent().addClass('error');
+			 var error = $('<span class="help-inline">This groupsname is already in use!</span>');
+			 groupNameField.parent().append(error);
+	 })
+	 
 	// TODO request action uitvoeren
 	$('#requestmembershipbutton').on('click', function (e) {
 	  alert("button request membership clicked")

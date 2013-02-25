@@ -164,13 +164,13 @@
 	    <div class="control-group">
 		    <label class="control-label" for="groupName">Group name</label>
 		    <div class="controls">
-		    	<input type="text" id="groupName">
+		    	<input type="text" id="groupName" required>
 		    </div>
 	    </div>
 	    <div class="control-group">
 		    <label class="control-label" for="groupDisplayName">Display name</label>
 		    <div class="controls">
-		    	<input type="text" id="groupDisplayName">
+		    	<input type="text" id="groupDisplayName" required>
 		    </div>
 	    </div>
 	      <div class="control-group">
