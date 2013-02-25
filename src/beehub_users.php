@@ -60,7 +60,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
     $user_name = $_POST['user_name'];
     // User name must be one of the following characters a-zA-Z0-9_-., starting with an alphanumeric character and must be between 1 and 255 characters long
     if (empty($displayname) ||
-        !preg_match('/^[a-zA-Z0-9]{1}[a-zA-Z0-9_\-\.]{0-254}$/D', $user_name)) {
+        !preg_match('/^[a-zA-Z0-9]{1}[a-zA-Z0-9_\-\.]{0,254}$/D', $user_name)) {
       throw new DAV_Status(DAV::HTTP_BAD_REQUEST);
     }
     $userdir = DAV::unslashify(BeeHub::$CONFIG['environment']['datadir']) . DIRECTORY_SEPARATOR . 'home' . DIRECTORY_SEPARATOR . $user_name;

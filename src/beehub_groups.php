@@ -52,7 +52,7 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
     if (empty($displayname) ||
         (strtolower($group_name) == 'home') ||
         (strtolower($group_name) == 'system') ||
-        !preg_match('/^[a-zA-Z0-9]{1}[a-zA-Z0-9_\-\.]{0-254}$/D', $group_name)) {
+        !preg_match('/^[a-zA-Z0-9]{1}[a-zA-Z0-9_\-\.]{0,254}$/D', $group_name)) {
       throw new DAV_Status(DAV::HTTP_BAD_REQUEST);
     }
     $groupdir = DAV::unslashify(BeeHub::$CONFIG['environment']['datadir']) . DIRECTORY_SEPARATOR . $group_name;
