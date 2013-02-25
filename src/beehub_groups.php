@@ -44,25 +44,43 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
     $description = $_POST['description'];
     $group_name = $_POST['group_name'];
     $user_sponsor = BeeHub_Auth::inst()->current_user()->user_prop( BeeHub::PROP_SPONSOR );
-    // Group name must be one of the following characters a-zA-Z0-9_-. and must at least be 1 character long and can't be 'system'
-    if (empty($user_sponsor) ||
-        ($group_name == 'system') ||
-        !preg_match('/^[a-zA-Z0-9_\-\.]+$/D', $group_name)) {
-      throw DAV::forbidden();
+    // If you don't have a (default) sponsor, you're not allowed to add a group
+    if (empty($user_sponsor)) {
+      throw DAV::forbidden("Only users with a sponsor are allowed to create groups");
+    }
+    // Group name must be one of the following characters a-zA-Z0-9_-., starting with an alphanumeric character and must be between 1 and 255 characters long and can't be 'system' or 'home'
+    if (empty($displayname) ||
+        (strtolower($group_name) == 'home') ||
+        (strtolower($group_name) == 'system') ||
+        !preg_match('/^[a-zA-Z0-9]{1}[a-zA-Z0-9_\-\.]{0-254}$/D', $group_name)) {
+      throw new DAV_Status(DAV::HTTP_BAD_REQUEST);
     }
     $groupdir = DAV::unslashify(BeeHub::$CONFIG['environment']['datadir']) . DIRECTORY_SEPARATOR . $group_name;
-    // TODO: check for double groups and existing groupdir
+    // Check for existing groupdir
+    if (file_exists($groupdir)) {
+      throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
+    }
 
     // Store in the database
-    $statement = BeeHub_DB::execute(
-      'INSERT INTO `beehub_groups` (`group_name`) VALUES (?)',
-      's', $group_name
-    );
+    try {
+      $statement = BeeHub_DB::execute(
+        'INSERT INTO `beehub_groups` (`group_name`) VALUES (?)',
+        's', $group_name
+      );
+    }catch (Exception $exception) {
+      if ($exception->getCode() === 1062) { // Duplicate key: bad request!
+        throw new DAV_Status(DAV::HTTP_BAD_REQUEST);
+      }else{
+        throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
+      }
+    }
 
     // Fetch the user and store extra properties
     $group = BeeHub_Registry::inst()->resource(BeeHub::$CONFIG['namespace']['groups_path'] . $group_name);
     $group->user_set(DAV::PROP_DISPLAYNAME, $displayname);
-    $group->user_set(BeeHub::PROP_DESCRIPTION, $description);
+    if (!empty($description)) {
+      $group->user_set(BeeHub::PROP_DESCRIPTION, $description);
+    }
     $group->storeProperties();
 
     // Add the current user as admin of the group

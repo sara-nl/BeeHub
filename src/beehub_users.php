@@ -54,25 +54,36 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
    * @see DAV_Resource::method_POST()
    */
   public function method_POST(&$headers) {
-    // TODO: translate user_name to ASCII and check for double usernames
     $displayname = $_POST['displayname'];
     $email = $_POST['email'];
     $password = (!empty($_POST['password']) ? $_POST['password'] : null);
     $user_name = $_POST['user_name'];
-    // User name must be one of the following characters a-zA-Z0-9_-. and must at least be 1 character long
-    if (!preg_match('/^[a-zA-Z0-9_\-\.]+$/D', $user_name)) {
-      throw DAV::forbidden();
+    // User name must be one of the following characters a-zA-Z0-9_-., starting with an alphanumeric character and must be between 1 and 255 characters long
+    if (empty($displayname) ||
+        !preg_match('/^[a-zA-Z0-9]{1}[a-zA-Z0-9_\-\.]{0-254}$/D', $user_name)) {
+      throw new DAV_Status(DAV::HTTP_BAD_REQUEST);
     }
     $userdir = DAV::unslashify(BeeHub::$CONFIG['environment']['datadir']) . DIRECTORY_SEPARATOR . 'home' . DIRECTORY_SEPARATOR . $user_name;
-    // TODO: check for double user names and existing userdir
+    // Check for existing groupdir
+    if (file_exists($userdir)) {
+      throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
+    }
 
     // Store in the database
-    $statement = BeeHub_DB::execute(
-      'INSERT INTO `beehub_users`
-          (`user_name`)
-        VALUES (?)',
-      's', $user_name
-    );
+    try{
+      $statement = BeeHub_DB::execute(
+        'INSERT INTO `beehub_users`
+            (`user_name`)
+          VALUES (?)',
+        's', $user_name
+      );
+    }catch (Exception $exception) {
+      if ($exception->getCode() === 1062) { // Duplicate key: bad request!
+        throw new DAV_Status(DAV::HTTP_BAD_REQUEST);
+      }else{
+        throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
+      }
+    }
 
     // Fetch the user and store extra properties
     $user = BeeHub_Registry::inst()->resource(
