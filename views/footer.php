@@ -11,6 +11,9 @@ if (! @$CONFINED_BOOTSTRAP) echo '</div>';
     <script type="text/javascript" src="/system/js/webdavlib.js"></script>
     <script type="text/javascript" src="/system/js/beehub.js"></script>
     <script type="text/javascript" src="/system/js/server/principals.js"></script>
+    <script type="text/javascript">
+      nl.sara.beehub.show_notifications(<?= json_encode(BeeHub::notifications()) ?>);
+    </script>
     <?= isset($footer) ? $footer : '' ?>
   </body>
 </html>

@@ -24,10 +24,25 @@
  * @package BeeHub
  */
 
-require_once dirname(dirname(__FILE__)) . '/webdav-php/lib/dav.php';
+// Set the include path, so BeeHub_* classes are automatically loaded
 set_include_path(
   dirname(__FILE__) . PATH_SEPARATOR . get_include_path()
 );
+require_once dirname(dirname(__FILE__)) . '/webdav-php/lib/dav.php';
+
+// Set a default exception handler, so we always output nice errors if an exception is uncaught
+function beehub_exception_handler($e) {
+  if ($e instanceof DAV_Status) {
+    $e->output();
+  } else {
+    $e = new DAV_Status(
+            DAV::HTTP_INTERNAL_SERVER_ERROR,
+            "$e"
+          );
+    $e->output();
+  }
+}
+set_exception_handler('beehub_exception_handler');
 
 /**
  * Just a namespace.
@@ -195,12 +210,28 @@ class BeeHub {
   }
 
 
+  /**
+   * Checks for notifications for the current user
+   *
+   * @return  array  An array with notifications
+   */
+  public static function notifications() {
+    $notifications = array();
+    if (BeeHub_Auth::inst()->is_authenticated()) {
+      $notifications[] = "There are much more notifications!";
+    }
+    return $notifications;
+  }
+
+
 } // class BeeHub
 
 BeeHub::$CONFIG = parse_ini_file(
   dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'config.ini',
   true
 );
+// We need SimpleSamlPHP
+require_once(BeeHub::$CONFIG['environment']['simplesamlphp_autoloader']);
 
 DAV::$PROTECTED_PROPERTIES[ DAV::PROP_GROUP_MEMBER_SET ] = true;
 DAV::$ACL_PROPERTIES[BeeHub::PROP_SPONSOR] =

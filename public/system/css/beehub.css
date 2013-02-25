@@ -10,3 +10,14 @@
   top: 0;
   z-index: 1031;
 }
+#notifications{
+  width: 800px;
+  padding: 1em;
+  background-color: #d1e2d2;
+}
+#notifications li {
+  padding: 0.5em;
+}
+#notifications li:nth-child(even) {
+  background-color: #e8f1e9;
+}
