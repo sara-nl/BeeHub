@@ -151,19 +151,24 @@ $(function() {
 			 return;
 		 }
 		// value contain 1-255 characters, else return
-		 if (!RegExp('^[a-zA-Z0-9]{1}[a-zA-Z0-9_\\-\\.]{0,5}$').test(groupNameField.val())) {
+		 if (!RegExp('^[a-zA-Z0-9]{1}[a-zA-Z0-9_\\-\\.]{0,255}$').test(groupNameField.val())) {
 			 groupNameField.parent().parent().addClass('error');
 			 var error = $('<span class="help-inline">This field can contain maximal 255 characters!</span>');
 			 groupNameField.parent().append(error);
 			 return;
 		 }
-			 
-		// value is unique?, send ajax request
-		 // callback
-		 // if value not unique
+		
+		 // ajax request, is groupname already in use
+		var client = new nl.sara.webdav.Client();
+		client.post('system/groups/'+groupNameField.val(), function(status){
+			if (status == 404 || status >= 500 ) {
+				return
+			}
 			 groupNameField.parent().parent().addClass('error');
-			 var error = $('<span class="help-inline">This groupsname is already in use!</span>');
+			 var error = $('<span class="help-inline">This groupname is already in use!</span>');
 			 groupNameField.parent().append(error);
+			 return;
+		}, '');
 	 })
 	 
 	// TODO request action uitvoeren
