@@ -124,50 +124,48 @@ $(function() {
 	
 	 $('#groupName').change(function () {
 		 var groupNameField = $(this);
+		 
+		 var showError = function(error){
+			 groupNameField.parent().parent().addClass('error');
+			 var error = $('<span class="help-inline">'+error+'</span>');
+			 groupNameField.parent().append(error);
+		 }
+		 
 		 // TODO make tooltip with field specifications
 		 // clear error
 		 groupNameField.next().remove();
 		 groupNameField.parent().parent().removeClass('error');
-		 // value not empty, else return
-		 if (groupNameField.val().length == 0) {
-			 groupNameField.parent().parent().addClass('error');
-			 var error = $('<span class="help-inline">This field can not be empty.</span>');
-			 groupNameField.parent().append(error);
-			 return;
+		 
+		 // value not system
+		 if (RegExp('^system$|^home$','i').test(groupNameField.val())) {
+			showError(groupNameField.val()+' is not a valid groupname.');
+			return;
 		 }
+
 		// Seperate regular expressions to make the errors more specific.
 		// value starts with a-zA-Z0-9, else return
 		 if (!RegExp('^[a-zA-Z0-9]{1}.*$').test(groupNameField.val())) {
-			 groupNameField.parent().parent().addClass('error');
-			 var error = $('<span class="help-inline">First character must be a aphanumeric character or number!.</span>');
-			 groupNameField.parent().append(error);
+			 showError('First character must be a aphanumeric character or number.');
 			 return;
 		 }
 		// value only contain a-zA-Z0-9_-., else return
 		 if (!RegExp('^[a-zA-Z0-9]{1}[a-zA-Z0-9_\\-\\.]*$').test(groupNameField.val())) {
-			 groupNameField.parent().parent().addClass('error');
-			 var error = $('<span class="help-inline">This field can contain aphanumeric characters, numbers, "-", "_" and "."!</span>');
-			 groupNameField.parent().append(error);
+			 showError('This field can contain aphanumeric characters, numbers, "-", "_" and ".".');
 			 return;
 		 }
 		// value contain 1-255 characters, else return
 		 if (!RegExp('^[a-zA-Z0-9]{1}[a-zA-Z0-9_\\-\\.]{0,255}$').test(groupNameField.val())) {
-			 groupNameField.parent().parent().addClass('error');
-			 var error = $('<span class="help-inline">This field can contain maximal 255 characters!</span>');
-			 groupNameField.parent().append(error);
-			 return;
+			showError('This field can contain maximal 255 characters.');
+			return;
 		 }
-		
 		 // ajax request, is groupname already in use
 		var client = new nl.sara.webdav.Client();
 		client.post('system/groups/'+groupNameField.val(), function(status){
 			if (status == 404 || status >= 500 ) {
 				return
 			}
-			 groupNameField.parent().parent().addClass('error');
-			 var error = $('<span class="help-inline">This groupname is already in use!</span>');
-			 groupNameField.parent().append(error);
-			 return;
+			showError('This groupname is already in use.');
+			return;
 		}, '');
 	 })
 	 

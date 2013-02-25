@@ -158,25 +158,25 @@
 
 
 	<!-- Create tab -->
-	<br>
+	<br/>
 	<div id="panel-create" class="tab-pane fade">  
     <form class="form-horizontal" action="<?= BeeHub::$CONFIG['namespace']['groups_path'] ?>" method="post">
 	    <div class="control-group">
 		    <label class="control-label" for="groupName">Group name</label>
 		    <div class="controls">
-		    	<input type="text" id="groupName" required>
+		    	<input type="text" id="groupName" name="group_name" required>
 		    </div>
 	    </div>
 	    <div class="control-group">
 		    <label class="control-label" for="groupDisplayName">Display name</label>
 		    <div class="controls">
-		    	<input type="text" id="groupDisplayName" required>
+		    	<input type="text" id="groupDisplayName" name="displayname" required>
 		    </div>
 	    </div>
 	      <div class="control-group">
 		    <label class="control-label" for="groupDescription">Group description</label>
 		    <div class="controls">
-		    	<textarea id="groupDescription" rows="5"></textarea>
+		    	<textarea id="groupDescription" rows="5" name="description"></textarea>
 		    </div>
 	    </div>
 	    <div class="control-group">
