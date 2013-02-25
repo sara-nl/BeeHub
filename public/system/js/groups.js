@@ -98,22 +98,24 @@ $(function() {
 	    }
 	});
 	
-	// TODO listerer aan erase icon hangen 
-	// gewoon om de laatste te zijn
 	 $('#filterbyname').keyup(function () {
-		var value = $(this).val();
+		var filterfield = $(this);
 		// when field is empty, filter icon
 		$(this).parent().find('[id="iconerase"]').remove();
 		$(this).parent().find('[id="iconfilter"]').remove();
-		if (value.length == 0){
+		if (filterfield.val().length == 0){
 			var iconfilter = $('<span class="add-on" id="iconfilter"><i class="icon-filter" ></i></span>');
 			$(this).parent().prepend(iconfilter);
 		// when field is not empty, erase icon with listener
 		} else {
 			var iconerase = $('<span class="add-on" id="iconerase"><i class="icon-remove-circle" ></i></span>');
 			$(this).parent().prepend(iconerase);
+			$('#iconerase').on('click', function (e) {
+				filterfield.val("");
+				filterfield.trigger('keyup');
+			});
 		}
-		var regex = new RegExp( $(this).val(), 'gi' );
+		var regex = new RegExp(filterfield.val(), 'gi' );
 		$('div#joingroups.accordion').find('.accordion-group').filter(function(index) {
 			$(this).hide();
 			return $(this).find('th').html().match(regex) != null;
