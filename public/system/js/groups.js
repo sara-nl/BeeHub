@@ -99,25 +99,79 @@ $(function() {
 	});
 	
 	 $('#filterbyname').keyup(function () {
-		var value = $(this).val();
+		var filterfield = $(this);
 		// when field is empty, filter icon
 		$(this).parent().find('[id="iconerase"]').remove();
 		$(this).parent().find('[id="iconfilter"]').remove();
-		if (value.length == 0){
+		if (filterfield.val().length == 0){
 			var iconfilter = $('<span class="add-on" id="iconfilter"><i class="icon-filter" ></i></span>');
 			$(this).parent().prepend(iconfilter);
 		// when field is not empty, erase icon with listener
 		} else {
 			var iconerase = $('<span class="add-on" id="iconerase"><i class="icon-remove-circle" ></i></span>');
 			$(this).parent().prepend(iconerase);
+			$('#iconerase').on('click', function (e) {
+				filterfield.val("");
+				filterfield.trigger('keyup');
+			});
 		}
-		var regex = new RegExp( $(this).val(), 'gi' );
+		var regex = new RegExp(filterfield.val(), 'gi' );
 		$('div#joingroups.accordion').find('.accordion-group').filter(function(index) {
 			$(this).hide();
 			return $(this).find('th').html().match(regex) != null;
 		}).show(); 
 	 });
 	
+	 $('#groupName').change(function () {
+		 var groupNameField = $(this);
+		 
+		 var showError = function(error){
+			 groupNameField.parent().parent().addClass('error');
+			 var error = $('<span class="help-inline">'+error+'</span>');
+			 groupNameField.parent().append(error);
+		 }
+		 
+		 // TODO make tooltip with field specifications
+		 // This is included in bootstrap with patern
+		 // It is still possible to send request with groupsname that excist
+		 
+		 // clear error
+		 groupNameField.next().remove();
+		 groupNameField.parent().parent().removeClass('error');
+		 
+		 // value not system
+		 if (RegExp('^system$|^home$','i').test(groupNameField.val())) {
+			showError(groupNameField.val()+' is not a valid groupname.');
+			return;
+		 }
+
+		// Seperate regular expressions to make the errors more specific.
+		// value starts with a-zA-Z0-9, else return
+		 if (!RegExp('^[a-zA-Z0-9]{1}.*$').test(groupNameField.val())) {
+			 showError('First character must be a aphanumeric character or number.');
+			 return;
+		 }
+		// value only contain a-zA-Z0-9_-., else return
+		 if (!RegExp('^[a-zA-Z0-9]{1}[a-zA-Z0-9_\\-\\.]*$').test(groupNameField.val())) {
+			 showError('This field can contain aphanumeric characters, numbers, "-", "_" and ".".');
+			 return;
+		 }
+		// value contain 1-255 characters, else return
+		 if (!RegExp('^[a-zA-Z0-9]{1}[a-zA-Z0-9_\\-\\.]{0,255}$').test(groupNameField.val())) {
+			showError('This field can contain maximal 255 characters.');
+			return;
+		 }
+		 // ajax request, is groupname already in use
+		var client = new nl.sara.webdav.Client();
+		client.post('system/groups/'+groupNameField.val(), function(status){
+			if (status == 404 || status >= 500 ) {
+				return
+			}
+			showError('This groupname is already in use.');
+			return;
+		}, '');
+	 })
+	 
 	// TODO request action uitvoeren
 	$('#requestmembershipbutton').on('click', function (e) {
 	  alert("button request membership clicked")

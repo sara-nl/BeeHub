@@ -24,19 +24,23 @@
     background-color: #D1E2D3 !important;
   }
 
-  .admin{
-    font-size: 12px !important;
-    text-align: right;
-  }
+  .control-label {
+    	width: 110px ! important;
+	}
+  		
+//   .admin{
+//     font-size: 12px !important;
+//     text-align: right;
+//   }
 
-  .rightbutton{
-    padding: 12px !important;
-    text-align: right;
-  }
+//   .rightbutton{
+//     padding: 12px !important;
+//     text-align: right;
+//   }
 
-  .custom-btn-primary {
-    width: 130px !important;
-  }
+//   .custom-btn-primary {
+//     width: 130px !important;
+//   }
   		
 </style>
   ';
@@ -154,8 +158,33 @@
 
 
 	<!-- Create tab -->
-	<div id="panel-create" class="tab-pane fade">
-		Create
+	<br/>
+	<div id="panel-create" class="tab-pane fade">  
+    <form class="form-horizontal" action="<?= BeeHub::$CONFIG['namespace']['groups_path'] ?>" method="post">
+	    <div class="control-group">
+		    <label class="control-label" for="groupName">Group name</label>
+		    <div class="controls">
+		    	<input type="text" id="groupName" name="group_name" required>
+		    </div>
+	    </div>
+	    <div class="control-group">
+		    <label class="control-label" for="groupDisplayName">Display name</label>
+		    <div class="controls">
+		    	<input type="text" id="groupDisplayName" name="displayname" required>
+		    </div>
+	    </div>
+	      <div class="control-group">
+		    <label class="control-label" for="groupDescription">Group description</label>
+		    <div class="controls">
+		    	<textarea class="input-xlarge" id="groupDescription" rows="5" name="description"></textarea>
+		    </div>
+	    </div>
+	    <div class="control-group">
+		    <div class="controls">
+		    	<button type="submit" class="btn">Create group</button>
+		    </div>
+	    </div>
+    </form>
   </div>
 	<!-- 	End create tab -->
 

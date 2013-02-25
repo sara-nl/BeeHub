@@ -33,6 +33,7 @@ abstract class BeeHub_Principal extends BeeHub_Resource implements DAVACL_Princi
   public function __construct($path) {
     parent::__construct($path);
     $this->name = rawurldecode(basename($path));
+    $this->init_props();
   }
 
 
