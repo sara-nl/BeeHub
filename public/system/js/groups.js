@@ -132,6 +132,9 @@ $(function() {
 		 }
 		 
 		 // TODO make tooltip with field specifications
+		 // This is included in bootstrap with patern
+		 // It is still possible to send request with groupsname that excist
+		 
 		 // clear error
 		 groupNameField.next().remove();
 		 groupNameField.parent().parent().removeClass('error');

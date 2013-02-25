@@ -176,7 +176,7 @@
 	      <div class="control-group">
 		    <label class="control-label" for="groupDescription">Group description</label>
 		    <div class="controls">
-		    	<textarea id="groupDescription" rows="5" name="description"></textarea>
+		    	<textarea class="input-xlarge" id="groupDescription" rows="5" name="description"></textarea>
 		    </div>
 	    </div>
 	    <div class="control-group">
