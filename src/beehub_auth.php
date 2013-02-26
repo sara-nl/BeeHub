@@ -63,19 +63,27 @@ class BeeHub_Auth {
    * @param   boolean  $requireAuth  Optionally; if set to false and authentication fails, the user will continue as an unauthenticated user. If set to true (default), a 403 AUTHENTICATION REQUIRED header will be sent upon authentication failure.
    * @return  void
    */
-  public function handle_authentication($requireAuth = true) {
+  public function handle_authentication($requireAuth = true, $allowDoubleLogin = false) {
     $this->simpleSAML_authentication = new SimpleSAML_Auth_Simple('SURFconext');
     if (isset($_GET['logout'])) {
       if ($this->simpleSAML_authentication->isAuthenticated()) {
         $this->simpleSAML_authentication->logout();
       }
-      return;
-    }
-    if (('conext' === @$_GET['login']) && !$this->simpleSAML_authentication->isAuthenticated()) {
-      $this->simpleSAML_authentication->login();
+      if (!empty($_SERVER['HTTPS'])) {
+        DAV::redirect(DAV::HTTP_SEE_OTHER, BeeHub::urlbase(false) . '/system/');
+        return;
+      }
     }
 
     if ( isset($_SERVER['PHP_AUTH_PW'])) {
+      if (!$allowDoubleLogin) {
+        if ( $this->simpleSAML_authentication->isAuthenticated() ) { // You can't be logged in through SURFconext and HTTP Basic at the same time!
+          $this->simpleSAML_authentication->logout();
+        }
+        if ('conext' === @$_GET['login']) {
+          throw new DAV_Status(DAV::HTTP_BAD_REQUEST, "You are already logged in using your username/password. Therefore you are not allowed to login using SURFconext. Unfortunately the only way to logout with your username and password is to close all browser windows. Hit the 'back' button in your browser and login using username/password.");
+        }
+      }
       // The user already sent username and password: check them!
       $stmt = BeeHub_DB::execute(
         'SELECT `password`
@@ -98,23 +106,25 @@ class BeeHub_Auth {
       }
       $stmt->free_result();
       // end of: if (user sent username/passwd)
-    } elseif ( ( 'passwd' === @$_GET['login'] ) || (!$this->simpleSAML_authentication->isAuthenticated() && $requireAuth ) ) {
-      // If the user didn't send any credentials, but we require authentication, ask for it!
-      BeeHub_ACL_Provider::inst()->unauthorized();
-      return;
-    } else { // Retrieve and store the correct user (name) when authenticated through SimpleSamlPHP
+    } elseif ( ( 'passwd' !== @$_GET['login'] ) && $this->simpleSAML_authentication->isAuthenticated() ) {
       $surfId = $this->simpleSAML_authentication->getAuthData("saml:sp:NameID");
       $surfId = $surfId['Value'];
       $statement = BeeHub_DB::execute('SELECT `user_name` FROM `beehub_users` WHERE `surfconext_id`=?', 's', $surfId);
       if ( $row = $statement->fetch_row() ) { // We found a user, this is the one that's logged in!
         $this->SURFconext = true;
         $this->set_user( $row[0] );
-      } elseif ($requireAuth || ('conext' === @$_GET['login'])) { // We don't know this SURFconext ID, this is a new user
+      } elseif ($_SERVER['REQUEST_URI'] !== BeeHub::$CONFIG['namespace']['users_path']) {
         throw new DAV_Status(
           DAV::HTTP_TEMPORARY_REDIRECT,
           BeeHub::urlbase(true) . BeeHub::$CONFIG['namespace']['users_path']
         );
       }
+    } elseif ( ('conext' === @$_GET['login']) ) { // We don't know this SURFconext ID, this is a new user
+        $this->simpleSAML_authentication->login();
+    } elseif ( ( 'passwd' === @$_GET['login'] ) || $requireAuth ) {
+      // If the user didn't send any credentials, but we require authentication, ask for it!
+      BeeHub_ACL_Provider::inst()->unauthorized();
+      return;
     }
 
     // If the current user is logged in, but has no verified e-mail address.

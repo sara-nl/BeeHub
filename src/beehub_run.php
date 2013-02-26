@@ -57,7 +57,7 @@ $path = DAV::unslashify(DAV::$PATH);
 $noRequireAuth = (
   (
     $path === DAV::unslashify( BeeHub::$CONFIG['namespace']['users_path'] ) &&
-    in_array( $_SERVER['REQUEST_METHOD'], array('GET', 'HEAD') )
+    in_array( $_SERVER['REQUEST_METHOD'], array('GET', 'POST', 'HEAD') )
   ) ||
   (
     $path === DAV::unslashify( BeeHub::$CONFIG['namespace']['system_path'] ) &&

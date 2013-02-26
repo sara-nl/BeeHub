@@ -13,6 +13,15 @@ require 'views/header.php';
 
 ?>
 <h1>Profile</h1>
+<?php if (isset($_GET['saml_connect']) && !BeeHub_Auth::inst()->surfconext()) : ?>
+  <form id="saml_connect" method="post">
+    <input type="hidden" name="saml_connect" value="1" />
+    <input type="submit" value="Connect this SURFconext account to your BeeHub account" /> (click this button if your SURFconext account is not automatically connected)
+  </form>
+  <script type="text/javascript">
+    document.getElementById('saml_connect').submit();
+  </script>
+<?php endif; ?>
 <form method="post">
   <div class="row-fluid">
     <div class="span2 fieldname">Username</div>
@@ -38,13 +47,28 @@ require 'views/header.php';
     <div class="span2 fieldname">Repeat new password</div>
     <div class="span10 fieldvalue"><input type="password" name="password2" /></div>
   </div>
-  <div class="row-fluid">
+  <!--div class="row-fluid">
     <div class="span2 fieldname">X509 certificate DN</div>
-    <div class="span10 fieldvalue"><?= htmlspecialchars($this->prop(BeeHub::PROP_X509), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></div>
-  </div>
+    <div class="span10 fieldvalue"><?= htmlspecialchars($this->user_prop(BeeHub::PROP_X509), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></div>
+  </div-->
   <div class="row-fluid">
     <div class="span2 fieldname">Sponsor</div>
-    <div class="span10 fieldvalue"><?= htmlspecialchars('n.a.', ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></div>
+    <div class="span10 fieldvalue"><?= htmlspecialchars($this->user_prop(BeeHub::PROP_SPONSOR), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></div>
+  </div>
+  <div class="row-fluid">
+    <div class="span2 fieldname">SURFconext account</div>
+    <?php if (!is_null($this->prop(BeeHub::PROP_SURFCONEXT))) : ?>
+      <div class="span10 fieldvalue">
+        <?= htmlspecialchars($this->user_prop(BeeHub::PROP_SURFCONEXT_DESCRIPTION), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?> (TODO: deze beschrijving is in principe aanpasbaar!)
+        <a href="/system/saml_connect.php">Connect to different SURFconext account</a>
+      </div>
+    <?php else : ?>
+      <div class="span10 fieldvalue"><a href="/system/saml_connect.php">Connect to SURFconext account</a></div>
+    <?php endif; ?>
+  </div>
+  <div class="row-fluid">
+    <div class="span2 fieldname">Unlink SURFconext account</div>
+    <div class="span10 fieldvalue"><input type="checkbox" name="saml_unlink" value="true" /></div>
   </div>
   <button class="btn">Save</button>
 </form>

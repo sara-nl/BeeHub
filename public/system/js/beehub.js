@@ -31,19 +31,46 @@ if (nl.sara.beehub === undefined) {
   var notification_window = $('#notifications');
   var notification_counter = $('#notification_counter');
 
+  /**
+   * Returns the correct notification for a specific type
+   */
+  function create_notification(type, message) {
+    var notification = $('<li class="notification_item"></li>');
+    switch(type) {
+      case 'double_authentication':
+        var contentDiv = $('<div class="notification_content" style="float: left"></div>');
+        contentDiv.append(message);
+        notification.append(contentDiv);
+        notification.append('<div class="icon-ok" style="float: right"></div>');
+        $('.icon-ok', notification).click(function() {
+          var client = new nl.sara.webdav.Client(undefined, true);
+          client.post(location.href, nl.sara.beehub.reload_notifications, 'saml_connect=1');
+        });
+        notification.append('<div style="clear: both"></div>');
+        break;
+      default:
+        var contentDiv = $('<div class="notification_content" style="float: left"></div>');
+        contentDiv.append(message);
+        notification.append('<div class="icon-trash" style="float: right"></div>');
+        notification.append(contentDiv);
+        notification.append('<div style="clear: both"></div>');
+      break;
+    }
+    return notification;
+  }
+
   nl.sara.beehub.show_notifications = function(data) {
     notification_window.empty();
 
-    $.each(data, function(key, content) {
-      var notification = $('<li class="notification_item"></li>');
-      var contentDiv = $('<div class="notification_content" style="float: left"></div>');
-      contentDiv.append(content);
-      notification.append(contentDiv);
-      notification.append('<div class="icon-trash" style="float: right"></div>');
-      notification.append('<div style="clear: both"></div>');
-      notification_window.append(notification);
-    });
-    notification_counter.html($('.notification_item', notification_window).length.toString());
+    if (data.length === 0) {
+      notification_window.append('There are no notifications');
+      notification_counter.html('0');
+    }else{
+      $.each(data, function(key, content) {
+        notification_window.append(create_notification(content.type, content.message));
+      });
+      notification_counter.html($('.notification_item', notification_window).length.toString());
+    }
   };
 
   nl.sara.beehub.reload_notifications = function() {

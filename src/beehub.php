@@ -51,13 +51,14 @@ set_exception_handler('beehub_exception_handler');
 class BeeHub {
 
 
-  const PROP_PASSWORD           = 'http://beehub.nl/ password';
-  const PROP_EMAIL              = 'http://beehub.nl/ email';
-  const PROP_SURFCONEXT         = 'http://beehub.nl/ surfconext';
-  const PROP_X509               = 'http://beehub.nl/ x509';
-  const PROP_DESCRIPTION        = 'http://beehub.nl/ description';
-  const PROP_SPONSOR            = 'http://beehub.nl/ sponsor';
-  const PROP_SPONSOR_MEMBERSHIP = 'http://beehub.nl/ sponsor-membership';
+  const PROP_PASSWORD               = 'http://beehub.nl/ password';
+  const PROP_EMAIL                  = 'http://beehub.nl/ email';
+  const PROP_SURFCONEXT             = 'http://beehub.nl/ surfconext';
+  const PROP_SURFCONEXT_DESCRIPTION = 'http://beehub.nl/ surfconext-description';
+  const PROP_X509                   = 'http://beehub.nl/ x509';
+  const PROP_DESCRIPTION            = 'http://beehub.nl/ description';
+  const PROP_SPONSOR                = 'http://beehub.nl/ sponsor';
+  const PROP_SPONSOR_MEMBERSHIP     = 'http://beehub.nl/ sponsor-membership';
 
 
   public static $USER_PROPS = array(
@@ -217,8 +218,8 @@ class BeeHub {
    */
   public static function notifications() {
     $notifications = array();
-    if (BeeHub_Auth::inst()->is_authenticated()) {
-      $notifications[] = "There are much more notifications!";
+    $auth = BeeHub_Auth::inst();
+    if ($auth->is_authenticated()) {
     }
     return $notifications;
   }

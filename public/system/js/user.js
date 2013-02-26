@@ -32,10 +32,22 @@ $(function (){
     displayname.setValueAndRebuildXml($('input[name="displayname"]').val());
     setProps.push(displayname);
 
+    var delProps = new Array();
+    if ($('input[name="saml_unlink"]').is(':checked')) {
+      var saml_unlink = new nl.sara.webdav.Property();
+      saml_unlink.namespace = 'http://beehub.nl/';
+      saml_unlink.tagname = 'surfconext-description';
+      delProps.push(saml_unlink);
+      saml_unlink = new nl.sara.webdav.Property();
+      saml_unlink.namespace = 'http://beehub.nl/';
+      saml_unlink.tagname = 'surfconext';
+      delProps.push(saml_unlink);
+    }
+
     var client = new nl.sara.webdav.Client();
     client.proppatch(location.pathname, function(status, data) {
       alert(status);
-    }, setProps);
+    }, setProps, delProps);
 
     return false;
   }); // End of button click event listener

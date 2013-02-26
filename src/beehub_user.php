@@ -47,16 +47,21 @@ class BeeHub_User extends BeeHub_Principal {
    * @see DAV_Resource::method_GET()
    */
   public function method_GET() {
+    if (isset($_GET['saml_connect']) && !BeeHub_Auth::inst()->simpleSaml()->isAuthenticated()) {
+      BeeHub_Auth::inst()->simpleSaml()->login();
+    }
     $this->include_view();
   }
 
 
   public function method_POST() {
-    // Now verify the e-mail address
-    if (!$this->verify_email_address(@$_POST['verification_code'])){
-      throw DAV::forbidden();
+    if (isset($_POST['verification_code'])) { // Now verify the e-mail address
+      if (!$this->verify_email_address($_POST['verification_code'])){
+        throw DAV::forbidden();
+      }
+      $this->include_view('email_verified');
     }
-    $this->include_view('email_verified');
+    throw new DAV_Status(DAV::HTTP_BAD_REQUEST);
   }
 
 
@@ -68,8 +73,9 @@ class BeeHub_User extends BeeHub_Principal {
         'SELECT
           `displayname`,
           `email`,
-          `password` IS NULL,
+          `password` IS NOT NULL,
           `surfconext_id`,
+          `surfconext_description`,
           `x509`,
           `sponsor_name`
          FROM `beehub_users`
@@ -88,10 +94,13 @@ class BeeHub_User extends BeeHub_Principal {
         $this->stored_props[BeeHub::PROP_SURFCONEXT] = $row[3];
       }
       if (!is_null($row[4])) {
-        $this->stored_props[BeeHub::PROP_X509]   = $row[4];
+        $this->stored_props[BeeHub::PROP_SURFCONEXT_DESCRIPTION] = $row[4];
       }
       if (!is_null($row[5])) {
-        $this->stored_props[BeeHub::PROP_SPONSOR]   = $row[5];
+        $this->stored_props[BeeHub::PROP_X509]   = $row[5];
+      }
+      if (!is_null($row[6])) {
+        $this->stored_props[BeeHub::PROP_SPONSOR]   = $row[6];
       }
       // TODO: if the password = '0hallo', this goes wrong:
       if (!empty($row[2])) {
@@ -153,10 +162,11 @@ class BeeHub_User extends BeeHub_Principal {
       $p_password = null;
     }
 
-    $p_displayname = @$this->stored_props[DAV::PROP_DISPLAYNAME];
-    $p_surfconext  = @$this->stored_props[BeeHub::PROP_SURFCONEXT];
-    $p_x509        = @$this->stored_props[BeeHub::PROP_X509];
-    $p_sponsor     = @$this->stored_props[BeeHub::PROP_SPONSOR];
+    $p_displayname     = @$this->stored_props[DAV::PROP_DISPLAYNAME];
+    $p_surfconext      = @$this->stored_props[BeeHub::PROP_SURFCONEXT];
+    $p_surfconext_desc = @$this->stored_props[BeeHub::PROP_SURFCONEXT_DESCRIPTION];
+    $p_x509            = @$this->stored_props[BeeHub::PROP_X509];
+    $p_sponsor         = @$this->stored_props[BeeHub::PROP_SPONSOR];
 
     $change_email = false;
     if (@$this->stored_props[BeeHub::PROP_EMAIL] !== $this->original_email) {
@@ -170,6 +180,7 @@ class BeeHub_User extends BeeHub_Principal {
       'UPDATE `beehub_users`
           SET `displayname` = ?,
               `surfconext_id` = ?,
+              `surfconext_description` = ?,
               `x509` = ?,
               `sponsor_name` = ?' .
               ($change_email ? ',`unverified_email`=?,`verification_code`=?,`verification_expiration`=NOW() + INTERVAL 1 DAY' : '') .
@@ -179,9 +190,10 @@ class BeeHub_User extends BeeHub_Principal {
     if ($p_password === true) {
       if ($change_email) { // No new password, but there is a new e-mail address
         $updateStatement->bind_param(
-          'sssssss',
+          'ssssssss',
           $p_displayname,
           $p_surfconext,
+          $p_surfconext_desc,
           $p_x509,
           $p_sponsor,
           $p_email,
@@ -190,9 +202,10 @@ class BeeHub_User extends BeeHub_Principal {
         );
       }else{ // No new password, no new e-mail address
         $updateStatement->bind_param(
-          'sssss',
+          'ssssss',
           $p_displayname,
           $p_surfconext,
+          $p_surfconext_desc,
           $p_x509,
           $p_sponsor,
           $this->name
@@ -201,9 +214,10 @@ class BeeHub_User extends BeeHub_Principal {
     }else{
       if ($change_email) { // A new password, and a new e-mail address
         $updateStatement->bind_param(
-          'ssssssss',
+          'sssssssss',
           $p_displayname,
           $p_surfconext,
+          $p_surfconext_desc,
           $p_x509,
           $p_sponsor,
           $p_email,
@@ -213,9 +227,10 @@ class BeeHub_User extends BeeHub_Principal {
         );
       }else{ // A new password, but no new e-mail address
         $updateStatement->bind_param(
-          'ssssss',
+          'sssssss',
           $p_displayname,
           $p_surfconext,
+          $p_surfconext_desc,
           $p_x509,
           $p_sponsor,
           $p_password,
@@ -304,12 +319,13 @@ class BeeHub_User extends BeeHub_Principal {
   public function property_priv_read($properties) {
     $retval = parent::property_priv_read($properties);
     $is_admin = $this->is_admin();
-    $retval[BeeHub::PROP_EMAIL]         = $is_admin;
-    $retval[BeeHub::PROP_SURFCONEXT]    = $is_admin;
-    $retval[BeeHub::PROP_X509]          = $is_admin;
-    $retval[BeeHub::PROP_SPONSOR]       = $is_admin;
-    $retval[DAV::PROP_GROUP_MEMBERSHIP] = $is_admin;
-    $retval[BeeHub::PROP_PASSWORD]      = false;
+    $retval[BeeHub::PROP_EMAIL]                  = $is_admin;
+    $retval[BeeHub::PROP_SURFCONEXT]             = $is_admin;
+    $retval[BeeHub::PROP_SURFCONEXT_DESCRIPTION] = $is_admin;
+    $retval[BeeHub::PROP_X509]                   = $is_admin;
+    $retval[BeeHub::PROP_SPONSOR]                = $is_admin;
+    $retval[DAV::PROP_GROUP_MEMBERSHIP]          = $is_admin;
+    $retval[BeeHub::PROP_PASSWORD]               = false;
     return $retval;
   }
 
@@ -322,13 +338,14 @@ class BeeHub_User extends BeeHub_Principal {
   public function property_priv_write($properties) {
     $retval = parent::property_priv_read($properties);
     $is_admin = $this->is_admin();
-    $retval[BeeHub::PROP_EMAIL]         = $is_admin;
-    $retval[BeeHub::PROP_SURFCONEXT]    = false;
-    $retval[BeeHub::PROP_X509]          = $is_admin;
-    $retval[BeeHub::PROP_SPONSOR]       = $is_admin;
-    $retval[DAV::PROP_GROUP_MEMBERSHIP] = false;
-    $retval[BeeHub::PROP_SPONSOR_MEMBERSHIP] = false;
-    $retval[BeeHub::PROP_PASSWORD]      = false;
+    $retval[BeeHub::PROP_EMAIL]                  = $is_admin;
+    $retval[BeeHub::PROP_SURFCONEXT]             = $is_admin;
+    $retval[BeeHub::PROP_SURFCONEXT_DESCRIPTION] = $is_admin;
+    $retval[BeeHub::PROP_X509]                   = $is_admin;
+    $retval[BeeHub::PROP_SPONSOR]                = $is_admin;
+    $retval[DAV::PROP_GROUP_MEMBERSHIP]          = false;
+    $retval[BeeHub::PROP_SPONSOR_MEMBERSHIP]     = false;
+    $retval[BeeHub::PROP_PASSWORD]               = false;
     return $retval;
   }
 
