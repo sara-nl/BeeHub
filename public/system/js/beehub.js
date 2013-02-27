@@ -34,28 +34,40 @@ if (nl.sara.beehub === undefined) {
   /**
    * Returns the correct notification for a specific type
    */
-  function create_notification(type, message) {
-    var notification = $('<li class="notification_item"></li>');
+  function create_notification(type, data) {
+    var notification = $('<div class="notification_item well"></div>');
+    var client = new nl.sara.webdav.Client();
+
     switch(type) {
-      case 'double_authentication':
-        var contentDiv = $('<div class="notification_content" style="float: left"></div>');
-        contentDiv.append(message);
-        notification.append(contentDiv);
-        notification.append('<div class="icon-ok" style="float: right"></div>');
-        $('.icon-ok', notification).click(function() {
-          var client = new nl.sara.webdav.Client(undefined, true);
-          client.post(location.href, nl.sara.beehub.reload_notifications, 'saml_connect=1');
+      case 'group_invitation':
+        notification.html('<div style="float:left">You are invited to join the group \'' + data.displayname + '\'</div><div style="float:right"><button class="btn btn-success">Join</button> <button class="btn btn-danger">Decline</button></div><div style="clear:both"></div>');
+        $('.btn-success', notification).click(function() {
+          client.post(data.group, nl.sara.beehub.reload_notifications, 'join=1');
         });
-        notification.append('<div style="clear: both"></div>');
+        $('.btn-danger', notification).click(function() {
+          client.post(data.group, nl.sara.beehub.reload_notifications, 'leave=1');
+        });
         break;
-      default:
-        var contentDiv = $('<div class="notification_content" style="float: left"></div>');
-        contentDiv.append(message);
-        notification.append('<div class="icon-trash" style="float: right"></div>');
-        notification.append(contentDiv);
-        notification.append('<div style="clear: both"></div>');
-      break;
+      case 'group_request':
+        notification.html('<div style="float:left">' + data.user_displayname + ' requests a membership of group \'' + data.group_displayname + '\'</div><div style="float:right"><button class="btn btn-success">Accept</button> <button class="btn btn-danger">Decline</button></div><div style="clear:both"></div>');
+        $('.btn-success', notification).click(function() {
+          client.post(data.group, nl.sara.beehub.reload_notifications, 'add_members[]=' + data.user);
+        });
+        $('.btn-danger', notification).click(function() {
+          client.post(data.group, nl.sara.beehub.reload_notifications, 'delete_members[]=' + data.user);
+        });
+        break;
+      case 'sponsor_request':
+        notification.html('<div style="float:left">' + data.user_displayname + ' requests requests membership of sponsor \'' + data.sponsor_displayname + '\'</div><div style="float:right"><button class="btn btn-success">Accept</button> <button class="btn btn-danger">Decline</button></div><div style="clear:both"></div>');
+        $('.btn-success', notification).click(function() {
+          client.post(data.sponsor, nl.sara.beehub.reload_notifications, 'add_members[]=' + data.user);
+        });
+        $('.btn-danger', notification).click(function() {
+          client.post(data.sponsor, nl.sara.beehub.reload_notifications, 'delete_members[]=' + data.user);
+        });
+        break;
     }
+
     return notification;
   }
 
@@ -67,7 +79,7 @@ if (nl.sara.beehub === undefined) {
       notification_counter.html('0');
     }else{
       $.each(data, function(key, content) {
-        notification_window.append(create_notification(content.type, content.message));
+        notification_window.append(create_notification(content.type, content.data));
       });
       notification_counter.html($('.notification_item', notification_window).length.toString());
     }

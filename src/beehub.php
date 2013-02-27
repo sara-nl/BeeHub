@@ -214,12 +214,72 @@ class BeeHub {
   /**
    * Checks for notifications for the current user
    *
-   * @return  array  An array with notifications
+   * Notifications are associative arrays with two keys: type and data. The type
+   * describes what type the notification is. For example 'group_invitation. The
+   * lay-out of the notification can then be determined client side. The data
+   * differs per type and its format is dictated by the client side scripts
+   * handling the type. This can for example be an array with the group name and
+   * display name of the group you are invited for.
+   *
+   * @return  array  An array with notifications.
    */
   public static function notifications() {
     $notifications = array();
     $auth = BeeHub_Auth::inst();
     if ($auth->is_authenticated()) {
+      $user = $auth->current_user();
+
+      // Fetch all group invitations
+      $statement = BeeHub_DB::execute('
+        SELECT `beehub_groups`.`group_name`,
+               `beehub_groups`.`displayname`
+          FROM `beehub_group_members` JOIN `beehub_groups` USING(`group_name`)
+         WHERE `beehub_group_members`.`is_invited` = 1 AND
+               `beehub_group_members`.`is_requested` = 0 AND
+               `beehub_group_members`.`user_name` = ?
+      ', 's', $user->name);
+      while ($row = $statement->fetch_row()) {
+        $notifications[] = array('type'=>'group_invitation', 'data'=>array('group'=>BeeHub::$CONFIG['namespace']['groups_path'] . $row[0], 'displayname'=>$row[1]));
+      }
+
+      // Fetch all group membership requests
+      $statement = BeeHub_DB::execute('
+        SELECT `beehub_groups`.`group_name`,
+               `beehub_groups`.`displayname`,
+               `beehub_users`.`user_name`,
+               `beehub_users`.`displayname`
+          FROM `beehub_group_members` JOIN `beehub_groups` USING(`group_name`) JOIN `beehub_users` USING(`user_name`)
+         WHERE `beehub_group_members`.`is_invited` = 0 AND
+               `beehub_group_members`.`is_requested` = 1 AND
+               `beehub_group_members`.`group_name` IN (
+                  SELECT `beehub_group_members`.`group_name`
+                    FROM `beehub_group_members`
+                   WHERE `beehub_group_members`.`is_admin` = 1 AND
+                         `beehub_group_members`.`user_name` = ?
+               )
+      ', 's', $user->name);
+      while ($row = $statement->fetch_row()) {
+        $notifications[] = array('type'=>'group_request', 'data'=>array('group'=>BeeHub::$CONFIG['namespace']['groups_path'] . $row[0], 'group_displayname'=>$row[1], 'user'=>BeeHub::$CONFIG['namespace']['users_path'] . $row[2], 'user_displayname'=>$row[3]));
+      }
+
+      // Fetch all sponsor membership requests
+      $statement = BeeHub_DB::execute('
+        SELECT `beehub_sponsors`.`sponsor_name`,
+               `beehub_sponsors`.`displayname`,
+               `beehub_users`.`user_name`,
+               `beehub_users`.`displayname`
+          FROM `beehub_sponsor_members` JOIN `beehub_sponsors` USING(`sponsor_name`) JOIN `beehub_users` USING(`user_name`)
+         WHERE `beehub_sponsor_members`.`is_accepted` = 0 AND
+               `beehub_sponsor_members`.`sponsor_name` IN (
+                  SELECT `beehub_sponsor_members`.`sponsor_name`
+                    FROM `beehub_sponsor_members`
+                   WHERE `beehub_sponsor_members`.`is_admin` = 1 AND
+                         `beehub_sponsor_members`.`user_name` = ?
+               )
+      ', 's', $user->name);
+      while ($row = $statement->fetch_row()) {
+        $notifications[] = array('type'=>'sponsor_request', 'data'=>array('sponsor'=>BeeHub::$CONFIG['namespace']['sponsors_path'] . $row[0], 'sponsor_displayname'=>$row[1], 'user'=>BeeHub::$CONFIG['namespace']['users_path'] . $row[2], 'user_displayname'=>$row[3]));
+      }
     }
     return $notifications;
   }

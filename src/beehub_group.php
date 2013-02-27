@@ -83,7 +83,7 @@ EOS;
     if (!$auth->is_authenticated()) {
       throw DAV::forbidden();
     }
-    $admin_functions = array('add_members', 'add_admins', 'delete_admins', 'delete_members', 'delete_requests');
+    $admin_functions = array('add_members', 'add_admins', 'delete_admins', 'delete_members');
     if (!$this->is_admin()) {
       foreach ($admin_functions as $function) {
         if (isset($_POST[$function])) {
@@ -121,7 +121,6 @@ EOS;
             $this->change_memberships($members, true, false, false, null, null, false);
             break;
           case 'delete_members':
-          case 'delete_requests':
             $this->delete_members($members);
             break;
           default: //Should/could never happen
@@ -175,15 +174,12 @@ EOS;
          )
          VALUES (?, ?, ?, ?, ?)
          ON DUPLICATE KEY
-           UPDATE `is_invited`   = ?,
-                  `is_requested` = ?,
-                  `is_admin`     = ?',
-        'ssiiiiii',
+           UPDATE `is_invited`   = ' . $existingInvited . ',
+                  `is_requested` = ' . $existingRequested . ',
+                  `is_admin`     = ' . $existingAdmin,
+        'ssiii',
         $this->name, $user_name, $newInvited,
-        $newRequested, $newAdmin,
-        $existingInvited,
-        $existingRequested,
-        $existingAdmin
+        $newRequested, $newAdmin
       );
       // TODO: sent the user an e-mail
     }
