@@ -4,14 +4,9 @@
    * $groups     All members of this directory
    */
   // TODO custom settings to beehub.css or bootstrap.css
-  // TODO netter maken, dit zorgt ervoor dat het er uitziet zoals ik
-  // wil maar dit kan waarschijnlijk netter/anders
+  // TODO documentation of this page
   $header = '
-<style type="text/css">
-  .accordion-group {
-//   		 background-color: #E6E7E8 !important;
-  }
-  		
+<style type="text/css">  		
   .accordion-group:hover {
     background-color: #D1E2D3 !important;
   }
@@ -26,22 +21,7 @@
 
   .control-label {
     	width: 110px ! important;
-	}
-  		
-//   .admin{
-//     font-size: 12px !important;
-//     text-align: right;
-//   }
-
-//   .rightbutton{
-//     padding: 12px !important;
-//     text-align: right;
-//   }
-
-//   .custom-btn-primary {
-//     width: 130px !important;
-//   }
-  		
+	}	
 </style>
   ';
   require 'views/header.php';
@@ -70,7 +50,7 @@
           <div class="accordion-heading">
             <div class="accordion-toggle" data-toggle="collapse" data-parent="#mygroups" href="#mygroups-<?= $i ?>">
               <table width="100%"><tbody><tr>
-                <th align="left"><?= $group->prop_displayname() ?></th>
+                <th align="left"><?= htmlspecialchars($group->prop_displayname(), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></th>
                 <td align="right">
                   <!--    View button (when not admin of the group) or manage button -->
                   <?php if ( $group->is_admin() ) : ?>
@@ -87,7 +67,7 @@
           <div id="mygroups-<?= $i ?>" class="accordion-body collapse">
 
             <div class="accordion-inner">
-              <?= $group->prop(BeeHub::PROP_DESCRIPTION) ?>
+              <?= htmlspecialchars($group->prop(BeeHub::PROP_DESCRIPTION), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>
             </div>
           </div>
         </div>
@@ -124,7 +104,7 @@
           <div class="accordion-heading">
             <div class="accordion-toggle" data-toggle="collapse" data-parent="#joingroups" href="#joingroups-<?= $i ?>">
               <table width="100%"><tbody><tr>
-                <th align="left"><?= $group->prop_displayname() ?></th>
+                <th align="left"><?= htmlspecialchars($group->prop_displayname(), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></th>
                 <td align="right">
                   <!--    Leave, Cancel request or Join button -->
                   <?php if ( $group->is_member() ) : ?>
@@ -142,9 +122,8 @@
             </div>
           </div>
           <div id="joingroups-<?= $i ?>" class="accordion-body collapse">
-
             <div class="accordion-inner">
-              <?= $group->prop(BeeHub::PROP_DESCRIPTION) ?>
+              <?= htmlspecialchars($group->prop(BeeHub::PROP_DESCRIPTION), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>
             </div>
           </div>
         </div>
@@ -160,7 +139,7 @@
 	<!-- Create tab -->
 	<br/>
 	<div id="panel-create" class="tab-pane fade">  
-    <form class="form-horizontal" action="<?= BeeHub::$CONFIG['namespace']['groups_path'] ?>" method="post">
+    <form id="createGroupForm" class="form-horizontal" action="<?= BeeHub::$CONFIG['namespace']['groups_path'] ?>" method="post">
 	    <div class="control-group">
 		    <label class="control-label" for="groupName">Group name</label>
 		    <div class="controls">
@@ -181,7 +160,7 @@
 	    </div>
 	    <div class="control-group">
 		    <div class="controls">
-		    	<button type="submit" class="btn">Create group</button>
+		    	<button  type="submit" class="btn">Create group</button>
 		    </div>
 	    </div>
     </form>

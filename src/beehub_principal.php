@@ -123,7 +123,11 @@ abstract class BeeHub_Principal extends BeeHub_Resource implements DAVACL_Princi
       BeeHub::$CONFIG['namespace']['javascript'];
     $filename = tempnam($local_js_path, 'tmp_principals');
     file_put_contents(
-      $filename, 'nl.sara.principals = ' . json_encode($json) . ';'
+      $filename, 
+      'nl.sara.beehub.users_path = "' . BeeHub::$CONFIG['namespace']['users_path'] . '";' .
+      'nl.sara.beehub.groups_path = "' . BeeHub::$CONFIG['namespace']['groups_path'] . '";' .
+      'nl.sara.beehub.sponsors_path = "' . BeeHub::$CONFIG['namespace']['sponsors_path'] . '";' .
+      'nl.sara.beehub.principals = ' . json_encode($json) . ';'
     );
     rename( $filename, $local_js_path . DIRECTORY_SEPARATOR . 'principals.js' );
     chmod($local_js_path . 'principals.js', 0664);
