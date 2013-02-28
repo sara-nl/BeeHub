@@ -39,6 +39,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
     }
     $display_name = '';
     $email_address = '';
+    $surfconext_description = '';
     if (BeeHub_Auth::inst()->simpleSaml()->isAuthenticated()) {
       $as = BeeHub_Auth::inst()->simpleSaml();
       $attrs = $as->getAttributes();
@@ -81,7 +82,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
       );
     }catch (Exception $exception) {
       if ($exception->getCode() === 1062) { // Duplicate key: bad request!
-        throw new DAV_Status(DAV::HTTP_BAD_REQUEST);
+        throw new DAV_Status(DAV::HTTP_CONFLICT, "User name already exists, please choose a different user name!");
       }else{
         throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
       }

@@ -70,10 +70,11 @@ require 'views/header.php';
     <div class="span2 fieldname">Unlink SURFconext account</div>
     <div class="span10 fieldvalue"><input type="checkbox" name="saml_unlink" value="true" /></div>
   </div>
-  <button class="btn">Save</button>
+  <button id="save_button" class="btn">Save</button>
 </form>
 
 <form method="post">
+  <div>I want to verify this e-mail address: <?= $unverified_address ?></div>
   <div>Verification code: <input type="text" name="verification_code" value="<?= htmlspecialchars(@$_GET['verification_code'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>" /></div>
   <div><input type="submit" value="Verify e-mail address" /></div>
 </form>

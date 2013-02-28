@@ -47,10 +47,23 @@ class BeeHub_User extends BeeHub_Principal {
    * @see DAV_Resource::method_GET()
    */
   public function method_GET() {
-    if (isset($_GET['saml_connect']) && !BeeHub_Auth::inst()->simpleSaml()->isAuthenticated()) {
-      BeeHub_Auth::inst()->simpleSaml()->login();
+    $unverified_address = null;
+    if (isset($_GET['verification_code'])) {
+      $statement = BeeHub_DB::execute(
+        'SELECT `unverified_email`
+           FROM `beehub_users`
+          WHERE `user_name` = ? AND
+                `verification_code` = ? AND
+                `verification_expiration` > NOW()',
+        'ss', $this->name, $_GET['verification_code']
+      );
+      if ($row = $statement->fetch_row()) {
+        $unverified_address = $row[0];
+      }else{
+        unset($_GET['verification_code']);
+      }
     }
-    $this->include_view();
+    $this->include_view(null, array('unverified_address'=>$unverified_address));
   }
 
 
@@ -60,6 +73,7 @@ class BeeHub_User extends BeeHub_Principal {
         throw DAV::forbidden();
       }
       $this->include_view('email_verified');
+      return;
     }
     throw new DAV_Status(DAV::HTTP_BAD_REQUEST);
   }
@@ -102,7 +116,6 @@ class BeeHub_User extends BeeHub_Principal {
       if (!is_null($row[6])) {
         $this->stored_props[BeeHub::PROP_SPONSOR]   = $row[6];
       }
-      // TODO: if the password = '0hallo', this goes wrong:
       if (!empty($row[2])) {
         $this->stored_props[BeeHub::PROP_PASSWORD] = true; // Nobody should have read access to this property. But just in case, we always set it to true.
       }
@@ -239,13 +252,33 @@ class BeeHub_User extends BeeHub_Principal {
       }
     }
     if (!$updateStatement->execute()) {
-      // TODO: check for duplicate keys!
-      throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
+      if ($exception->getCode() === 1062) { // Duplicate key: bad request!
+        throw new DAV_Status(DAV::HTTP_CONFLICT, "The following properties should be unique, at least one of them is not: e-mail address, SURFconext id");
+      }else{
+        throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
+      }
     }
 
     // Notify the user if needed
     if ($change_email) {
-      //TODO: send e-mail
+      $activation_link = BeeHub::urlbase(true) . $this->path . '?verification_code=' . $p_verification_code;
+      $message = 
+'Dear ' . $p_displayname . ',
+
+This e-mail address (' . $p_email . ') is added to the BeeHub account \'' . $this->name . '\'. You need to confirm this action by following this link:
+
+' . $activation_link . '
+
+Note that you\'re verification code is only valid for 24 hours. Also, for new users, if you don\'t have a validated e-mail address, your account will automatically be removed after 24 hours.
+
+If this was a mistake, or you do not want to add this e-mail address to this BeeHub account, you don\'t have to do anything.
+
+Best regards,
+
+BeeHub';
+      BeeHub::email($p_displayname . ' <' . $p_email . '>',
+                    'Verify e-mail address for BeeHub',
+                    $message);
     }
 
     // Update the json file containing all displaynames of all privileges

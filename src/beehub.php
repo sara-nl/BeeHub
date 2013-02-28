@@ -285,6 +285,21 @@ class BeeHub {
   }
 
 
+  /**
+   * Send an e-mail
+   * @param   string|array  $recipients  The recipient or an array of recepients
+   * @param   type          $subject     The subject of the message
+   * @param   type          $message     The message body
+   * @return  void
+   */
+  public static function email($recipients, $subject, $message) {
+    if (is_array($recipients)) {
+      $recipients = implode(',', $recipients);
+    }
+    mail($recipients, $subject, $message, 'From: ' . BeeHub::$CONFIG['email']['sender_name'] . ' <' . BeeHub::$CONFIG['email']['sender_address'] . '>', '-f ' . BeeHub::$CONFIG['email']['sender_address']);
+  }
+
+
 } // class BeeHub
 
 BeeHub::$CONFIG = parse_ini_file(

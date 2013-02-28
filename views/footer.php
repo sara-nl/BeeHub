@@ -13,6 +13,7 @@ if (! @$CONFINED_BOOTSTRAP) echo '</div>';
     <script type="text/javascript" src="/system/js/server/principals.js"></script>
     <script type="text/javascript">
       nl.sara.beehub.show_notifications(<?= json_encode(BeeHub::notifications()) ?>);
+      <?= ( ( intval($_GET['show_notifications']) === 1 ) ? '$("#notification_button").dropdown("toggle");' : '' ) ?>
     </script>
     <?= isset($footer) ? $footer : '' ?>
   </body>

@@ -17,7 +17,7 @@
             </ul>
             <ul class="nav pull-right">
               <li class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown"><span id="notification_counter">0</span> notifications <span class="caret"></span></a>
+                <a href="#" class="dropdown-toggle" id="notification_button" data-toggle="dropdown"><span id="notification_counter">0</span> notifications <span class="caret"></span></a>
                 <ul id="notifications" class="dropdown-menu" style="width: 800px; padding: 1em; background-color: #d1e2d2">
                 </ul>
               </li>
