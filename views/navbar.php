@@ -21,33 +21,32 @@
                 <ul id="notifications" class="dropdown-menu" style="width: 800px; padding: 1em; background-color: #d1e2d2">
                 </ul>
               </li>
-              <?php if ( ( $me = $this->user_prop_current_user_principal() ) &&
-                         ( $meResource = BeeHub_Registry::inst()->resource($me) ) ) : ?>
-              <li class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown">
-                  <?= $meResource->prop_displayname() ?> <span class="caret"></span>
-                </a>
-                <ul class="dropdown-menu">
-                  <li><a href="<?= DAV::xmlescape($me) ?>">Profile</a></li>
-                  <?php if (@BeeHub_Auth::inst()->surfconext()) : ?>
-                  <li><a href="<?= $this->path . '?logout=yes' ?>">Log out</a></li>
-                  <?php endif ?>
-                  <li><a href="<?= BeeHub::urlbase(false) . BeeHub::$CONFIG['namespace']['system_path'] ?>">Go anonymous</a></li>
-                </ul>
-              </li>
+              <?php if ( $meResource = BeeHub_Auth::inst()->current_user() ) : ?>
+                <li class="dropdown">
+                  <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                    <?= $meResource->prop_displayname() ?> <span class="caret"></span>
+                  </a>
+                  <ul class="dropdown-menu">
+                    <li><a href="<?= DAV::xmlescape($meResource->path) ?>">Profile</a></li>
+                    <?php if (@BeeHub_Auth::inst()->surfconext()) : ?>
+                      <li><a href="<?= BeeHub::request_uri() . '?logout=yes' ?>">Log out</a></li>
+                    <?php endif ?>
+                    <li><a href="<?= BeeHub::urlbase(false) . BeeHub::$CONFIG['namespace']['system_path'] ?>">Go anonymous</a></li>
+                  </ul>
+                </li>
               <?php else : ?>
-              <li><a href="<?= BeeHub::$CONFIG['namespace']['users_path'] ?>">Sign up</a></li>
-              <li class="dropdown">
-                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Log in <span class="caret"></span></a>
-                <ul class="dropdown-menu">
-                  <li><a href="<?= BeeHub::urlbase(true) . $this->path . '?login=passwd' ?>">With username/password</a></li>
-                  <?php if (@BeeHub_Auth::inst()->simpleSaml()->isAuthenticated()) : ?>
-                    <li><a href="<?= $this->path . '?logout=yes' ?>">Log out from SURFconext</a></li>
-                  <?php else: ?>
-                    <li><a href="<?= BeeHub::urlbase(true) . $this->path . '?login=conext' ?>">With SURFconext</a></li>
-                  <?php endif; ?>
-                </ul>
-              </li>
+                <li><a href="<?= BeeHub::$CONFIG['namespace']['users_path'] ?>">Sign up</a></li>
+                <li class="dropdown">
+                  <a href="#" class="dropdown-toggle" data-toggle="dropdown">Log in <span class="caret"></span></a>
+                  <ul class="dropdown-menu">
+                    <li><a href="<?= BeeHub::urlbase(true) . BeeHub::request_uri() . '?login=passwd' ?>">With username/password</a></li>
+                    <?php if (@BeeHub_Auth::inst()->simpleSaml()->isAuthenticated()) : ?>
+                      <li><a href="<?= BeeHub::request_uri() . '?logout=yes' ?>">Log out from SURFconext</a></li>
+                    <?php else: ?>
+                      <li><a href="<?= BeeHub::urlbase(true) . BeeHub::request_uri() . '?login=conext' ?>">With SURFconext</a></li>
+                    <?php endif; ?>
+                  </ul>
+                </li>
               <?php endif ?>
               <li class="beehub-spacer-surfsara-logo visible-desktop"></li>
             </ul>

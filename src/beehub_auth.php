@@ -43,6 +43,7 @@ class BeeHub_Auth {
    * This class is a singleton, so the constructor is private. Instantiate through BeeHub_Auth::inst()
    */
   private function __construct() {
+    $this->simpleSAML_authentication = new SimpleSAML_Auth_Simple('SURFconext');
   }
 
   /**
@@ -64,7 +65,6 @@ class BeeHub_Auth {
    * @return  void
    */
   public function handle_authentication($requireAuth = true, $allowDoubleLogin = false) {
-    $this->simpleSAML_authentication = new SimpleSAML_Auth_Simple('SURFconext');
     if (isset($_GET['logout'])) {
       if ($this->simpleSAML_authentication->isAuthenticated()) {
         $this->simpleSAML_authentication->logout();

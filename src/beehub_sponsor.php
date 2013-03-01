@@ -250,7 +250,7 @@ BeeHub';
          WHERE `sponsor_name` = ?',
         's', $this->name
       );
-      $row = $statement_props->fetch();
+      $row = $statement_props->fetch_row();
       if ( is_null($row) )
         throw new DAV_Status( DAV::HTTP_NOT_FOUND );
 

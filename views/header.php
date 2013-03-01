@@ -1,5 +1,5 @@
 <?php
-if ( false !== strpos( $this->user_prop_getcontenttype(), 'xml' ) )
+if ( isset($this) && ( false !== strpos( $this->user_prop_getcontenttype(), 'xml' ) ) )
   echo DAV::xml_header();
 ?><!DOCTYPE html>
 <html xmlns="http://www.w3.org/1999/xhtml">

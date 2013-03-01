@@ -26,7 +26,9 @@
 
 // Set the include path, so BeeHub_* classes are automatically loaded
 set_include_path(
-  dirname(__FILE__) . PATH_SEPARATOR . get_include_path()
+  realpath( dirname( dirname(__FILE__) ) ) . PATH_SEPARATOR .
+  dirname(__FILE__) . PATH_SEPARATOR .
+  get_include_path()
 );
 require_once dirname(dirname(__FILE__)) . '/webdav-php/lib/dav.php';
 
@@ -114,6 +116,20 @@ class BeeHub {
       $URLBASE[$https] = $tmp;
     }
     return $URLBASE[$https];
+  }
+
+
+  /**
+   * Returns the request URI without the query part
+   * @return  string  The request URI without query part
+   */
+  public static function request_uri() {
+    $query_start = strpos($_SERVER['REQUEST_URI'], '?');
+    if ($query_start === false) {
+      return $_SERVER['REQUEST_URI'];
+    }else{
+      return substr($_SERVER['REQUEST_URI'], 0, $query_start);
+    }
   }
 
 

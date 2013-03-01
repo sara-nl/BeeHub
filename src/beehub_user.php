@@ -48,20 +48,17 @@ class BeeHub_User extends BeeHub_Principal {
    */
   public function method_GET() {
     $unverified_address = null;
-    if (isset($_GET['verification_code'])) {
-      $statement = BeeHub_DB::execute(
-        'SELECT `unverified_email`
-           FROM `beehub_users`
-          WHERE `user_name` = ? AND
-                `verification_code` = ? AND
-                `verification_expiration` > NOW()',
-        'ss', $this->name, $_GET['verification_code']
-      );
-      if ($row = $statement->fetch_row()) {
-        $unverified_address = $row[0];
-      }else{
-        unset($_GET['verification_code']);
-      }
+    $statement = BeeHub_DB::execute(
+      'SELECT `unverified_email`
+          FROM `beehub_users`
+        WHERE `user_name` = ? AND
+              `verification_expiration` > NOW()',
+      's', $this->name
+    );
+    if ($row = $statement->fetch_row()) {
+      $unverified_address = $row[0];
+    }elseif ( isset( $_GET['verification_code'] ) ) {
+      unset($_GET['verification_code']);
     }
     $this->include_view(null, array('unverified_address'=>$unverified_address));
   }
@@ -262,7 +259,7 @@ class BeeHub_User extends BeeHub_Principal {
     // Notify the user if needed
     if ($change_email) {
       $activation_link = BeeHub::urlbase(true) . $this->path . '?verification_code=' . $p_verification_code;
-      $message = 
+      $message =
 'Dear ' . $p_displayname . ',
 
 This e-mail address (' . $p_email . ') is added to the BeeHub account \'' . $this->name . '\'. You need to confirm this action by following this link:
