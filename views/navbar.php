@@ -41,7 +41,11 @@
                 <a href="#" class="dropdown-toggle" data-toggle="dropdown">Log in <span class="caret"></span></a>
                 <ul class="dropdown-menu">
                   <li><a href="<?= BeeHub::urlbase(true) . $this->path . '?login=passwd' ?>">With username/password</a></li>
-                  <li><a href="<?= BeeHub::urlbase(true) . $this->path . '?login=conext' ?>">With SURFconext</a></li>
+                  <?php if (@BeeHub_Auth::inst()->simpleSaml()->isAuthenticated()) : ?>
+                    <li><a href="<?= $this->path . '?logout=yes' ?>">Log out from SURFconext</a></li>
+                  <?php else: ?>
+                    <li><a href="<?= BeeHub::urlbase(true) . $this->path . '?login=conext' ?>">With SURFconext</a></li>
+                  <?php endif; ?>
                 </ul>
               </li>
               <?php endif ?>
