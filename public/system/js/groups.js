@@ -98,6 +98,9 @@ $(function() {
 	    }
 	});
 	
+	/*
+	 * Action when the filter field is changed
+	 */
 	 $('#filterbyname').keyup(function () {
 		var filterfield = $(this);
 		// when field is empty, filter icon
@@ -122,9 +125,7 @@ $(function() {
 		}).show(); 
 	 });
 	
-	 $('#groupName').change(function () {
-		 var groupNameField = $(this);
-		 
+	var groupNameListener = function(groupNameField){
 		 var showError = function(error){
 			 groupNameField.parent().parent().addClass('error');
 			 var error = $('<span class="help-inline">'+error+'</span>');
@@ -133,7 +134,6 @@ $(function() {
 		 
 		 // TODO make tooltip with field specifications
 		 // This is included in bootstrap with patern
-		 // It is still possible to send request with groupsname that excist
 		 
 		 // clear error
 		 groupNameField.next().remove();
@@ -142,45 +142,48 @@ $(function() {
 		 // value not system
 		 if (RegExp('^system$|^home$','i').test(groupNameField.val())) {
 			showError(groupNameField.val()+' is not a valid groupname.');
-			return;
+			return false;
 		 }
-
+	
 		// Seperate regular expressions to make the errors more specific.
 		// value starts with a-zA-Z0-9, else return
 		 if (!RegExp('^[a-zA-Z0-9]{1}.*$').test(groupNameField.val())) {
 			 showError('First character must be a aphanumeric character or number.');
-			 return;
+			 return false;
 		 }
 		// value only contain a-zA-Z0-9_-., else return
 		 if (!RegExp('^[a-zA-Z0-9]{1}[a-zA-Z0-9_\\-\\.]*$').test(groupNameField.val())) {
 			 showError('This field can contain aphanumeric characters, numbers, "-", "_" and ".".');
-			 return;
+			 return false;
 		 }
 		// value contain 1-255 characters, else return
 		 if (!RegExp('^[a-zA-Z0-9]{1}[a-zA-Z0-9_\\-\\.]{0,255}$').test(groupNameField.val())) {
 			showError('This field can contain maximal 255 characters.');
-			return;
+			return false;
 		 }
-		 // ajax request, is groupname already in use
-		var client = new nl.sara.webdav.Client();
-		client.post('system/groups/'+groupNameField.val(), function(status){
-			if (status == 404 || status >= 500 ) {
-				return
-			}
-			showError('This groupname is already in use.');
-			return;
-		}, '');
+		 if (nl.sara.beehub.principals.groups[groupNameField.val()] !== undefined) {
+			 showError('This groupname is already in use.');
+			 return false;
+		 };
+		 
+		 return true;
+	};
+	
+	/*
+	 * Action when the groupsname field will change
+	 */
+	 $('#groupName').change(function () {
+		 groupNameListener($(this));
 	 })
 	 
-	// TODO request action uitvoeren
-	$('#requestmembershipbutton').on('click', function (e) {
-	  alert("button request membership clicked")
-	});
-	
-	//TODO request action uitvoeren
-	$('#cancelrequestinvitationbutton').on('click', function (e) {
-	  alert("button cancel request invitation clicked")
-	});
+	 /*
+	 * Action when the Create group button is clicked
+	 */
+	 $('#createGroupForm').submit(function (e) {
+		 if (!groupNameListener($('#groupName'))) {
+			 e.preventDefault();
+		 }
+	 });
 	
 	// Pieterb:
 	$('ul#beehub-top-tabs a').click(function (e) {
