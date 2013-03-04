@@ -75,8 +75,8 @@ require 'views/header.php';
       <?php foreach ($members as $member) :
         if ($member['is_invited']) : ?>
           <tr class="member_row" id="<?= BeeHub::$CONFIG['namespace']['users_path'] . rawurlencode($member['user_name']) ?>">
-            <td><?= ($member['user_name']) ?></td>
-            <td><?= ($member['displayname']) ?></td>
+            <td><?= DAV::xmlescape($member['user_name']) ?></td>
+            <td><?= DAV::xmlescape($member['displayname']) ?></td>
             <td><?= ($member['is_admin'] ? 'jep <a href="#" class="demote_link">demote</a>' : 'nope <a href="#" class="promote_link">promote</a>') ?></td>
             <td><a href="#" class="remove_link">Delete</a></td>
           </tr>
