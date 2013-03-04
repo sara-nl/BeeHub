@@ -18,10 +18,6 @@
   .accordion-group-active:hover {
     background-color: #D1E2D3 !important;
   }
-
-  .control-label {
-    	width: 110px ! important;
-	}	
 </style>
   ';
   require 'views/header.php';
