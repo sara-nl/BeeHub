@@ -15,7 +15,7 @@ $attributes = $simpleSaml->getAttributes();
   <div class="control-group">
     <label class="control-label" for="surfconext_description">SURFconext description</label>
     <div class="controls">
-      <input type="text" id="surfconext_description" name="surfconext_description" value="<?= htmlspecialchars($surfconext_description, ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>" required />
+      <input type="text" id="surfconext_description" name="surfconext_description" value="<?= DAV::xmlescape($surfconext_description) ?>" required />
     </div>
   </div>
   <div class="control-group">

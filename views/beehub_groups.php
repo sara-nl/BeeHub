@@ -46,7 +46,7 @@
           <div class="accordion-heading">
             <div class="accordion-toggle" data-toggle="collapse" data-parent="#mygroups" href="#mygroups-<?= $i ?>">
               <table width="100%"><tbody><tr>
-                <th align="left"><?= htmlspecialchars($group->prop_displayname(), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></th>
+                <th align="left"><?= DAV::xmlescape($group->prop_displayname()) ?></th>
                 <td align="right">
                   <!--    View button (when not admin of the group) or manage button -->
                   <?php if ( $group->is_admin() ) : ?>
@@ -63,7 +63,7 @@
           <div id="mygroups-<?= $i ?>" class="accordion-body collapse">
 
             <div class="accordion-inner">
-              <?= htmlspecialchars($group->prop(BeeHub::PROP_DESCRIPTION), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>
+              <?= DAV::xmlescape($group->prop(BeeHub::PROP_DESCRIPTION)) ?>
             </div>
           </div>
         </div>
@@ -100,7 +100,7 @@
           <div class="accordion-heading">
             <div class="accordion-toggle" data-toggle="collapse" data-parent="#joingroups" href="#joingroups-<?= $i ?>">
               <table width="100%"><tbody><tr>
-                <th align="left"><?= htmlspecialchars($group->prop_displayname(), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></th>
+                <th align="left"><?= DAV::xmlescape($group->prop_displayname()) ?></th>
                 <td align="right">
                   <!--    Leave, Cancel request or Join button -->
                   <?php if ( $group->is_member() ) : ?>
@@ -119,7 +119,7 @@
           </div>
           <div id="joingroups-<?= $i ?>" class="accordion-body collapse">
             <div class="accordion-inner">
-              <?= htmlspecialchars($group->prop(BeeHub::PROP_DESCRIPTION), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>
+              <?= DAV::xmlescape($group->prop(BeeHub::PROP_DESCRIPTION)) ?>
             </div>
           </div>
         </div>
