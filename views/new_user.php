@@ -6,7 +6,7 @@
   <br/>
   <h4>If you have not used BeeHub before, please give us some information about yourself:</h4>
   <?php else: ?>
-  <h3>Create Beehub account</h3>
+  <h3>Create BeeHub account</h3>
 <?php endif; ?>
 <br/>
 </form>

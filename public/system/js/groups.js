@@ -148,7 +148,7 @@ $(function() {
 		// Seperate regular expressions to make the errors more specific.
 		// value starts with a-zA-Z0-9, else return
 		 if (!RegExp('^[a-zA-Z0-9]{1}.*$').test(groupNameField.val())) {
-			 showError('First character must be a aphanumeric character or number.');
+			 showError('First character must be a alphanumeric character.');
 			 return false;
 		 }
 		// value only contain a-zA-Z0-9_-., else return
