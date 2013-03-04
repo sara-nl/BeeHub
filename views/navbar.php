@@ -12,7 +12,7 @@
               <li id="navbar-li-files"><a href="/">Files</a></li>
               <?php if (BeeHub_Auth::inst()->is_authenticated()) : ?>
                 <li id="navbar-li-groups"><a href="<?= htmlspecialchars(BeeHub::$CONFIG['namespace']['groups_path'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>">Groups</a></li>
-                <li id="navbar-li-sponsors"><a href="<?= htmlspecialchars(BeeHub::$CONFIG['namespace']['sponsors_path'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>">Sponsors</a></li>
+<?php /*                <li id="navbar-li-sponsors"><a href="<?= htmlspecialchars(BeeHub::$CONFIG['namespace']['sponsors_path'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>">Sponsors</a></li> */ ?>
               <?php endif; ?>
             </ul>
             <ul class="nav pull-right">

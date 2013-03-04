@@ -165,7 +165,7 @@ class BeeHub_User extends BeeHub_Principal {
       if ($this->stored_props[BeeHub::PROP_PASSWORD] === true) { //true means there is a password, but it hasn't been changed!
         $p_password = true;
       } else {
-        $p_password = crypt($this->stored_props[BeeHub::PROP_PASSWORD], '$6$rounds=4999$' . md5(time() . rand(0, 99999)) . '$');
+        $p_password = crypt($this->stored_props[BeeHub::PROP_PASSWORD], '$6$rounds=5000$' . md5(time() . rand(0, 99999)) . '$');
       }
       $this->stored_props[BeeHub::PROP_PASSWORD] = true;
     }else{
