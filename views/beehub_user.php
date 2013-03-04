@@ -1,5 +1,13 @@
 <?php
 $footer = '<script type="text/javascript" src="/system/js/user.js"></script>';
+$header = '
+<style type="text/css">
+	.control-label-left {
+    	text-align: left !important;
+// 			color: #008741 !important;
+	}
+</style>
+  ';
 require 'views/header.php';
 ?>
 
@@ -15,13 +23,13 @@ require 'views/header.php';
 
 <!-- Tab contents -->
 <div class="tab-content">
-
 <div id="panel-profile" class="tab-pane fade <?= !isset($_GET['verification_code']) ? 'in active' : '' ?>">
-  <div class="form-horizontal">
+   <br />
+  <form id="myprofile_form" class="form-horizontal">
     <div class="control-group">
-      <label class="control-label" for="user_name">User name</label>
+      <label class="control-label">User name</label>
       <div class="controls">
-        <?= htmlspecialchars($this->name, ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>
+        <label class="control-label control-label-left" for="user_name">   <?= htmlspecialchars($this->name, ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></label>
       </div>
     </div>
     <div class="control-group">
@@ -30,29 +38,33 @@ require 'views/header.php';
         <input type="text" id="displayname" name="displayname" value="<?= htmlspecialchars($this->prop(DAV::PROP_DISPLAYNAME), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>" required />
       </div>
     </div>
-    <div class="control-group">
+    <?php if ( !is_null( $unverified_address ) ) : ?>
+      <div class="control-group warning">
+    <?php else: ?>
+    	<div class="control-group">
+    <?php endif;?>
       <label class="control-label" for="email">E-mail address</label>
       <div class="controls">
         <input type="email" id="email" name="email" value="<?= htmlspecialchars($this->prop(BeeHub::PROP_EMAIL), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>" required />
         <?php if ( !is_null( $unverified_address ) ) : ?>
-          You've requested to change this to <?= htmlspecialchars($unverified_address, ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>, but you haven't verified this address yet!
+        	<span class="help-inline">You've requested to change this to <?= htmlspecialchars($unverified_address, ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>, but you haven't verified this address yet!</span>   
         <?php endif; ?>
       </div>
     </div>
-    <div class="control-group">
-      <label class="control-label" for="displayname">Default sponsor</label>
-      <div class="controls">
-        <select name="sponsor">
-          <option value=""><?= htmlspecialchars(BeeHub::sponsor($this->user_prop(BeeHub::PROP_SPONSOR))->prop(DAV::PROP_DISPLAYNAME), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></option>
-        </select>
-      </div>
-    </div>
+<!--     <div class="control-group"> -->
+<!--       <label class="control-label" >Default sponsor</label> -->
+<!--       <div class="controls"> -->
+<!--         <select name="sponsor"> -->
+<!--           <option value=""><?= htmlspecialchars(BeeHub::sponsor($this->user_prop(BeeHub::PROP_SPONSOR))->prop(DAV::PROP_DISPLAYNAME), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></option> -->
+<!--         </select> -->
+<!--       </div> -->
+<!--     </div> -->
     <div class="control-group">
       <div class="controls">
         <button id="save_button" type="submit" class="btn">Save</button>
       </div>
     </div>
-  </div>
+  </form>
 </div>
 
 
