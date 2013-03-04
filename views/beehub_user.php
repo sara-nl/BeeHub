@@ -1,80 +1,118 @@
 <?php
-$active = "profile";
-$header = '<style type="text/css">
-.fieldname {
-  text-align: right;
-}
-div.passwd {
-  display: none;
-}
-</style>';
 $footer = '<script type="text/javascript" src="/system/js/user.js"></script>';
 require 'views/header.php';
-
 ?>
-<h1>Profile</h1>
-<?php if (isset($_GET['saml_connect']) && !BeeHub_Auth::inst()->surfconext()) : ?>
-  <form id="saml_connect" method="post">
-    <input type="hidden" name="saml_connect" value="1" />
-    <input type="submit" value="Connect this SURFconext account to your BeeHub account" /> (click this button if your SURFconext account is not automatically connected)
-  </form>
-  <script type="text/javascript">
-    document.getElementById('saml_connect').submit();
-  </script>
-<?php endif; ?>
-<form method="post">
-  <div class="row-fluid">
-    <div class="span2 fieldname">Username</div>
-    <div class="span10 fieldvalue"><?= htmlspecialchars($this->name, ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></div>
-  </div>
-  <div class="row-fluid">
-    <div class="span2 fieldname">Display name</div>
-    <div class="span10 fieldvalue"><input type="text" name="displayname" value="<?= htmlspecialchars($this->prop(DAV::PROP_DISPLAYNAME), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>" /></div>
-  </div>
-  <div class="row-fluid">
-    <div class="span2 fieldname">E-mail address</div>
-    <div class="span10 fieldvalue"><input type="email" name="email" value="<?= htmlspecialchars($this->prop(BeeHub::PROP_EMAIL), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>" /></div>
-  </div>
-  <div class="row-fluid">
-    <div class="span2 fieldname"><label class="checkbox" for="change_password">Change my password</label></div>
-    <div class="span10 fieldvalue"><input type="checkbox" id="change_password" name="change_password" value="true" /></div>
-  </div>
-  <div class="row-fluid passwd">
-    <div class="span2 fieldname">New password</div>
-    <div class="span10 fieldvalue"><input type="password" name="password1" /></div>
-  </div>
-  <div class="row-fluid passwd">
-    <div class="span2 fieldname">Repeat new password</div>
-    <div class="span10 fieldvalue"><input type="password" name="password2" /></div>
-  </div>
-  <!--div class="row-fluid">
-    <div class="span2 fieldname">X509 certificate DN</div>
-    <div class="span10 fieldvalue"><?= htmlspecialchars($this->user_prop(BeeHub::PROP_X509), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></div>
-  </div-->
-  <div class="row-fluid">
-    <div class="span2 fieldname">Sponsor</div>
-    <div class="span10 fieldvalue"><?= htmlspecialchars($this->user_prop(BeeHub::PROP_SPONSOR), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></div>
-  </div>
-  <div class="row-fluid">
-    <div class="span2 fieldname">SURFconext account</div>
-    <?php if (!is_null($this->prop(BeeHub::PROP_SURFCONEXT))) : ?>
-      <div class="span10 fieldvalue">
-        <?= htmlspecialchars($this->user_prop(BeeHub::PROP_SURFCONEXT_DESCRIPTION), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?> (TODO: deze beschrijving is in principe aanpasbaar!)
-        <a href="/system/saml_connect.php">Connect to different SURFconext account</a>
-      </div>
-    <?php else : ?>
-      <div class="span10 fieldvalue"><a href="/system/saml_connect.php">Connect to SURFconext account</a></div>
-    <?php endif; ?>
-  </div>
-  <div class="row-fluid">
-    <div class="span2 fieldname">Unlink SURFconext account</div>
-    <div class="span10 fieldvalue"><input type="checkbox" name="saml_unlink" value="true" /></div>
-  </div>
-  <button class="btn">Save</button>
-</form>
 
-<form method="post">
-  <div>Verification code: <input type="text" name="verification_code" value="<?= htmlspecialchars(@$_GET['verification_code'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>" /></div>
-  <div><input type="submit" value="Verify e-mail address" /></div>
-</form>
-<?php require 'views/footer.php'; ?>
+<!-- Tabs-->
+<ul id="beehub-top-tabs" class="nav nav-tabs">
+  <li <?= !isset($_GET['verification_code']) ? 'class="active"' : '' ?>><a href="#panel-profile" data-toggle="tab">My profile</a></li>
+  <li><a href="#panel-password" data-toggle="tab">Change password</a></li>
+  <li><a href="#panel-surfconext" data-toggle="tab">SURFconext</a></li>
+  <?php if ( !is_null( $unverified_address ) ) : ?>
+    <li <?= isset($_GET['verification_code']) ? 'class="active"' : '' ?>><a href="#panel-verify" data-toggle="tab">Verify e-mail address</a></li>
+  <?php endif; ?>
+</ul>
+
+<!-- Tab contents -->
+<div class="tab-content">
+
+<div id="panel-profile" class="tab-pane fade <?= !isset($_GET['verification_code']) ? 'in active' : '' ?>">
+  <div class="form-horizontal">
+    <div class="control-group">
+      <label class="control-label" for="user_name">User name</label>
+      <div class="controls">
+        <?= htmlspecialchars($this->name, ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="displayname">Display name</label>
+      <div class="controls">
+        <input type="text" id="displayname" name="displayname" value="<?= htmlspecialchars($this->prop(DAV::PROP_DISPLAYNAME), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>" required />
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="email">E-mail address</label>
+      <div class="controls">
+        <input type="email" id="email" name="email" value="<?= htmlspecialchars($this->prop(BeeHub::PROP_EMAIL), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>" required />
+        <?php if ( !is_null( $unverified_address ) ) : ?>
+          You've requested to change this to <?= htmlspecialchars($unverified_address, ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>, but you haven't verified this address yet!
+        <?php endif; ?>
+      </div>
+    </div>
+    <div class="control-group">
+      <label class="control-label" for="displayname">Default sponsor</label>
+      <div class="controls">
+        <select name="sponsor">
+          <option value=""><?= htmlspecialchars(BeeHub::sponsor($this->user_prop(BeeHub::PROP_SPONSOR))->prop(DAV::PROP_DISPLAYNAME), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></option>
+        </select>
+      </div>
+    </div>
+    <div class="control-group">
+      <div class="controls">
+        <button id="save_button" type="submit" class="btn">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div id="panel-password" class="tab-pane fade">
+  <br />
+  <div class="form-horizontal">
+    <div class="control-group passwd">
+      <label class="control-label" for="password">Old password</label>
+      <div class="controls">
+        <input type="password" id="old_password" name="old_password" />
+      </div>
+    </div>
+    <div class="control-group passwd">
+      <label class="control-label" for="password">New password</label>
+      <div class="controls">
+        <input type="password" id="password" name="password" />
+      </div>
+    </div>
+    <div class="control-group passwd">
+      <label class="control-label" for="password2">Repeat new password</label>
+      <div class="controls">
+        <input type="password" id="password2" name="password2" />
+      </div>
+    </div>
+    <div class="control-group">
+      <div class="controls">
+        <button id="save_button" type="submit" class="btn">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div id="panel-surfconext" class="tab-pane fade">
+  <?php if ( !is_null($this->prop( BeeHub::PROP_SURFCONEXT ) ) ) : ?>
+    <p>Your BeeHub account is currently linked to a SURFconext account which you gave the following description:</p>
+    <p><em><?= htmlspecialchars($this->user_prop(BeeHub::PROP_SURFCONEXT_DESCRIPTION), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></em></p>
+    <p><button class="btn">Unlink SURFconext</button> <a href="/system/saml_connect.php" class="btn">Link a different SURFconext account</a></p>
+  <?php else: ?>
+    <p>Your BeeHub account is not linked to a SURFconext account.</p>
+    <p><a href="/system/saml_connect.php" class="btn">Link SURFconext account</a></p>
+  <?php endif; ?>
+</div>
+
+<?php if ( !is_null( $unverified_address ) ) : ?>
+  <div id="panel-verify" class="tab-pane fade <?= isset($_GET['verification_code']) ? 'in active' : '' ?>">
+    <div class="form-horizontal">
+      <p>I want to verify this e-mail address: <?= $unverified_address ?></p>
+      <div class="control-group">
+        <label class="control-label" for="verification_code">Verification code: </label>
+        <div class="controls">
+          <input type="text" id="verification_code" name="verification_code" value="<?= htmlspecialchars(@$_GET['verification_code'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>" required />
+        </div>
+      </div>
+      <div class="control-group">
+        <div class="controls">
+          <button type="submit" class="btn">Verify e-mail address</button>
+        </div>
+      </div>
+    </div>
+  </div>
+<?php endif;
+
+require 'views/footer.php'; ?>

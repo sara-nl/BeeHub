@@ -74,11 +74,39 @@ EOS;
     }
 
     // Allow users to request or remove membership
+    $current_user = $auth->current_user();
     if (isset($_POST['leave'])) {
       $this->delete_members(array(BeeHub_Auth::inst()->current_user()->path));
     }
     if (isset($_POST['join'])) {
+      $statement = BeeHub_DB::execute('SELECT `is_accepted` FROM `beehub_sponsor_members` WHERE `user_name`=? AND `sponsor_name`=?',
+                                      'ss', $current_user->name, $this->name);
+      $message = null;
+      if ( !( $row = $statement->fetch_row() ) || ( $row[0] != 1 ) ) { // This user is not invited for this group, so sent the administrators an e-mail with this request
+        $message =
+'Dear sponsor administrator,
+
+' . $current_user->prop(DAV::PROP_DISPLAYNAME) . ' wants to join the sponsor \'' . $this->prop(DAV::PROP_DISPLAYNAME) . '\'. One of the sponsor administrators needs to either accept or reject this membership request. Please see your notifications in BeeHub to do this:
+
+' . BeeHub::urlbase(true) . '?show_notifications=1
+
+Best regards,
+
+BeeHub';
+        $recipients = array();
+        foreach ($this->users as $user => $attributes) {
+          if ($attributes['is_admin']) {
+            $user = BeeHub::user($user);
+            $recipients[] = $user->prop(DAV::PROP_DISPLAYNAME) . ' <' . $user->prop(BeeHub::PROP_EMAIL) . '>';
+          }
+        }
+      }
       $this->change_memberships(array(BeeHub_Auth::inst()->current_user()->path), false, true, false, null, true);
+      if (!is_null($message)) {
+        BeeHub::email($recipients,
+                      'BeeHub notification: membership request for sponsor ' . $this->prop(DAV::PROP_DISPLAYNAME),
+                      $message);
+      }
     }
 
     //First add members, admins and requests
@@ -93,6 +121,24 @@ EOS;
         }
         switch ($key) {
           case 'add_members':
+            foreach ($members as $member) {
+              $user = BeeHub::user($member);
+              $statement = BeeHub_DB::execute('SELECT `is_accepted` FROM `beehub_sponsor_members` WHERE `user_name`=? AND `sponsor_name`=?',
+                                              'ss', $user->name, $this->name);
+              if ( !( $row = $statement->fetch_row() ) || ( $row[0] == 0 ) ) { // The user was not a member of this sponsor yet, so notify him/her
+                $message =
+'Dear ' . $user->prop(DAV::PROP_DISPLAYNAME) . ',
+
+You are now sponsored by \'' . $this->prop(DAV::PROP_DISPLAYNAME) . '\'.
+
+Best regards,
+
+BeeHub';
+                BeeHub::email($user->prop(DAV::PROP_DISPLAYNAME) . ' <' . $user->prop(BeeHub::PROP_EMAIL) . '>',
+                              'BeeHub notification: new sponsor ' . $this->prop(DAV::PROP_DISPLAYNAME),
+                              $message);
+              }
+            }
             $this->change_memberships($members, true, false, true);
             break;
           case 'add_admins':
@@ -103,6 +149,20 @@ EOS;
             break;
           case 'delete_members':
             $this->delete_members($members);
+            foreach ($members as $member) {
+              $user = BeeHub::user($member);
+              $message =
+'Dear ' . $user->prop(DAV::PROP_DISPLAYNAME) . ',
+
+Sponsor administrator ' . $current_user->prop(DAV::PROP_DISPLAYNAME) . ' removed you from the sponsor \'' . $this->prop(DAV::PROP_DISPLAYNAME) . '\'. If you believe you should be a member of this sponsor, please contact one of the sponsor administrators.
+
+Best regards,
+
+BeeHub';
+              BeeHub::email($user->prop(DAV::PROP_DISPLAYNAME) . ' <' . $user->prop(BeeHub::PROP_EMAIL) . '>',
+                            'BeeHub notification: removed from sponsor ' . $this->prop(DAV::PROP_DISPLAYNAME),
+                            $message);
+            }
             break;
           default: //Should/could never happen
             throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
@@ -190,7 +250,7 @@ EOS;
          WHERE `sponsor_name` = ?',
         's', $this->name
       );
-      $row = $statement_props->fetch();
+      $row = $statement_props->fetch_row();
       if ( is_null($row) )
         throw new DAV_Status( DAV::HTTP_NOT_FOUND );
 

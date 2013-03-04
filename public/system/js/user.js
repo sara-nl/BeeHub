@@ -7,10 +7,12 @@ $(function (){
     }
   }); // End of change password (checkbox) event listener
 
-  $('.btn').click(function() {
+  $('#save_button').click(function(event) {
+    event.preventDefault();
+
     var setProps = new Array();
     if ($('#change_password').is(':checked')) {
-      var passwordValue = $('input[name="password1"]').val();
+      var passwordValue = $('input[name="password"]').val();
       if (passwordValue != $('input[name="password2"]').val()) {
         alert('The two passwords are not identical!');
         return false;
@@ -32,8 +34,9 @@ $(function (){
     displayname.setValueAndRebuildXml($('input[name="displayname"]').val());
     setProps.push(displayname);
 
-    var delProps = new Array();
+    var delProps;
     if ($('input[name="saml_unlink"]').is(':checked')) {
+      delProps = new Array();
       var saml_unlink = new nl.sara.webdav.Property();
       saml_unlink.namespace = 'http://beehub.nl/';
       saml_unlink.tagname = 'surfconext-description';
@@ -48,7 +51,5 @@ $(function (){
     client.proppatch(location.pathname, function(status, data) {
       alert(status);
     }, setProps, delProps);
-
-    return false;
   }); // End of button click event listener
 });
