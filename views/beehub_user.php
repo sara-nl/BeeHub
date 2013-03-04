@@ -6,6 +6,7 @@ require 'views/header.php';
 <!-- Tabs-->
 <ul id="beehub-top-tabs" class="nav nav-tabs">
   <li <?= !isset($_GET['verification_code']) ? 'class="active"' : '' ?>><a href="#panel-profile" data-toggle="tab">My profile</a></li>
+  <li><a href="#panel-password" data-toggle="tab">Change password</a></li>
   <li><a href="#panel-surfconext" data-toggle="tab">SURFconext</a></li>
   <?php if ( !is_null( $unverified_address ) ) : ?>
     <li <?= isset($_GET['verification_code']) ? 'class="active"' : '' ?>><a href="#panel-verify" data-toggle="tab">Verify e-mail address</a></li>
@@ -16,11 +17,11 @@ require 'views/header.php';
 <div class="tab-content">
 
 <div id="panel-profile" class="tab-pane fade <?= !isset($_GET['verification_code']) ? 'in active' : '' ?>">
-  <form class="form-horizontal" action="<?= $this->path ?>" method="post">
+  <div class="form-horizontal">
     <div class="control-group">
       <label class="control-label" for="user_name">User name</label>
       <div class="controls">
-        <?= htmlspecialchars($this->prop(DAV::PROP_DISPLAYNAME), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>
+        <?= htmlspecialchars($this->name, ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>
       </div>
     </div>
     <div class="control-group">
@@ -33,12 +34,35 @@ require 'views/header.php';
       <label class="control-label" for="email">E-mail address</label>
       <div class="controls">
         <input type="email" id="email" name="email" value="<?= htmlspecialchars($this->prop(BeeHub::PROP_EMAIL), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>" required />
+        <?php if ( !is_null( $unverified_address ) ) : ?>
+          You've requested to change this to <?= htmlspecialchars($unverified_address, ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>, but you haven't verified this address yet!
+        <?php endif; ?>
       </div>
     </div>
     <div class="control-group">
-      <label class="control-label" for="change_password">Change my password</label>
+      <label class="control-label" for="displayname">Default sponsor</label>
       <div class="controls">
-        <input type="checkbox" id="change_password" name="change_password" value="true" />
+        <select name="sponsor">
+          <option value=""><?= htmlspecialchars(BeeHub::sponsor($this->user_prop(BeeHub::PROP_SPONSOR))->prop(DAV::PROP_DISPLAYNAME), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></option>
+        </select>
+      </div>
+    </div>
+    <div class="control-group">
+      <div class="controls">
+        <button id="save_button" type="submit" class="btn">Save</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div id="panel-password" class="tab-pane fade">
+  <br />
+  <div class="form-horizontal">
+    <div class="control-group passwd">
+      <label class="control-label" for="password">Old password</label>
+      <div class="controls">
+        <input type="password" id="old_password" name="old_password" />
       </div>
     </div>
     <div class="control-group passwd">
@@ -54,17 +78,11 @@ require 'views/header.php';
       </div>
     </div>
     <div class="control-group">
-      <label class="control-label" for="displayname">Default ponsor</label>
-      <div class="controls">
-        <div><?= htmlspecialchars(BeeHub::sponsor($this->user_prop(BeeHub::PROP_SPONSOR))->prop(DAV::PROP_DISPLAYNAME), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></div>
-      </div>
-    </div>
-    <div class="control-group">
       <div class="controls">
         <button id="save_button" type="submit" class="btn">Save</button>
       </div>
     </div>
-  </form>
+  </div>
 </div>
 
 <div id="panel-surfconext" class="tab-pane fade">
@@ -80,7 +98,7 @@ require 'views/header.php';
 
 <?php if ( !is_null( $unverified_address ) ) : ?>
   <div id="panel-verify" class="tab-pane fade <?= isset($_GET['verification_code']) ? 'in active' : '' ?>">
-    <form class="form-horizontal" method="post" action="<?= $this->path ?>">
+    <div class="form-horizontal">
       <p>I want to verify this e-mail address: <?= $unverified_address ?></p>
       <div class="control-group">
         <label class="control-label" for="verification_code">Verification code: </label>
@@ -93,7 +111,7 @@ require 'views/header.php';
           <button type="submit" class="btn">Verify e-mail address</button>
         </div>
       </div>
-    </form>
+    </div>
   </div>
 <?php endif;
 

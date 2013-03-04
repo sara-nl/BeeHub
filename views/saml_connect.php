@@ -3,6 +3,7 @@ require 'views/header.php';
 $user = BeeHub_Auth::inst()->current_user();
 $attributes = $simpleSaml->getAttributes();
 ?>
+<h3>Link SURFconext account</h3>
 <p>
   <div>You are about to link your SURFconext account to the BeeHub account with user name '<em><?= $user->name ?></em>' and display name '<em><?= $user->prop(DAV::PROP_DISPLAYNAME) ?></em>'. To help you determine if you're logged in to the right SURFconext account, here is the information you've shared with BeeHub through SURFconext:</div>
   <div>Display name: <em><?= !empty($attributes['urn:mace:dir:attribute-def:displayName']) ? $attributes['urn:mace:dir:attribute-def:displayName'][0] : 'not provided' ?></em></div>

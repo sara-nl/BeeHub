@@ -12,7 +12,7 @@ $(function (){
 
     var setProps = new Array();
     if ($('#change_password').is(':checked')) {
-      var passwordValue = $('input[name="password1"]').val();
+      var passwordValue = $('input[name="password"]').val();
       if (passwordValue != $('input[name="password2"]').val()) {
         alert('The two passwords are not identical!');
         return false;

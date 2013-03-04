@@ -69,7 +69,7 @@ class BeeHub_User extends BeeHub_Principal {
       if (!$this->verify_email_address($_POST['verification_code'])){
         throw DAV::forbidden();
       }
-      $this->include_view('email_verified');
+      DAV::redirect(DAV::HTTP_SEE_OTHER, $this->path);
       return;
     }
     throw new DAV_Status(DAV::HTTP_BAD_REQUEST);
@@ -165,7 +165,7 @@ class BeeHub_User extends BeeHub_Principal {
       if ($this->stored_props[BeeHub::PROP_PASSWORD] === true) { //true means there is a password, but it hasn't been changed!
         $p_password = true;
       } else {
-        $p_password = crypt($this->stored_props[BeeHub::PROP_PASSWORD], '$6$rounds=5000$' . md5(time() . rand(0, 99999)) . '$');
+        $p_password = crypt($this->stored_props[BeeHub::PROP_PASSWORD], '$6$rounds=4999$' . md5(time() . rand(0, 99999)) . '$');
       }
       $this->stored_props[BeeHub::PROP_PASSWORD] = true;
     }else{
@@ -375,7 +375,7 @@ BeeHub';
     $retval[BeeHub::PROP_SPONSOR]                = $is_admin;
     $retval[DAV::PROP_GROUP_MEMBERSHIP]          = false;
     $retval[BeeHub::PROP_SPONSOR_MEMBERSHIP]     = false;
-    $retval[BeeHub::PROP_PASSWORD]               = false;
+    $retval[BeeHub::PROP_PASSWORD]               = $is_admin;
     return $retval;
   }
 
