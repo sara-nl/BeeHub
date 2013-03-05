@@ -29,13 +29,13 @@ require 'views/header.php';
     <div class="control-group">
       <label class="control-label">User name</label>
       <div class="controls">
-        <label class="control-label control-label-left" for="user_name">   <?= htmlspecialchars($this->name, ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></label>
+        <label class="control-label control-label-left" for="user_name">   <?= DAV::xmlescape($this->name) ?></label>
       </div>
     </div>
     <div class="control-group">
       <label class="control-label" for="displayname">Display name</label>
       <div class="controls">
-        <input type="text" id="displayname" name="displayname" value="<?= htmlspecialchars($this->prop(DAV::PROP_DISPLAYNAME), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>" required />
+        <input type="text" id="displayname" name="displayname" value="<?= DAV::xmlescape($this->prop(DAV::PROP_DISPLAYNAME)) ?>" required />
       </div>
     </div>
     <?php if ( !is_null( $unverified_address ) ) : ?>
@@ -45,9 +45,9 @@ require 'views/header.php';
     <?php endif;?>
       <label class="control-label" for="email">E-mail address</label>
       <div class="controls">
-        <input type="email" id="email" name="email" value="<?= htmlspecialchars($this->prop(BeeHub::PROP_EMAIL), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>" required />
+        <input type="email" id="email" name="email" value="<?= DAV::xmlescape($this->prop(BeeHub::PROP_EMAIL)) ?>" required />
         <?php if ( !is_null( $unverified_address ) ) : ?>
-        	<span class="help-inline">You've requested to change this to <?= htmlspecialchars($unverified_address, ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>, but you haven't verified this address yet!</span>   
+        	<span class="help-inline">You've requested to change this to <?= DAV::xmlescape($unverified_address) ?>, but you haven't verified this address yet!</span>
         <?php endif; ?>
       </div>
     </div>
@@ -55,7 +55,7 @@ require 'views/header.php';
 <!--       <label class="control-label" >Default sponsor</label> -->
 <!--       <div class="controls"> -->
 <!--         <select name="sponsor"> -->
-<!--           <option value=""><?= htmlspecialchars(BeeHub::sponsor($this->user_prop(BeeHub::PROP_SPONSOR))->prop(DAV::PROP_DISPLAYNAME), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></option> -->
+<!--           <option value=""><?= DAV::xmlescape(BeeHub::sponsor($this->user_prop(BeeHub::PROP_SPONSOR))->prop(DAV::PROP_DISPLAYNAME)) ?></option> -->
 <!--         </select> -->
 <!--       </div> -->
 <!--     </div> -->
@@ -100,7 +100,7 @@ require 'views/header.php';
 <div id="panel-surfconext" class="tab-pane fade">
   <?php if ( !is_null($this->prop( BeeHub::PROP_SURFCONEXT ) ) ) : ?>
     <p>Your BeeHub account is currently linked to a SURFconext account which you gave the following description:</p>
-    <p><em><?= htmlspecialchars($this->user_prop(BeeHub::PROP_SURFCONEXT_DESCRIPTION), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></em></p>
+    <p><em><?= DAV::xmlescape($this->user_prop(BeeHub::PROP_SURFCONEXT_DESCRIPTION)) ?></em></p>
     <p><button class="btn">Unlink SURFconext</button> <a href="/system/saml_connect.php" class="btn">Link a different SURFconext account</a></p>
   <?php else: ?>
     <p>Your BeeHub account is not linked to a SURFconext account.</p>
@@ -115,7 +115,7 @@ require 'views/header.php';
       <div class="control-group">
         <label class="control-label" for="verification_code">Verification code: </label>
         <div class="controls">
-          <input type="text" id="verification_code" name="verification_code" value="<?= htmlspecialchars(@$_GET['verification_code'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>" required />
+          <input type="text" id="verification_code" name="verification_code" value="<?= DAV::xmlescape(@$_GET['verification_code']) ?>" required />
         </div>
       </div>
       <div class="control-group">

@@ -23,15 +23,15 @@ require 'views/header.php';
 <form method="post">
   <div class="row-fluid">
     <div class="span2 fieldname">Group name</div>
-    <div class="span10 fieldvalue"><?= htmlspecialchars($this->name, ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></div>
+    <div class="span10 fieldvalue"><?= DAV::xmlescape($this->name) ?></div>
   </div>
   <div class="row-fluid">
     <div class="span2 fieldname">Display name</div>
-    <div class="span10 fieldvalue"><input type="text" name="displayname" value="<?= htmlspecialchars($this->prop(DAV::PROP_DISPLAYNAME), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>" /></div>
+    <div class="span10 fieldvalue"><input type="text" name="displayname" value="<?= DAV::xmlescape($this->prop(DAV::PROP_DISPLAYNAME)) ?>" /></div>
   </div>
   <div class="row-fluid">
     <div class="span2 fieldname">Description</div>
-    <div class="span10 fieldvalue"><input type="text" name="description" value="<?= htmlspecialchars($this->prop(BeeHub::PROP_DESCRIPTION), ENT_QUOTES | ENT_HTML5, 'UTF-8') ?>" /></div>
+    <div class="span10 fieldvalue"><input type="text" name="description" value="<?= DAV::xmlescape($this->prop(BeeHub::PROP_DESCRIPTION)) ?>" /></div>
   </div>
   <button id="save_sponsor_buton" class="btn">Save</button>
 </form>
@@ -52,8 +52,8 @@ require 'views/header.php';
       <?php foreach ($members as $member) :
         if (!$member['is_accepted']) : ?>
           <tr class="member_row" id="<?= BeeHub::$CONFIG['namespace']['users_path'] . rawurlencode($member['user_name']) ?>">
-            <td><?= htmlspecialchars($member['user_name'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></td>
-            <td><?= htmlspecialchars($member['displayname'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></td>
+            <td><?= DAV::xmlescape($member['user_name']) ?></td>
+            <td><?= DAV::xmlescape($member['displayname']) ?></td>
             <td><a href="#" class="accept_link">Accept</a></td>
             <td><a href="#" class="remove_link">Delete</a></td>
           </tr>
@@ -77,8 +77,8 @@ require 'views/header.php';
       <?php foreach ($members as $member) :
         if ($member['is_accepted']) : ?>
           <tr class="member_row" id="<?= BeeHub::$CONFIG['namespace']['users_path'] . rawurlencode($member['user_name']) ?>">
-            <td><?= htmlspecialchars($member['user_name'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></td>
-            <td><?= htmlspecialchars($member['displayname'], ENT_QUOTES | ENT_HTML5, 'UTF-8') ?></td>
+            <td><?= DAV::xmlescape($member['user_name']) ?></td>
+            <td><?= DAV::xmlescape($member['displayname']) ?></td>
             <td><?= ($member['is_admin'] ? 'jep <a href="#" class="demote_link">demote</a>' : 'nope <a href="#" class="promote_link">promote</a>') ?></td>
             <td><a href="#" class="remove_link">Delete</a></td>
           </tr>
