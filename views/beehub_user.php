@@ -117,13 +117,14 @@ require 'views/header.php';
         <th align="left"><?= DAV::xmlescape($this->user_prop(BeeHub::PROP_SURFCONEXT_DESCRIPTION)) ?></th>
         	<td width="10px"></td>
           <td align="right">
-            <button type="button" class="btn btn-danger">Unlink</button> 
+            <button type="button" class="btn btn-danger" id="unlink">Unlink</button> 
             <a type="button" href="/system/saml_connect.php" class="btn btn-success">Unlink and link another SURFconext account</a>
           </td>
         </tr></tbody>
       </table>
 	    <br/><br/><br/>    
 	  <?php else: ?>
+	  <br/>
 	    <p>Your BeeHub account is not linked to a SURFconext account.</p>
 	    <p><a type="button" href="/system/saml_connect.php" class="btn btn-success">Link SURFconext account</a></p>
 	  <?php endif; ?>
@@ -132,8 +133,8 @@ require 'views/header.php';
 
 <?php if ( !is_null( $unverified_address ) ) : ?>
   <div id="panel-verify" class="tab-pane fade <?= isset($_GET['verification_code']) ? 'in active' : '' ?>">
-    <form class="form-horizontal" method="post">
-      <p>I want to verify this e-mail address: <?= $unverified_address ?></p>
+    <form id="verify_email" class="form-horizontal" method="post">
+      <h5>Verify email address: <?= $unverified_address ?></h5>
       <div class="control-group">
         <label class="control-label" for="verification_code">Verification code: </label>
         <div class="controls">
