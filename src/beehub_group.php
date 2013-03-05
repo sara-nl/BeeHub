@@ -266,8 +266,25 @@ BeeHub';
     if (count($members) == 0) {
       return;
     }
-    foreach ($members as $member) {
-      $user_name = rawurldecode(basename($member));
+    $members = array_map(array('BeeHub_Group', 'get_user_name'), $members);
+    $escaped_members = array_map(array(BeeHub_DB::mysqli(), 'real_escape_string'), $members);
+
+    // Check if this request is not removing all administrators from this group
+    $check_admin_statement = BeeHub_DB::execute(
+      "SELECT COUNT(`user_name`)
+         FROM `beehub_group_members`
+        WHERE `is_admin` = 1 AND
+              `group_name` = ? AND
+              `user_name` NOT IN ('" . implode("','", $escaped_members) . "')",
+      's', $this->name
+    );
+    $row = $check_admin_statement->fetch_row();
+    if ($row[0] === 0) {
+      throw new DAV_Status(DAV::HTTP_CONFLICT, 'You are not allowed to remove all the group administrators from a group. Leave at least one group administrator in the group or appoint a new group administrator!');
+    }
+
+    // Then delete all the members
+    foreach ($members as $user_name) {
       BeeHub_DB::execute(
         'DELETE FROM `beehub_group_members`
          WHERE `group_name` = ?
@@ -275,6 +292,11 @@ BeeHub';
         'ss', $this->name, $user_name
       );
     }
+  }
+
+
+  private static function get_user_name($user_name) {
+    return rawurldecode(basename($user_name));
   }
 
 
