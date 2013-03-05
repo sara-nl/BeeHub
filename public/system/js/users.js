@@ -79,8 +79,7 @@ $(function() {
 		 if (!userNameListener($('#username'))) {
 			 e.preventDefault();
 		 };
-		console.log(userNameListener($('#username_password_confirmation')));
-		// check if username does not already exists.
+		// check if both new passwords are the same.
 		 if (!passwordListener($('#username_password_confirmation'))) {
 			 e.preventDefault();
 		 }

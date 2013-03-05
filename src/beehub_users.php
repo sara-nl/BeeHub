@@ -92,7 +92,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
     $user = BeeHub_Registry::inst()->resource(
       BeeHub::$CONFIG['namespace']['users_path'] . rawurlencode($user_name)
     );
-    $user->user_set(BeeHub::PROP_PASSWORD, $password);
+    $user->set_password($password);
     $user->user_set(DAV::PROP_DISPLAYNAME, $displayname);
     $user->user_set(BeeHub::PROP_EMAIL, $email);
     // TODO: This should not be hard coded, a new user should not have a sponsor but request one after his account is created, but I want to inform the user about his through the not-yet-existing notification system

@@ -29,9 +29,65 @@ $(function (){
 	    		alert("Something went wrong. Your profile is not updated!")
 	    	}
 	    }, setProps);
+	   
 	 }); // End of submit myprofile_form listener
 	 
-	 
+	var passwordListener = function(passwordConfirmationField){
+		// clear error
+		passwordConfirmationField.next().remove();
+		passwordConfirmationField.parent().parent().removeClass('error');
+		
+		var showError = function(error){
+			passwordConfirmationField.parent().parent().addClass('error');
+			var error = $('<span class="help-inline">'+error+'</span>');
+			passwordConfirmationField.parent().append(error);
+		}
+		
+		if(passwordConfirmationField.val() !== $('#new_password').val()) {
+			showError('Password mismatch.');
+			return false;
+		};
+		return true;
+	};
+
+	/*
+	* Action when the password field will change
+	*/
+	$('#new_password2').change(function (e) {
+		 passwordListener($(this));
+	});
+	
+		/*
+	* Action when the password field will change
+	*/
+	$('#password').change(function () {
+		// clear error
+		$(this).next().remove();
+		$(this).parent().parent().removeClass('error');
+	});
+	
+	/*
+	* Action when the change password button is clicked
+	*/
+	$('#change-password').submit(function (e) {
+		 e.preventDefault();
+		 var client = new nl.sara.webdav.Client();
+		    client.post(location.pathname, function(status, data) {
+		    	if (status===200) {
+		    		// TODO check if user is logged on with SURFconext.
+//		    		alert("Your password is changed now! When " +
+//		    			"you are logged on with a SURFconext " +
+//		    			"account you stay connected. Otherwise you need to login again with your new password.")
+			    	location.reload();
+		    	}
+		    	if (status===403) {
+		    		$("#password").parent().parent().addClass('error');
+					var error = $('<span class="help-inline">Wrong password.</span>');
+					$("#password").parent().append(error);
+		    	};
+		    }, $("#change-password").serialize());
+	});
+	
 	//  $('#change_password').change(function() {
 //   if ($(this).is(':checked')) {
 //     $('div.passwd').show("blind");

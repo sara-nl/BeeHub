@@ -6,6 +6,10 @@ $header = '
     	text-align: left !important;
 // 			color: #008741 !important;
 	}
+		
+	#surfconext {
+    padding-left:25px !important;
+  }
 </style>
   ';
 require 'views/header.php';
@@ -51,14 +55,22 @@ require 'views/header.php';
         <?php endif; ?>
       </div>
     </div>
-<!--     <div class="control-group"> -->
-<!--       <label class="control-label" >Default sponsor</label> -->
-<!--       <div class="controls"> -->
-<!--         <select name="sponsor"> -->
-<!--           <option value=""><?= DAV::xmlescape(BeeHub::sponsor($this->user_prop(BeeHub::PROP_SPONSOR))->prop(DAV::PROP_DISPLAYNAME)) ?></option> -->
-<!--         </select> -->
-<!--       </div> -->
-<!--     </div> -->
+    <div class="control-group">
+      <label class="control-label" >Default sponsor</label>
+      <div class="controls">
+        <select name="sponsor">
+          <?php
+          $registry = BeeHub_Registry::inst();
+          foreach($this->prop(BeeHub::PROP_SPONSOR_MEMBERSHIP) as $sponsor_path) : ?>
+            <option value="<?= DAV::xmlescape($sponsor_path) ?>" <?= ( $this->user_prop(BeeHub::PROP_SPONSOR) === $sponsor_path ) ? 'selected="selected"' : '' ?>>
+              <?= DAV::xmlescape( BeeHub::sponsor($sponsor_path)->prop( DAV::PROP_DISPLAYNAME ) ) ?>
+            </option>
+            <?php
+            $registry->forget($sponsor_path);
+          endforeach; ?>
+        </select>
+      </div>
+    </div>
     <div class="control-group">
       <div class="controls">
         <button id="save_button" type="submit" class="btn">Save</button>
@@ -70,23 +82,23 @@ require 'views/header.php';
 
 <div id="panel-password" class="tab-pane fade">
   <br />
-  <div class="form-horizontal">
+  <form class="form-horizontal" id="change-password" method="post">
     <div class="control-group passwd">
       <label class="control-label" for="password">Old password</label>
       <div class="controls">
-        <input type="password" id="old_password" name="old_password" />
+        <input type="password" id="password" name="password" required />
       </div>
     </div>
     <div class="control-group passwd">
-      <label class="control-label" for="password">New password</label>
+      <label class="control-label" for="new_password">New password</label>
       <div class="controls">
-        <input type="password" id="password" name="password" />
+        <input type="password" id="new_password" name="new_password" required />
       </div>
     </div>
     <div class="control-group passwd">
-      <label class="control-label" for="password2">Repeat new password</label>
+      <label class="control-label" for="new_password2">Repeat new password</label>
       <div class="controls">
-        <input type="password" id="password2" name="password2" />
+        <input type="password" id="new_password2" name="new_password2" required />
       </div>
     </div>
     <div class="control-group">
@@ -94,23 +106,33 @@ require 'views/header.php';
         <button id="save_button" type="submit" class="btn">Save</button>
       </div>
     </div>
-  </div>
+  </form>
 </div>
 
 <div id="panel-surfconext" class="tab-pane fade">
-  <?php if ( !is_null($this->prop( BeeHub::PROP_SURFCONEXT ) ) ) : ?>
-    <p>Your BeeHub account is currently linked to a SURFconext account which you gave the following description:</p>
-    <p><em><?= DAV::xmlescape($this->user_prop(BeeHub::PROP_SURFCONEXT_DESCRIPTION)) ?></em></p>
-    <p><button class="btn">Unlink SURFconext</button> <a href="/system/saml_connect.php" class="btn">Link a different SURFconext account</a></p>
-  <?php else: ?>
-    <p>Your BeeHub account is not linked to a SURFconext account.</p>
-    <p><a href="/system/saml_connect.php" class="btn">Link SURFconext account</a></p>
-  <?php endif; ?>
+	<div id="surfconext">
+	  <?php if ( !is_null($this->prop( BeeHub::PROP_SURFCONEXT ) ) ) : ?>
+	    <h5>Your BeeHub account is currently linked to SURFconext account:</h5>
+	    <table><tbody><tr>
+        <th align="left"><?= DAV::xmlescape($this->user_prop(BeeHub::PROP_SURFCONEXT_DESCRIPTION)) ?></th>
+        	<td width="10px"></td>
+          <td align="right">
+            <button type="button" class="btn btn-danger">Unlink</button> 
+            <a type="button" href="/system/saml_connect.php" class="btn btn-success">Unlink and link another SURFconext account</a>
+          </td>
+        </tr></tbody>
+      </table>
+	    <br/><br/><br/>    
+	  <?php else: ?>
+	    <p>Your BeeHub account is not linked to a SURFconext account.</p>
+	    <p><a type="button" href="/system/saml_connect.php" class="btn btn-success">Link SURFconext account</a></p>
+	  <?php endif; ?>
+	</div>
 </div>
 
 <?php if ( !is_null( $unverified_address ) ) : ?>
   <div id="panel-verify" class="tab-pane fade <?= isset($_GET['verification_code']) ? 'in active' : '' ?>">
-    <div class="form-horizontal">
+    <form class="form-horizontal" method="post">
       <p>I want to verify this e-mail address: <?= $unverified_address ?></p>
       <div class="control-group">
         <label class="control-label" for="verification_code">Verification code: </label>
@@ -118,12 +140,18 @@ require 'views/header.php';
           <input type="text" id="verification_code" name="verification_code" value="<?= DAV::xmlescape(@$_GET['verification_code']) ?>" required />
         </div>
       </div>
+      <div class="control-group passwd">
+      <label class="control-label" for="verify_password">Password</label>
+      <div class="controls">
+        <input type="password" id="verify_password" name="password" required />
+      </div>
+    </div>
       <div class="control-group">
         <div class="controls">
           <button type="submit" class="btn">Verify e-mail address</button>
         </div>
       </div>
-    </div>
+    </form>
   </div>
 <?php endif;
 
