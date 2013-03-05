@@ -58,7 +58,7 @@ require 'views/header.php';
     <div class="control-group">
       <label class="control-label" >Default sponsor</label>
       <div class="controls">
-        <select name="sponsor">
+        <select id="sponsor" name="sponsor">
           <?php
           $registry = BeeHub_Registry::inst();
           foreach($this->prop(BeeHub::PROP_SPONSOR_MEMBERSHIP) as $sponsor_path) : ?>
