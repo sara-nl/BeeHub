@@ -46,7 +46,7 @@ $(function() {
 			var client = new nl.sara.webdav.Client();
 			client.post(button.val(), function(status){
         if (status === 409) {
-          alert("This is strange, you want to cancel your membership, but somehow you seem to be the only administrator of this group. How can you be an administrator while your membership itself is still pending? Nobody knows, but still you can't leave the group while you're the only administrator. If you can't resolve this, please contact us!");
+          alert("You can't leave this group, you're the last administrator! Don't leave your group without a leader, please appoint a new administrator before leaving them!");
           return;
         }else if (status != 200) {
 					alert('Something went wrong on the server. No changes were made.');
