@@ -182,7 +182,7 @@ class BeeHub_User extends BeeHub_Principal {
     $p_surfconext      = @$this->stored_props[BeeHub::PROP_SURFCONEXT];
     $p_surfconext_desc = @$this->stored_props[BeeHub::PROP_SURFCONEXT_DESCRIPTION];
     $p_x509            = @$this->stored_props[BeeHub::PROP_X509];
-    // Check if sponsor exists!
+    // TODO: Check if sponsor exists!
     $p_sponsor         = @$this->stored_props[BeeHub::PROP_SPONSOR];
 
     $change_email = false;

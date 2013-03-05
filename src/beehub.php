@@ -63,8 +63,12 @@ class BeeHub {
 
 
   public static $USER_PROPS = array(
-    self::PROP_EMAIL           => true,
-    self::PROP_X509            => true,
+    self::PROP_EMAIL                  => true,
+    self::PROP_SURFCONEXT             => true,
+    self::PROP_SURFCONEXT_DESCRIPTION => true,
+    self::PROP_X509                   => true,
+    self::PROP_SPONSOR                => true,
+    self::PROP_SPONSOR_MEMBERSHIP     => true,
   );
   public static $GROUP_PROPS = array(
     self::PROP_DESCRIPTION     => true,

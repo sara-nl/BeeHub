@@ -21,10 +21,11 @@ $(function (){
 	    
 	    var sponsor = new nl.sara.webdav.Property();
 	    sponsor.namespace = 'http://beehub.nl/';
-	    sponsor.tagname = 'sponsors';
+	    sponsor.tagname = 'sponsor';
 	    sponsor.setValueAndRebuildXml($('#sponsor').val());
 	    setProps.push(sponsor);
 	    
+	    console.log(setProps);
 	    var client = new nl.sara.webdav.Client();
 	    client.proppatch(location.pathname, function(status, data) {
 	    	//TODO check voor elke property
@@ -83,10 +84,8 @@ $(function (){
 		    client.post(location.pathname, function(status, data) {
 		    	if (status===200) {
 		    		// TODO check if user is logged on with SURFconext.
-		    		alert("Your password is changed now! When " +
-		    			"you are logged on with a SURFconext " +
-		    			"account you stay connected with this account/password.")
-			    	location.reload();
+		    		alert("Your password is changed now!");
+		    		location.reload();
 		    	}
 		    	if (status===403) {
 		    		$("#password").parent().parent().addClass('error');
@@ -116,8 +115,8 @@ $(function (){
 	      
 	      var client = new nl.sara.webdav.Client();
 		    client.proppatch(location.pathname, function(status, data) {
-		      alert(status);
-		    }, delProps);
+		      //TODO
+		    }, undefined ,delProps);
 	    };
 	});
 	
