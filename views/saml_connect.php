@@ -13,9 +13,15 @@ $attributes = $simpleSaml->getAttributes();
 <p>Please provide a description for this SURFconext account so you can recognize it easily later on.</p>
 <form class="form-horizontal" method="post">
   <div class="control-group">
-    <label class="control-label" for="surfconext_description">SURFconext description</label>
+    <label class="control-label" for="password">BeeHub password:</label>
     <div class="controls">
-      <input type="text" id="surfconext_description" name="surfconext_description" value="<?= DAV::xmlescape($surfconext_description) ?>" required />
+      <input type="password" id="password" name="password" value="<?= DAV::xmlescape($surfconext_description) ?>" required="required" />
+    </div>
+  </div>
+  <div class="control-group">
+    <label class="control-label" for="surfconext_description">SURFconext description:</label>
+    <div class="controls">
+      <input type="text" id="surfconext_description" name="surfconext_description" value="<?= DAV::xmlescape($surfconext_description) ?>" required="required" />
     </div>
   </div>
   <div class="control-group">

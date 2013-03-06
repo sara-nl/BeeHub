@@ -37,6 +37,11 @@ $user = $auth->current_user();
 $surfId = $simpleSaml->getAuthData("saml:sp:NameID");
 $surfId = $surfId['Value'];
 
+// You need to supply the users current password (as stored in the local database)
+if ( !$user->check_password($_POST['password']) ) {
+  throw DAV::forbidden();
+}
+
 // Unlink potential other local account linked to this SURFconext ID
 BeeHub_DB::execute('UPDATE `beehub_users` SET `surfconext_id`=null, `surfconext_description`=null WHERE `surfconext_id`=?', 's', $surfId);
 
