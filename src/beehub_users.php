@@ -31,7 +31,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
    */
   public function method_GET() {
     if ( empty($_SERVER['HTTPS']) &&
-         APPLICATION_ENV != BeeHub::ENVIRONMENT_DEVELOPMENT ) {
+         APPLICATION_ENV !== BeeHub::ENVIRONMENT_DEVELOPMENT ) {
       throw new DAV_Status(
         DAV::HTTP_MOVED_PERMANENTLY,
         BeeHub::urlbase(true) . $_SERVER['REQUEST_URI']
@@ -97,9 +97,9 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
 
 
   public function report_principal_property_search($properties) {
-    if ( 1 != count( $properties ) ||
+    if ( 1 !== count( $properties ) ||
          ! isset( $properties[DAV::PROP_DISPLAYNAME] ) ||
-         1 != count( $properties[DAV::PROP_DISPLAYNAME] ) )
+         1 !== count( $properties[DAV::PROP_DISPLAYNAME] ) )
       throw new DAV_Status(
         DAV::HTTP_BAD_REQUEST,
         'You\'re searching for a property which cannot be searched.'

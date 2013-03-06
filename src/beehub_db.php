@@ -148,9 +148,9 @@ class BeeHub_DB {
       $method->invokeArgs($stmt, $args);
     }
     if (!$stmt->execute()) {
-      if (self::mysqli()->errno == 1213)
+      if (self::mysqli()->errno === 1213)
         throw new BeeHub_Deadlock(self::mysqli()->error);
-      if (self::mysqli()->errno == 1205)
+      if (self::mysqli()->errno === 1205)
         throw new BeeHub_Timeout(self::mysqli()->error);
       throw new BeeHub_MySQL(self::mysqli()->error, self::mysqli()->errno);
     }
@@ -176,9 +176,9 @@ class BeeHub_DB {
    */
   public static function query($query) {
     if (!( $retval = self::mysqli()->query($query) )) {
-      if (self::mysqli()->errno == 1213)
+      if (self::mysqli()->errno === 1213)
         throw new BeeHub_Deadlock(self::mysqli()->error);
-      if (self::mysqli()->errno == 1205)
+      if (self::mysqli()->errno === 1205)
         throw new BeeHub_Timeout(self::mysqli()->error);
       throw new BeeHub_MySQL(self::mysqli()->error, self::mysqli()->errno);
     }

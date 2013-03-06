@@ -68,9 +68,9 @@ EOS;
       $members[] = Array(
         'user_name' => $row[0],
         'displayname' => $row[1],
-        'is_admin' => ($row[2] == 1),
-        'is_invited' => ($row[3] == 1),
-        'is_requested' => ($row[4] == 1)
+        'is_admin' => ($row[2] === 1),
+        'is_invited' => ($row[3] === 1),
+        'is_requested' => ($row[4] === 1)
       );
     }
     $statement->free_result();
@@ -127,7 +127,7 @@ EOS;
    * @return  void
    */
   public function change_memberships($members, $newInvited, $newRequested, $newAdmin, $existingInvited = null, $existingRequested = null, $existingAdmin = null){
-    if (count($members) == 0) {
+    if (count($members) === 0) {
       return;
     }
     $newInvited = ($newInvited ? 1 : 0);
@@ -178,7 +178,7 @@ EOS;
    * @return  void
    */
   protected function delete_members($members) {
-    if (count($members) == 0) {
+    if (count($members) === 0) {
       return;
     }
     foreach ($members as $member) {

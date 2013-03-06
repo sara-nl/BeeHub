@@ -185,7 +185,7 @@ private function skipInvalidMembers() {
 
 public function current() {
   $retval = rawurlencode($this->dir()->getFilename());
-  if ('dir' == $this->dir()->getType())
+  if ('dir' === $this->dir()->getType())
     $retval .= '/';
   return $retval;
 }

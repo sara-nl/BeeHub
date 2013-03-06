@@ -77,7 +77,7 @@ if ( !empty( $_SERVER['HTTPS'] ) &&
       's', $_SERVER['PHP_AUTH_USER']
     );
     if ( !( $row = $stmt->fetch_row() ) ||
-         $row[0] != crypt($_SERVER['PHP_AUTH_PW'], $row[0]) ) {
+         $row[0] !== crypt($_SERVER['PHP_AUTH_PW'], $row[0]) ) {
       // If authentication fails, respond accordingly
       if ($requireAuth) {
         $stmt->free_result();

@@ -114,7 +114,7 @@ class BeeHub_XFSResource extends BeeHub_Resource {
       throw new DAV_Status(
         DAV::HTTP_BAD_REQUEST
       );
-    if ( $this->user_prop_owner() !=
+    if ( $this->user_prop_owner() !==
            $this->user_prop_current_user_principal() &&
          ! BeeHub_ACL_Provider::inst()->wheel() )
       throw DAV::forbidden( 'Only the owner can change the sponsor of a resource.' );

@@ -199,7 +199,7 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
 
   final public function set_sponsor($sponsor) {
     $sponsor = DAVACL::parse_hrefs($sponsor);
-    if (1 != count($sponsor->URIs))
+    if (1 !== count($sponsor->URIs))
       throw new DAV_Status(
         DAV::HTTP_BAD_REQUEST,
         'Illegal value for property sponsor.'
