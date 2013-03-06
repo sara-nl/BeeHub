@@ -44,7 +44,7 @@ INNER JOIN `beehub_sponsor_members`
      USING (`user_name`)
      WHERE `beehub_sponsor_members`.`sponsor_name` = ?;
 EOS;
-    $statement = BeeHub_DB::execute($query, 's', $this->name);ll;
+    $statement = BeeHub_DB::execute($query, 's', $this->name);
     $members = array();
     while ($row = $statement->fetch_row()) {
       $members[] = Array(
@@ -183,7 +183,7 @@ BeeHub';
    * @return  void
    */
   protected function change_memberships($members, $newAccepted, $newAdmin, $existingAccepted = null, $existingAdmin = null){
-    if (count($members) == 0) {
+    if (count($members) === 0) {
       return;
     }
     $newAccepted = ($newAccepted ? 1 : 0);
@@ -220,7 +220,7 @@ BeeHub';
    * @return  void
    */
   protected function delete_members($members) {
-    if (count($members) == 0) {
+    if (count($members) === 0) {
       return;
     }
     foreach ($members as $member) {

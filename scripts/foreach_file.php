@@ -48,4 +48,8 @@ function traverse($iterator) {
   return $retval;
 }
 
-traverse(new DirectoryIterator( '.' ));
+$r = traverse(new DirectoryIterator( '.' ));
+var_export($r);
+
+var_export($SPONSORS);
+var_export($OWNERS);

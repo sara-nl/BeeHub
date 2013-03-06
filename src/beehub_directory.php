@@ -201,7 +201,11 @@ private function dir() {
 
   public function current() {
     $this->dir();
-    return $this->members[$this->current_key];
+    $retval = $this->members[$this->current_key];
+    if (is_dir($this->path . DIRECTORY_SEPARATOR . $retval)) {
+      $retval .= '/';
+    }
+    return $retval;
   }
 
 

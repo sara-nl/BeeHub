@@ -353,7 +353,7 @@ BeeHub';
 
   public function is_admin() {
     return BeeHub_ACL_Provider::inst()->wheel() ||
-      ( $this->path == $this->user_prop_current_user_principal() );
+      ( $this->path === $this->user_prop_current_user_principal() );
   }
 
 

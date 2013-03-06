@@ -106,9 +106,9 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
 
 
   public function report_principal_property_search($properties) {
-    if (1 != count($properties) ||
+    if (1 !== count($properties) ||
             !isset($properties[DAV::PROP_DISPLAYNAME]) ||
-            1 != count($properties[DAV::PROP_DISPLAYNAME]))
+            1 !== count($properties[DAV::PROP_DISPLAYNAME]))
       throw new DAV_Status(
               DAV::HTTP_BAD_REQUEST,
               'You\'re searching for a property which cannot be searched.'

@@ -85,17 +85,10 @@ class BeeHub_Auth {
         }
       }
       // The user already sent username and password: check them!
-      $stmt = BeeHub_DB::execute(
-        'SELECT `password`
-         FROM `beehub_users`
-         WHERE `user_name` = ?',
-        's', $_SERVER['PHP_AUTH_USER']
-      );
-      if ( !( $row = $stmt->fetch_row() ) ||
-           $row[0] != crypt($_SERVER['PHP_AUTH_PW'], $row[0]) ) {
+      $user = BeeHub::user($_SERVER['PHP_AUTH_USER']);
+      if ( ! $user->check_password($_SERVER['PHP_AUTH_PW']) ) {
         // If authentication fails, respond accordingly
         if ($requireAuth) {
-          $stmt->free_result();
           // User could not be authenticated with supplied credentials, but we
           // require authentication, so we ask again!
           BeeHub_ACL_Provider::inst()->unauthorized();
@@ -104,7 +97,6 @@ class BeeHub_Auth {
       } else { // Authentication succeeded: store credentials!
         $this->set_user(rawurlencode( $_SERVER['PHP_AUTH_USER'] ));
       }
-      $stmt->free_result();
       // end of: if (user sent username/passwd)
     } elseif ( ( 'passwd' !== @$_GET['login'] ) && $this->simpleSAML_authentication->isAuthenticated() ) {
       $surfId = $this->simpleSAML_authentication->getAuthData("saml:sp:NameID");

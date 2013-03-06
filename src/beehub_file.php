@@ -95,7 +95,7 @@ public function method_GET() {
 
 
 public function method_PUT($stream) {
-  if (DAV::$PATH == $this->path)
+  if (DAV::$PATH === $this->path)
     $this->assert(DAVACL::PRIV_WRITE);
   if ( !($resource = fopen( $this->localPath, 'w' )) )
     throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
@@ -104,7 +104,7 @@ public function method_PUT($stream) {
     while (!feof($stream)) {
       $buffer = fread($stream, DAV::$CHUNK_SIZE );
       $size += strlen($buffer);
-      if ( strlen( $buffer ) != fwrite( $resource, $buffer ) )
+      if ( strlen( $buffer ) !== fwrite( $resource, $buffer ) )
         throw new DAV_Status(DAV::HTTP_INSUFFICIENT_STORAGE);
     }
     if ( isset($_SERVER['CONTENT_LENGTH']) &&
@@ -118,7 +118,7 @@ public function method_PUT($stream) {
   }
   fclose($resource);
   $contenttype = $this->user_prop_getcontenttype();
-  if (!$contenttype || 'application/x-empty' == $contenttype) {
+  if (!$contenttype || 'application/x-empty' === $contenttype) {
     $finfo = new finfo(FILEINFO_MIME);
     // TODO: Shouldn't we call user_set_getcontenttype() here?
     try { $this->set_getcontenttype( $finfo->file( $this->localPath ) ); }
@@ -135,13 +135,13 @@ public function method_PUT_range($stream, $start, $end, $total) {
        !($resource = fopen( $this->localPath, 'r+' )) )
     throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
   try {
-    if ( 0 != fseek( $resource, $start, SEEK_SET ) )
+    if ( 0 !== fseek( $resource, $start, SEEK_SET ) )
       throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
     $size = $end - $start + 1;
     while ($size && !feof($stream)) {
       $buffer = fread($stream, $size < DAV::$CHUNK_SIZE ? $size : DAV::$CHUNK_SIZE );
       $size -= strlen( $buffer );
-      if ( strlen( $buffer ) != fwrite( $resource, $buffer ) )
+      if ( strlen( $buffer ) !== fwrite( $resource, $buffer ) )
         throw new DAV_Status(DAV::HTTP_INSUFFICIENT_STORAGE);
     }
     if ($size)

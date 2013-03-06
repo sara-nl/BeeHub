@@ -60,26 +60,26 @@ class BeeHub_Registry implements DAV_Registry {
     }
     $localPath = BeeHub::localPath($path);
     $retval = null;
-    if ($path == $systemPath) {
+    if ($path === $systemPath) {
       $retval = new BeeHub_System_Collection($path);
-    }elseif (substr($path, 0, strlen($usersPath)) == $usersPath) {
-      if ($path == $usersPath)
+    }elseif (substr($path, 0, strlen($usersPath)) === $usersPath) {
+      if ($path === $usersPath)
         $retval = new BeeHub_Users($path);
       else {
         try {
           $retval = new BeeHub_User($path);
         }catch(Exception $e){}
       }
-    }elseif(substr($path, 0, strlen($groupsPath)) == $groupsPath) {
-      if ($path == $groupsPath)
+    }elseif(substr($path, 0, strlen($groupsPath)) === $groupsPath) {
+      if ($path === $groupsPath)
         $retval = new BeeHub_Groups($path);
       else {
         try {
           $retval = new BeeHub_Group($path);
         }catch(Exception $e){}
       }
-    }elseif(substr($path, 0, strlen($sponsorsPath)) == $sponsorsPath) {
-      if ($path == $sponsorsPath) {
+    }elseif(substr($path, 0, strlen($sponsorsPath)) === $sponsorsPath) {
+      if ($path === $sponsorsPath) {
         $retval = new BeeHub_Sponsors($path);
       }else {
         try {
@@ -114,14 +114,20 @@ class BeeHub_Registry implements DAV_Registry {
     sort($whashes, SORT_STRING);
     sort($rhashes, SORT_STRING);
     if (!empty($whashes)) {
-      BeeHub_DB::query('INSERT IGNORE INTO `shallowLocks` VALUES (' . implode('),(', $whashes) . ');');
+      BeeHub_DB::query(
+        'INSERT IGNORE INTO `shallowLocks` VALUES (' .
+        implode('),(', $whashes) . ');'
+      );
       $whashes = implode(',', $whashes);
       $whashes = "SELECT * FROM `shallowLocks` WHERE `pathhash` IN ($whashes) FOR UPDATE;";
     }
     else
       $whashes = null;
     if (!empty($rhashes)) {
-      BeeHub_DB::query('INSERT IGNORE INTO `shallowLocks` VALUES (' . implode('),(', $rhashes) . ');');
+      BeeHub_DB::query(
+        'INSERT IGNORE INTO `shallowLocks` VALUES (' .
+        implode('),(', $rhashes) . ');'
+      );
       $rhashes = implode(',', $rhashes);
       $rhashes = "SELECT * FROM `shallowLocks` WHERE `pathhash` IN ($rhashes) LOCK IN SHARE MODE;";
     }

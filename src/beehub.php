@@ -106,8 +106,8 @@ class BeeHub {
       else
         $tmp = 'http://';
       $tmp .= $_SERVER['SERVER_NAME'];
-      if ( !empty($_SERVER['HTTPS']) && $_SERVER['SERVER_PORT'] != 443 or
-            empty($_SERVER['HTTPS']) && $_SERVER['SERVER_PORT'] != 80 ) {
+      if ( !empty($_SERVER['HTTPS']) && $_SERVER['SERVER_PORT'] !== 443 or
+            empty($_SERVER['HTTPS']) && $_SERVER['SERVER_PORT'] !== 80 ) {
         $server_port = intval($_SERVER['SERVER_PORT'], 10);
         if ( true === $https && empty($_SERVER['HTTPS']) )
           $server_port += 443 - 80;
@@ -162,7 +162,7 @@ class BeeHub {
 
   public static function handle_method_spoofing() {
     $_SERVER['ORIGINAL_REQUEST_METHOD'] = $_SERVER['REQUEST_METHOD'];
-    if ($_SERVER['REQUEST_METHOD'] == 'POST' and
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' and
             isset($_GET['_method'])) {
       $http_method = strtoupper($_GET['_method']);
       unset($_GET['_method']);
@@ -174,7 +174,7 @@ class BeeHub {
       $_SERVER['QUERY_STRING'] = http_build_query($_GET);
       $_SERVER['REQUEST_URI'] =
               substr($_SERVER['REQUEST_URI'], 0, strpos($_SERVER['REQUEST_URI'], '?'));
-      if ($_SERVER['QUERY_STRING'] != '')
+      if ($_SERVER['QUERY_STRING'] !== '')
         $_SERVER['REQUEST_URI'] .= '?' . $_SERVER['QUERY_STRING'];
       $_SERVER['REQUEST_METHOD'] = $http_method;
     }
