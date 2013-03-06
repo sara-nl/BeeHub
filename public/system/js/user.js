@@ -19,13 +19,12 @@ $(function (){
 	    displayname.setValueAndRebuildXml($('input[name="displayname"]').val());
 	    setProps.push(displayname);
 	    
-	    var sponsor = new nl.sara.webdav.Property();
-	    sponsor.namespace = 'http://beehub.nl/';
-	    sponsor.tagname = 'sponsor';
-	    sponsor.setValueAndRebuildXml($('#sponsor').val());
-	    setProps.push(sponsor);
+//	    var sponsor = new nl.sara.webdav.Property();
+//	    sponsor.namespace = 'http://beehub.nl/'; 
+//	    sponsor.tagname = 'sponsor';
+//	    sponsor.setValueAndRebuildXml($('#sponsor').val());
+//	    setProps.push(sponsor);
 	    
-	    console.log(setProps);
 	    var client = new nl.sara.webdav.Client();
 	    client.proppatch(location.pathname, function(status, data) {
 	    	//TODO check voor elke property
@@ -117,7 +116,10 @@ $(function (){
 	      
 	      var client = new nl.sara.webdav.Client();
 		    client.proppatch(location.pathname, function(status, data) {
-		      //TODO
+		    var notlinked = $('<br/> <h5>Your BeeHub account is not linked to a SURFconext account.</h5>'+
+		    		'<p><a type="button" href="/system/saml_connect.php" class="btn btn-success">Link SURFconext account</a></p>');
+		    $('#surfconext_linked').remove();
+		    $('#surfconext').append(notlinked);
 		    }, undefined ,delProps);
 	    };
 	});

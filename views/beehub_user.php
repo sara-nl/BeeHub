@@ -7,9 +7,13 @@ $header = '
 // 			color: #008741 !important;
 	}
 		
-	#surfconext {
+	#surfconext, #panel-verify {
     padding-left:25px !important;
   }
+		
+	.verification_code {
+		width: 245px !important;
+	}
 </style>
   ';
 require 'views/header.php';
@@ -112,6 +116,7 @@ require 'views/header.php';
 <div id="panel-surfconext" class="tab-pane fade">
 	<div id="surfconext">
 	  <?php if ( !is_null($this->prop( BeeHub::PROP_SURFCONEXT ) ) ) : ?>
+	  <div id="surfconext_linked">
 	    <h5>Your BeeHub account is currently linked to SURFconext account:</h5>
 	    <table><tbody><tr>
         <th align="left"><?= DAV::xmlescape($this->user_prop(BeeHub::PROP_SURFCONEXT_DESCRIPTION)) ?></th>
@@ -123,9 +128,10 @@ require 'views/header.php';
         </tr></tbody>
       </table>
 	    <br/><br/><br/>    
+	  </div>
 	  <?php else: ?>
 	  <br/>
-	    <p>Your BeeHub account is not linked to a SURFconext account.</p>
+	    <h5>Your BeeHub account is not linked to a SURFconext account.</h5>
 	    <p><a type="button" href="/system/saml_connect.php" class="btn btn-success">Link SURFconext account</a></p>
 	  <?php endif; ?>
 	</div>
@@ -134,17 +140,17 @@ require 'views/header.php';
 <?php if ( !is_null( $unverified_address ) ) : ?>
   <div id="panel-verify" class="tab-pane fade <?= isset($_GET['verification_code']) ? 'in active' : '' ?>">
     <form id="verify_email" class="form-horizontal" method="post">
-      <h5>Verify email address: <?= $unverified_address ?></h5>
+      <h4>Verify email address: <?= $unverified_address ?></h4>
       <div class="control-group">
         <label class="control-label" for="verification_code">Verification code: </label>
         <div class="controls">
-          <input type="text" id="verification_code" name="verification_code" value="<?= DAV::xmlescape(@$_GET['verification_code']) ?>" required />
+          <input type="text" class="verification_code" id="verification_code" name="verification_code" value="<?= DAV::xmlescape(@$_GET['verification_code']) ?>" required />
         </div>
       </div>
       <div class="control-group passwd">
       <label class="control-label" for="verify_password">Password</label>
       <div class="controls">
-        <input type="password" id="verify_password" name="password" required />
+        <input class="verification_code" type="password" id="verify_password" name="password" required />
       </div>
     </div>
       <div class="control-group">

@@ -346,6 +346,11 @@ BeeHub';
   }
 
 
+  public function user_set_sponsor($sponsor) {
+    $this->user_set(BeeHub::PROP_SPONSOR, $sponsor);
+  }
+
+
   public function is_admin() {
     return BeeHub_ACL_Provider::inst()->wheel() ||
       ( $this->path == $this->user_prop_current_user_principal() );
