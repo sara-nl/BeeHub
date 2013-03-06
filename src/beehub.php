@@ -53,7 +53,6 @@ set_exception_handler('beehub_exception_handler');
 class BeeHub {
 
 
-  const PROP_PASSWORD               = 'http://beehub.nl/ password';
   const PROP_EMAIL                  = 'http://beehub.nl/ email';
   const PROP_SURFCONEXT             = 'http://beehub.nl/ surfconext';
   const PROP_SURFCONEXT_DESCRIPTION = 'http://beehub.nl/ surfconext-description';
@@ -64,9 +63,12 @@ class BeeHub {
 
 
   public static $USER_PROPS = array(
-    self::PROP_PASSWORD        => false,
-    self::PROP_EMAIL           => true,
-    self::PROP_X509            => true,
+    self::PROP_EMAIL                  => true,
+    self::PROP_SURFCONEXT             => true,
+    self::PROP_SURFCONEXT_DESCRIPTION => true,
+    self::PROP_X509                   => true,
+    self::PROP_SPONSOR                => true,
+    self::PROP_SPONSOR_MEMBERSHIP     => true,
   );
   public static $GROUP_PROPS = array(
     self::PROP_DESCRIPTION     => true,
@@ -189,7 +191,7 @@ class BeeHub {
         rawurlencode($name);
     $retval = BeeHub_Registry::inst()->resource( $name );
     if (!$retval) throw new DAV_Status(
-      DAV::FORBIDDEN, DAV::COND_RECOGNIZED_PRINCIPAL
+      DAV::HTTP_FORBIDDEN, DAV::COND_RECOGNIZED_PRINCIPAL
     );
     return $retval;
   }
@@ -205,7 +207,7 @@ class BeeHub {
         rawurlencode($name);
     $retval = BeeHub_Registry::inst()->resource( $name );
     if (!$retval) throw new DAV_Status(
-      DAV::FORBIDDEN, DAV::COND_RECOGNIZED_PRINCIPAL
+      DAV::HTTP_FORBIDDEN, DAV::COND_RECOGNIZED_PRINCIPAL
     );
     return $retval;
   }
@@ -221,7 +223,7 @@ class BeeHub {
         rawurlencode($name);
     $retval = BeeHub_Registry::inst()->resource( $name );
     if (!$retval) throw new DAV_Status(
-      DAV::FORBIDDEN, DAV::COND_RECOGNIZED_PRINCIPAL
+      DAV::HTTP_FORBIDDEN, DAV::COND_RECOGNIZED_PRINCIPAL
     );
     return $retval;
   }

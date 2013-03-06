@@ -6,7 +6,12 @@
   // TODO custom settings to beehub.css or bootstrap.css
   // TODO documentation of this page
   $header = '
-<style type="text/css">  		
+<style type="text/css">  
+
+  #panel-mygroups, #panel-join {
+    padding-left:25px;
+  }
+  		
   .accordion-group:hover {
     background-color: #D1E2D3 !important;
   }
@@ -34,6 +39,7 @@
 <div class="tab-content">
 
 	<!-- My Groups tab -->
+	<br/>
   <div id="panel-mygroups" class="tab-pane fade in active">
   	<!--    List with my groups -->
     <div class="accordion" id="mygroups">
@@ -78,7 +84,7 @@
 
 	<!-- Join tab -->
   <div id="panel-join" class="tab-pane fade">
-	  <br>
+<!-- 	  <br> -->
 	  <div class="control-group">
 <!-- 	    <label class="control-label" for="inputIcon">Filter by name:</label> -->
 		    <div class="controls">

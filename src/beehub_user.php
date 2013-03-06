@@ -25,7 +25,6 @@
  * There are a few properties defined which are stored in the database instead
  * of as xfs attribute. These properties are credentials and user contact info:
  * BeeHub::PROP_NAME
- * BeeHub::PROP_PASSWORD
  * BeeHub::PROP_EMAIL
  * BeeHub::PROP_X509
  *
@@ -40,6 +39,11 @@ class BeeHub_User extends BeeHub_Principal {
    * @var  string  The original e-mail address as specified in the database. This is used to check if the user wants to change his/her e-mail address.
    */
   private $original_email = null;
+    
+  /**
+   * @var  string  The (encrypted) password
+   */
+  private $password = null;
 
 
   /**
@@ -65,10 +69,21 @@ class BeeHub_User extends BeeHub_Principal {
 
 
   public function method_POST() {
+    $this->init_props();
+
+    // For all POST requests, you need to send a POST field 'password' with the current password
+    if (!isset($_POST['password']) || !$this->check_password($_POST['password'])) {
+      throw DAV::forbidden();
+    }
+
     if (isset($_POST['verification_code'])) { // Now verify the e-mail address
       if (!$this->verify_email_address($_POST['verification_code'])){
         throw DAV::forbidden();
       }
+      DAV::redirect(DAV::HTTP_SEE_OTHER, $this->path);
+      return;
+    }elseif (isset($_POST['new_password'])) {
+      $this->set_password($_POST['new_password']);
       DAV::redirect(DAV::HTTP_SEE_OTHER, $this->path);
       return;
     }
@@ -84,7 +99,7 @@ class BeeHub_User extends BeeHub_Principal {
         'SELECT
           `displayname`,
           `email`,
-          `password` IS NOT NULL,
+          `password`,
           `surfconext_id`,
           `surfconext_description`,
           `x509`,
@@ -114,7 +129,9 @@ class BeeHub_User extends BeeHub_Principal {
         $this->stored_props[BeeHub::PROP_SPONSOR]   = $row[6];
       }
       if (!empty($row[2])) {
-        $this->stored_props[BeeHub::PROP_PASSWORD] = true; // Nobody should have read access to this property. But just in case, we always set it to true.
+        $this->password = $row[2];
+      }else{
+        $this->password = null;
       }
       $statement_props->free_result();
 
@@ -161,21 +178,11 @@ class BeeHub_User extends BeeHub_Principal {
       return;
     }
 
-    if (isset($this->stored_props[BeeHub::PROP_PASSWORD])) {
-      if ($this->stored_props[BeeHub::PROP_PASSWORD] === true) { //true means there is a password, but it hasn't been changed!
-        $p_password = true;
-      } else {
-        $p_password = crypt($this->stored_props[BeeHub::PROP_PASSWORD], '$6$rounds=5000$' . md5(time() . rand(0, 99999)) . '$');
-      }
-      $this->stored_props[BeeHub::PROP_PASSWORD] = true;
-    }else{
-      $p_password = null;
-    }
-
     $p_displayname     = @$this->stored_props[DAV::PROP_DISPLAYNAME];
     $p_surfconext      = @$this->stored_props[BeeHub::PROP_SURFCONEXT];
     $p_surfconext_desc = @$this->stored_props[BeeHub::PROP_SURFCONEXT_DESCRIPTION];
     $p_x509            = @$this->stored_props[BeeHub::PROP_X509];
+    // TODO: Check if sponsor exists!
     $p_sponsor         = @$this->stored_props[BeeHub::PROP_SPONSOR];
 
     $change_email = false;
@@ -194,59 +201,30 @@ class BeeHub_User extends BeeHub_Principal {
               `x509` = ?,
               `sponsor_name` = ?' .
               ($change_email ? ',`unverified_email`=?,`verification_code`=?,`verification_expiration`=NOW() + INTERVAL 1 DAY' : '') .
-              (($p_password !== true) ? ',`password`=?' : '') .
       ' WHERE `user_name` = ?'
     );
-    if ($p_password === true) {
-      if ($change_email) { // No new password, but there is a new e-mail address
-        $updateStatement->bind_param(
-          'ssssssss',
-          $p_displayname,
-          $p_surfconext,
-          $p_surfconext_desc,
-          $p_x509,
-          $p_sponsor,
-          $p_email,
-          $p_verification_code,
-          $this->name
-        );
-      }else{ // No new password, no new e-mail address
-        $updateStatement->bind_param(
-          'ssssss',
-          $p_displayname,
-          $p_surfconext,
-          $p_surfconext_desc,
-          $p_x509,
-          $p_sponsor,
-          $this->name
-        );
-      }
-    }else{
-      if ($change_email) { // A new password, and a new e-mail address
-        $updateStatement->bind_param(
-          'sssssssss',
-          $p_displayname,
-          $p_surfconext,
-          $p_surfconext_desc,
-          $p_x509,
-          $p_sponsor,
-          $p_email,
-          $p_verification_code,
-          $p_password,
-          $this->name
-        );
-      }else{ // A new password, but no new e-mail address
-        $updateStatement->bind_param(
-          'sssssss',
-          $p_displayname,
-          $p_surfconext,
-          $p_surfconext_desc,
-          $p_x509,
-          $p_sponsor,
-          $p_password,
-          $this->name
-        );
-      }
+    if ($change_email) { // No new password, but there is a new e-mail address
+      $updateStatement->bind_param(
+        'ssssssss',
+        $p_displayname,
+        $p_surfconext,
+        $p_surfconext_desc,
+        $p_x509,
+        $p_sponsor,
+        $p_email,
+        $p_verification_code,
+        $this->name
+      );
+    }else{ // No new password, no new e-mail address
+      $updateStatement->bind_param(
+        'ssssss',
+        $p_displayname,
+        $p_surfconext,
+        $p_surfconext_desc,
+        $p_x509,
+        $p_sponsor,
+        $this->name
+      );
     }
     if (!$updateStatement->execute()) {
       if ($exception->getCode() === 1062) { // Duplicate key: bad request!
@@ -296,6 +274,38 @@ BeeHub';
 
 
   /**
+   * Checks a password
+   *
+   * @param   string   $password  The password to check
+   * @return  boolean             True if the supplied password matches the user's password, false otherwise
+   */
+  public function check_password($password) {
+    if ( is_null($this->password) ||
+         $this->password !== crypt($password, $this->password) ) {
+      return false;
+    }else{
+      return true;
+    }
+  }
+
+
+  /**
+   * Sets a new password
+   *
+   * @param   string   $password  The new password
+   * @return  void
+   */
+  public function set_password($password) {
+    $encrypted_password = crypt($password, '$6$rounds=5000$' . md5(time() . rand(0, 99999)) . '$');
+
+    BeeHub_DB::execute( 'UPDATE `beehub_users` SET `password`=? WHERE `user_name`=?',
+                        'ss', $encrypted_password, $this->name);
+
+    $this->password = $encrypted_password;
+  }
+
+
+  /**
    * Checks the verification code and verifies the e-mail address if the code is correct
    * @param   string  $code  The verification code
    * @return  boolean        True if the code verified correctly, false if the code was wrong
@@ -336,6 +346,11 @@ BeeHub';
   }
 
 
+  public function user_set_sponsor($sponsor) {
+    $this->user_set(BeeHub::PROP_SPONSOR, $sponsor);
+  }
+
+
   public function is_admin() {
     return BeeHub_ACL_Provider::inst()->wheel() ||
       ( $this->path == $this->user_prop_current_user_principal() );
@@ -355,7 +370,6 @@ BeeHub';
     $retval[BeeHub::PROP_X509]                   = $is_admin;
     $retval[BeeHub::PROP_SPONSOR]                = $is_admin;
     $retval[DAV::PROP_GROUP_MEMBERSHIP]          = $is_admin;
-    $retval[BeeHub::PROP_PASSWORD]               = false;
     return $retval;
   }
 
@@ -375,7 +389,6 @@ BeeHub';
     $retval[BeeHub::PROP_SPONSOR]                = $is_admin;
     $retval[DAV::PROP_GROUP_MEMBERSHIP]          = false;
     $retval[BeeHub::PROP_SPONSOR_MEMBERSHIP]     = false;
-    $retval[BeeHub::PROP_PASSWORD]               = $is_admin;
     return $retval;
   }
 
