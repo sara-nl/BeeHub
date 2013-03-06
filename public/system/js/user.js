@@ -85,7 +85,9 @@ $(function (){
 		    	if (status===200) {
 		    		// TODO check if user is logged on with SURFconext.
 		    		alert("Your password is changed now!");
-		    		location.reload();
+		    		$('#change-password').each (function(){
+		    			  this.reset();
+		    		});
 		    	}
 		    	if (status===403) {
 		    		$("#password").parent().parent().addClass('error');
