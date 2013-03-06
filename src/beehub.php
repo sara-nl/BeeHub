@@ -16,13 +16,9 @@
 
 /**
  * File documentation (who cares)
- * @TODO For each occurrence of DAV::HTTP_FORBIDDEN in all BeeHub code, check
- *   if it should be replaced with a call to DAV::forbidden(). Originally, we
- *   expected that BeeHub would only have authenticated users, but this is no
- *   longer the case, so we must start to distinguish between FORBIDDEN and
- *   UNAUTHORIZED.
  * @package BeeHub
  */
+
 
 // Set the include path, so BeeHub_* classes are automatically loaded
 set_include_path(
@@ -32,19 +28,19 @@ set_include_path(
 );
 require_once dirname(dirname(__FILE__)) . '/webdav-php/lib/dav.php';
 
+
 // Set a default exception handler, so we always output nice errors if an exception is uncaught
 function beehub_exception_handler($e) {
-  if ($e instanceof DAV_Status) {
-    $e->output();
-  } else {
+  if (! $e instanceof DAV_Status) {
     $e = new DAV_Status(
-            DAV::HTTP_INTERNAL_SERVER_ERROR,
-            "$e"
-          );
-    $e->output();
+      DAV::HTTP_INTERNAL_SERVER_ERROR,
+      "$e"
+    );
   }
+  $e->output();
 }
 set_exception_handler('beehub_exception_handler');
+
 
 /**
  * Just a namespace.

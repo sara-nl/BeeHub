@@ -40,9 +40,11 @@ if ( DAV::$PATH === '/' &&
   return;
 }
 
-DAV::$REGISTRY = BeeHub_Registry::inst();
+DAV::$REGISTRY     = BeeHub_Registry::inst();
 DAV::$LOCKPROVIDER = BeeHub_Lock_Provider::inst();
-DAV::$ACLPROVIDER = BeeHub_ACL_Provider::inst();
+DAV::$ACLPROVIDER  = BeeHub_ACL_Provider::inst();
+DAV::$UNAUTHORIZED = array( BeeHub_Auth::inst(), 'unauthorized' );
+#DAV::$FORBIDDEN    = array( BeeHub_Auth::inst(), 'forbidden'    );
 
 // Start authentication
 /* You don't need to authenticate when:
