@@ -9,19 +9,21 @@
           <a class="brand" href="<?= DAV::xmlescape(BeeHub::$CONFIG['namespace']['system_path']) ?>">BeeHub<sup><small><strong><em>RC1</em></strong></small></sup></a>
           <div class="nav-collapse collapse">
             <ul class="nav">
-              <li id="navbar-li-files"><a href="/">Files</a></li>
+              <li id="navbar-li-files"><a href="<?= (BeeHub_Auth::inst()->is_authenticated()) ? '/home/' . DAV::xmlescape( BeeHub_Auth::inst()->current_user()->name ) : '/' ?>">Files</a></li>
               <?php if (BeeHub_Auth::inst()->is_authenticated()) : ?>
                 <li id="navbar-li-groups"><a href="<?= DAV::xmlescape(BeeHub::$CONFIG['namespace']['groups_path']) ?>">Groups</a></li>
 <?php /*                <li id="navbar-li-sponsors"><a href="<?= DAV::xmlescape(BeeHub::$CONFIG['namespace']['sponsors_path']) ?>">Sponsors</a></li> */ ?>
               <?php endif; ?>
             </ul>
             <ul class="nav pull-right">
-              <li class="dropdown">
-                <a href="#" class="dropdown-toggle" id="notification_button" data-toggle="dropdown"><span id="notification_counter">0</span> notifications <span class="caret"></span></a>
-                <ul id="notifications" class="dropdown-menu" style="width: 800px; padding: 1em; background-color: #d1e2d2">
-                </ul>
-              </li>
-              <?php if ( $meResource = BeeHub_Auth::inst()->current_user() ) : ?>
+              <?php if (BeeHub_Auth::inst()->is_authenticated()) : ?>
+                <li class="dropdown">
+                  <a href="#" class="dropdown-toggle" id="notification_button" data-toggle="dropdown"><span id="notification_counter">0</span> notifications <span class="caret"></span></a>
+                  <ul id="notifications" class="dropdown-menu" style="width: 800px; padding: 1em; background-color: #d1e2d2">
+                  </ul>
+                </li>
+              <?php endif;
+              if ( $meResource = BeeHub_Auth::inst()->current_user() ) : ?>
                 <li class="dropdown">
                   <a href="#" class="dropdown-toggle" data-toggle="dropdown">
                     <?= $meResource->prop_displayname() ?> <span class="caret"></span>

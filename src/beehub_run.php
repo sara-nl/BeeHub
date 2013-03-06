@@ -25,6 +25,8 @@ BeeHub::handle_method_spoofing();
 
 // If a GET request on the root doesn't have this server as a referer, redirect to the homepage:
 // TODO: This can also be done in the apache configuration...
+$request = DAV_Request::inst(); //We need to do this here, because it will set DAV::$PATH
+
 if ( DAV::$PATH === '/' &&
      $_SERVER['REQUEST_METHOD'] === 'GET' &&
      ( ! isset( $_SERVER['HTTP_REFERER'] ) ||
@@ -41,8 +43,6 @@ if ( DAV::$PATH === '/' &&
 DAV::$REGISTRY = BeeHub_Registry::inst();
 DAV::$LOCKPROVIDER = BeeHub_Lock_Provider::inst();
 DAV::$ACLPROVIDER = BeeHub_ACL_Provider::inst();
-
-$request = DAV_Request::inst();
 
 // Start authentication
 /* You don't need to authenticate when:
