@@ -32,7 +32,7 @@ $(function (){
 	    		alert("Your profile is changed!")
 	    		$('#verify_password').val("");
 	    		$('#verification_code').val("");
-	  	      	location.reload();
+          location.reload();
 	    	} else {
 	    		alert("Something went wrong. Your profile is not updated!")
 	    	}
