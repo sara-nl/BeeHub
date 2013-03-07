@@ -111,26 +111,4 @@ public function user_prop_principal_collection_set() {
 }
 
 
-/**
- * This method is called when DAV receives an 401 Unauthenticated exception.
- * @return bool true if a response has been sent to the user.
- */
-public function unauthorized() {
-  DAV::header( array(
-      'status' => DAV::HTTP_UNAUTHORIZED,
-      'WWW-Authenticate' => 'Basic realm="' . BeeHub::$CONFIG['authentication']['realm'] . '"',
-      'Content-Type' => BeeHub::best_xhtml_type()
-  ) );
-  echo <<<EOS
-<html><head>
-  <title>HTTP/1.1 Unauthorized</title>
-</head><body>
-  <h1>HTTP/1.1 Unauthorized</h1>
-  <p>Sorry…</p>
-</body></html>
-EOS;
-  die();
-}
-
-
 }

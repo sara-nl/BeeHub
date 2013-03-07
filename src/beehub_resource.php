@@ -77,13 +77,14 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
     try {
       $this->assert(DAVACL::PRIV_READ);
     } catch (DAV_Status $e) {
-      if (!( $collection = $this->collection() ))
-        return false;
-      try {
-        $collection->assert(DAVACL::PRIV_READ);
-      } catch (DAV_Status $f) {
-        return false;
-      }
+      return false;
+      #if (!( $collection = $this->collection() ))
+      #  return false;
+      #try {
+      #  $collection->assert(DAVACL::PRIV_READ);
+      #} catch (DAV_Status $f) {
+      #  return false;
+      #}
     }
     return true;
   }

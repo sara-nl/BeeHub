@@ -24,10 +24,7 @@
  * @package BeeHub
  */
 class BeeHub_Auth {
-  /**
-   * @var  BeeHub_Auth  The only instance of this class
-   */
-  private static $self = null;
+
 
   /**
    * @var  boolean  True if the user is logged in through SURFconext, false otherwise
@@ -37,7 +34,7 @@ class BeeHub_Auth {
   /**
    * @var  SimpleSAML_Auth_Simple  The SimpleSAML_Auth_Simple instance used for authentication
    */
-  private $simpleSAML_authentication = null;
+  private $simpleSAML_authentication;
 
   /**
    * This class is a singleton, so the constructor is private. Instantiate through BeeHub_Auth::inst()
@@ -52,17 +49,20 @@ class BeeHub_Auth {
    * @return  BeeHub_Auth  The only instance of this class
    */
   public static function inst() {
-    if (is_null(BeeHub_Auth::$self)) {
-      BeeHub_Auth::$self = new BeeHub_Auth();
+    static $inst = null;
+    if (is_null($inst)) {
+      $inst = new BeeHub_Auth();
     }
-    return BeeHub_Auth::$self;
+    return $inst;
   }
 
   /**
-   * Authenticates the user through one of the authentication mechanisms
-   *
-   * @param   boolean  $requireAuth  Optionally; if set to false and authentication fails, the user will continue as an unauthenticated user. If set to true (default), a 403 AUTHENTICATION REQUIRED header will be sent upon authentication failure.
-   * @return  void
+   * Authenticates the user through one of the authentication mechanisms.
+   * @param  boolean $requireAuth  If set to false and authentication fails,
+   *   the user will continue as an unauthenticated user. If set to true
+   *   (default), status 401 UNAUTHORIZED will be returned upon authentication
+   *   failure.
+   * @param  boolean  $allowDoubleLogin  TODO documentation
    */
   public function handle_authentication($requireAuth = true, $allowDoubleLogin = false) {
     if (isset($_GET['logout'])) {
@@ -91,8 +91,8 @@ class BeeHub_Auth {
         if ($requireAuth) {
           // User could not be authenticated with supplied credentials, but we
           // require authentication, so we ask again!
-          BeeHub_ACL_Provider::inst()->unauthorized();
-          return;
+          $this->unauthorized();
+          exit;
         }
       } else { // Authentication succeeded: store credentials!
         $this->set_user(rawurlencode( $_SERVER['PHP_AUTH_USER'] ));
@@ -115,23 +115,24 @@ class BeeHub_Auth {
         $this->simpleSAML_authentication->login();
     } elseif ( ( 'passwd' === @$_GET['login'] ) || $requireAuth ) {
       // If the user didn't send any credentials, but we require authentication, ask for it!
-      BeeHub_ACL_Provider::inst()->unauthorized();
-      return;
+      $this->unauthorized();
+      exit;
     }
 
     // If the current user is logged in, but has no verified e-mail address.
     // He/she is not authorized to do anything, but will get a message that we
     // want a verified e-mail address. Although he has to be able to verify
-    // his e-mail address of course (so GET and POST on /system/users/username
+    // his e-mail address of course (so GET and POST on /system/users/<name>
     // is allowed
     $user = $this->current_user();
     if (!is_null($user)) {
       $email = $user->prop(BeeHub::PROP_EMAIL);
-      if (empty($email) &&
-          (DAV::unslashify(DAV::$PATH) != DAV::unslashify($user->path))) {
+      if ( empty($email) &&
+           DAV::unslashify(DAV::$PATH) != DAV::unslashify($user->path) ) {
         // TODO: how to sent this message with this status code in a webDAV/Pieter friendly way?
+        // TODO: Kick Niek in the ass for this prutswerkje. [PvB]
         header('HTTP/1.1 ' . DAV::status_code(DAV::HTTP_FORBIDDEN));
-        die("Your e-mail address is not verified yet. Note that if you don't verify your e-mail address within 24 hours after creating your account, your accout will be deleted. Please check your mailbox for the verification e-mail with instructions on how to proceed. Or copy the verification code from that e-mail and fill it out in your profile page: " . BeeHub::urlbase(true) . $user->path);
+        die("Your e-mail address has not been verified yet. If you don't verify your e-mail address within 24 hours after creating your account, your account will be deleted. Please check your mailbox for the verification e-mail with instructions on how to proceed. Or copy the verification code from that e-mail and fill it out in your profile page: " . BeeHub::urlbase(true) . $user->path);
       }
     }
   }
@@ -143,18 +144,22 @@ class BeeHub_Auth {
    * @return  void
    */
   private function set_user($user_name) {
-    BeeHub_ACL_Provider::inst()->CURRENT_USER_PRINCIPAL = BeeHub::$CONFIG['namespace']['users_path'] . $user_name;
+    BeeHub_ACL_Provider::inst()->CURRENT_USER_PRINCIPAL =
+      BeeHub::$CONFIG['namespace']['users_path'] . $user_name;
   }
+
 
   /**
    * Gives the currently logged in user
    *
-   * @return  BeeHub_User  The currently logged in user or NULL if no user is logged in.
+   * @return  BeeHub_User  The currently logged in user or NULL if no user is
+   *   logged in.
    */
   public function current_user() {
     $cup = BeeHub_ACL_Provider::inst()->user_prop_current_user_principal();
     return $cup ? BeeHub::user($cup) : null;
   }
+
 
   /**
    * Is the current user authenticated?
@@ -166,6 +171,7 @@ class BeeHub_Auth {
     return (boolean) $cup;
   }
 
+
   /**
    * Checks if this user is logged in through SURFconext
    * @return  boolean  True if the user is logged in through SURFconext, false otherwise
@@ -174,6 +180,7 @@ class BeeHub_Auth {
     return $this->SURFconext;
   }
 
+
   /**
    * Fetches the SimpleSaml object
    * @return  SimpleSAML_Auth_Simple  The SimpleSAML_Auth_Simple instance used for authentication
@@ -181,5 +188,29 @@ class BeeHub_Auth {
   public function simpleSaml() {
     return $this->simpleSAML_authentication;
   }
+
+
+  /**
+   * This method is called when DAV receives an 401 Unauthenticated exception.
+   * @return bool true if a response has been sent to the user.
+   */
+  public function unauthorized() {
+    DAV::header( array(
+      'status' => DAV::HTTP_UNAUTHORIZED,
+      'WWW-Authenticate' => 'Basic realm="' . BeeHub::$CONFIG['authentication']['realm'] . '"',
+      'Content-Type' => BeeHub::best_xhtml_type()
+    ) );
+    // TODO: Shouldn't this HTML text contain a link to alternative means of
+    // authentication, such as SURFconext? [PvB]
+    echo <<<EOS
+<html><head>
+  <title>HTTP/1.1 Unauthorized</title>
+</head><body>
+  <h1>HTTP/1.1 Unauthorized</h1>
+  <p>Sorry…</p>
+</body></html>
+EOS;
+  }
+
 
 } // class BeeHub_Auth
