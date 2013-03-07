@@ -108,7 +108,7 @@ class BeeHub_XFSResource extends BeeHub_Resource {
    */
   protected function user_set_sponsor($sponsor) {
     $this->assert(DAVACL::PRIV_READ);
-    if ( ! ( $sponsor = DAV::$REGISTRY->resource($sponsor) ) ||
+    if ( ! ( $sponsor = BeeHub_Registry::inst()->resource($sponsor) ) ||
          ! $sponsor instanceof BeeHub_Sponsor ||
          ! $sponsor->isVisible() )
       throw new DAV_Status(
@@ -129,7 +129,7 @@ class BeeHub_XFSResource extends BeeHub_Resource {
    */
   protected function user_set_owner($owner) {
     $this->assert(DAVACL::PRIV_READ);
-    if ( ! ( $owner = DAV::$REGISTRY->resource($owner) ) ||
+    if ( ! ( $owner = BeeHub_Registry::inst()->resource($owner) ) ||
          ! $owner->isVisible() ||
          ! $owner instanceof BeeHub_User)
       throw new DAV_Status(

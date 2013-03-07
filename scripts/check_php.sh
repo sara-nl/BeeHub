@@ -14,7 +14,7 @@ grep -P 'DAV::\$REGISTRY' *.php
 
 echo
 echo 'htmlspecialchars()/htmlentities() instead of DAV::xml_escape():'
-grep -P '\bhtml(specialchars|entities)\b' *.php
+grep -P '\bhtml(?:specialchars|entities)\b' *.php
 [ $? -eq 0 ] || echo OK
 
 echo

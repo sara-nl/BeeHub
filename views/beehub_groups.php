@@ -6,12 +6,12 @@
   // TODO custom settings to beehub.css or bootstrap.css
   // TODO documentation of this page
   $header = '
-<style type="text/css">  
+<style type="text/css">
 
   #panel-mygroups, #panel-join {
     padding-left:25px;
   }
-  		
+
   .accordion-group:hover {
     background-color: #D1E2D3 !important;
   }
@@ -61,7 +61,7 @@
                   <a href="<?= $group->path ?>" class="btn">View</a>
                   <?php endif; ?>
                   <!--    Leave button -->
-                  <button type="button" value="<?= $group->path ?>" class="btn btn-danger mygroupsleavebutton">Leave</button> 
+                  <button type="button" value="<?= $group->path ?>" class="btn btn-danger mygroupsleavebutton">Leave</button>
                 </td>
               </tr></tbody></table>
             </div>
@@ -77,7 +77,7 @@
       $i = $i + 1;
          endif;
         endforeach;
-     ?>        
+     ?>
     </div>
   </div>
 	<!--   End my groups tab -->
@@ -95,7 +95,7 @@
 	    </div>
     </div>
   	<br>
-  	
+
 		<!--    List with all groups -->
     <div class="accordion" id="joingroups">
         <?php
@@ -132,7 +132,7 @@
      <?php
       $i = $i + 1;
         endforeach;
-     ?>        
+     ?>
     </div>
   </div>
 	<!--   End join tab
@@ -140,7 +140,7 @@
 
 	<!-- Create tab -->
 	<br/>
-	<div id="panel-create" class="tab-pane fade">  
+	<div id="panel-create" class="tab-pane fade">
     <form id="createGroupForm" class="form-horizontal" action="<?= BeeHub::$CONFIG['namespace']['groups_path'] ?>" method="post">
 	    <div class="control-group">
 		    <label class="control-label" for="groupName">Group name</label>
@@ -175,6 +175,3 @@
 <?php
   $footer='<script type="text/javascript" src="/system/js/groups.js"></script>';
   require 'views/footer.php';
-?>
-
-

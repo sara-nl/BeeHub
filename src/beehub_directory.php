@@ -71,7 +71,7 @@ private function internal_create_member( $name, $collection = false ) {
   xattr_set( $localPath, rawurlencode( DAV::PROP_GETETAG), BeeHub_DB::ETag() );
   xattr_set( $localPath, rawurlencode( DAV::PROP_OWNER  ), $this->user_prop_current_user_principal() );
   xattr_set( $localPath, rawurlencode( BeeHub::PROP_SPONSOR ), $sponsor );
-  return DAV::$REGISTRY->resource($path);
+  return BeeHub_Registry::inst()->resource($path);
 }
 
 
@@ -127,7 +127,7 @@ public function method_GET() {
   # @see BeeHub::Registry::forget()
   $members = array();
   foreach ($this as $member){
-    $members[$member] = DAV::$REGISTRY->resource($this->path . $member);
+    $members[$member] = BeeHub_Registry::inst()->resource($this->path . $member);
   }
   $this->include_view( null, array(
       'members' => $members,

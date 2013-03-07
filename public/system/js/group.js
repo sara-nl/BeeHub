@@ -1,5 +1,6 @@
 $(function (){
-  $('#save_buton').click(function() {
+
+  $('#save-button').click(function() {
     var setProps = new Array();
     var displayname = new nl.sara.webdav.Property();
     displayname.namespace = 'DAV:';
@@ -9,16 +10,26 @@ $(function (){
     var description = new nl.sara.webdav.Property();
     description.namespace = 'http://beehub.nl/';
     description.tagname = 'description';
-    description.setValueAndRebuildXml($('input[name="description"]').val());
+    description.setValueAndRebuildXml($('textarea[name="description"]').val());
     setProps.push(description);
-
     var client = new nl.sara.webdav.Client();
-    client.proppatch(location.pathname, function(status, data) {
-      alert(status);
-    }, setProps);
+    client.proppatch(
+      location.pathname,
+      function(status, data) {
+        // TODO: check for success
+        $('#beehub-group-display').removeClass('hide');
+        $('#beehub-group-edit').addClass('hide');
+      }, setProps);
 
     return false;
   }); // End of button click event listener
+  
+  $('#edit-group-button').click(
+    function() {
+      $('#beehub-group-display').addClass('hide');
+      $('#beehub-group-edit').removeClass('hide');
+    }
+  );
 
   function handleDemote(){
     var cell = $(this).parent('td');

@@ -65,7 +65,7 @@ EOS;
     $statement = BeeHub_DB::execute($query, 's', $this->name);
     $members = array();
     while ($row = $statement->fetch_row()) {
-      $members[] = Array(
+      $members[$row[0]] = Array(
         'user_name' => $row[0],
         'displayname' => $row[1],
         'is_admin' => ($row[2] === 1),
