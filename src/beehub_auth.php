@@ -43,7 +43,7 @@ class BeeHub_Auth {
    * This class is a singleton, so the constructor is private. Instantiate through BeeHub_Auth::inst()
    */
   private function __construct() {
-    $this->simpleSAML_authentication = new SimpleSAML_Auth_Simple('SURFconext');
+    $this->simpleSAML_authentication = new SimpleSAML_Auth_Simple('BeeHub');
   }
 
   /**

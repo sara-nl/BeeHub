@@ -34,6 +34,7 @@ class BeeHub_Sponsor extends BeeHub_Principal {
    * @see DAV_Resource::method_GET()
    */
   public function method_GET() {
+    throw DAV::forbidden();
     $query = <<<EOS
     SELECT `user_name`,
            `displayname`,
@@ -60,6 +61,7 @@ EOS;
 
 
   public function method_POST ( &$headers ) {
+    throw DAV::forbidden();
     $auth = BeeHub_Auth::inst();
     if (!$auth->is_authenticated()) {
       throw DAV::forbidden();
