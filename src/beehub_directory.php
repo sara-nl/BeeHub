@@ -184,11 +184,13 @@ private function dir() {
     // Read the directory and add the contents
     if ($dh = opendir($this->localPath)) {
       while (($file = readdir($dh)) !== false) {
+	if ( ($file === '.') ||
+             ($file === '..') ) {
+          continue;
+        }
         $invisible = !BeeHub_Registry::inst()->resource( $this->path . $file )->isVisible();
         BeeHub_Registry::inst()->forget( $this->path . $file );
-        if ( ($file === '.') ||
-             ($file === '..') ||
-             $invisible ) {
+        if ( $invisible ) {
           continue;
         }
         $this->members[] = $file;
