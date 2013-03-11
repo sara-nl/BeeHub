@@ -24,11 +24,10 @@
  * @package BeeHub
  *
  */
-class BeeHub_File extends BeeHub_Resource {
+class BeeHub_File extends BeeHub_XFSResource {
 
 public function __construct ($path) {
   parent::__construct($path);
-  $this->protected_props[DAV::PROP_GETCONTENTLENGTH] = $this->stat['size'];
 }
 
 
@@ -58,7 +57,7 @@ protected function user_set_getcontentlanguage($value) {
 
 
 public function user_prop_getcontentlength() {
-  return $this->protected_props[DAV::PROP_GETCONTENTLENGTH];
+  return $this->stat['size'];
 }
 
 
@@ -77,6 +76,9 @@ public function user_prop_getetag() {
 }
 
 
+/**
+ * @TODO set owner and sponsor correctly!
+ */
 public function method_COPY( $path ) {
   $this->assert(DAVACL::PRIV_READ);
   BeeHub_Registry::inst()->resource(dirname($path))->assert(DAVACL::PRIV_WRITE);
@@ -88,13 +90,12 @@ public function method_COPY( $path ) {
 
 
 public function method_GET() {
-  $this->assert(DAVACL::PRIV_READ);
-  return fopen( $this->localPath , 'r');
+  return fopen( $this->localPath , 'r' );
 }
 
 
 public function method_PUT($stream) {
-  if (DAV::$PATH == $this->path)
+  if (DAV::$PATH === $this->path)
     $this->assert(DAVACL::PRIV_WRITE);
   if ( !($resource = fopen( $this->localPath, 'w' )) )
     throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
@@ -103,7 +104,7 @@ public function method_PUT($stream) {
     while (!feof($stream)) {
       $buffer = fread($stream, DAV::$CHUNK_SIZE );
       $size += strlen($buffer);
-      if ( strlen( $buffer ) != fwrite( $resource, $buffer ) )
+      if ( strlen( $buffer ) !== fwrite( $resource, $buffer ) )
         throw new DAV_Status(DAV::HTTP_INSUFFICIENT_STORAGE);
     }
     if ( isset($_SERVER['CONTENT_LENGTH']) &&
@@ -117,13 +118,13 @@ public function method_PUT($stream) {
   }
   fclose($resource);
   $contenttype = $this->user_prop_getcontenttype();
-  if (!$contenttype || 'application/x-empty' == $contenttype) {
+  if (!$contenttype || 'application/x-empty' === $contenttype) {
     $finfo = new finfo(FILEINFO_MIME);
+    // TODO: Shouldn't we call user_set_getcontenttype() here?
     try { $this->set_getcontenttype( $finfo->file( $this->localPath ) ); }
     catch (DAV_Status $e) {}
   }
-  try { $this->user_set(DAV::PROP_GETETAG, BeeHub::ETag()); }
-  catch (DAV_Status $e) {}
+  $this->user_set( DAV::PROP_GETETAG, BeeHub_DB::ETag() );
   $this->storeProperties();
 }
 
@@ -134,13 +135,13 @@ public function method_PUT_range($stream, $start, $end, $total) {
        !($resource = fopen( $this->localPath, 'r+' )) )
     throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
   try {
-    if ( 0 != fseek( $resource, $start, SEEK_SET ) )
+    if ( 0 !== fseek( $resource, $start, SEEK_SET ) )
       throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
     $size = $end - $start + 1;
     while ($size && !feof($stream)) {
       $buffer = fread($stream, $size < DAV::$CHUNK_SIZE ? $size : DAV::$CHUNK_SIZE );
       $size -= strlen( $buffer );
-      if ( strlen( $buffer ) != fwrite( $resource, $buffer ) )
+      if ( strlen( $buffer ) !== fwrite( $resource, $buffer ) )
         throw new DAV_Status(DAV::HTTP_INSUFFICIENT_STORAGE);
     }
     if ($size)
@@ -156,7 +157,7 @@ public function method_PUT_range($stream, $start, $end, $total) {
   }
   fclose($resource);
   fclose($stream);
-  $this->user_set(DAV::PROP_GETETAG, BeeHub::ETag());
+  $this->user_set( DAV::PROP_GETETAG, BeeHub_DB::ETag() );
   $this->storeProperties();
 }
 

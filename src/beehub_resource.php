@@ -23,298 +23,234 @@
  * Some class.
  * @package BeeHub
  */
-class BeeHub_Resource extends DAVACL_Resource {
+abstract class BeeHub_Resource extends DAVACL_Resource {
 
 
-/**
- * @var string the path of the resource on the local filesystem.
- */
-protected $localPath;
-protected $protected_props;
-/**
- * @var array
- */
-protected $stat;
-private $dead_props = null;
-protected $touched = false;
+  /**
+   * @var boolean
+   */
+  protected $touched = false;
 
 
-public function __construct ($path) {
-  parent::__construct($path);
-  $this->localPath = BeeHub::localPath($path);
-  $this->stat = stat($this->localPath);
-  $this->protected_props = array(
-    DAV::PROP_GETLASTMODIFIED  => $this->stat['mtime'],
-  );
-}
+  /**
+   * @var array Array of propery_name => property_value pairs.
+   */
+  protected $stored_props = null;
 
 
-/**
- * @param array $privileges
- * @throws DAV_Status FORBIDDEN
- */
-public function assert($privileges) {
-  if (BeeHub_ACL_Provider::inst()->wheel())
-    return;
-  return parent::assert($privileges);
-}
+  abstract protected function init_props();
 
-public function isVisible() {
-  try {
-    $this->assert(DAVACL::PRIV_READ);
+
+
+  /**
+   * @param array $privileges
+   * @throws DAV_Status FORBIDDEN
+   */
+  public function assert($privileges) {
+    if (BeeHub_ACL_Provider::inst()->wheel())
+      return;
+    return parent::assert($privileges);
   }
-  catch(DAV_Status $e) {
-    if (!( $collection = $this->collection() ))
-      return false;
+
+
+  /**
+   * @param $name string
+   * @param $value mixed
+   */
+  public function user_set($name, $value = null) {
+    $this->init_props();
+    if (is_null($value)) {
+      if (array_key_exists($name, $this->stored_props)) {
+        unset($this->stored_props[$name]);
+        $this->touched = true;
+      }
+    } else {
+      if ($value !== @$this->stored_props[$name]) {
+        $this->stored_props[$name] = $value;
+        $this->touched = true;
+      }
+    }
+  }
+
+
+  public function isVisible() {
     try {
-      $collection->assert(DAVACL::PRIV_WRITE);
-    }
-    catch(DAV_Status $f) {
+      $this->assert(DAVACL::PRIV_READ);
+    } catch (DAV_Status $e) {
       return false;
+      #if (!( $collection = $this->collection() ))
+      #  return false;
+      #try {
+      #  $collection->assert(DAVACL::PRIV_READ);
+      #} catch (DAV_Status $f) {
+      #  return false;
+      #}
     }
+    return true;
   }
-  return true;
-}
 
 
-public function property_priv_read($properties) {
-  $retval = array();
-  try {
-    $this->assert(DAVACL::PRIV_READ);
-    foreach ($properties as $property)
-      $retval[$property] = true;
+  /**
+   * @param $name string
+   * @param $value mixed
+   */
+  public function user_prop($name) {
+    $this->init_props();
+    return @$this->stored_props[$name];
   }
-  catch (DAV_Status $e) {
-    foreach ($properties as $property)
-      $retval[$property] = false;
+
+
+  /**
+   * @return array of principals (either paths or properties),
+   *         indexed by their own value.
+   */
+  final public function current_user_sponsors() {
+    $retval = array();
+    $user = $this->user_prop_current_user_principal();
+    if (null === $user)
+      return $retval;
+    $statement =
+    $retval = array(DAVACL::PRINCIPAL_ALL => DAVACL::PRINCIPAL_ALL);
+    if ( $current_user_principal = $this->user_prop_current_user_principal() ) {
+      $retval = array_merge($retval, self::current_user_principals_recursive($current_user_principal));
+      $retval[DAVACL::PRINCIPAL_AUTHENTICATED] = DAVACL::PRINCIPAL_AUTHENTICATED;
+    }
+    else {
+      $retval[DAVACL::PRINCIPAL_UNAUTHENTICATED] = DAVACL::PRINCIPAL_UNAUTHENTICATED;
+    }
+    return $retval;
   }
-  if (isset($retval[DAV::PROP_ACL]))
+
+
+  /**
+   * @see DAV_Resource::property_priv_read()
+   */
+  public function property_priv_read($properties) {
+    $retval = array();
     try {
-      $this->assert(DAVACL::PRIV_READ_ACL);
-      $retval[DAV::PROP_ACL] = true;
+      $this->assert(DAVACL::PRIV_READ);
+      foreach ($properties as $property)
+        $retval[$property] = true;
+    } catch (DAV_Status $e) {
+      foreach ($properties as $property)
+        $retval[$property] = false;
     }
-    catch (DAV_Status $e) {
-      $retval[DAV::PROP_ACL] = false;
+    if (isset($retval[DAV::PROP_ACL]))
+      try {
+        $this->assert(DAVACL::PRIV_READ_ACL);
+        $retval[DAV::PROP_ACL] = true;
+      } catch (DAV_Status $e) {
+        $retval[DAV::PROP_ACL] = false;
+      }
+    foreach( array(
+      DAV::PROP_OWNER,
+      DAV::PROP_RESOURCETYPE,
+      DAV::PROP_DISPLAYNAME
+    ) as $prop )
+      if (array_key_exists($prop, $retval))
+        $retval[$prop] = true;
+    return $retval;
+  }
+
+
+  /**
+   * @return Array a list of ACEs.
+   */
+  abstract public function user_prop_acl_internal();
+
+
+  public function user_prop_acl() {
+    $protected = array(
+      new DAVACL_Element_ace(
+        'DAV: owner', false, array('DAV: all'), false, true, null
+      ),
+    );
+    if ( ('/' === $this->path) ||
+         ('/home/' === $this->path) ){
+      $protected[] = new DAVACL_Element_ace(
+        'DAV: all', false, array('DAV: read', 'DAV: read-acl'), false, true, null
+      );
     }
-  if (isset($retval[DAV::PROP_OWNER]))
-    $retval[DAV::PROP_OWNER] = true;
-  return $retval;
-}
-
-
-//public function user_prop_creationdate() {
-//  return $this->protected_props[DAV::PROP_CREATIONDATE];
-//}
-
-
-public function user_prop_acl_internal() {
-  $parent = $this->collection();
-  $parent_acl = $parent ? $parent->user_prop_acl_internal() : array();
-  $retval = DAVACL_Element_ace::json2aces( $this->user_prop(DAV::PROP_ACL) );
-  while ( count($parent_acl) ) {
-    if ( ! $parent_acl[0]->inherited )
-      $parent_acl[0]->inherited = $parent->path;
-    $retval[] = array_shift( $parent_acl );
+    $parent = $this->collection();
+    $inherited = $parent ? $parent->user_prop_acl() : array();
+    while ( count($inherited) && $inherited[0]->protected )
+      array_shift($inherited);
+    foreach( $inherited as &$ace )
+      if ( ! $ace->inherited )
+        $ace->inherited = $parent->path;
+    return array_merge(
+      $protected, $this->user_prop_acl_internal(), $inherited
+    );
   }
-  return $retval;
-}
 
 
-public function user_prop_acl() {
-  $protected = array(
-    new DAVACL_Element_ace(
-      'DAV: owner', false, array('DAV: all'), false, true, null
-    ),
-//     new DAVACL_Element_ace(
-//       BeeHub::$CONFIG['wheel_path'], false, array('DAV: all'), false, true, null
-//     ),
-  );
-  if ( in_array( $this->path, array( '/' ) ) )
-    $protected[] = new DAVACL_Element_ace(
-      'DAV: all', false, array('DAV: read', 'DAV: read-acl'), false, true, null
-    );
-  return array_merge(
-    $protected,
-    $this->user_prop_acl_internal()
-  );
-}
-
-
-public function user_prop_getlastmodified() {
-  return $this->protected_props[DAV::PROP_GETLASTMODIFIED];
-}
-
-
-public function user_prop_getetag() {
-  return $this->user_prop(DAV::PROP_GETETAG);
-}
-
-
-private function init_dead_props() {
-  if (is_null($this->dead_props)) {
-    $this->dead_props = array();
-    $attributes = xattr_list($this->localPath);
-    foreach ($attributes as $attribute)
-      $this->dead_props[rawurldecode($attribute)] =
-        xattr_get($this->localPath, $attribute);
+  public function user_prop_owner() {
+    $retval = $this->user_prop(DAV::PROP_OWNER);
+    return $retval ? $retval : BeeHub::$CONFIG['namespace']['wheel_path'];
   }
-}
 
 
-public function user_prop($propname) {
-  $this->init_dead_props();
-  return @$this->dead_props[$propname];
-}
-
-
-/**
- * All available properties of the current resource.
- * This method must return an array with ALL property names as keys and a
- * boolean as value, indicating if the property should be returned in an
- * <allprop/> PROPFIND request.
- * @return array
- */
-public function user_propname() {
-  $this->init_dead_props();
-  $retval = array();
-  foreach ( array_keys( $this->dead_props ) as $prop )
-    if (!isset(DAV::$SUPPORTED_PROPERTIES[$prop]))
-      $retval[$prop] = true;
-  return $retval;
-}
-
-
-/**
- * @param string $propname the name of the property to be set.
- * @param string $value an XML fragment, or null to unset the property.
- * @return void
- * @throws DAV_Status §9.2.1 specifically mentions the following statusses.
- * - 200 (OK): The property set or change succeeded. Note that if this appears 
- *   for one property, it appears for every property in the response, due to the 
- *   atomicity of PROPPATCH.
- * - 403 (Forbidden): The client, for reasons the server chooses not to 
- *   specify, cannot alter one of the properties.
- * - 403 (Forbidden): The client has attempted to set a protected property, such 
- *   as DAV:getetag. If returning this error, the server SHOULD use the 
- *   precondition code 'cannot-modify-protected-property' inside the response 
- *   body.
- * - 409 (Conflict): The client has provided a value whose semantics are not 
- *   appropriate for the property.
- * - 424 (Failed Dependency): The property change could not be made because of 
- *   another property change that failed.
- * - 507 (Insufficient Storage): The server did not have sufficient space to 
- *   record the property.
- */
-protected function user_set($propname, $value = null) {
-  $this->assert(DAVACL::PRIV_WRITE);
-  $this->init_dead_props();
-  if (is_null($value) && isset($this->dead_props[$propname])) {
-    unset($this->dead_props[$propname]);
-    $this->touched = true;
-  } elseif (!is_null($value) && $value !== @$this->dead_props[$propname]) {
-    $this->dead_props[$propname] = $value;
-    $this->touched = true;
+  /**
+   * @return DAV_Element_href
+   */
+  final public function prop_sponsor() {
+    $retval = $this->user_prop_sponsor();
+    return $retval ? new DAV_Element_href($retval) : '';
   }
-}
 
 
-public function user_prop_displayname() {
-  return $this->user_prop(DAV::PROP_DISPLAYNAME);
-}
+  final public function set_sponsor($sponsor) {
+    $sponsor = DAVACL::parse_hrefs($sponsor);
+    if (1 !== count($sponsor->URIs))
+      throw new DAV_Status(
+        DAV::HTTP_BAD_REQUEST,
+        'Illegal value for property sponsor.'
+      );
+    $this->user_set_sponsor(DAV::parseURI($sponsor->URIs[0]));
+  }
 
 
-public function user_prop_group() {
-  return $this->user_prop(DAV::PROP_GROUP);
-}
+  /**
+   * @return string path
+   */
+  public function user_prop_sponsor() {
+    return $this->user_prop(BeeHub::PROP_SPONSOR);
+  }
 
 
-protected function user_set_group($group) {
-  $this->assert(DAVACL::PRIV_READ);
-  if ( !( $group = DAV::$REGISTRY->resource($group) ) ||
-       ! $group instanceof BeeHub_Group ||
-       ! $group->isVisible() )
-    throw new DAV_Status(
-      DAV::HTTP_BAD_REQUEST,
-      DAV::COND_RECOGNIZED_PRINCIPAL
-    );
-  if ( ! $group->user_prop_executable() )
-     throw new DAV_Status(
-      DAV::HTTP_BAD_REQUEST,
-      DAV::COND_ALLOWED_PRINCIPAL
-    );
-  if ( $this->user_prop_owner() != $this->user_prop_current_user_principal() &&
-       !BeeHub_ACL_Provider::inst()->wheel() )
-    throw new DAV_Status(
-      DAV::forbidden(),
-      'Only the owner can change the group of a resource.'
-    );
-  if ( !in_array( $group->path, $this->current_user_principals() ) )
-    throw new DAV_Status(
-      DAV::forbidden(),
-      "You're not a member of group {$group->path}"
-    );
-  return $this->user_set(DAV::PROP_GROUP, $group->path);
-}
+  /**
+   * @param string $sponsor path
+   */
+  protected function user_set_sponsor($sponsor) {
+    throw new DAV_Status( DAV::HTTP_FORBIDDEN );
+  }
 
 
-public function user_prop_owner() {
-  return $this->user_prop(DAV::PROP_OWNER);
-}
+  /**
+   * Should be overriden by BeeHub_File
+   */
+  public function user_prop_getcontenttype() {
+    //return 'httpd/unix-directory';
+    // Hmm, this was commented out, but why? I think XHTML is perfect for now.
+    // [PieterB]
+    return BeeHub::best_xhtml_type() . '; charset="utf-8"';
+  }
 
 
-protected function user_set_owner($owner) {
-  $this->assert(DAVACL::PRIV_READ);
-  $cups = BeeHub_Registry::inst()->resource($this->user_prop_current_user_principal());
-  if ( $this->user_prop_owner() != $this->user_prop_current_user_principal() and
-       !BeeHub_ACL_Provider::inst()->wheel() )
-    throw new DAV_Status(
-      DAV::forbidden(),
-      'Only the resource owner can grant ownership.'
-    );
-  if ( !( $owner = DAV::$REGISTRY->resource($owner) ) ||
-       ! $owner->isVisible() ||
-       ! $owner instanceof BeeHub_User )
-    throw new DAV_Status(
-      DAV::HTTP_BAD_REQUEST,
-      DAV::COND_RECOGNIZED_PRINCIPAL
-    );
-  if (!in_array($this->user_prop_group(), $owner->current_user_principals()))
-    throw new DAV_Status(
-      DAV::forbidden(),
-      'User ' . $owner->path . ' is not a member of group ' . $this->user_prop_group() . '.'
-    );
-  return $this->user_set(DAV::PROP_OWNER, $owner->path);
-}
-
-
-protected function user_set_displayname($value) {
-  return $this->user_set(DAV::PROP_DISPLAYNAME, $value);
-}
-
-
-/**
- * Stores properties set earlier by set().
- * @return void
- * @throws DAV_Status in particular 507 (Insufficient Storage)
- */
-public function storeProperties() {
-  if ( !$this->touched ) return;
-  foreach( xattr_list($this->localPath) as $attribute )
-    if (!isset($this->dead_props[rawurldecode($attribute)]))
-      xattr_remove($this->localPath, $attribute);
-  foreach( $this->dead_props as $name => $value )
-    xattr_set($this->localPath, rawurlencode($name), $value);
-  $this->touched = false;
-}
-
-
-public function method_ACL($aces) {
-  $this->assert(DAVACL::PRIV_WRITE_ACL);
-  $this->user_set(DAV::PROP_ACL, $aces ? DAVACL_Element_ace::aces2json($aces) : null);
-  $this->storeProperties();
-}
+  public function include_view(
+    $view_name_BeEhUb_MaGiC = null,
+    $parameters_BeEhUb_MaGiC = null
+  ) {
+    if (is_null($view_name_BeEhUb_MaGiC))
+      $view_name_BeEhUb_MaGiC = strtolower(get_class($this));
+    if (is_null($parameters_BeEhUb_MaGiC))
+      $parameters_BeEhUb_MaGiC = array();
+    foreach ( $parameters_BeEhUb_MaGiC as $param_BeEhUb_MaGiC => $value_BeEhUb_MaGiC ) {
+      $$param_BeEhUb_MaGiC = $value_BeEhUb_MaGiC;
+    }
+    require( 'views/' . $view_name_BeEhUb_MaGiC . '.php' );
+  }
 
 
 } // class BeeHub_Resource
-
 

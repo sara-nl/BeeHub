@@ -25,155 +25,153 @@
  */
 class BeeHub_Registry implements DAV_Registry {
 
+  /**
+   * @var BeeHub_Registry
+   */
+  private static $inst = null;
 
-/**
- * @var BeeHub_Registry
- */
-private static $inst = null;
+  /**
+   * Singleton factory.
+   * @return BeeHub_Registry
+   */
+  public static function inst() {
+    if (null === self::$inst)
+      self::$inst = new BeeHub_Registry();
+    return self::$inst;
+  }
 
+  /**
+   * Array of DAV_Resource objects, indexed by path.
+   * @var array
+   */
+  public $resourceCache = array();
 
-/**
- * Singleton factory.
- * @return BeeHub_Registry
- */
-public static function inst() {
-  if (null === self::$inst)
-    self::$inst = new BeeHub_Registry();
-  return self::$inst;
-}
-
-
-/**
- * Array of DAV_Resource objects, indexed by path.
- * @var array
- */
-public $resourceCache = array();
-
-
-/**
- * @param string $path
- */
-public function resource($path) {
-  $path = DAV::unslashify($path);
-  if ( isset( $this->resourceCache[$path] ) )
-    return $this->resourceCache[$path];
-  $localPath = BeeHub::localPath($path);
-  $retval = null;
-  preg_match( '@^/(users|groups)(?:/[^/]+)?$@', $path, $match );
-  if ( !$match ) {
-    if (is_dir($localPath))
+  /**
+   * @param string $path
+   */
+  public function resource($path) {
+    $path = DAV::unslashify($path);
+    $systemPath = DAV::unslashify(BeeHub::$CONFIG['namespace']['system_path']);
+    $usersPath = DAV::unslashify(BeeHub::$CONFIG['namespace']['users_path']);
+    $groupsPath = DAV::unslashify(BeeHub::$CONFIG['namespace']['groups_path']);
+    $sponsorsPath = DAV::unslashify(BeeHub::$CONFIG['namespace']['sponsors_path']);
+    if (isset($this->resourceCache[$path])) {
+      return $this->resourceCache[$path];
+    }
+    $localPath = BeeHub::localPath($path);
+    $retval = null;
+    if ($path === $systemPath) {
+      $retval = new BeeHub_System_Collection($path);
+    }elseif (substr($path, 0, strlen($usersPath)) === $usersPath) {
+      if ($path === $usersPath)
+        $retval = new BeeHub_Users($path);
+      else {
+        try {
+          $retval = new BeeHub_User($path);
+        }catch(Exception $e){}
+      }
+    }elseif(substr($path, 0, strlen($groupsPath)) === $groupsPath) {
+      if ($path === $groupsPath)
+        $retval = new BeeHub_Groups($path);
+      else {
+        try {
+          $retval = new BeeHub_Group($path);
+        }catch(Exception $e){}
+      }
+    }elseif(substr($path, 0, strlen($sponsorsPath)) === $sponsorsPath) {
+      if ($path === $sponsorsPath) {
+        $retval = new BeeHub_Sponsors($path);
+      }else {
+        try {
+          $retval = new BeeHub_Sponsor($path);
+        }catch(Exception $e){}
+      }
+    }elseif (is_dir($localPath)) {
       $retval = new BeeHub_Directory($path);
-    elseif (file_exists($localPath))
+    }elseif (file_exists($localPath)) {
       $retval = new BeeHub_File($path);
+    }
+    return ( $this->resourceCache[$path] = $retval );
   }
-  elseif ( 'users' == $match[1] ) {
-    if ( @is_dir( $localPath) )
-      $retval = new BeeHub_Users($path);
-    else {
-      try {
-        $retval = new BeeHub_User($path);
-      }
-      catch(Exception $e) {}  
+
+  /**
+   * @param string $path always unslashified!
+   */
+  public function forget($path) {
+    unset($this->resourceCache[$path]);
+  }
+
+  /**
+   * @param array $write paths to write-lock.
+   * @param array $read paths to read-lock
+   */
+  public function shallowLock($write, $read) {
+    $whashes = $rhashes = array();
+    foreach ($write as $value)
+      $whashes[] = BeeHub_DB::escape_string(hash('sha256', $value, true));
+    foreach ($read as $value)
+      $rhashes[] = BeeHub_DB::escape_string(hash('sha256', $value, true));
+    sort($whashes, SORT_STRING);
+    sort($rhashes, SORT_STRING);
+    if (!empty($whashes)) {
+      BeeHub_DB::query(
+        'INSERT IGNORE INTO `shallowLocks` VALUES (' .
+        implode('),(', $whashes) . ');'
+      );
+      $whashes = implode(',', $whashes);
+      $whashes = "SELECT * FROM `shallowLocks` WHERE `pathhash` IN ($whashes) FOR UPDATE;";
+    }
+    else
+      $whashes = null;
+    if (!empty($rhashes)) {
+      BeeHub_DB::query(
+        'INSERT IGNORE INTO `shallowLocks` VALUES (' .
+        implode('),(', $rhashes) . ');'
+      );
+      $rhashes = implode(',', $rhashes);
+      $rhashes = "SELECT * FROM `shallowLocks` WHERE `pathhash` IN ($rhashes) LOCK IN SHARE MODE;";
+    }
+    else
+      $rhashes = null;
+    $microsleeptimer = 10000; // also functions as success flag
+    while ($microsleeptimer) {
+      if ($microsleeptimer > 1280000)
+        $microsleeptimer = 1280000;
+      BeeHub_DB::query('START TRANSACTION');
+      if ($whashes)
+        try {
+          BeeHub_DB::query($whashes)->free_result();
+        } catch (BeeHub_Deadlock $e) {
+          BeeHub_DB::query('ROLLBACK');
+          usleep($microsleeptimer);
+          $microsleeptimer *= 2;
+          continue;
+        } catch (BeeHub_Timeout $e) {
+          BeeHub_DB::query('ROLLBACK');
+          throw new DAV_Status(DAV::HTTP_SERVICE_UNAVAILABLE);
+        }
+      if ($rhashes)
+        try {
+          BeeHub_DB::query($rhashes)->free_result();
+        } catch (BeeHub_Deadlock $e) {
+          BeeHub_DB::query('ROLLBACK');
+          usleep($microsleeptimer);
+          $microsleeptimer *= 2;
+          continue;
+        } catch (BeeHub_Timeout $e) {
+          BeeHub_DB::query('ROLLBACK');
+          throw new DAV_Status(DAV::HTTP_SERVICE_UNAVAILABLE);
+        }
+      $microsleeptimer = 0;
     }
   }
-  elseif ( 'groups' == $match[1] ) {
-    if ( @is_dir($localPath) )
-      $retval = new BeeHub_Groups($path);
-    else {
-      try {
-        $retval = new BeeHub_Group($path);
-      }
-      catch(Exception $e) {}
-    }
+
+  /**
+   * @param array $write paths to write-lock.
+   * @param array $read paths to read-lock
+   */
+  public function shallowUnlock() {
+    BeeHub_DB::query('COMMIT;');
   }
-  return ( $this->resourceCache[$path] = $retval );
-}
-
-
-/**
- * @param string $path always unslashified!
- */
-public function forget($path) {
-  unset( $this->resourceCache[$path] );
-}
-
-
-/**
- * @param array $write paths to write-lock.
- * @param array $read paths to read-lock
- */
-public function shallowLock($write, $read) {
-  $whashes = $rhashes = array();
-  foreach ($write as $value)
-    $whashes[] = BeeHub::escape_string( hash( 'sha256', $value, true ) );
-  foreach ($read as $value)
-    $rhashes[] = BeeHub::escape_string( hash( 'sha256', $value, true ) );
-  sort( $whashes, SORT_STRING );
-  sort( $rhashes, SORT_STRING );
-  if (!empty($whashes)) {
-    BeeHub::query('INSERT IGNORE INTO `shallowLocks` VALUES (' . implode('),(', $whashes) . ');');
-    $whashes = implode(',', $whashes);
-    $whashes = BeeHub::mysqli()->prepare(
-      "SELECT * FROM `shallowLocks` WHERE `pathhash` IN ($whashes) FOR UPDATE;"
-    );
-  }
-  else
-    $whashes = null;
-  if (!empty($rhashes)) {
-    BeeHub::query('INSERT IGNORE INTO `shallowLocks` VALUES (' . implode('),(', $rhashes) . ');');
-    $rhashes = implode(',', $rhashes);
-    $rhashes = BeeHub::mysqli()->prepare(
-      "SELECT * FROM `shallowLocks` WHERE `pathhash` IN ($rhashes) LOCK IN SHARE MODE;"
-    );
-  }
-  else
-    $rhashes = null;
-  $microsleeptimer = 10000; // also functions as success flag
-  while ($microsleeptimer) {
-    if ($microsleeptimer > 1280000) $microsleeptimer = 1280000;
-    BeeHub::query('START TRANSACTION');
-    if ($whashes)
-      try {
-        $whashes->execute();
-        $whashes->free_result();
-      }
-      catch (BeeHub_Deadlock $e) {
-        BeeHub::query('ROLLBACK');
-        usleep( $microsleeptimer );
-        $microsleeptimer *= 2;
-        continue;
-      }
-      catch (BeeHub_Timeout $e) {
-        BeeHub::query('ROLLBACK');
-        throw new DAV_Status(DAV::HTTP_SERVICE_UNAVAILABLE);
-      }
-    if ($rhashes)
-      try {
-        $rhashes->execute();
-        $rhashes->free_result();
-      }
-      catch (BeeHub_Deadlock $e) {
-        BeeHub::query('ROLLBACK');
-        usleep( $microsleeptimer );
-        $microsleeptimer *= 2;
-        continue;
-      }
-      catch (BeeHub_Timeout $e) {
-        BeeHub::query('ROLLBACK');
-        throw new DAV_Status(DAV::HTTP_SERVICE_UNAVAILABLE);
-      }
-    $microsleeptimer = 0;
-  }
-}
-
-
-/**
- * @param array $write paths to write-lock.
- * @param array $read paths to read-lock
- */
-public function shallowUnlock() {
-  BeeHub::query('COMMIT;');
-}
-
 
 } // class

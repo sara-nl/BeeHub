@@ -1,0 +1,23 @@
+.beehub-spacer-navbar-fixed-top {
+  height: 58px; /* 40px + 18px padding */
+}
+.beehub-spacer-surfsara-logo {
+  width: 202px;
+}
+.surfsara-logo {
+  position: fixed;
+  right: 0;
+  top: 0;
+  z-index: 1031;
+}
+#notifications{
+  width: 800px;
+  padding: 1em;
+  background-color: #d1e2d2;
+}
+#notifications li {
+  padding: 0.5em;
+}
+#notifications li:nth-child(even) {
+  background-color: #e8f1e9;
+}

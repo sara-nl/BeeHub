@@ -23,70 +23,122 @@
  * A class.
  * @package BeeHub
  *
+ * @TODO: How to delete a principal?
  */
-abstract class BeeHub_Principal extends BeeHub_File implements DAVACL_Principal {
+abstract class BeeHub_Principal extends BeeHub_Resource implements DAVACL_Principal {
+
+  public $name;
 
 
-public function __construct($path) {
-  $localPath = BeeHub::localPath($path);
-  if (!file_exists($localPath)) {
-    $result = touch($localPath);
-    if ( !$result )
-      throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
-    xattr_set( $localPath, rawurlencode(DAV::PROP_GETETAG), BeeHub::ETag(0) );
-    xattr_set( $localPath, rawurlencode(DAV::PROP_OWNER  ), BeeHub::$CONFIG['wheel_path'] );
+  public function __construct($path) {
+    parent::__construct($path);
+    $this->name = rawurldecode(basename($path));
+    $this->init_props();
   }
-  parent::__construct($path);
-}
 
 
-protected $display_name = null;
-public function user_prop_displayname() {
-  return $this->display_name;
-}
-
-
-public function user_set_displayname() {
-  throw new DAV_Status(
-    DAV::HTTP_FORBIDDEN,
-    DAV::COND_CANNOT_MODIFY_PROTECTED_PROPERTY
-  );
-}
-
-
-public function user_prop_alternate_uri_set() { return array(); }
-
-
-public function user_prop_principal_url() {
-  return $this->path;
-}
-
-
-public function property_priv_read($properties) {
-  $retval = array();
-  try {
-    $this->assert(DAVACL::PRIV_READ);
-    foreach ($properties as $property)
-      $retval[$property] = true;
+  public function method_HEAD() {
+    $retval = parent::method_HEAD();
+    $retval['Cache-Control'] = 'no-cache';
+    return $retval;
   }
-  catch (DAV_Status $e) {
-    foreach ($properties as $property)
-      $retval[$property] = false;
+
+
+  public function user_prop_alternate_uri_set() {
+    return array();
   }
-  if (isset($retval[DAV::PROP_ACL]))
-    try {
-      $this->assert(DAVACL::PRIV_READ_ACL);
-      $retval[DAV::PROP_ACL] = true;
+
+  public function user_prop_principal_url() {
+    return $this->path;
+  }
+
+  /**
+   * @see DAV_Resource::user_prop()
+   */
+  public function user_prop($propname) {
+    $this->init_props();
+    return @$this->stored_props[$propname];
+  }
+
+  public function user_prop_displayname() {
+    return $this->user_prop(DAV::PROP_DISPLAYNAME);
+  }
+
+
+  protected function user_set_displayname($displayname) {
+    $this->user_set(DAV::PROP_DISPLAYNAME, $displayname);
+  }
+
+  public function user_prop_owner() {
+    return BeeHub::$CONFIG['namespace']['wheel_path'];
+  }
+
+  public function user_prop_group_membership() {
+    return array();
+  }
+
+
+  public function user_prop_group_member_set() {
+    return array();
+  }
+
+  public function user_set_group_member_set($set) {
+  }
+
+
+  /**
+  * The user has write privileges on all properties if he is the administrator of this principal
+  * @param array $properties
+  * @return array an array of (property => isWritable) pairs.
+  */
+  public function property_priv_write($properties) {
+    $allow = $this->is_admin();
+    $retval = array();
+    foreach ($properties as $prop) $retval[$prop] = $allow;
+    return $retval;
+  }
+
+
+  /**
+  * This method renews file .../js/principals.js
+  * @TODO make sure that .../js/principals.js is overwritable by a `rename`; consider not writing it to a location inside the document root for security reasons
+  */
+  public static function update_principals_json() {
+    $json = array();
+
+    foreach( array( 'user', 'group', 'sponsor' ) as $thing ) {
+      $things = array();
+      $stmt = BeeHub_DB::execute(
+        "SELECT   `{$thing}_name`, `displayname`
+         FROM     `beehub_{$thing}s`
+         ORDER BY `displayname`"
+      );
+      while ( $row = $stmt->fetch_row() )
+        $things[$row[0]] = $row[1];
+      $stmt->free_result();
+      $json["{$thing}s"] = $things;
     }
-    catch (DAV_Status $e) {
-      $retval[DAV::PROP_ACL] = false;
-    }
-  if (isset($retval[DAV::PROP_OWNER]))
-    $retval[DAV::PROP_OWNER] = true;
-  return $retval;
+
+    $local_js_path = dirname( dirname( __FILE__ ) ) . '/public' .
+      BeeHub::$CONFIG['namespace']['javascript'];
+    $filename = tempnam($local_js_path, 'tmp_principals');
+    file_put_contents(
+      $filename, 
+      'nl.sara.beehub.users_path = "' . BeeHub::$CONFIG['namespace']['users_path'] . '";' .
+      'nl.sara.beehub.groups_path = "' . BeeHub::$CONFIG['namespace']['groups_path'] . '";' .
+      'nl.sara.beehub.sponsors_path = "' . BeeHub::$CONFIG['namespace']['sponsors_path'] . '";' .
+      'nl.sara.beehub.principals = ' . json_encode($json) . ';'
+    );
+    rename( $filename, $local_js_path . DIRECTORY_SEPARATOR . 'principals.js' );
+    chmod($local_js_path . 'principals.js', 0664);
+  }
+
+  /**
+   * @return bool is the current user allowed to administer $this?
+   */
+  abstract public function is_admin();
 }
 
-
-} // class BeeHub_Principal
+// class BeeHub_Principal
 
 

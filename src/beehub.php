@@ -19,40 +19,27 @@
  * @package BeeHub
  */
 
-//DAV::header(array('X-My-Header' => 'My Value'));
-//exit();
 
-//phpinfo(); exit;
-//ob_start("ob_gzhandler");
+// Set the include path, so BeeHub_* classes are automatically loaded
+set_include_path(
+  realpath( dirname( dirname(__FILE__) ) ) . PATH_SEPARATOR .
+  dirname(__FILE__) . PATH_SEPARATOR .
+  get_include_path()
+);
+require_once dirname(dirname(__FILE__)) . '/webdav-php/lib/dav.php';
 
-//header("Transfer-Encoding: chunked");
-//header("Content-Type: text/plain; charset=US-ASCII");
-//flush();
-//echo "5\r\nhello\r\n0\r\n\r\nX-Trail: yes\r\n";
-//flush();
-//exit();
 
-require_once dirname( dirname(__FILE__) ) . '/webdav-php/lib/dav.php';
-
-//DAV::debug('started!');
-
-/**
- * A MySQL exception
- * @package BeeHub
- */
-class BeeHub_MySQL extends Exception {}
-
-/**
- * A deadlock occured: Try again.
- * @package BeeHub
- */
-class BeeHub_Deadlock extends BeeHub_MySQL {}
-
-/**
- * Out of resources: maybe later.
- * @package BeeHub
- */
-class BeeHub_Timeout extends BeeHub_MySQL {}
+// Set a default exception handler, so we always output nice errors if an exception is uncaught
+function beehub_exception_handler($e) {
+  if (! $e instanceof DAV_Status) {
+    $e = new DAV_Status(
+      DAV::HTTP_INTERNAL_SERVER_ERROR,
+      "$e"
+    );
+  }
+  $e->output();
+}
+set_exception_handler('beehub_exception_handler');
 
 
 /**
@@ -62,155 +49,270 @@ class BeeHub_Timeout extends BeeHub_MySQL {}
 class BeeHub {
 
 
-// const REALM = 'BeeHub';
-// const USERS_PATH = '/users/';
-// const GROUPS_PATH = '/groups/';
-// const WHEEL_PATH = '/users/admin';
+  const PROP_EMAIL                  = 'http://beehub.nl/ email';
+  const PROP_SURFCONEXT             = 'http://beehub.nl/ surfconext';
+  const PROP_SURFCONEXT_DESCRIPTION = 'http://beehub.nl/ surfconext-description';
+  const PROP_X509                   = 'http://beehub.nl/ x509';
+  const PROP_DESCRIPTION            = 'http://beehub.nl/ description';
+  const PROP_SPONSOR                = 'http://beehub.nl/ sponsor';
+  const PROP_SPONSOR_MEMBERSHIP     = 'http://beehub.nl/ sponsor-membership';
 
 
-const PRIV_READ_PROPERTIES = 'http://beehub.nl/ read-properties';
-const PRIV_READ_CONTENT    = 'http://beehub.nl/ read-content';
+  public static $USER_PROPS = array(
+    self::PROP_EMAIL                  => true,
+    self::PROP_SURFCONEXT             => true,
+    self::PROP_SURFCONEXT_DESCRIPTION => true,
+    self::PROP_X509                   => true,
+    self::PROP_SPONSOR                => true,
+    self::PROP_SPONSOR_MEMBERSHIP     => true,
+  );
+  public static $GROUP_PROPS = array(
+    self::PROP_DESCRIPTION     => true,
+  );
+  public static $SPONSOR_PROPS = array(
+    self::PROP_DESCRIPTION     => true,
+  );
 
-const PROP_PASSWD          = 'http://beehub.nl/ passwd';
+
+  /**#@+
+   * These constants define the different environments the code can run in.
+   *
+   * The global constant APPLICATION_ENV can be compared to one of these
+   * constants to check whether the application is running in the respective
+   * environment. This reduces the chance of developers making up their own
+   * environment values without in stead of using one of the existing ones.
+   */
+  const ENVIRONMENT_DEVELOPMENT = 'development';
+  const ENVIRONMENT_PRODUCTION  = 'production';
+  /**#@-*/
 
   public static $CONFIG;
-  
-
-/**
- * A better escapeshellarg.
- * The default PHP version seems not to work for UTF-8 strings...
- * @return string
- * @param string $arg
- */
-public static function escapeshellarg($arg) {
-  return "'" . str_replace( "'", "'\\''", $arg ) . "'";
-}
 
 
-public static function localPath($path) {
-//  $path = DAV::unslashify('root' . $path);
-//  $path = str_replace('#', '##', $path);
-  return DAV::unslashify( self::$CONFIG['datadir'] . rawurldecode( $path ) );
-}
+  /**
+   * Returns the base URI.
+   * The base URI is 'protocol://server.name:port'
+   * @return string
+   */
+  public static function urlbase($https = null) {
+    static $URLBASE = array();
+    if ( !@$URLBASE[$https] ) {
+      if ( true === $https || ! empty($_SERVER['HTTPS']) && null === $https )
+        $tmp = 'https://';
+      else
+        $tmp = 'http://';
+      $tmp .= $_SERVER['SERVER_NAME'];
+      if ( !empty($_SERVER['HTTPS']) && $_SERVER['SERVER_PORT'] !== 443 or
+            empty($_SERVER['HTTPS']) && $_SERVER['SERVER_PORT'] !== 80 ) {
+        $server_port = intval($_SERVER['SERVER_PORT'], 10);
+        if ( true === $https && empty($_SERVER['HTTPS']) )
+          $server_port += 443 - 80;
+        elseif ( false === $https && ! empty($_SERVER['HTTPS']) )
+          $server_port -= 443 - 80;
+        $tmp .= ":{$server_port}";
+      }
+      $URLBASE[$https] = $tmp;
+    }
+    return $URLBASE[$https];
+  }
 
 
-/**
- * @var mysqli
- */
-private static $MYSQLI = null;
-/**
- * @return mysqli
- * @throws DAV_Status
- */
-public static function mysqli() {
-  if (self::$MYSQLI === null) {
-    self::$MYSQLI = new mysqli(
-      BeeHub::$CONFIG['mysql']['host'],
-      BeeHub::$CONFIG['mysql']['username'],
-      BeeHub::$CONFIG['mysql']['password'],
-      BeeHub::$CONFIG['mysql']['database']
+  /**
+   * Returns the request URI without the query part
+   * @return  string  The request URI without query part
+   */
+  public static function request_uri() {
+    $query_start = strpos($_SERVER['REQUEST_URI'], '?');
+    if ($query_start === false) {
+      return $_SERVER['REQUEST_URI'];
+    }else{
+      return substr($_SERVER['REQUEST_URI'], 0, $query_start);
+    }
+  }
+
+
+  /**
+   * A better escapeshellarg.
+   * The default PHP version seems not to work for UTF-8 strings...
+   * @return string
+   * @param string $arg
+   */
+  public static function escapeshellarg($arg) {
+    return "'" . str_replace("'", "'\\''", $arg) . "'";
+  }
+
+
+  public static function localPath($path) {
+    return DAV::unslashify(self::$CONFIG['environment']['datadir'] . rawurldecode($path));
+  }
+
+
+  public static function best_xhtml_type() {
+    return 'text/html';
+    // The rest of the function will be skipped. This is because ExtJS doesn't support X(HT)ML, so we always need to send it as 'text/html'
+    return ( false === strstr(@$_SERVER['HTTP_USER_AGENT'], 'MSIE') &&
+            false === strstr(@$_SERVER['HTTP_USER_AGENT'], 'Microsoft') ) ?
+            'application/xhtml+xml' : 'text/html';
+  }
+
+
+  public static function handle_method_spoofing() {
+    $_SERVER['ORIGINAL_REQUEST_METHOD'] = $_SERVER['REQUEST_METHOD'];
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' and
+            isset($_GET['_method'])) {
+      $http_method = strtoupper($_GET['_method']);
+      unset($_GET['_method']);
+      if ($http_method === 'GET' &&
+              strstr(@$_SERVER['CONTENT_TYPE'], 'application/x-www-form-urlencoded') !== false) {
+        $_GET = $_POST;
+        $_POST = array();
+      }
+      $_SERVER['QUERY_STRING'] = http_build_query($_GET);
+      $_SERVER['REQUEST_URI'] =
+              substr($_SERVER['REQUEST_URI'], 0, strpos($_SERVER['REQUEST_URI'], '?'));
+      if ($_SERVER['QUERY_STRING'] !== '')
+        $_SERVER['REQUEST_URI'] .= '?' . $_SERVER['QUERY_STRING'];
+      $_SERVER['REQUEST_METHOD'] = $http_method;
+    }
+  }
+
+
+  /**
+   * @param $name string the path or name of the resource
+   * @return BeeHub_User
+   */
+  public static function user($name) {
+    if ($name[0] !== '/')
+      $name = BeeHub::$CONFIG['namespace']['users_path'] .
+        rawurlencode($name);
+    $retval = BeeHub_Registry::inst()->resource( $name );
+    if (!$retval) throw new DAV_Status(
+      DAV::HTTP_FORBIDDEN, DAV::COND_RECOGNIZED_PRINCIPAL
     );
-    if ( !self::$MYSQLI )
-      throw new BeeHub_MySQL(mysqli_connect_error(), mysqli_connect_errno());
+    return $retval;
   }
-  return self::$MYSQLI;
-}
 
 
-public static function escape_string($string) {
-  return is_null($string)
-    ? 'NULL'
-    : '\'' . self::mysqli()->escape_string($string) . '\'';
-}
-
-
-public static function ETag($etag = null) {
-  if (is_null($etag)) {
-    self::query('INSERT INTO ETag VALUES();');
-    $etag = self::mysqli()->insert_id;
-    if (!($etag % 100))
-      self::query("DELETE FROM ETag WHERE etag < $etag");
+  /**
+   * @param $name string the path or name of the resource
+   * @return BeeHub_Group
+   */
+  public static function group($name) {
+    if ($name[0] !== '/')
+      $name = BeeHub::$CONFIG['namespace']['groups_path'] .
+        rawurlencode($name);
+    $retval = BeeHub_Registry::inst()->resource( $name );
+    if (!$retval) throw new DAV_Status(
+      DAV::HTTP_FORBIDDEN, DAV::COND_RECOGNIZED_PRINCIPAL
+    );
+    return $retval;
   }
-  return '"' . trim( base64_encode( pack( 'H*', dechex( $etag ) ) ), '=' ) . '"';
-}
 
 
-/**
- * @param string $query
- * @return void
- * @throws BeeHub_Deadlock|BeeHub_Timeout|BeeHub_MySQL
- */
-public static function real_query($query) {
-  if (! self::mysqli()->real_query($query)) {
-    if (self::mysqli()->errno == 1213)
-      throw new BeeHub_Deadlock(self::mysqli()->error);
-    if (self::mysqli()->errno == 1205)
-      throw new BeeHub_Timeout(self::mysqli()->error);
-    throw new BeeHub_MySQL( self::mysqli()->error, self::mysqli()->errno );
+  /**
+   * @param $name string the path or name of the resource
+   * @return BeeHub_Sponsor
+   */
+  public static function sponsor($name) {
+    if ($name[0] !== '/')
+      $name = BeeHub::$CONFIG['namespace']['sponsors_path'] .
+        rawurlencode($name);
+    $retval = BeeHub_Registry::inst()->resource( $name );
+    if (!$retval) throw new DAV_Status(
+      DAV::HTTP_FORBIDDEN, DAV::COND_RECOGNIZED_PRINCIPAL
+    );
+    return $retval;
   }
-}
 
 
-/**
- * @param string $query
- * @return mysqli_result
- * @throws Exception
- */
-public static function query($query) {
-  if ( !( $retval = self::mysqli()->query($query) ) ) {
-    if (self::mysqli()->errno == 1213)
-      throw new BeeHub_Deadlock(self::mysqli()->error);
-    if (self::mysqli()->errno == 1205)
-      throw new BeeHub_Timeout(self::mysqli()->error);
-    throw new BeeHub_MySQL( self::mysqli()->error, self::mysqli()->errno );
+  /**
+   * Checks for notifications for the current user
+   *
+   * Notifications are associative arrays with two keys: type and data. The type
+   * describes what type the notification is. For example 'group_invitation. The
+   * lay-out of the notification can then be determined client side. The data
+   * differs per type and its format is dictated by the client side scripts
+   * handling the type. This can for example be an array with the group name and
+   * display name of the group you are invited for.
+   *
+   * @return  array  An array with notifications.
+   */
+  public static function notifications() {
+    $notifications = array();
+    $auth = BeeHub_Auth::inst();
+    if ($auth->is_authenticated()) {
+      $user = $auth->current_user();
+
+      // Fetch all group invitations
+      $statement = BeeHub_DB::execute('
+        SELECT `beehub_groups`.`group_name`,
+               `beehub_groups`.`displayname`
+          FROM `beehub_group_members` JOIN `beehub_groups` USING(`group_name`)
+         WHERE `beehub_group_members`.`is_invited` = 1 AND
+               `beehub_group_members`.`is_requested` = 0 AND
+               `beehub_group_members`.`user_name` = ?
+      ', 's', $user->name);
+      while ($row = $statement->fetch_row()) {
+        $notifications[] = array('type'=>'group_invitation', 'data'=>array('group'=>BeeHub::$CONFIG['namespace']['groups_path'] . $row[0], 'displayname'=>$row[1]));
+      }
+
+      // Fetch all group membership requests
+      $statement = BeeHub_DB::execute('
+        SELECT `beehub_groups`.`group_name`,
+               `beehub_groups`.`displayname`,
+               `beehub_users`.`user_name`,
+               `beehub_users`.`displayname`
+          FROM `beehub_group_members` JOIN `beehub_groups` USING(`group_name`) JOIN `beehub_users` USING(`user_name`)
+         WHERE `beehub_group_members`.`is_invited` = 0 AND
+               `beehub_group_members`.`is_requested` = 1 AND
+               `beehub_group_members`.`group_name` IN (
+                  SELECT `beehub_group_members`.`group_name`
+                    FROM `beehub_group_members`
+                   WHERE `beehub_group_members`.`is_admin` = 1 AND
+                         `beehub_group_members`.`user_name` = ?
+               )
+      ', 's', $user->name);
+      while ($row = $statement->fetch_row()) {
+        $notifications[] = array('type'=>'group_request', 'data'=>array('group'=>BeeHub::$CONFIG['namespace']['groups_path'] . $row[0], 'group_displayname'=>$row[1], 'user'=>BeeHub::$CONFIG['namespace']['users_path'] . $row[2], 'user_displayname'=>$row[3]));
+      }
+
+      // Fetch all sponsor membership requests
+      $statement = BeeHub_DB::execute('
+        SELECT `beehub_sponsors`.`sponsor_name`,
+               `beehub_sponsors`.`displayname`,
+               `beehub_users`.`user_name`,
+               `beehub_users`.`displayname`
+          FROM `beehub_sponsor_members` JOIN `beehub_sponsors` USING(`sponsor_name`) JOIN `beehub_users` USING(`user_name`)
+         WHERE `beehub_sponsor_members`.`is_accepted` = 0 AND
+               `beehub_sponsor_members`.`sponsor_name` IN (
+                  SELECT `beehub_sponsor_members`.`sponsor_name`
+                    FROM `beehub_sponsor_members`
+                   WHERE `beehub_sponsor_members`.`is_admin` = 1 AND
+                         `beehub_sponsor_members`.`user_name` = ?
+               )
+      ', 's', $user->name);
+      while ($row = $statement->fetch_row()) {
+        $notifications[] = array('type'=>'sponsor_request', 'data'=>array('sponsor'=>BeeHub::$CONFIG['namespace']['sponsors_path'] . $row[0], 'sponsor_displayname'=>$row[1], 'user'=>BeeHub::$CONFIG['namespace']['users_path'] . $row[2], 'user_displayname'=>$row[3]));
+      }
+    }
+    return $notifications;
   }
-  return $retval;
-}
 
 
-/**
- * @return string a uuid, generated by MySQL
- */
-public static function uuid() {
-  $result = self::query('SELECT UUID();');
-  $row = $result->fetch_row();
-  return $row[0];
-}
-
-
-public static function best_xhtml_type() {
-  return ( false === strstr(@$_SERVER['HTTP_USER_AGENT'], 'MSIE') &&
-           false === strstr(@$_SERVER['HTTP_USER_AGENT'], 'Microsoft') ) ?
-    'application/xhtml+xml' : 'text/html';
-}
-
-
-/**
- * @todo implement
- */
-public static function current_user() {}
-
-public static function handle_method_spoofing() {
-  $_SERVER['ORIGINAL_REQUEST_METHOD'] = $_SERVER['REQUEST_METHOD'];
-  if ($_SERVER['REQUEST_METHOD'] == 'POST' and
-     isset($_GET['_method'])) {
-   $http_method = strtoupper( $_GET['_method'] );
-   unset( $_GET['_method'] );
-   if ( $http_method === 'GET' &&
-        strstr( @$_SERVER['CONTENT_TYPE'],
-                'application/x-www-form-urlencoded' ) !== false ) {
-     $_GET = $_POST;
-     $_POST = array();
-   }
-   $_SERVER['QUERY_STRING'] = http_build_query($_GET);
-   $_SERVER['REQUEST_URI'] =
-     substr( $_SERVER['REQUEST_URI'], 0,
-             strpos( $_SERVER['REQUEST_URI'], '?' ) );
-   if ($_SERVER['QUERY_STRING'] != '')
-     $_SERVER['REQUEST_URI'] .= '?' . $_SERVER['QUERY_STRING'];
-   $_SERVER['REQUEST_METHOD'] = $http_method;
+  /**
+   * Send an e-mail
+   * @param   string|array  $recipients  The recipient or an array of recepients
+   * @param   type          $subject     The subject of the message
+   * @param   type          $message     The message body
+   * @return  void
+   */
+  public static function email($recipients, $subject, $message) {
+    if (is_array($recipients)) {
+      $recipients = implode(',', $recipients);
+    }
+    mail($recipients, $subject, $message, 'From: ' . BeeHub::$CONFIG['email']['sender_name'] . ' <' . BeeHub::$CONFIG['email']['sender_address'] . '>', '-f ' . BeeHub::$CONFIG['email']['sender_address']);
   }
-}
+
 
 } // class BeeHub
 
@@ -218,4 +320,9 @@ BeeHub::$CONFIG = parse_ini_file(
   dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'config.ini',
   true
 );
+// We need SimpleSamlPHP
+require_once(BeeHub::$CONFIG['environment']['simplesamlphp_autoloader']);
 
+DAV::$PROTECTED_PROPERTIES[ DAV::PROP_GROUP_MEMBER_SET ] = true;
+DAV::$ACL_PROPERTIES[BeeHub::PROP_SPONSOR] =
+DAV::$SUPPORTED_PROPERTIES[BeeHub::PROP_SPONSOR] = 'sponsor';

@@ -40,6 +40,10 @@ static public function inst() {
 }
 
 
+/**
+ * @param $timeout array
+ * @return int Unix Timestamp
+ */
 private static function timeout($timeout) {
   if (!$timeout || !$timeout[0] || $timeout[0] > self::MAXTIMEOUT)
     return time() + self::MAXTIMEOUT;
@@ -48,67 +52,74 @@ private static function timeout($timeout) {
 
 
 public function memberLocks($path) {
-  exec( 'getfattr --absolute-names -n "user.' . self::PROPNAME . '" -R ' . BeeHub::escapeshellarg(BeeHub::localPath($path)) . ' 2>/dev/null', $output );
-  $result = array();
-  $filename = null;
-  foreach ($output as $line)
-    if (preg_match('@^# file: (.*)$@', $line, $matches))
-      $filename = stripcslashes($matches[1]);
-    elseif ( $filename &&
-             preg_match(
-               '@^user\\.DAV%3A%20lockdiscovery="((?:\\\\.|[^"\\\\])*)"$@',
-               $line, $matches
-             ) )
-      $result[$filename] = stripcslashes($matches[1]);
-  unset ($result[BeeHub::localPath($path)]);
+  $match = str_replace(
+    array('_', '%'),
+    array('\\_', '\\%'),
+    DAV::slashify( $path )
+  ) . '_%';
+  $stmt = BeeHub_DB::execute(
+    'SELECT `lock_token`, `lock_root`, `lock_owner`, `lock_depth`, `lock_timeout`
+       FROM `Locks`
+      WHERE `lock_root` LIKE ?', 's', $match
+  );
   $retval = array();
-  foreach($result as $localPath => $lockdiscovery) {
-    $l = json_decode($lockdiscovery, true);
-    if ( 0 == $l['timeout'] || $l['timeout'] > time() )
-      $retval[$l['locktoken']] = new DAV_Element_activelock( $l );
-    else
-      xattr_remove($localPath, self::PROPNAME);
-  }
+  while ($row = $stmt->fetch_row())
+    if ( 0 === $row[4] || $row[4] > time() )
+      $retval[$row[0]] = new DAV_Element_activelock(array(
+        'locktoken' => $row[0],
+        'lockroot'  => $row[1],
+        'owner'     => $row[2],
+        'depth'     => $row[3],
+        'timeout'   => $row[4],
+      ));
+  $stmt->free_result();
   return $retval;
 }
 
 
 public function getlock($path) {
-  if ($value = json_decode(@xattr_get(BeeHub::localPath($path), self::PROPNAME), true))
-    if ($value['timeout'] && $value['timeout'] < time())
-      xattr_remove(BeeHub::localPath($path), self::PROPNAME);
-    else
-      return new DAV_Element_activelock( $value );
-  do {
-    $path = dirname($path);
-    if ($value = json_decode(@xattr_get(BeeHub::localPath($path), self::PROPNAME), true))
-      if ($value['timeout'] && $value['timeout'] < time())
-        xattr_remove(BeeHub::localPath($path), self::PROPNAME);
-      elseif( DAV::DEPTH_INF == $value['depth'] )
-        return new DAV_Element_activelock( $value );
-  } while ('/' != $path);
-  return null;
+  $retval = null;
+  $stmt = BeeHub_DB::execute(
+    'SELECT `lock_token`, `lock_root`, `lock_owner`, `lock_depth`, `lock_timeout`
+       FROM `Locks`
+      WHERE `lock_root` = ?', 's', $path
+  );
+  if ( $row = $stmt->fetch_row() and
+       0 === $row[4] || $row[4] > time() )
+    $retval = new DAV_Element_activelock(array(
+      'locktoken' => $row[0],
+      'lockroot'  => $row[1],
+      'owner'     => $row[2],
+      'depth'     => $row[3],
+      'timeout'   => $row[4],
+    ));
+  $stmt->free_result();
+  return $retval;
 }
 
 
 public function setlock($lockroot, $depth, $owner, $timeout) {
 //   if (preg_match("@^(?:{BeeHub::$USERS_PATH}|{BeeHub::$GROUPS_PATH}).+\$@", $lockroot))
 //     throw new DAV_Status(DAV::HTTP_FORBIDDEN);
+  if ('/' === substr($lockroot, -1) && $depth)
+    throw new DAV_Status(
+      DAV::HTTP_NOT_IMPLEMENTED,
+      "Depth-infinity locks on collections are not supported."
+    );
   $timeout = self::timeout($timeout);
-  $result = BeeHub::query('SELECT UUID();');
-  $row = $result->fetch_row();
+  $stmt = BeeHub_DB::execute('SELECT UUID()');
+  $row = $stmt->fetch_row();
   $locktoken = 'opaquelocktoken:' . $row[0];
-  $result->free();
-  $activelock = new DAV_Element_activelock( array(
-    'lockroot'  => $lockroot,
-    'depth'     => $depth,
-    'locktoken' => $locktoken,
-    'owner'     => $owner,
-    'timeout'   => $timeout
-  ) );
-  xattr_set(
-    BeeHub::localpath($lockroot), rawurlencode(DAV::PROP_LOCKDISCOVERY),
-    json_encode($activelock)
+  $stmt->free_result();
+  BeeHub_DB::execute(
+    'DELETE FROM `Locks` WHERE `lock_timeout` > 0 AND `lock_timeout` <= ?',
+    'i', time()
+  );
+  BeeHub_DB::execute(
+    'INSERT INTO `Locks`
+       (`lock_token`, `lock_root`, `lock_owner`, `lock_depth`, `lock_timeout`)
+     VALUES( ?, ?, ?, ?, ? )', 'sssii',
+     $locktoken, $lockroot, $owner, $depth, $timeout
   );
   return $locktoken;
 }
@@ -116,28 +127,26 @@ public function setlock($lockroot, $depth, $owner, $timeout) {
 
 public function refresh($path, $locktoken, $timeout) {
   $timeout = self::timeout($timeout);
-  $lock = @xattr_get( BeeHub::localPath($path), self::PROPNAME );
-  if (!$lock) return false;
-  $lock = new DAV_Element_activelock( json_decode($lock, true) );
-  if ( $lock->timeout && $lock->timeout < time() ) {
-    xattr_remove( BeeHub::localPath($path), self::PROPNAME );
-    return false;
-  }
-  if ( $locktoken != $lock->locktoken )
-    return false;
-  $lock->timeout = $timeout;
-  xattr_set( BeeHub::localPath($lock->lockroot), self::PROPNAME, json_encode($lock) );
-  return true;
+  $stmt = BeeHub_DB::execute(
+    'UPDATE `Locks`
+        SET `timeout` = ?
+      WHERE `lock_root` = ?
+        AND `lock_token` = ?
+        AND ( `lock_timeout` = 0 OR `lock_timeout` > ? )',
+    'issi', $timeout, $path, $locktoken, time()
+  );
+  return $stmt->affected_rows > 0;
 }
 
 
 public function unlock($path) {
-  $value = @xattr_get( BeeHub::localPath($path), self::PROPNAME );
-  if (!$value) return false;
-  $value = json_decode($value, true);
-  $retval = $value['timeout'] >= time() || 0 == $value['timeout'];
-  xattr_remove( BeeHub::localPath($path), self::PROPNAME );
-  return $retval;
+  $stmt = BeeHub_DB::execute(
+    'DELETE FROM `Locks`
+      WHERE `lock_root` = ?
+        AND ( `lock_timeout` = 0 OR `lock_timeout` > ? )',
+    'si', $path, time()
+  );
+  return $stmt->affected_rows > 0;
 }
 
 

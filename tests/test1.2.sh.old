@@ -1,8 +1,0 @@
-DESCRIPTION='Directory listing: JSON'
-
-source 'common.inc'
-
-function systemtest() (
-  ${CURL} --header 'Accept: application/json' ${BASEURL}/ >"${TMPTEST}"
-  diff 'expect_1.2' "${TMPTEST}"
-)

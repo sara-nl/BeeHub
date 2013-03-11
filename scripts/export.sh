@@ -1,10 +1,17 @@
 #!/bin/bash
-cd "$(dirname '$0')"/..
-touch debug.txt
-chmod 666 debug.txt
-if [ ! -f secret.php ]; do
-	touch secret.php
-	cat >secret.php <<EOS
-<?php
-define('DATABASE_PASSWORD', 'XXX');
-EOS
+
+# Go to the top level BeeHub directory:
+cd "$(dirname "${BASH_SOURCE[0]}")"/..
+
+# Preamble:
+errortrap() {
+  set +x
+  echo "Something went wrong. Fix it and try again. Namaste." >&2
+}
+trap errortrap ERR
+set -xe
+
+###### The actual work starts here ######
+
+# Create principals.js and make it apache-writable:
+chmod a+rwx 'public/system/js/server'

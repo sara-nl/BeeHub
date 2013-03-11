@@ -23,7 +23,7 @@
  * Interface to a folder.
  * @package BeeHub
  */
-class BeeHub_Directory extends BeeHub_Resource implements DAV_Collection {
+class BeeHub_Directory extends BeeHub_XFSResource implements DAV_Collection {
 
 
 /**
@@ -38,20 +38,6 @@ public function __construct($path) {
 //public function user_prop_getcontentlength() { return 4096; }
 
 
-public function user_prop_getcontenttype() {
-  return 'httpd/unix-directory';
-  //return BeeHub::best_xhtml_type() . '; charset="utf-8"';
-}
-
-
-protected function user_set_getcontenttype($value) {
-  throw new DAV_Status(
-    DAV::HTTP_FORBIDDEN,
-    DAV::COND_CANNOT_MODIFY_PROTECTED_PROPERTY
-  );
-}
-
-
 public function create_member( $name ) {
   return $this->internal_create_member( $name );
 }
@@ -62,18 +48,30 @@ private function internal_create_member( $name, $collection = false ) {
   $path = $this->path . $name;
   $localPath = BeeHub::localPath( $path );
   $cups = $this->current_user_principals();
-  $group = $this->user_prop_group();
-  if (!isset($cups[$group]))
-    $group = DAV::$REGISTRY->resource($this->user_prop_current_user_principal())->user_prop_group();
+
+  // Determine the sponsor
+  $user = BeeHub_Auth::inst()->current_user();
+  $user_sponsors = $user->prop(BeeHub::PROP_SPONSOR_MEMBERSHIP);
+  if (count($user_sponsors) == 0) { // If the user doesn't have any sponsors, he/she can't create files and directories
+    throw DAV::forbidden();
+  }
+  $sponsor = $this->prop(BeeHub::PROP_SPONSOR); // The default is the directory sponsor
+  if (!in_array($sponsor, $user_sponsors)) { //But a user can only create files sponsored by his own sponsors
+    $sponsor = $user->user_prop(BeeHub::PROP_SPONSOR);
+  }
+
+  // Create the subdirectory or file
   if (file_exists($localPath))
-    throw new DAV_Status(DAV::forbidden());
+    throw DAV::forbidden();
   $result = $collection ? @mkdir($localPath) : touch($localPath);
   if ( !$result )
     throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
-  xattr_set( $localPath, rawurlencode(DAV::PROP_GETETAG), BeeHub::ETag(0) );
-  xattr_set( $localPath, rawurlencode(DAV::PROP_OWNER  ), $this->user_prop_current_user_principal() );
-  xattr_set( $localPath, rawurlencode(DAV::PROP_GROUP  ), $group );
-  return DAV::$REGISTRY->resource($path);
+
+  // And set the xattributes
+  xattr_set( $localPath, rawurlencode( DAV::PROP_GETETAG), BeeHub_DB::ETag() );
+  xattr_set( $localPath, rawurlencode( DAV::PROP_OWNER  ), $this->user_prop_current_user_principal() );
+  xattr_set( $localPath, rawurlencode( BeeHub::PROP_SPONSOR ), $sponsor );
+  return BeeHub_Registry::inst()->resource($path);
 }
 
 
@@ -84,6 +82,7 @@ public function method_COPY( $path ) {
   if (!$parent instanceof BeeHub_Directory)
     throw new DAV_Status(DAV::HTTP_FORBIDDEN);
   $parent->internal_create_member(basename($path), true);
+  // TODO: Should we check here if the xattr to be copied is in the 'user.' realm?
   foreach(xattr_list($this->localPath) as $xattr)
     if ( !in_array( rawurldecode($xattr), array(
       DAV::PROP_GETETAG,
@@ -119,28 +118,29 @@ public function method_DELETE( $name )
  */
 public function method_GET() {
   $this->assert(DAVACL::PRIV_READ);
-  $view = new BeeHub_View(dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'views' . DIRECTORY_SEPARATOR . 'directory.php');
-  $view->setVar('directory', $this);
+
+  # TODO oops, the document isn't generated as a stream? Here, an object is
+  # created for each member resource, and stored in memory. This will crash
+  # the server for large directories!
+  # It would be nicer if these objects were created one at a time, and then
+  # forgotten.
+  # @see BeeHub::Registry::forget()
   $members = array();
   foreach ($this as $member){
-    $members[strtolower($member)] = DAV::$REGISTRY->resource($this->path . $member);
+    $members[$member] = BeeHub_Registry::inst()->resource($this->path . $member);
   }
-  ksort($members, SORT_STRING);
-  $view->setVar('members', $members);
-  $retval = /*DAV::xml_header() .*/ $view->getParsedView();
-  return $retval;
+  $this->include_view( null, array(
+      'members' => $members,
+      'CONFINED_BOOTSTRAP' => true
+  ));
 }
 
 
 public function method_HEAD() {
-  $this->assert(DAVACL::PRIV_READ);
-  #return array('Content-Type' => BeeHub::best_xhtml_type() . '; charset="utf-8"');
-  return array(
-    'Content-Type' => 'text/html; charset="utf-8"',
-    'Cache-Control' => 'no-cache'
-  );
+  $retval = parent::method_HEAD();
+  $retval['Cache-Control'] = 'no-cache';
+  return $retval;
 }
-
 
 /**
  * @param string $name
@@ -163,48 +163,73 @@ public function method_MOVE( $member, $destination ) {
 
 
 /**
- * @var DirectoryIterator;
+ * @var array
  */
-private $dir = null;
+private $members = null;
 /**
- * @return DirectoryIterator
+ * @var integer
+ */
+private $current_key = 0;
+/**
+ * @return void
  */
 private function dir() {
-  if (is_null($this->dir)) {
-    $this->dir = new DirectoryIterator( $this->localPath );
-    $this->skipInvalidMembers();
+  if (is_null($this->members)) {
+    $this->members = array();
+    // The root directory has one 'virtual' directory
+    if ($this->path === '/') {
+      $this->members[] = 'system/';
+    }
+
+    // Read the directory and add the contents
+    if ($dh = opendir($this->localPath)) {
+      while (($file = readdir($dh)) !== false) {
+        $invisible = !BeeHub_Registry::inst()->resource( $this->path . $file )->isVisible();
+        BeeHub_Registry::inst()->forget( $this->path . $file );
+        if ( ($file === '.') ||
+             ($file === '..') ||
+             $invisible ) {
+          continue;
+        }
+        $this->members[] = $file;
+      }
+      closedir($dh);
+    }
   }
-  return $this->dir;
 }
 
-private function skipInvalidMembers() {
-  while (
-    $this->dir()->valid() && (
-      $this->dir()->isDot() ||
-      !BeeHub_Registry::inst()->resource(
-        $this->path . $this->current()
-      )->isVisible()
-  ) )
-    $this->dir->next();
-}
 
-public function current() {
-  $retval = rawurlencode($this->dir()->getFilename());
-  if ('dir' == $this->dir()->getType())
-    $retval .= '/';
-  return $retval;
-}
-public function key()     { return $this->dir()->key(); }
-public function next()    {
-  $this->dir()->next();
-  $this->skipInvalidMembers();
-}
-public function rewind()  {
-  $this->dir()->rewind();
-  $this->skipInvalidMembers();
-}
-public function valid()   { return $this->dir()->valid(); }
+  public function current() {
+    $this->dir();
+    $retval = $this->members[$this->current_key];
+    if (is_dir($this->path . DIRECTORY_SEPARATOR . $retval)) {
+      $retval .= '/';
+    }
+    return $retval;
+  }
+
+
+  public function key() {
+    $this->dir();
+    return $this->current_key;
+  }
+
+
+  public function next() {
+    $this->dir();
+    $this->current_key++;
+  }
+
+
+  public function rewind() {
+    $this->dir();
+    $this->current_key = 0;
+  }
+
+
+  public function valid() {
+    $this->dir();
+    return isset($this->members[$this->current_key]);
+  }
 
 } // class BeeHub_Directory
-
-

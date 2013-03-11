@@ -36,17 +36,23 @@ static public function inst() {
 }
 
 
+// TODO: Deprecate.
 public $CURRENT_USER_PRINCIPAL = null;
 
 
+/**
+ * @see DAVACL_ACL_Provider::user_prop_current_user_principal
+ */
 public function user_prop_current_user_principal() {
   return $this->CURRENT_USER_PRINCIPAL;
 }
 
 
-//private $wheelCache = null;
+/**
+ * @return boolean is the current user an administrator?
+ */
 public function wheel() {
-  return BeeHub::$CONFIG['wheel_path'] == $this->CURRENT_USER_PRINCIPAL;
+  return BeeHub::$CONFIG['namespace']['wheel_path'] === $this->CURRENT_USER_PRINCIPAL;
 //  if ($this->wheelCache === null)
 //    $this->wheelCache = (
 //      ($cup = $this->user_prop_current_user_principal()) &&
@@ -61,32 +67,31 @@ public function user_prop_supported_privilege_set() {
   static $retval = null;
   if (!is_null($retval)) return $retval;
 
-  $retval    = new DAVACL_Element_supported_privilege(DAVACL::PRIV_ALL, false, 'All');
+  $read_acl    = new DAVACL_Element_supported_privilege(
+    DAVACL::PRIV_READ_ACL, true, 'Read ACL'
+  );
+  $read_cups   = new DAVACL_Element_supported_privilege(
+    DAVACL::PRIV_READ_CURRENT_USER_PRIVILEGE_SET,
+    true, 'Read current user privilege set'
+  );
 
-#  $read_cups       = new DAVACL_Element_supported_privilege(DAVACL::PRIV_READ_CURRENT_USER_PRIVILEGE_SET, true, 'Read current user’s privileges');
-#  $read_properties = new DAVACL_Element_supported_privilege(DAVACL::PRIV_READ_PROPERTIES, false, 'Read properties');
-#  $read_properties->add_supported_privilege( $read_cups );
+  $read        = new DAVACL_Element_supported_privilege(
+    DAVACL::PRIV_READ, false, 'Read'
+  );
+  $write       = new DAVACL_Element_supported_privilege(
+    DAVACL::PRIV_WRITE, false, 'Write'
+  );
+  $write_acl   = new DAVACL_Element_supported_privilege(
+    DAVACL::PRIV_WRITE_ACL, false, 'Manage'
+  );
 
-#  $read_content    = new DAVACL_Element_supported_privilege(DAVACL::PRIV_READ_CONTENT,    false, 'Read content');
-  $read            = new DAVACL_Element_supported_privilege(DAVACL::PRIV_READ, false, 'Read');
-#  $read->add_supported_privilege( $read_properties )
-#       ->add_supported_privilege( $read_content );
 
-#  $write_properties = new DAVACL_Element_supported_privilege(DAVACL::PRIV_WRITE_PROPERTIES, false, 'Write properties');
-#  $write_content    = new DAVACL_Element_supported_privilege(DAVACL::PRIV_WRITE_CONTENT,    false, 'Write content');
-#  $bind             = new DAVACL_Element_supported_privilege(DAVACL::PRIV_BIND,   false, 'Bind');
-#  $unbind           = new DAVACL_Element_supported_privilege(DAVACL::PRIV_UNBIND, false, 'Unbind');
-#  $unlock           = new DAVACL_Element_supported_privilege(DAVACL::PRIV_UNLOCK, false, 'Unlock');
-  $write            = new DAVACL_Element_supported_privilege(DAVACL::PRIV_WRITE, false, 'Write');
-#  $write->add_supported_privilege($write_properties)
-#        ->add_supported_privilege($write_content)
-#        ->add_supported_privilege($bind)
-#        ->add_supported_privilege($unbind)
-#        ->add_supported_privilege($unlock);
+  $retval      = new DAVACL_Element_supported_privilege(
+    DAVACL::PRIV_ALL, false, 'All'
+  );
 
-  $read_acl  = new DAVACL_Element_supported_privilege(DAVACL::PRIV_READ_ACL, false, 'Read ACL');
-  $write_acl = new DAVACL_Element_supported_privilege(DAVACL::PRIV_WRITE_ACL, false, 'Write ACL');
-
+  $read->add_supported_privilege($read_acl);
+  $read->add_supported_privilege($read_cups);
   $retval->add_supported_privilege($read)
          ->add_supported_privilege($write)
          ->add_supported_privilege($read_acl)
@@ -102,21 +107,7 @@ public function user_prop_acl_restrictions() {
 
 
 public function user_prop_principal_collection_set() {
-  return array(BeeHub::$CONFIG['groups_path'], BeeHub::$CONFIG['users_path']);
-}
-
-
-/**
- * This method is called when DAV receives an 401 Unauthenticated exception.
- * @return bool true if a response has been sent to the user.
- */
-public function unauthorized() {
-  return false;
-  DAV::redirect(
-    DAV::HTTP_TEMPORARY_REDIRECT,
-    'webdav.php' . DAV::$PATH
-  );
-  return true;
+  return array(BeeHub::$CONFIG['namespace']['groups_path'], BeeHub::$CONFIG['namespace']['users_path']);
 }
 
 
