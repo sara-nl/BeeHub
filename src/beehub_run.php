@@ -75,4 +75,6 @@ unset($path, $noRequireAuth);
 
 // After bootstrapping and authentication is done, handle the request
 $request = DAV_Request::inst();
-$request->handleRequest();
+if ($request)
+  $request->handleRequest();
+
