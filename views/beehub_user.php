@@ -23,7 +23,7 @@ require 'views/header.php';
 <ul id="beehub-top-tabs" class="nav nav-tabs">
   <li <?= !isset($_GET['verification_code']) ? 'class="active"' : '' ?>><a href="#panel-profile" data-toggle="tab">My profile</a></li>
   <li><a href="#panel-password" data-toggle="tab">Change password</a></li>
-  <!--li><a href="#panel-surfconext" data-toggle="tab">SURFconext</a></li -->
+  <li><a href="#panel-surfconext" data-toggle="tab">SURFconext</a></li>
   <?php if ( !is_null( $unverified_address ) ) : ?>
     <li <?= isset($_GET['verification_code']) ? 'class="active"' : '' ?>><a href="#panel-verify" data-toggle="tab">Verify e-mail address</a></li>
   <?php endif; ?>

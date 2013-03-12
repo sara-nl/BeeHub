@@ -45,7 +45,7 @@
                     <?php if (@BeeHub_Auth::inst()->simpleSaml()->isAuthenticated()) : ?>
                       <li><a href="<?= BeeHub::request_uri() . '?logout=yes' ?>">Log out from SURFconext</a></li>
                     <?php else: ?>
-                      <!-- li><a href="<?= BeeHub::urlbase(true) . BeeHub::request_uri() . '?login=conext' ?>">With SURFconext</a></li -->
+                      <li><a href="<?= BeeHub::urlbase(true) . BeeHub::request_uri() . '?login=conext' ?>">With SURFconext</a></li>
                     <?php endif; ?>
                   </ul>
                 </li>
