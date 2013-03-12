@@ -23,32 +23,7 @@
  * Interface to the system folder.
  * @package BeeHub
  */
-class BeeHub_System_Collection extends BeeHub_Resource implements DAV_Collection {
-
-
-  private $members = array();
-  private $current_key = 0;
-
-
-  public function __construct($path) {
-    parent::__construct($path);
-
-    $this->members[] = 'groups';
-    $this->members[] = 'sponsors';
-    $this->members[] = 'users';
-  }
-
-
-  protected function init_props() {
-    if (is_null($this->stored_props)) {
-      $this->stored_props = array();
-    }
-  }
-
-
-  public function create_member($name) {
-    throw DAV::forbidden();
-  }
+class BeeHub_System_Collection extends BeeHub_Directory {
 
 
   public function user_prop_acl_internal() {
@@ -63,52 +38,8 @@ class BeeHub_System_Collection extends BeeHub_Resource implements DAV_Collection
 
 
   public function method_GET() {
+    $this->assert(DAVACL::PRIV_READ);
     $this->include_view();
-  }
-
-
-  public function method_DELETE($name) {
-    throw DAV::forbidden();
-  }
-
-
-  public function method_MKCOL($name) {
-    throw DAV::forbidden();
-  }
-
-
-  public function method_MOVE($member, $destination) {
-    throw DAV::forbidden();
-  }
-
-
-  public function method_PROPPATCH($propname, $value = null) {
-    throw DAV::forbidden();
-  }
-
-
-  public function current() {
-    return $this->members[$this->current_key];
-  }
-
-
-  public function key() {
-    return $this->current_key;
-  }
-
-
-  public function next() {
-    $this->current_key++;
-  }
-
-
-  public function rewind() {
-    $this->current_key = 0;
-  }
-
-
-  public function valid() {
-    return isset($this->members[$this->current_key]);
   }
 
 
