@@ -322,7 +322,7 @@ BeeHub';
           AND `verification_expiration` > NOW()',
       'ss', $this->name, $code
     );
-    if ($updateStatement->affected_rows > 0) {
+    if ($updateStatement->statement->affected_rows > 0) {
       $propStatement = BeeHub_DB::execute(
         'SELECT `email` FROM `beehub_users` WHERE `user_name`=?',
         's', $this->name
