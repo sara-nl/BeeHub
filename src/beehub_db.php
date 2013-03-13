@@ -128,6 +128,9 @@ class BeeHub_DB {
         $mysqli = null;
         throw new BeeHub_MySQL(mysqli_connect_error(), mysqli_connect_errno());
       }
+      $mysqli->set_charset('utf8');
+      #$charset = $mysqli->get_charset();
+      #DAV::debug($charset);
     }
     return $mysqli;
   }
