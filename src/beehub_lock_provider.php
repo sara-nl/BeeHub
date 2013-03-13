@@ -129,7 +129,7 @@ public function refresh($path, $locktoken, $timeout) {
   $timeout = self::timeout($timeout);
   $stmt = BeeHub_DB::execute(
     'UPDATE `Locks`
-        SET `timeout` = ?
+        SET `lock_timeout` = ?
       WHERE `lock_root` = ?
         AND `lock_token` = ?
         AND ( `lock_timeout` = 0 OR `lock_timeout` > ? )',

@@ -1,4 +1,4 @@
-<?php
+  <?php
 
 /*
 Available variables:
@@ -137,11 +137,12 @@ $footer = '
 
   <!-- <x-compile> -->
     <!-- <x-bootstrap> -->
-      <script src="/system/client/ext/ext-dev.js"></script>
-      <script src="/system/client/bootstrap.js"></script>
+      <!--script src="/system/client/ext/ext-dev.js"></script-->
+      <!--script src="/system/client/bootstrap.js"></script-->
     <!-- </x-bootstrap> -->
-    <script src="/system/client/app/app.js"></script>
+    <!--script src="/system/client/app/app.js"></script-->
   <!-- </x-compile> -->
+  <script src="/system/client/all-classes.js"></script>
 ';
 include('views/header.php');
 include('views/footer.php');
