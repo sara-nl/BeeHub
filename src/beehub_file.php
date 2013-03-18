@@ -131,8 +131,7 @@ public function method_PUT($stream) {
 
 public function method_PUT_range($stream, $start, $end, $total) {
   $this->assert(DAVACL::PRIV_WRITE);
-  if ( !($stream   = fopen( 'php://input',    'r'  )) ||
-       !($resource = fopen( $this->localPath, 'r+' )) )
+  if ( !($resource = fopen( $this->localPath, 'r+' )) )
     throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
   try {
     if ( 0 !== fseek( $resource, $start, SEEK_SET ) )
