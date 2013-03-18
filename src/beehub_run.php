@@ -53,7 +53,7 @@ DAV::$UNAUTHORIZED = array( BeeHub_Auth::inst(), 'unauthorized' );
  *
  * Note that the if-statements below check the inverse of these rules (because, if evaluated to true, it will start the authentication process)
  */
-$path = DAV::unslashify(DAV::$PATH);
+$path = DAV::unslashify(BeeHub::request_uri());
 $noRequireAuth = (
   (
     $path === DAV::unslashify( BeeHub::$CONFIG['namespace']['users_path'] ) &&
