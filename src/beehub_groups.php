@@ -106,16 +106,20 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
 
 
   public function report_principal_property_search($properties) {
-    if (1 !== count($properties) ||
-            !isset($properties[DAV::PROP_DISPLAYNAME]) ||
-            1 !== count($properties[DAV::PROP_DISPLAYNAME]))
+    if ( 1 !== count( $properties ) ||
+         ! isset( $properties[DAV::PROP_DISPLAYNAME] ) ||
+         1 !== count( $properties[DAV::PROP_DISPLAYNAME] ) )
       throw new DAV_Status(
-              DAV::HTTP_BAD_REQUEST,
-              'You\'re searching for a property which cannot be searched.'
+        DAV::HTTP_BAD_REQUEST,
+        'You\'re searching for a property which cannot be searched.'
       );
     $match = $properties[DAV::PROP_DISPLAYNAME][0];
     $match = str_replace(array('_', '%'), array('\\_', '\\%'), $match) . '%';
-    $stmt = BeeHub_DB::execute('SELECT `group_name` FROM `beehub_groups` WHERE `displayname` LIKE ?', 's', $match);
+    $stmt = BeeHub_DB::execute(
+      'SELECT `group_name`
+       FROM `beehub_groups`
+       WHERE `displayname` LIKE ?', 's', $match
+    );
     $retval = array();
     while ($row = $stmt->fetch_row()) {
       $retval[] = BeeHub::$CONFIG['namespace']['groups_path'] .
@@ -129,8 +133,9 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
   protected function init_members() {
     $stmt = BeeHub_DB::execute('SELECT `group_name` FROM `beehub_groups` ORDER BY `displayname`');
     $this->members = array();
-    while ($row = $stmt->fetch_row())
+    while ($row = $stmt->fetch_row()) {
       $this->members[] = rawurlencode($row[0]);
+    }
     $stmt->free_result();
   }
 

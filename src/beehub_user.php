@@ -51,20 +51,25 @@ class BeeHub_User extends BeeHub_Principal {
    * @see DAV_Resource::method_GET()
    */
   public function method_GET() {
-    $unverified_address = null;
-    $statement = BeeHub_DB::execute(
-      'SELECT `unverified_email`
-          FROM `beehub_users`
-        WHERE `user_name` = ? AND
-              `verification_expiration` > NOW()',
-      's', $this->name
-    );
-    if ($row = $statement->fetch_row()) {
-      $unverified_address = $row[0];
-    }elseif ( isset( $_GET['verification_code'] ) ) {
-      unset($_GET['verification_code']);
+    if ($this->is_admin()) {
+      $unverified_address = null;
+      $statement = BeeHub_DB::execute(
+        'SELECT `unverified_email`
+            FROM `beehub_users`
+          WHERE `user_name` = ? AND
+                `verification_expiration` > NOW()',
+        's', $this->name
+      );
+      if ($row = $statement->fetch_row()) {
+        $unverified_address = $row[0];
+      }elseif ( isset( $_GET['verification_code'] ) ) {
+        unset($_GET['verification_code']);
+      }
+      $this->include_view(null, array('unverified_address'=>$unverified_address));
+    }else{
+      //TODO: Show a (non-editable) profile page
+      throw DAV::forbidden();
     }
-    $this->include_view(null, array('unverified_address'=>$unverified_address));
   }
 
 
@@ -271,6 +276,11 @@ BeeHub';
       new DAVACL_Element_ace(
         DAVACL::PRINCIPAL_SELF, false, array(
           DAVACL::PRIV_READ, DAVACL::PRIV_WRITE
+        ), false, true
+      ),
+      new DAVACL_Element_ace(
+        DAVACL::PRINCIPAL_AUTHENTICATED , false, array(
+          DAVACL::PRIV_READ
         ), false, true
       )
     );
