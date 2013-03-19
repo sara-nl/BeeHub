@@ -78,7 +78,7 @@ private function internal_create_member( $name, $collection = false ) {
 public function method_COPY( $path ) {
   $parent = BeeHub_Registry::inst()->resource(dirname($path));
   if (!$parent)
-    throw new DAV_Status(DAV::HTTP_CONFLICT);
+    throw new DAV_Status(DAV::HTTP_CONFLICT, 'Unable to COPY to unexisting collection');
   if (!$parent instanceof BeeHub_Directory)
     throw new DAV_Status(DAV::HTTP_FORBIDDEN);
   $parent->internal_create_member(basename($path), true);
@@ -102,7 +102,7 @@ public function method_DELETE( $name )
   $this->assert(DAVACL::PRIV_WRITE);
   if (is_dir($localpath)) {
     if (!@rmdir($localpath))
-      throw new DAV_Status(DAV::HTTP_CONFLICT);
+      throw new DAV_Status(DAV::HTTP_CONFLICT, 'Unable to DELETE resource: ' . $name);
   }
   else {
     if (!@unlink($localpath))
