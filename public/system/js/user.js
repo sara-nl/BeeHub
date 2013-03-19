@@ -133,8 +133,7 @@ $(function (){
 		    client.post(location.pathname, function(status, data) {
 		    	if (status===200) {
 			    	location.reload();
-		    	}
-		    	if (status===403) {
+		    	}else if (status===403) {
 		    		alert("Wrong verification code or password mismatch!")
 		    	} else {
 		    		alert("Something went wrong. Your email is not verified.!")
