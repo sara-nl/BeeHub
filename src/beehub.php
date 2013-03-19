@@ -118,20 +118,6 @@ class BeeHub {
 
 
   /**
-   * Returns the request URI without the query part
-   * @return  string  The request URI without query part
-   */
-  public static function request_uri() {
-    $query_start = strpos($_SERVER['REQUEST_URI'], '?');
-    if ($query_start === false) {
-      return $_SERVER['REQUEST_URI'];
-    }else{
-      return substr($_SERVER['REQUEST_URI'], 0, $query_start);
-    }
-  }
-
-
-  /**
    * A better escapeshellarg.
    * The default PHP version seems not to work for UTF-8 strings...
    * @return string
