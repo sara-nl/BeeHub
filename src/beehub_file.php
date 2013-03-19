@@ -102,6 +102,7 @@ public function method_PUT($stream) {
   try {
     $size = 0;
     while (!feof($stream)) {
+      set_time_limit(600); // We keep resetting the time limit to 10 minutes so the script won't get killed during long uploads. This means your minimum connection speed should be DAV::$CHUNK_SIZE / 600 bytes per second
       $buffer = fread($stream, DAV::$CHUNK_SIZE );
       $size += strlen($buffer);
       if ( strlen( $buffer ) !== fwrite( $resource, $buffer ) )
@@ -138,6 +139,7 @@ public function method_PUT_range($stream, $start, $end, $total) {
       throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
     $size = $end - $start + 1;
     while ($size && !feof($stream)) {
+      set_time_limit(600); // We keep resetting the time limit to 10 minutes so the script won't get killed during long uploads. This means your minimum connection speed should be DAV::$CHUNK_SIZE / 600 bytes per second
       $buffer = fread($stream, $size < DAV::$CHUNK_SIZE ? $size : DAV::$CHUNK_SIZE );
       $size -= strlen( $buffer );
       if ( strlen( $buffer ) !== fwrite( $resource, $buffer ) )
