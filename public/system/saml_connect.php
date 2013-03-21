@@ -8,7 +8,8 @@ require_once( dirname( dirname( dirname( __FILE__ ) ) ) . DIRECTORY_SEPARATOR . 
 
 // You have to be logged in through HTTP Basic authentication
 if (empty($_SERVER['PHP_AUTH_PW'])) {
-  BeeHub_ACL_Provider::inst()->unauthorized();
+  BeeHub_Auth::inst()->unauthorized();
+  die();
 }
 $auth = BeeHub_Auth::inst();
 $auth->handle_authentication(true, true);
