@@ -60,18 +60,18 @@ require 'views/header.php';
 <h2>Current members</h2>
 <?php foreach ($members as $member) :
         if ($member['is_invited']) : ?>
-<div class="row-fluid" id="user-<?= rawurlencode($member['user_name']) ?>">
+<div class="row-fluid" id="user-<?= DAV::xmlescape($member['user_name']) ?>">
   <div class="span12 well well-small"><table width="100%"><tbody><tr>
-    <th align="left"><?= DAV::xmlescape($member['displayname']) ?></th>
+    <th align="left"><?= DAV::xmlescape($member['displayname']) ?> </th>
     <?php if ($this->is_admin()) : ?>
     <td align="right">
       <!-- Promote or demote? -->
       <?php if ( $member['is_admin'] ) : ?>
-      <button type="button" value="<?= DAV::xmlescape($member['user_name']) ?>" class="btn btn-primary">Demote to member</button>
+      <button type="button" value="<?= DAV::xmlescape($member['user_name']) ?>" class="btn btn-primary demote_link">Demote to member</button>
       <?php else : ?>
-      <button type="button" value="<?= DAV::xmlescape($member['user_name']) ?>" class="btn btn-primary">Promote to admin</button>
+      <button type="button" value="<?= DAV::xmlescape($member['user_name']) ?>" class="btn btn-primary promote_link">Promote to admin</button>
       <?php endif; ?>
-      <button type="button" value="<?= DAV::xmlescape($member['user_name']) ?>" class="btn btn-danger">Remove member</button>
+      <button type="button" value="<?= DAV::xmlescape($member['user_name']) ?>" class="btn btn-danger remove_link">Remove member</button>
     </td>
     <?php endif; ?>
   </tr></tbody></table></div>
@@ -79,36 +79,5 @@ require 'views/header.php';
 <?php   endif;
       endforeach; ?>
 <?php 
-
-/*    <td><?= DAV::xmlescape($member['user_name']) ?></td>
-    <td><?= DAV::xmlescape($member['displayname']) ?></td>
-    <td><?= ($member['is_admin'] ? 'jep <a href="#" class="demote_link">demote</a>' : 'nope <a href="#" class="promote_link">promote</a>') ?></td>
-    <td><a href="#" class="remove_link">Delete</a></td>
-  </tr>
-  <table>
-    <thead>
-      <tr>
-        <th>user_name</th>
-        <th>Display name</th>
-        <th>Admin?</th>
-        <th>Delete?</th>
-      </tr>
-    </thead>
-    <tbody id="current_members">
-      <?php foreach ($members as $member) :
-        if ($member['is_invited']) : ?>
-          <tr class="member_row" id="<?= BeeHub::$CONFIG['namespace']['users_path'] . rawurlencode($member['user_name']) ?>">
-            <td><?= DAV::xmlescape($member['user_name']) ?></td>
-            <td><?= DAV::xmlescape($member['displayname']) ?></td>
-            <td><?= ($member['is_admin'] ? 'jep <a href="#" class="demote_link">demote</a>' : 'nope <a href="#" class="promote_link">promote</a>') ?></td>
-            <td><a href="#" class="remove_link">Delete</a></td>
-          </tr>
-        <?php endif;
-      endforeach; ?>
-    </tbody>
-  </table>
-  <input type="submit" value="Store" />
-</form>
-<?php */
   $footer='<script type="text/javascript" src="/system/js/group.js"></script>';
   require 'views/footer.php';
