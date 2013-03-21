@@ -46,7 +46,7 @@ $(function() {
 			var client = new nl.sara.webdav.Client();
 			client.post(button.val(), function(status){
         if (status === 409) {
-          alert("You can't leave this group, you're the last administrator! Don't leave your group without a leader, please appoint a new administrator before leaving them!");
+          alert("You can't leave this group, you're the last administrator! Don't leave your herd without a shepherd, please appoint a new administrator before leaving them!");
           return;
         }else if (status != 200) {
 					alert('Something went wrong on the server. No changes were made.');

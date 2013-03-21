@@ -96,7 +96,16 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
     $user->user_set(DAV::PROP_DISPLAYNAME, $displayname);
     $user->user_set(BeeHub::PROP_EMAIL, $email);
     // TODO: This should not be hard coded, a new user should not have a sponsor but request one after his account is created, but I want to inform the user about his through the not-yet-existing notification system
-    $user->user_set(BeeHub::PROP_SPONSOR, '/system/sponsors/e-infra');
+    $user->user_set(BeeHub::PROP_SPONSOR, 'e-infra');
+    BeeHub_DB::execute(
+      'INSERT INTO `beehub_sponsor_members`
+          (`sponsor_name`, `user_name`, `is_accepted`, `is_admin`)
+        VALUES (\'e-infra\', ?, ?, ?)
+        ON DUPLICATE KEY
+          UPDATE `is_accepted` = 1',
+      'sii', $user_name, 1, 0
+    );
+    // Just to be clear: the above lines will have to be deleted somewhere in the future, but the lines below should stay
     $auth = BeeHub_Auth::inst();
     if ($auth->simpleSaml()->isAuthenticated()) {
       $surfId = $auth->simpleSaml()->getAuthData("saml:sp:NameID");
