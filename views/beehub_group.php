@@ -33,7 +33,7 @@ require 'views/header.php';
   </div>
 </div>
 <div class="row-fluid hide" id="beehub-group-edit">
-  <div class="span12">
+  <div class="span12">    
     <form id="editGroupForm" class="form-horizontal" action="<?= DAV::xmlescape($this->path) ?>" method="post">
       <div class="control-group">
         <label class="control-label" for="groupDisplayName">Display name</label>
@@ -49,7 +49,7 @@ require 'views/header.php';
       </div>
       <div class="control-group">
         <div class="controls">
-          <button id="save-button" type="button" class="btn">Save</button>
+          <button type="submit" class="btn">Save</button>
           <button id="cancel-button" type="button" class="btn">Cancel</button>
         </div>
       </div>
