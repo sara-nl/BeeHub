@@ -21,9 +21,9 @@ require 'views/header.php';
   <div class="span11">
     <dl class="dl-horizontal">
       <dt>Display name</dt>
-      <dd><?= $this->prop(DAV::PROP_DISPLAYNAME) ?></dd>
+      <dd id="groupDisplayNameValue"><?= $this->prop(DAV::PROP_DISPLAYNAME) ?></dd>
       <dt>Description</dt>
-      <dd style="white-space: pre-wrap;"><?= $this->prop(BeeHub::PROP_DESCRIPTION) ?></dd>
+      <dd id="groupDescriptionValue" style="white-space: pre-wrap;"><?= $this->prop(BeeHub::PROP_DESCRIPTION) ?></dd>
     </dl>
   </div>
   <div class="span1">
@@ -49,7 +49,8 @@ require 'views/header.php';
       </div>
       <div class="control-group">
         <div class="controls">
-          <button id="save-button" type="submit" class="btn">Edit</button>
+          <button id="save-button" type="button" class="btn">Save</button>
+          <button id="cancel-button" type="button" class="btn">Cancel</button>
         </div>
       </div>
     </form>
@@ -77,7 +78,9 @@ require 'views/header.php';
 </div>
 <?php   endif;
       endforeach; ?>
-<?php /*    <td><?= DAV::xmlescape($member['user_name']) ?></td>
+<?php 
+
+/*    <td><?= DAV::xmlescape($member['user_name']) ?></td>
     <td><?= DAV::xmlescape($member['displayname']) ?></td>
     <td><?= ($member['is_admin'] ? 'jep <a href="#" class="demote_link">demote</a>' : 'nope <a href="#" class="promote_link">promote</a>') ?></td>
     <td><a href="#" class="remove_link">Delete</a></td>

@@ -16,12 +16,23 @@ $(function (){
     client.proppatch(
       location.pathname,
       function(status, data) {
-        // TODO: check for success
-        $('#beehub-group-display').removeClass('hide');
-        $('#beehub-group-edit').addClass('hide');
+    	if (status === 207) {
+	        $('#groupDisplayNameValue').html($('input[name="displayname"]').val());
+	        $('#groupDescriptionValue').html($('textarea[name="description"]').val());
+	        $('#beehub-group-display').removeClass('hide');
+	        $('#beehub-group-edit').addClass('hide');
+    	} else {
+    		alert("Something went wrong. The group is not changed.")
+    	}
       }, setProps);
 
     return false;
+  }); // End of button click event listener
+  
+  $('#cancel-button').click(
+	function() {
+	  $('#beehub-group-display').removeClass('hide');
+      $('#beehub-group-edit').addClass('hide');
   }); // End of button click event listener
   
   $('#edit-group-button').click(
