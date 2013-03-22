@@ -2,3 +2,4 @@
 .project
 .settings
 config.ini
+/views/beehub_directory.php
