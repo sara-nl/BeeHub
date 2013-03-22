@@ -95,7 +95,7 @@ EOS;
     // Allow users to request or remove membership
     $current_user = $auth->current_user();
     if (isset($_POST['leave'])) {
-      $this->delete_members(array($current_user->path));
+      $this->delete_members(array($current_user->name));
     }
     if (isset($_POST['join'])) {
       $statement = BeeHub_DB::execute('SELECT `is_invited` FROM `beehub_group_members` WHERE `user_name`=? AND `group_name`=?',
@@ -120,7 +120,7 @@ BeeHub';
           }
         }
       }
-      $this->change_memberships(array($current_user->path), false, true, false, null, true);
+      $this->change_memberships(array($current_user->name), false, true, false, null, true);
       if (!is_null($message)) {
         BeeHub::email($recipients,
                       'BeeHub notification: membership request for group ' . $this->prop(DAV::PROP_DISPLAYNAME),
@@ -138,6 +138,7 @@ BeeHub';
         foreach ($_POST[$key] as $uri) {
           $members[] = DAV::parseURI($uri, false);
         }
+        $members = array_map(array('BeeHub_Group', 'get_user_name'), $members);
         switch ($key) {
           case 'add_members':
             foreach ($members as $member) {
@@ -175,6 +176,7 @@ BeeHub';
             $this->change_memberships($members, true, false, true, true, null, true);
             break;
           case 'delete_admins':
+            $this->check_admin_remove($members);
             $this->change_memberships($members, true, false, false, null, null, false);
             break;
           case 'delete_members':
@@ -205,7 +207,7 @@ BeeHub';
   /**
    * Adds member requests or sets them to be an invited member or an administrator
    *
-   * @param   Array    $members            An array with paths to the principals to add
+   * @param   Array    $members            An array with usernames of the principals to add
    * @param   Boolean  $newInvited         The value the 'is_invited' field should have if the membership had to be added to the database
    * @param   Boolean  $newRequested       The value the 'is_requested' field should have if the membership had to be added to the database
    * @param   Boolean  $newAdmin           The value the 'is_admin' field should have if the membership had to be added to the database
@@ -236,8 +238,7 @@ BeeHub';
     }else{
       $existingAdmin = ($existingAdmin ? 1 : 0);
     }
-    foreach ($members as $member) {
-      $user_name = rawurldecode(basename($member));
+    foreach ($members as $user_name) {
       $statement = BeeHub_DB::execute(
         'INSERT INTO `beehub_group_members` (
            `group_name`, `user_name`, `is_invited`,
@@ -266,10 +267,26 @@ BeeHub';
     if (count($members) === 0) {
       return;
     }
-    $members = array_map(array('BeeHub_Group', 'get_user_name'), $members);
-    $escaped_members = array_map(array(BeeHub_DB::mysqli(), 'real_escape_string'), $members);
+    $this->check_admin_remove($members);
 
+    // Then delete all the members
+    foreach ($members as $user_name) {
+      BeeHub_DB::execute(
+        'DELETE FROM `beehub_group_members`
+         WHERE `group_name` = ?
+           AND `user_name`  = ?',
+        'ss', $this->name, $user_name
+      );
+    }
+  }
+
+
+  private function check_admin_remove($members) {
+    if (count($members) === 0) {
+      return;
+    }
     // Check if this request is not removing all administrators from this group
+    $escaped_members = array_map(array(BeeHub_DB::mysqli(), 'real_escape_string'), $members);
     $check_admin_statement = BeeHub_DB::execute(
       "SELECT COUNT(`user_name`)
          FROM `beehub_group_members`
@@ -281,16 +298,6 @@ BeeHub';
     $row = $check_admin_statement->fetch_row();
     if ($row[0] === 0) {
       throw new DAV_Status(DAV::HTTP_CONFLICT, 'You are not allowed to remove all the group administrators from a group. Leave at least one group administrator in the group or appoint a new group administrator!');
-    }
-
-    // Then delete all the members
-    foreach ($members as $user_name) {
-      BeeHub_DB::execute(
-        'DELETE FROM `beehub_group_members`
-         WHERE `group_name` = ?
-           AND `user_name`  = ?',
-        'ss', $this->name, $user_name
-      );
     }
   }
 
