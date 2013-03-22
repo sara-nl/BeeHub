@@ -101,16 +101,45 @@ public function method_PUT($stream) {
     throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
   try {
     $size = 0;
-    while (!feof($stream)) {
-      set_time_limit(600); // We keep resetting the time limit to 10 minutes so the script won't get killed during long uploads. This means your minimum connection speed should be DAV::$CHUNK_SIZE / 600 bytes per second
-      $buffer = fread($stream, DAV::$CHUNK_SIZE );
-      $size += strlen($buffer);
-      if ( strlen( $buffer ) !== fwrite( $resource, $buffer ) )
-        throw new DAV_Status(DAV::HTTP_INSUFFICIENT_STORAGE);
+    if ( ( $cl = (int)($_SERVER['CONTENT_LENGTH']) ) ||
+         ( $cl = (int)($_SERVER['HTTP_X_EXPECTED_ENTITY_LENGTH']) ) ) {
+      # The client has indicated the length of the request entity body:
+      $time = time();
+      while ( $cl && !feof( $stream ) ) {
+        if ( time() - $time > 60 ) {
+          set_time_limit(120);
+          $time = time();
+        }
+        $chunk_size = $cl;
+        if ( $chunk_size > DAV::$CHUNK_SIZE )
+          $chunk_size = DAV::$CHUNK_SIZE;
+        $buffer = fread( $stream, $chunk_size );
+        $chunk_size = strlen( $buffer );
+        if ( $chunk_size !== fwrite( $resource, $buffer ) )
+          throw new DAV_Status( DAV::HTTP_INSUFFICIENT_STORAGE );
+        $cl -= $chunk_size;
+      }
+      if ( $cl )
+        throw new DAV_Status(
+          DAV::HTTP_BAD_REQUEST,
+          'Request entity too small'
+        );
+    } else {
+      # The client didn't give us any clue about the request body entity size.
+      # Let's make the best of it...
+      $time = time();
+      while ( true ) {
+        if ( time() - $time > 60 ) {
+          set_time_limit(120);
+          $time = time();
+        }
+        $buffer = fread( $stream, DAV::$CHUNK_SIZE );
+        if ( $buffer === false || $buffer === '' )
+          break;
+        if ( strlen( $buffer ) !== fwrite( $resource, $buffer ) )
+          throw new DAV_Status(DAV::HTTP_INSUFFICIENT_STORAGE);
+      }
     }
-    if ( isset($_SERVER['CONTENT_LENGTH']) &&
-         $size < $_SERVER['CONTENT_LENGTH'] )
-      throw new DAV_Status(DAV::HTTP_BAD_REQUEST, 'Request entity too small');
   }
   catch (DAV_Status $e) {
     fclose($resource);
