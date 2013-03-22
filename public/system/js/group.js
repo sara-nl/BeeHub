@@ -1,5 +1,4 @@
 $(function (){	
-	
   // Workaround for bug in mouse item selection
   $.fn.typeahead.Constructor.prototype.blur = function() {
 	var that = this;
@@ -36,14 +35,25 @@ $(function (){
 	       // implementation
 	       var regex = new RegExp( '(' + this.query + ')', 'gi' );
 	       return item.replace( regex, "<strong>$1</strong>" );
-	    },
-  });
+	    }
+	    // check if username is valid
+  }).blur(function(){
+	    if(map[$(this).val()] == null) {
+	        $('#inviteTypeahead').val('');
+	      }
+	  });
   
   /*
    * Action when the invite button is clicked
    */
   $('#inviteGroupForm').submit(function (event) {
 	  event.preventDefault();
+//	  console.log(invitedUser);
+//	  if (invitedUser !=='') {
+//		  var error = "This field is required.";
+//		  showError(error);
+//		  return;
+//	  }
 	  var client = new nl.sara.webdav.Client();
 		client.post(window.location.pathname, function(status){
 		  if (status === 409) {
@@ -58,6 +68,8 @@ $(function (){
 			alert('Something went wrong on the server. No changes were made.');
 			return;
 		  };
+		  $('#inviteTypeahead').val("");
+		
 		}, 'add_members[]='+invitedUser);
   });
   

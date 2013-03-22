@@ -66,8 +66,8 @@ require 'views/header.php';
 <form id="inviteGroupForm" class="form-horizontal">
 	<div class="control-group">
 		<div class="controls inviteMembers">
-			<button  type="submit" class="btn btn-primary">Invite member</button>   
-			<input type="text" id="inviteTypeahead" data-provide="typeahead" required> 
+			<button  type="submit" class="btn btn-primary">Invite user</button>   
+			<input type="text" id="inviteTypeahead" data-provide="typeahead" placeholder="Type username..." required> 
 		</div>
  </div>
 </form>
