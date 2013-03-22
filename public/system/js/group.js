@@ -64,7 +64,7 @@ $(function (){
 				return;
 			  };
 			  $('#inviteTypeahead').val("");
-			  alert("User "+invitedUser+" is invited.");
+			  alert(nl.sara.beehub.principals.users[invitedUser] + " has been invited.");
 			}, 'add_members[]='+invitedUser);
 	  }
   });
