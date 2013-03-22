@@ -4,13 +4,12 @@ $(function (){
 	var that = this;
 	setTimeout(function () { that.hide() }, 250);
   };
-	
+  
   $('#inviteTypeahead').typeahead({
 	  source: function (query, process) {
 	        // implementation
 		    users = [];
 		    map = {};
-		 
 		    $.each(nl.sara.beehub.principals.users, function (userName, displayName) {
 		        map[displayName+" ("+userName+")"] = userName;
 		        users.push(displayName+" ("+userName+")");
@@ -48,12 +47,6 @@ $(function (){
    */
   $('#inviteGroupForm').submit(function (event) {
 	  event.preventDefault();
-//	  console.log(invitedUser);
-//	  if (invitedUser !=='') {
-//		  var error = "This field is required.";
-//		  showError(error);
-//		  return;
-//	  }
 	  var client = new nl.sara.webdav.Client();
 		client.post(window.location.pathname, function(status){
 		  if (status === 409) {
@@ -69,7 +62,7 @@ $(function (){
 			return;
 		  };
 		  $('#inviteTypeahead').val("");
-		
+		  alert("User "+invitedUser+" is invited.");
 		}, 'add_members[]='+invitedUser);
   });
   
