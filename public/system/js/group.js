@@ -39,6 +39,7 @@ $(function (){
   }).blur(function(){
 	    if(map[$(this).val()] == null) {
 	        $('#inviteTypeahead').val('');
+	        invitedUser = ""; 
 	      }
 	  });
   
@@ -47,23 +48,25 @@ $(function (){
    */
   $('#inviteGroupForm').submit(function (event) {
 	  event.preventDefault();
-	  var client = new nl.sara.webdav.Client();
-		client.post(window.location.pathname, function(status){
-		  if (status === 409) {
-		    alert('You are not allowed to remove all the group administrators from a group. Leave at least one group administrator in the group or appoint a new group administrator!');  
-		    return;
-		  }
-		  if (status === 403) {
-			 alert('You are not allowed to perform this action!');  
-			 return;
-		  }
-		  if (status != 200) {
-			alert('Something went wrong on the server. No changes were made.');
-			return;
-		  };
-		  $('#inviteTypeahead').val("");
-		  alert("User "+invitedUser+" is invited.");
-		}, 'add_members[]='+invitedUser);
+	  if (invitedUser !== ""){
+		  var client = new nl.sara.webdav.Client();
+			client.post(window.location.pathname, function(status){
+			  if (status === 409) {
+			    alert('You are not allowed to remove all the group administrators from a group. Leave at least one group administrator in the group or appoint a new group administrator!');  
+			    return;
+			  }
+			  if (status === 403) {
+				 alert('You are not allowed to perform this action!');  
+				 return;
+			  }
+			  if (status != 200) {
+				alert('Something went wrong on the server. No changes were made.');
+				return;
+			  };
+			  $('#inviteTypeahead').val("");
+			  alert("User "+invitedUser+" is invited.");
+			}, 'add_members[]='+invitedUser);
+	  }
   });
   
   
