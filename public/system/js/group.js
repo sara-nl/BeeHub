@@ -1,4 +1,67 @@
-$(function (){	  
+$(function (){	
+	
+  // Workaround for bug in mouse item selection
+  $.fn.typeahead.Constructor.prototype.blur = function() {
+	var that = this;
+	setTimeout(function () { that.hide() }, 250);
+  };
+	
+  $('#inviteTypeahead').typeahead({
+	  source: function (query, process) {
+	        // implementation
+		    users = [];
+		    map = {};
+		 
+		    $.each(nl.sara.beehub.principals.users, function (userName, displayName) {
+		        map[displayName+" ("+userName+")"] = userName;
+		        users.push(displayName+" ("+userName+")");
+		    });
+		    process(users);
+	    },
+	    updater: function (item) {
+	    	invitedUser=map[item];
+	        return item;
+	    },
+	    matcher: function (item) {
+	        // implementation
+	    	if (item.toLowerCase().indexOf(this.query.trim().toLowerCase()) != -1) {
+	    		return true;
+	    	}
+	    },
+	    sorter: function (items) {
+	        // implementation
+	    	return items.sort();
+	    },
+	    highlighter: function (item) {
+	       // implementation
+	       var regex = new RegExp( '(' + this.query + ')', 'gi' );
+	       return item.replace( regex, "<strong>$1</strong>" );
+	    },
+  });
+  
+  /*
+   * Action when the invite button is clicked
+   */
+  $('#inviteGroupForm').submit(function (event) {
+	  event.preventDefault();
+	  var client = new nl.sara.webdav.Client();
+		client.post(window.location.pathname, function(status){
+		  if (status === 409) {
+		    alert('You are not allowed to remove all the group administrators from a group. Leave at least one group administrator in the group or appoint a new group administrator!');  
+		    return;
+		  }
+		  if (status === 403) {
+			 alert('You are not allowed to perform this action!');  
+			 return;
+		  }
+		  if (status != 200) {
+			alert('Something went wrong on the server. No changes were made.');
+			return;
+		  };
+		}, 'add_members[]='+invitedUser);
+  });
+  
+  
  /*
   * Action when the save button is clicked
   */
@@ -56,9 +119,13 @@ $(function (){
 		    alert('You are not allowed to remove all the group administrators from a group. Leave at least one group administrator in the group or appoint a new group administrator!');  
 		    return;
 		  }
+		  if (status === 403) {
+			 alert('You are not allowed to perform this action!');  
+			 return;
+		  }
 		  if (status != 200) {
-				alert('Something went wrong on the server. No changes were made.');
-				return;
+			alert('Something went wrong on the server. No changes were made.');
+			return;
 		  };
 			// if succeeded, change button to promote to admin
 		  var promotebutton = $('<button type="button" value="'+button.val()+'" class="btn btn-primary promote_link">Promote to admin</button>');
@@ -76,9 +143,13 @@ $(function (){
 	// send request to server
 	  var client = new nl.sara.webdav.Client();
 		client.post(window.location.pathname, function(status){
+		  if (status === 403) {
+			alert('You are not allowed to perform this action!');  
+			return;
+		  }
 		  if (status !== 200) {
-				alert('Something went wrong on the server. No changes were made.'+status);
-				return;
+			alert('Something went wrong on the server. No changes were made.'+status);
+			return;
 		  };
 		  var demotebutton = $('<button type="button" value="'+button.val()+'" class="btn btn-primary demote_link">Demote to member</button>');
 		  demotebutton.click(handleDemote);

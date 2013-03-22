@@ -12,45 +12,49 @@ $header = '<style type="text/css">
 .fieldname {
   text-align: right;
 }
+.inviteMembers {
+		margin-left: 20px !important;
+}
+.displayGroup {
+		width: 110px !important;
+}
 </style>';
 
 require 'views/header.php';
 ?>
 <h1>Group</h1>
 <div class="row-fluid" id="beehub-group-display">
-  <div class="span11">
     <dl class="dl-horizontal">
-      <dt>Display name</dt>
+      <dt class="displayGroup" >Display name</dt>
       <dd id="groupDisplayNameValue"><?= $this->prop(DAV::PROP_DISPLAYNAME) ?></dd>
-      <dt>Description</dt>
+      <dt class="displayGroup">Description</dt>
       <dd id="groupDescriptionValue" style="white-space: pre-wrap;"><?= $this->prop(BeeHub::PROP_DESCRIPTION) ?></dd>
+      <br/>
+      <dt class="displayGroup"></dt>
+      <dd class="btn" id="edit-group-button">Edit group</dd>
     </dl>
-  </div>
-  <div class="span1">
-    <?php if ($this->is_admin()) : ?>
-    <a class="btn btn-primary" id="edit-group-button">Edit</a>
-    <?php endif ?>
-  </div>
 </div>
+
 <div class="row-fluid hide" id="beehub-group-edit">
-  <div class="span12">    
+  <div class="span12">  
+  	<br/>  
     <form id="editGroupForm" class="form-horizontal" action="<?= DAV::xmlescape($this->path) ?>" method="post">
       <div class="control-group">
-        <label class="control-label" for="groupDisplayName">Display name</label>
+        <label class="control-label displayGroup" for="groupDisplayName">Display name</label>
         <div class="controls">
           <input type="text" id="groupDisplayName" name="displayname" value="<?= $this->prop(DAV::PROP_DISPLAYNAME) ?>" required />
         </div>
       </div>
       <div class="control-group">
-        <label class="control-label" for="groupDescription">Group description</label>
+        <label class="control-label displayGroup" for="groupDescription">Group description</label>
         <div class="controls">
           <textarea class="input-xlarge" id="groupDescription" rows="5" name="description"><?= $this->prop(BeeHub::PROP_DESCRIPTION) ?></textarea>
         </div>
       </div>
       <div class="control-group">
         <div class="controls">
-          <button type="submit" class="btn">Save</button>
-          <button id="cancel-button" type="button" class="btn">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save</button>
+          <button id="cancel-button" type="button" class="btn btn">Cancel</button>
         </div>
       </div>
     </form>
@@ -58,6 +62,16 @@ require 'views/header.php';
 </div>
 
 <h2>Current members</h2>
+<br/>
+<form id="inviteGroupForm" class="form-horizontal">
+	<div class="control-group">
+		<div class="controls inviteMembers">
+			<button  type="submit" class="btn btn-primary">Invite member</button>   
+			<input type="text" id="inviteTypeahead" data-provide="typeahead" required> 
+		</div>
+ </div>
+</form>
+ 
 <?php foreach ($members as $member) :
         if ($member['is_invited']) : ?>
 <div class="row-fluid" id="user-<?= DAV::xmlescape($member['user_name']) ?>">

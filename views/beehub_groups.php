@@ -101,7 +101,9 @@
         <?php
       $i = 1;
       foreach ($groups as $group) :
-      ?>
+        if ( $group->is_member() || $group->is_invited() )
+          continue;
+        ?> 
         <div class="accordion-group">
           <div class="accordion-heading">
             <div class="accordion-toggle" data-toggle="collapse" data-parent="#joingroups" href="#joingroups-<?= $i ?>">
@@ -109,15 +111,10 @@
                 <th align="left"><?= DAV::xmlescape($group->prop_displayname()) ?></th>
                 <td align="right">
                   <!--    Leave, Cancel request or Join button -->
-                  <?php if ( $group->is_member() ) : ?>
-                  <a><button type="button" value="<?= $group->path ?>" class="btn btn-danger joinleavebutton">Leave</button></a>
-                  <?php elseif ($group->is_invited()) : ?>
-                  <a><button type="button" value="<?= $group->path ?>" class="btn btn-success joinbutton">Accept invitation</button></a>
-                  <a><button type="button" value="<?= $group->path ?>" class="btn btn-danger joinleavebutton">Deny invitation</button></a>
-                   <?php elseif ($group->is_requested()) : ?>
-                  <a><button type="button" value="<?= $group->path ?>" class="btn btn-danger joinleavebutton">Cancel request</button></a>
+                  <?php if ($group->is_requested()) : ?>
+                    <a><button type="button" value="<?= $group->path ?>" class="btn btn-danger joinleavebutton">Cancel request</button></a>
                   <?php else : ?>
-                  <a><button type="button" value="<?= $group->path ?>" class="btn btn-success joinbutton">Join</button></a>
+                    <a><button type="button" value="<?= $group->path ?>" class="btn btn-success joinbutton">Join</button></a>
                   <?php endif; ?>
                 </td>
               </tr></tbody></table>
