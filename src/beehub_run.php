@@ -65,8 +65,7 @@ $noRequireAuth = (
   )
 );
 
-if ( !empty( $_SERVER['HTTPS'] ) &&
-     $_SERVER['REQUEST_METHOD'] !== 'OPTIONS' ) {
+if ( !empty( $_SERVER['HTTPS'] ) ) {
   BeeHub_Auth::inst()->handle_authentication(!$noRequireAuth);
 }
 
