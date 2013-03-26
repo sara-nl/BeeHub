@@ -85,7 +85,7 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
 
     // Add the current user as admin of the group
     $group->change_memberships(
-      array( $this->user_prop_current_user_principal() ),
+      array( basename( $this->user_prop_current_user_principal() ) ),
       true, true, true
     );
 
