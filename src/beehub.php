@@ -172,7 +172,7 @@ class BeeHub {
       $name = BeeHub::$CONFIG['namespace']['users_path'] .
         rawurlencode($name);
     $retval = BeeHub_Registry::inst()->resource( $name );
-    if (!$retval) throw new DAV_Status(
+    if ( !$retval || !( $retval instanceof BeeHub_User ) ) throw new DAV_Status(
       DAV::HTTP_FORBIDDEN, DAV::COND_RECOGNIZED_PRINCIPAL
     );
     return $retval;
@@ -188,7 +188,7 @@ class BeeHub {
       $name = BeeHub::$CONFIG['namespace']['groups_path'] .
         rawurlencode($name);
     $retval = BeeHub_Registry::inst()->resource( $name );
-    if (!$retval) throw new DAV_Status(
+    if ( !$retval || !( $retval instanceof BeeHub_Group ) ) throw new DAV_Status(
       DAV::HTTP_FORBIDDEN, DAV::COND_RECOGNIZED_PRINCIPAL
     );
     return $retval;
@@ -204,7 +204,7 @@ class BeeHub {
       $name = BeeHub::$CONFIG['namespace']['sponsors_path'] .
         rawurlencode($name);
     $retval = BeeHub_Registry::inst()->resource( $name );
-    if (!$retval) throw new DAV_Status(
+    if ( !$retval || !( $retval instanceof BeeHub_Sponsor ) ) throw new DAV_Status(
       DAV::HTTP_FORBIDDEN, DAV::COND_RECOGNIZED_PRINCIPAL
     );
     return $retval;

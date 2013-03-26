@@ -25,7 +25,8 @@ BeeHub::handle_method_spoofing();
 
 // If a GET request on the root doesn't have this server as a referer, redirect to the homepage:
 // TODO: This can also be done in the apache configuration...
-if ( DAV::$PATH === '/' &&
+if ( !isset($_GET['nosystem']) &&
+     DAV::$PATH === '/' &&
      $_SERVER['REQUEST_METHOD'] === 'GET' &&
      ( ! isset( $_SERVER['HTTP_REFERER'] ) ||
        $_SERVER['SERVER_NAME'] !== parse_url(
@@ -47,7 +48,6 @@ DAV::$UNAUTHORIZED = array( BeeHub_Auth::inst(), 'unauthorized' );
 // Start authentication
 /* You don't need to authenticate when:
  * - Accessing over regular HTTP (as opposed to HTTPS)
- * - An OPTIONS request never requires authentication
  * - GET (or HEAD) or POST on the users collection (required to create a new user)
  * - GET (or HEAD) on the system collection (required to read the 'homepage')
  *

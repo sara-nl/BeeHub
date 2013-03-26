@@ -85,10 +85,17 @@ class BeeHub_Auth {
         }
       }
       // The user already sent username and password: check them!
-      $user = BeeHub::user($_SERVER['PHP_AUTH_USER']);
-      if ( ! $user->check_password($_SERVER['PHP_AUTH_PW']) ) {
+      try{
+        $user = BeeHub::user($_SERVER['PHP_AUTH_USER']);
+        $password_verified = $user->check_password($_SERVER['PHP_AUTH_PW']);
+      }catch (DAV_Status $status) {
+        if ( $status->getCode() === DAV::HTTP_FORBIDDEN ) {
+          $password_verified = false;
+        }
+      }
+      if ( ! $password_verified ) {
         // If authentication fails, respond accordingly
-        if ($requireAuth) {
+        if ( ( 'passwd' === @$_GET['login'] ) || $requireAuth ) {
           // User could not be authenticated with supplied credentials, but we
           // require authentication, so we ask again!
           $this->unauthorized();

@@ -14,7 +14,7 @@
     preg_replace(
       '@^/system/users/(.*)@', '/home/\1/',
       BeeHub_Auth::inst()->current_user()->path
-    ) : '/' ?>">Files</a></li>
+    ) : BeeHub::urlbase(false) . '?nosystem' ?>">Files</a></li>
               <?php if (BeeHub_Auth::inst()->is_authenticated()) : ?>
                 <li id="navbar-li-groups"><a href="<?= DAV::xmlescape(BeeHub::$CONFIG['namespace']['groups_path']) ?>">Groups</a></li>
 <?php /*                <li id="navbar-li-sponsors"><a href="<?= DAV::xmlescape(BeeHub::$CONFIG['namespace']['sponsors_path']) ?>">Sponsors</a></li> */ ?>
