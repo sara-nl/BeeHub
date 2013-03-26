@@ -2,6 +2,7 @@ $(function (){
 	/*
 	 * Action when submit button in profile tab is clicked.
 	 */
+   var old_sponsor_value = $('#sponsor').val();
 	 $('#myprofile_form').submit(function(event) {
 		event.preventDefault();
 	   
@@ -19,11 +20,13 @@ $(function (){
 	    displayname.setValueAndRebuildXml($('input[name="displayname"]').val());
 	    setProps.push(displayname);
 	    
-	    var sponsor = new nl.sara.webdav.Property();
-	    sponsor.namespace = 'http://beehub.nl/'; 
-	    sponsor.tagname = 'sponsor';
-	    sponsor.setValueAndRebuildXml($('#sponsor').val()); 
-	    setProps.push(sponsor);
+      if ( $('#sponsor').val() !== old_sponsor_value ) {
+  	    var sponsor = new nl.sara.webdav.Property();
+  	    sponsor.namespace = 'http://beehub.nl/'; 
+  	    sponsor.tagname = 'sponsor';
+  	    sponsor.setValueAndRebuildXml($('#sponsor').val()); 
+  	    setProps.push(sponsor);
+      }
 	    
 	    var client = new nl.sara.webdav.Client();
 	    client.proppatch(location.pathname, function(status, data) {

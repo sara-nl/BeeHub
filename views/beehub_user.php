@@ -62,17 +62,25 @@ require 'views/header.php';
     <div class="control-group">
       <label class="control-label" >Default sponsor</label>
       <div class="controls">
-        <select id="sponsor" name="sponsor">
-          <?php
-          $registry = BeeHub_Registry::inst();
-          foreach($this->prop(BeeHub::PROP_SPONSOR_MEMBERSHIP) as $sponsor_path) : ?>
-            <option value="<?= DAV::xmlescape($sponsor_path) ?>" <?= ( $this->user_prop(BeeHub::PROP_SPONSOR) === $sponsor_path ) ? 'selected="selected"' : '' ?>>
-              <?= DAV::xmlescape( BeeHub::sponsor($sponsor_path)->prop( DAV::PROP_DISPLAYNAME ) ) ?>
-            </option>
+      <?php
+/*        <?php if ( DAV::determine_client() & DAV::CLIENT_IE ) : ?>
+          <input type="hidden" id="sponsor" name="sponsor" value="<?= DAV::xmlescape( $this->user_prop( BeeHub::PROP_SPONSOR ) ) ?>" />
+          <?= DAV::xmlescape( BeeHub::sponsor( $this->user_prop(BeeHub::PROP_SPONSOR) )->prop( DAV::PROP_DISPLAYNAME ) ) ?> (Sponsor can't be changed in Internet Explorer)
+        <?php else: ?>
+*/ ?>
+          <select id="sponsor" name="sponsor" <?= ( DAV::determine_client() & DAV::CLIENT_IE ) ? 'disabled="disabled"' : '' ?> >
             <?php
-            $registry->forget($sponsor_path);
-          endforeach; ?>
-        </select>
+            $registry = BeeHub_Registry::inst();
+            foreach($this->prop(BeeHub::PROP_SPONSOR_MEMBERSHIP) as $sponsor_path) : ?>
+              <option value="<?= DAV::xmlescape($sponsor_path) ?>" <?= ( $this->user_prop(BeeHub::PROP_SPONSOR) === $sponsor_path ) ? 'selected="selected"' : '' ?>>
+                <?= DAV::xmlescape( BeeHub::sponsor($sponsor_path)->prop( DAV::PROP_DISPLAYNAME ) ) ?>
+              </option>
+              <?php
+              $registry->forget($sponsor_path);
+            endforeach; ?>
+          </select>
+          <?= ( DAV::determine_client() & DAV::CLIENT_IE ) ? '(Sponsor can\'t be changed in Internet Explorer)' : '' ?>
+        <?php //endif; ?>
       </div>
     </div>
     <div class="control-group">
