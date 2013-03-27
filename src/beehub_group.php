@@ -105,7 +105,7 @@ EOS;
         $message =
 'Dear group administrator,
 
-' . $current_user->prop(DAV::PROP_DISPLAYNAME) . ' wants to join the group \'' . $this->prop(DAV::PROP_DISPLAYNAME) . '\'. One of the group administrators needs to either accept or reject this membership request. Please see your notifications in BeeHub to do this:
+' . $current_user->prop(DAV::PROP_DISPLAYNAME) . ' (' . $current_user->prop(BeeHub::PROP_EMAIL) . ') wants to join the group \'' . $this->prop(DAV::PROP_DISPLAYNAME) . '\'. One of the group administrators needs to either accept or reject this membership request. Please see your notifications in BeeHub to do this:
 
 ' . BeeHub::urlbase(true) . '?show_notifications=1
 

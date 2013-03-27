@@ -247,7 +247,8 @@ class BeeHub {
         SELECT `beehub_groups`.`group_name`,
                `beehub_groups`.`displayname`,
                `beehub_users`.`user_name`,
-               `beehub_users`.`displayname`
+               `beehub_users`.`displayname`,
+               `beehub_users`.`email`
           FROM `beehub_group_members` JOIN `beehub_groups` USING(`group_name`) JOIN `beehub_users` USING(`user_name`)
          WHERE `beehub_group_members`.`is_invited` = 0 AND
                `beehub_group_members`.`is_requested` = 1 AND
@@ -259,7 +260,7 @@ class BeeHub {
                )
       ', 's', $user->name);
       while ($row = $statement->fetch_row()) {
-        $notifications[] = array('type'=>'group_request', 'data'=>array('group'=>BeeHub::$CONFIG['namespace']['groups_path'] . $row[0], 'group_displayname'=>$row[1], 'user'=>BeeHub::$CONFIG['namespace']['users_path'] . $row[2], 'user_displayname'=>$row[3]));
+        $notifications[] = array( 'type'=>'group_request', 'data'=>array( 'group'=>BeeHub::$CONFIG['namespace']['groups_path'] . $row[0], 'group_displayname'=>$row[1], 'user'=>BeeHub::$CONFIG['namespace']['users_path'] . $row[2], 'user_displayname'=>$row[3], 'user_email'=>$row[4] ) );
       }
 
       // Fetch all sponsor membership requests
@@ -267,7 +268,8 @@ class BeeHub {
         SELECT `beehub_sponsors`.`sponsor_name`,
                `beehub_sponsors`.`displayname`,
                `beehub_users`.`user_name`,
-               `beehub_users`.`displayname`
+               `beehub_users`.`displayname`,
+               `beehub_users`.`email`
           FROM `beehub_sponsor_members` JOIN `beehub_sponsors` USING(`sponsor_name`) JOIN `beehub_users` USING(`user_name`)
          WHERE `beehub_sponsor_members`.`is_accepted` = 0 AND
                `beehub_sponsor_members`.`sponsor_name` IN (
@@ -278,7 +280,7 @@ class BeeHub {
                )
       ', 's', $user->name);
       while ($row = $statement->fetch_row()) {
-        $notifications[] = array('type'=>'sponsor_request', 'data'=>array('sponsor'=>BeeHub::$CONFIG['namespace']['sponsors_path'] . $row[0], 'sponsor_displayname'=>$row[1], 'user'=>BeeHub::$CONFIG['namespace']['users_path'] . $row[2], 'user_displayname'=>$row[3]));
+        $notifications[] = array( 'type'=>'sponsor_request', 'data'=>array( 'sponsor'=>BeeHub::$CONFIG['namespace']['sponsors_path'] . $row[0], 'sponsor_displayname'=>$row[1], 'user'=>BeeHub::$CONFIG['namespace']['users_path'] . $row[2], 'user_displayname'=>$row[3], 'user_email'=>$row[4] ) );
       }
     }
     return $notifications;

@@ -54,7 +54,7 @@ if (nl.sara.beehub.codec === undefined) {
         });
         break;
       case 'group_request':
-        notification.html('<div style="float:left">' + data.user_displayname + ' requests a membership of group \'' + data.group_displayname + '\'</div><div style="float:right"><button class="btn btn-success">Accept</button> <button class="btn btn-danger">Decline</button></div><div style="clear:both"></div>');
+        notification.html('<div style="float:left">' + data.user_displayname + ' (' + data.user_email + ') requests a membership of group \'' + data.group_displayname + '\'</div><div style="float:right"><button class="btn btn-success">Accept</button> <button class="btn btn-danger">Decline</button></div><div style="clear:both"></div>');
         $('.btn-success', notification).click(function() {
           client.post(data.group, nl.sara.beehub.reload_notifications, 'add_members[]=' + data.user);
         });
@@ -63,7 +63,7 @@ if (nl.sara.beehub.codec === undefined) {
         });
         break;
       case 'sponsor_request':
-        notification.html('<div style="float:left">' + data.user_displayname + ' requests requests membership of sponsor \'' + data.sponsor_displayname + '\'</div><div style="float:right"><button class="btn btn-success">Accept</button> <button class="btn btn-danger">Decline</button></div><div style="clear:both"></div>');
+        notification.html('<div style="float:left">' + data.user_displayname + ' (' + data.user_email + ') requests requests membership of sponsor \'' + data.sponsor_displayname + '\'</div><div style="float:right"><button class="btn btn-success">Accept</button> <button class="btn btn-danger">Decline</button></div><div style="clear:both"></div>');
         $('.btn-success', notification).click(function() {
           client.post(data.sponsor, nl.sara.beehub.reload_notifications, 'add_members[]=' + data.user);
         });
