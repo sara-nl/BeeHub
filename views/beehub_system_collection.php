@@ -5,10 +5,7 @@ require 'views/header.php';
 <h1>BeeHub is…</h1>
 <div class="row-fluid">
   <div class="span12">
-    …a work in progress, but usable! This is “Release Candidate 1”. It has
-    all the basic functions, but may still have some bugs. If you find one,
-    let us know and help us squash it:
-    <a href="mailto:grid.support@surfsara.nl?subject=I%20got%20stung%20by%20a%20Bee%21">grid.support@surfsara.nl</a>
+    ...not supporting Internet Explorer versions 8 or earlier. There are a few functions which don't work in Internet Explorer 9. For full compatibility, please use the latest version of Firefox, Chrome, Chromium, Safari or any other up-2-date browser that has sufficient support for the web standards. For help, you can contact us at <a href="mailto:grid.support@surfsara.nl?subject=I%20got%20stung%20by%20a%20Bee%21">grid.support@surfsara.nl</a>.
   </div>
 </div>
 <div class="row-fluid">

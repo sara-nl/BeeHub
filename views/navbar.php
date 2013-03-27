@@ -6,7 +6,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
-          <a class="brand" href="<?= DAV::xmlescape(BeeHub::$CONFIG['namespace']['system_path']) ?>">BeeHub<sup><small><strong><em>RC1</em></strong></small></sup></a>
+          <a class="brand" href="<?= DAV::xmlescape(BeeHub::$CONFIG['namespace']['system_path']) ?>">BeeHub</a>
           <div class="nav-collapse collapse">
             <ul class="nav">
               <li id="navbar-li-files"><a href="<?=
