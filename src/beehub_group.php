@@ -62,18 +62,20 @@ INNER JOIN `beehub_group_members`
      USING (`user_name`)
      WHERE `group_name` = ?;
 EOS;
-    $statement = BeeHub_DB::execute($query, 's', $this->name);
     $members = array();
-    while ($row = $statement->fetch_row()) {
-      $members[$row[0]] = Array(
-        'user_name' => $row[0],
-        'displayname' => $row[1],
-        'is_admin' => ($row[2] === 1),
-        'is_invited' => ($row[3] === 1),
-        'is_requested' => ($row[4] === 1)
-      );
+    if ( $this->is_member() ) {
+      $statement = BeeHub_DB::execute($query, 's', $this->name);
+      while ($row = $statement->fetch_row()) {
+        $members[$row[0]] = Array(
+          'user_name' => $row[0],
+          'displayname' => $row[1],
+          'is_admin' => ($row[2] === 1),
+          'is_invited' => ($row[3] === 1),
+          'is_requested' => ($row[4] === 1)
+        );
+      }
+      $statement->free_result();
     }
-    $statement->free_result();
     $this->include_view( null, array( 'members' => $members ) );
   }
 

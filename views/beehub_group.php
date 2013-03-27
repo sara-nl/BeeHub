@@ -29,9 +29,11 @@ require 'views/header.php';
       <dd id="groupDisplayNameValue"><?= $this->prop(DAV::PROP_DISPLAYNAME) ?></dd>
       <dt class="displayGroup">Description</dt>
       <dd id="groupDescriptionValue" style="white-space: pre-wrap;"><?= $this->prop(BeeHub::PROP_DESCRIPTION) ?></dd>
-      <br/>
-      <dt class="displayGroup"></dt>
-      <dd class="btn" id="edit-group-button">Edit group</dd>
+      <?php if ( $this->is_admin() ) : ?>
+        <br/>
+        <dt class="displayGroup"></dt>
+        <dd class="btn" id="edit-group-button">Edit group</dd>
+      <?php endif; ?>
     </dl>
 </div>
 
@@ -61,37 +63,40 @@ require 'views/header.php';
   </div>
 </div>
 
-<h2>Current members</h2>
-<br/>
-<form id="inviteGroupForm" class="form-horizontal">
-	<div class="control-group">
-		<div class="controls inviteMembers">
-			<button  type="submit" class="btn btn-primary">Invite user</button>   
-			<input type="text" id="inviteTypeahead" data-provide="typeahead" placeholder="Type username..." required> 
-		</div>
- </div>
-</form>
- 
-<?php foreach ($members as $member) :
-        if ($member['is_invited']) : ?>
-<div class="row-fluid" id="user-<?= DAV::xmlescape($member['user_name']) ?>">
-  <div class="span12 well well-small"><table width="100%"><tbody><tr>
-    <th align="left"><?= DAV::xmlescape($member['displayname']) ?> </th>
-    <?php if ($this->is_admin()) : ?>
-    <td align="right">
-      <!-- Promote or demote? -->
-      <?php if ( $member['is_admin'] ) : ?>
-      <button type="button" value="<?= DAV::xmlescape($member['user_name']) ?>" class="btn btn-primary demote_link">Demote to member</button>
-      <?php else : ?>
-      <button type="button" value="<?= DAV::xmlescape($member['user_name']) ?>" class="btn btn-primary promote_link">Promote to admin</button>
-      <?php endif; ?>
-      <button type="button" value="<?= DAV::xmlescape($member['user_name']) ?>" class="btn btn-danger remove_link">Remove member</button>
-    </td>
-    <?php endif; ?>
-  </tr></tbody></table></div>
-</div>
-<?php   endif;
-      endforeach; ?>
-<?php 
-  $footer='<script type="text/javascript" src="/system/js/group.js"></script>';
-  require 'views/footer.php';
+<?php if ( $this->is_member() ) : ?>
+  <h2>Current members</h2>
+  <br/>
+  <form id="inviteGroupForm" class="form-horizontal">
+  	<div class="control-group">
+  		<div class="controls inviteMembers">
+  			<button  type="submit" class="btn btn-primary">Invite user</button>   
+  			<input type="text" id="inviteTypeahead" data-provide="typeahead" placeholder="Type username..." required> 
+  		</div>
+   </div>
+  </form>
+   
+  <?php foreach ($members as $member) :
+    if ($member['is_invited']) : ?>
+      <div class="row-fluid" id="user-<?= DAV::xmlescape($member['user_name']) ?>">
+        <div class="span12 well well-small"><table width="100%"><tbody><tr>
+          <th align="left"><?= DAV::xmlescape($member['displayname']) ?> </th>
+          <?php if ($this->is_admin()) : ?>
+          <td align="right">
+            <!-- Promote or demote? -->
+            <?php if ( $member['is_admin'] ) : ?>
+            <button type="button" value="<?= DAV::xmlescape($member['user_name']) ?>" class="btn btn-primary demote_link">Demote to member</button>
+            <?php else : ?>
+            <button type="button" value="<?= DAV::xmlescape($member['user_name']) ?>" class="btn btn-primary promote_link">Promote to admin</button>
+            <?php endif; ?>
+            <button type="button" value="<?= DAV::xmlescape($member['user_name']) ?>" class="btn btn-danger remove_link">Remove member</button>
+          </td>
+          <?php endif; ?>
+        </tr></tbody></table></div>
+      </div>
+      <?php
+    endif;
+  endforeach;
+endif;
+
+$footer='<script type="text/javascript" src="/system/js/group.js"></script>';
+require 'views/footer.php';
