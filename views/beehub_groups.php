@@ -90,7 +90,7 @@
 		    <div class="controls">
 			    <div class="input-prepend">
  				    <span class="add-on" id="iconfilter"><i class="icon-filter"></i></span>
-				    <input class="span3" id="filterbyname" type="text" placeholder="Filter by name..."/>
+				    <input class="span3" id="filterbyname" type="text" placeholder="Filter by name..." autocomplete="off" />
 			    </div>
 	    </div>
     </div>

@@ -26,9 +26,9 @@ require 'views/header.php';
 <div class="row-fluid" id="beehub-group-display">
     <dl class="dl-horizontal">
       <dt class="displayGroup" >Display name</dt>
-      <dd id="groupDisplayNameValue"><?= $this->prop(DAV::PROP_DISPLAYNAME) ?></dd>
+      <dd id="groupDisplayNameValue"><?= DAV::xmlescape( $this->user_prop( DAV::PROP_DISPLAYNAME ) ) ?></dd>
       <dt class="displayGroup">Description</dt>
-      <dd id="groupDescriptionValue" style="white-space: pre-wrap;"><?= $this->prop(BeeHub::PROP_DESCRIPTION) ?></dd>
+      <dd id="groupDescriptionValue" style="white-space: pre-wrap;"><?= DAV::xmlescape( $this->user_prop(BeeHub::PROP_DESCRIPTION) ) ?></dd>
       <?php if ( $this->is_admin() ) : ?>
         <br/>
         <dt class="displayGroup"></dt>
@@ -44,13 +44,13 @@ require 'views/header.php';
       <div class="control-group">
         <label class="control-label displayGroup" for="groupDisplayName">Display name</label>
         <div class="controls">
-          <input type="text" id="groupDisplayName" name="displayname" value="<?= $this->prop(DAV::PROP_DISPLAYNAME) ?>" required />
+          <input type="text" id="groupDisplayName" name="displayname" value="<?= DAV::xmlescape( $this->user_prop_displayname() ) ?>" required />
         </div>
       </div>
       <div class="control-group">
         <label class="control-label displayGroup" for="groupDescription">Group description</label>
         <div class="controls">
-          <textarea class="input-xlarge" id="groupDescription" rows="5" name="description"><?= $this->prop(BeeHub::PROP_DESCRIPTION) ?></textarea>
+          <textarea class="input-xlarge" id="groupDescription" rows="5" name="description"><?= DAV::xmlescape( $this->user_prop(BeeHub::PROP_DESCRIPTION) ) ?></textarea>
         </div>
       </div>
       <div class="control-group">
@@ -70,7 +70,7 @@ require 'views/header.php';
   	<div class="control-group">
   		<div class="controls inviteMembers">
   			<button  type="submit" class="btn btn-primary">Invite user</button>   
-  			<input type="text" id="inviteTypeahead" data-provide="typeahead" placeholder="Type username..." required> 
+  			<input type="text" id="inviteTypeahead" data-provide="typeahead" placeholder="Type username..." autocomplete="off" required> 
   		</div>
    </div>
   </form>
