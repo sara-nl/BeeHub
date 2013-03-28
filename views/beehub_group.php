@@ -25,6 +25,8 @@ require 'views/header.php';
 <h1>Group</h1>
 <div class="row-fluid" id="beehub-group-display">
     <dl class="dl-horizontal">
+      <dt class="displayGroup" >Name</dt>
+      <dd id="groupNameValue"><?= DAV::xmlescape( $this->name) ?></dd>
       <dt class="displayGroup" >Display name</dt>
       <dd id="groupDisplayNameValue"><?= DAV::xmlescape( $this->user_prop( DAV::PROP_DISPLAYNAME ) ) ?></dd>
       <dt class="displayGroup">Description</dt>
