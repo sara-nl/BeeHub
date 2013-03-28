@@ -3,4 +3,6 @@
 .settings
 config.ini
 /public/system/client
+/public/system/simplesaml
+/simplesamlphp/
 /views/beehub_directory.php

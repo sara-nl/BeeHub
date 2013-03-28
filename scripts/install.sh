@@ -20,6 +20,11 @@ nl.sara.beehub.users_path = "/system/users/";nl.sara.beehub.groups_path = "/syst
 EOM
 fi
 
+echo "Path to simplesamlphp: "
+read SIMPLESAML
+rm -vf public/system/simplesaml
+ln -vs "${SIMPLESAML}/www/" public/system/simplesaml
+
 popd
 
 echo "Don't forget:"
