@@ -62,7 +62,13 @@ public function user_prop_getcontentlength() {
 
 
 public function user_prop_getcontenttype() {
-  return $this->user_prop(DAV::PROP_GETCONTENTTYPE);
+  $type = $this->user_prop(DAV::PROP_GETCONTENTTYPE);
+  if (DAV::determine_client() & DAV::CLIENT_GVFS) {
+    $parts = explode(';', $type);
+    return $parts[0];
+  }else{
+    return $type;
+  }
 }
 
 
