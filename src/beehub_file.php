@@ -107,8 +107,8 @@ public function method_PUT($stream) {
     throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
   try {
     $size = 0;
-    if ( ( $cl = (int)($_SERVER['CONTENT_LENGTH']) ) ||
-         ( $cl = (int)($_SERVER['HTTP_X_EXPECTED_ENTITY_LENGTH']) ) ) {
+    if ( ( $cl = (int)(@$_SERVER['CONTENT_LENGTH']) ) ||
+         ( $cl = (int)(@$_SERVER['HTTP_X_EXPECTED_ENTITY_LENGTH']) ) ) {
       # The client has indicated the length of the request entity body:
       $time = time();
       while ( $cl && !feof( $stream ) ) {
@@ -173,9 +173,16 @@ public function method_PUT_range($stream, $start, $end, $total) {
     if ( 0 !== fseek( $resource, $start, SEEK_SET ) )
       throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
     $size = $end - $start + 1;
+    if ( !array_key_exists('CONTENT_LENGTH', $_SERVER) )
+      throw new DAV_Status( DAV::HTTP_LENGTH_REQUIRED );
+    if ( (int)($_SERVER['CONTENT_LENGTH']) !== $size )
+      throw new DAV_Status(
+        DAV::HTTP_BAD_REQUEST,
+        'Content-Range and Content-Length are incompatible.'
+      );
     while ($size && !feof($stream)) {
-      set_time_limit(600); // We keep resetting the time limit to 10 minutes so the script won't get killed during long uploads. This means your minimum connection speed should be DAV::$CHUNK_SIZE / 600 bytes per second
-      $buffer = fread($stream, $size < DAV::$CHUNK_SIZE ? $size : DAV::$CHUNK_SIZE );
+      set_time_limit(120); // We keep resetting the time limit to 10 minutes so the script won't get killed during long uploads. This means your minimum connection speed should be DAV::$CHUNK_SIZE / 600 bytes per second
+      $buffer = fread($stream, DAV::$CHUNK_SIZE );
       $size -= strlen( $buffer );
       if ( strlen( $buffer ) !== fwrite( $resource, $buffer ) )
         throw new DAV_Status(DAV::HTTP_INSUFFICIENT_STORAGE);
@@ -183,8 +190,8 @@ public function method_PUT_range($stream, $start, $end, $total) {
     if ($size)
       throw new DAV_Status(DAV::HTTP_BAD_REQUEST, 'Request entity too small');
     //$buffer = fread( $stream, 1 );
-    if (!feof($stream))
-      throw new DAV_Status(DAV::HTTP_REQUEST_ENTITY_TOO_LARGE);
+    //if (!feof($stream))
+    //  throw new DAV_Status(DAV::HTTP_REQUEST_ENTITY_TOO_LARGE);
   }
   catch (DAV_Status $e) {
     fclose($resource);
