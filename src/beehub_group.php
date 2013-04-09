@@ -109,7 +109,7 @@ EOS;
 
 ' . $current_user->prop(DAV::PROP_DISPLAYNAME) . ' (' . $current_user->prop(BeeHub::PROP_EMAIL) . ') wants to join the group \'' . $this->prop(DAV::PROP_DISPLAYNAME) . '\'. One of the group administrators needs to either accept or reject this membership request. Please see your notifications in BeeHub to do this:
 
-' . BeeHub::urlbase(true) . '?show_notifications=1
+' . BeeHub::urlbase(true) . '/system/?show_notifications=1
 
 Best regards,
 
@@ -153,7 +153,7 @@ BeeHub';
 
 You are invited to join the group \'' . $this->prop(DAV::PROP_DISPLAYNAME) . '\'. You need to accept this invitation before your membership is activated. Please see your notifications in BeeHub to do this:
 
-' . BeeHub::urlbase(true) . '?show_notifications=1
+' . BeeHub::urlbase(true) . '/system/?show_notifications=1
 
 Best regards,
 
