@@ -15,7 +15,7 @@ $attributes = $simpleSaml->getAttributes();
   <div class="control-group">
     <label class="control-label" for="password">BeeHub password:</label>
     <div class="controls">
-      <input type="password" id="password" name="password" value="<?= DAV::xmlescape($surfconext_description) ?>" required="required" />
+      <input type="password" id="password" name="password" required="required" />
     </div>
   </div>
   <div class="control-group">

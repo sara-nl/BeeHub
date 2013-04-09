@@ -102,9 +102,9 @@ class BeeHub {
       else
         $tmp = 'http://';
       $tmp .= $_SERVER['SERVER_NAME'];
-      if ( !empty($_SERVER['HTTPS']) && $_SERVER['SERVER_PORT'] !== 443 or
-            empty($_SERVER['HTTPS']) && $_SERVER['SERVER_PORT'] !== 80 ) {
-        $server_port = intval($_SERVER['SERVER_PORT'], 10);
+      $server_port = intval($_SERVER['SERVER_PORT'], 10);
+      if ( !empty($_SERVER['HTTPS']) && $server_port !== 443 or
+            empty($_SERVER['HTTPS']) && $server_port !== 80 ) {
         if ( true === $https && empty($_SERVER['HTTPS']) )
           $server_port += 443 - 80;
         elseif ( false === $https && ! empty($_SERVER['HTTPS']) )
