@@ -4,5 +4,6 @@
 config.ini
 /public/system/client
 /public/system/simplesaml
+/public/system/js/webdavlib.js
 /simplesamlphp/
 /views/beehub_directory.php

@@ -7,11 +7,16 @@ git submodule init
 git submodule update
 ./client/link_submodules
 ./client/makeapp
+pushd ./js-webdav-client
+make dist.js
+popd
 
 rm -vf public/system/client
 ln -vs "$(pwd)/client/build/system/client" public/system/client
 rm -vf views/beehub_directory.php
 ln -vs "$(pwd)/client/build/views/directory.php" views/beehub_directory.php
+rm -vf public/system/js/webdavlib.js
+ln -vs "$(pwd)/js-webdav-client/dist.js" public/system/js/webdavlib.js
 
 chmod -v 2777 public/system/js/server/
 if [[ -e public/system/js/server/principals.js ]]; then
