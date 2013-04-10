@@ -9,7 +9,6 @@
  */
 
 
-$active = "sponsors";
 $header = '<style type="text/css">
 .fieldname {
   text-align: right;

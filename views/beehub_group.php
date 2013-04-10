@@ -7,7 +7,6 @@
  *   For example: $members[0]['user_name']
  */
 
-$active = "groups";
 $header = '<style type="text/css">
 .fieldname {
   text-align: right;
@@ -40,8 +39,8 @@ require 'views/header.php';
 </div>
 
 <div class="row-fluid hide" id="beehub-group-edit">
-  <div class="span12">  
-  	<br/>  
+  <div class="span12">
+  	<br/>
     <form id="editGroupForm" class="form-horizontal" action="<?= DAV::xmlescape($this->path) ?>" method="post">
       <div class="control-group">
         <label class="control-label displayGroup" for="groupDisplayName">Display name</label>
@@ -71,12 +70,12 @@ require 'views/header.php';
   <form id="inviteGroupForm" class="form-horizontal">
   	<div class="control-group">
   		<div class="controls inviteMembers">
-  			<button  type="submit" class="btn btn-primary">Invite user</button>   
-  			<input type="text" id="inviteTypeahead" data-provide="typeahead" placeholder="Type username..." autocomplete="off" required> 
+  			<button  type="submit" class="btn btn-primary">Invite user</button>
+  			<input type="text" id="inviteTypeahead" data-provide="typeahead" placeholder="Type username..." autocomplete="off" required>
   		</div>
    </div>
   </form>
-   
+
   <?php foreach ($members as $member) :
     if ($member['is_invited']) : ?>
       <div class="row-fluid" id="user-<?= DAV::xmlescape($member['user_name']) ?>">

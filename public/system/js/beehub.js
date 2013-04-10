@@ -18,9 +18,11 @@ if (nl.sara.beehub.codec === undefined) {
 	var active;
 	if ( RegExp('^/system/groups/[^/]*$').test( window.location.pathname ) ) {
 		active = 'groups';
-	} else if ( RegExp('^/system/sponsors/[^/]*$').test( window.location.pathname ) ) {
-		active = 'sponsors';
-	} else if ( RegExp('^/system/users/[^/]+$').test( window.location.pathname ) ) {
+	} else if ( RegExp('^/system/docs.*$').test( window.location.pathname ) ) {
+    active = 'docs';
+  } else if ( RegExp('^/system/sponsors/[^/]*$').test( window.location.pathname ) ) {
+    active = 'sponsors';
+  } else if ( RegExp('^/system/users/[^/]+$').test( window.location.pathname ) ) {
 		active = 'profile';
 	} else if ( RegExp('^/system/$').test( window.location.pathname ) ) {
 		active = 'beehub';
