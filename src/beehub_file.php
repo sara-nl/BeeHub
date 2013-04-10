@@ -195,11 +195,9 @@ public function method_PUT_range($stream, $start, $end, $total) {
   }
   catch (DAV_Status $e) {
     fclose($resource);
-    fclose($stream);
     throw $e;
   }
   fclose($resource);
-  fclose($stream);
   $this->user_set( DAV::PROP_GETETAG, BeeHub_DB::ETag() );
   $this->storeProperties();
 }
