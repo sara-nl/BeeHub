@@ -1,5 +1,4 @@
 <?php
-$active = 'beehub';
 require 'views/header.php';
 ?>
 <h1>BeeHub is…</h1>

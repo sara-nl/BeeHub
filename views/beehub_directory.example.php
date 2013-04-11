@@ -4,7 +4,6 @@
  *
  * $this       The beehub_directory object representing the current directory
  */
-$active = 'files';
 require 'views/header.php';
 ?><div class="container-fluid">
 <h1>Directory index</h1>
