@@ -130,8 +130,7 @@ public function method_GET() {
     $members[$member] = BeeHub_Registry::inst()->resource($this->path . $member);
   }
   $this->include_view( null, array(
-      'members' => $members,
-      'CONFINED_BOOTSTRAP' => true
+      'members' => $members
   ));
 }
 

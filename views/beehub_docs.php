@@ -15,7 +15,6 @@ $footer= '<!--script type="text/javascript" src="/system/js/docs.js"></script-->
 
 require 'views/header.php';
 ?>
-<div class="container-fluid">
 <div class="row-fluid">
 <div class="span12">
 <h1>Documentation</h1>
@@ -181,6 +180,6 @@ dav:/> <b>▍</b></pre>
   </div>
 </div>
 
-</div></div></div><!-- cell, row, and outer container-fluid -->
+</div></div><!-- cell, row, and outer container-fluid -->
 <?php
 require 'views/footer.php';
