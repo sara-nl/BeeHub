@@ -12,12 +12,15 @@ $aclAllowed = $aclAllowed[DAV::PROP_ACL];
 $header = '<style type="text/css">
 .breadcrumb {
   background-color: white !important;
+}	
+		
+.no-close .ui-dialog-titlebar-close {
+	display: none;
 }
 }
 </style>';
 require 'views/header.php';
 ?>
-
 <!-- Tabs-->
 <ul id="beehub-directory-tabs" class="nav nav-tabs">
   <li class="active"><a href="#beehub-directory-panel-contents" data-toggle="tab">Contents</a></li>
@@ -56,6 +59,7 @@ require 'views/header.php';
 			<button id="<?= DAV::unslashify($this->collection()->path) ?>" class="btn btn-small beehub-directory-goup" disabled="disabled"><i class="icon-chevron-up" ></i>  Up</button>
 		<?php endif;?>
 		<button id="<?= preg_replace( '@^/system/users/(.*)@', '/home/\1/', BeeHub_Auth::inst()->current_user()->path)?>" class="btn btn-small beehub-directory-gohome" data-toggle="tooltip" title="Go to home folder"><i class="icon-home"></i> Home</button>
+		<input id="beehub-directory-upload-hidden" type="file" name="files[]" hidden='true' multiple>
 		<button id="beehub-directory-upload" data-toggle="tooltip" title="Upload to current folder" class="btn btn-small" ><i class="icon-upload" ></i> Upload</button>
 		<button id="beehub-directory-newfolder" data-toggle="tooltip" title="Create new folder in current folder" class="btn btn-small"><i class="icon-folder-close" ></i> New</button>
 		<button id="beehub-directory-copy" data-toggle="tooltip" title="Copy selected to other folder" class="btn btn-small" disabled="disabled"><i class="icon-hand-right" ></i> Copy</button>
@@ -152,6 +156,11 @@ require 'views/header.php';
   </div> <!-- End Acl tab -->
   
 </div><!-- End tab div -->
+
+<!-- Dialogs -->
+<!-- Upload -->
+<div id="beehub-directory-upload-dialog" title="Upload" hidden='true'>
+<!-- </div> -->
 <?php
 
 $footer= '
