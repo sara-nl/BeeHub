@@ -149,6 +149,7 @@ require 'views/header.php';
   <div id="panel-verify" class="tab-pane fade <?= isset($_GET['verification_code']) ? 'in active' : '' ?>">
     <form id="verify_email" class="form-horizontal" method="post">
       <h4>Verify email address: <?= $unverified_address ?></h4>
+      <p>Please verify your e-mail address by entering the verification code you've recieved through an e-mail and for security reasons, enter your password.</p>
       <div class="control-group">
         <label class="control-label" for="verification_code">Verification code: </label>
         <div class="controls">
@@ -156,7 +157,7 @@ require 'views/header.php';
         </div>
       </div>
       <div class="control-group passwd">
-      <label class="control-label" for="verify_password">Password</label>
+      <label class="control-label" for="verify_password">Password:</label>
       <div class="controls">
         <input class="verification_code" type="password" id="verify_password" name="password" required />
       </div>
