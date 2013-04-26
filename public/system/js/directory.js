@@ -18,7 +18,7 @@
  */
 "use strict"
 
-/**
+/** 
  * Beehub Client
  * @author Laura Leistikow (laura.leistikow@surfsara.nl)
  */
@@ -45,9 +45,8 @@ $(function() {
 	});
 	
 	// UPLOAD
-	var uploadToServer = function(file, callback){
+	var uploadToServer = function(fileName, file, callback){
 		var path = location.href;
-		var fileName = file.name;
 		// TODO eerst leeg bestand sturen om te controleren of het wel mag
 		var headers = {
 			'Content-Type': 'application/octet-stream'
@@ -57,17 +56,16 @@ $(function() {
 		        path + fileName,
 		        function(status) {
 					if (status === 403) {
-						// wijzig tabel dat forbidden
-						$("#beehub-directory-upload-dialog").find('td[id="beehub-directory-'+fileName+'"]').html('Forbidden <i class="icon-remove"></i>');
+						$("#beehub-directory-upload-dialog").find('td[id="beehub-directory-'+fileName+'"]').html("<div class='progress progress-danger progress-striped'><div class='bar' style='width: 100%;'>Forbidden</div></div>");
 					}
 					if (status === 201 || status === 204) {
-						// wijzig tabel dat gelukt
-						$("#beehub-directory-upload-dialog").find('td[id="beehub-directory-'+fileName+'"]').html("<div class='progress'><div class='bar' style='width: 100%;'>100%</div></div>");
+						$("#beehub-directory-upload-dialog").find('td[id="beehub-directory-'+fileName+'"]').html("<div class='progress progress-success progress-striped'><div class='bar' style='width: 100%;'>100%</div></div>");
 					} else {
-						// wijzig tabel dat er iets fout gegaan is
-						$("#beehub-directory-upload-dialog").find('td[id="beehub-directory-'+fileName+'"]').html('Unknown error <i class="icon-remove"></i>');
+						$("#beehub-directory-upload-dialog").find('td[id="beehub-directory-'+fileName+'"]').html("<div class='progress progress-danger progress-striped'><div class='bar' style='width: 100%;'>Unknown error</div></div>");
 					};
-					callback();
+					if (callback !== null) {
+						callback();
+					};
 		        },
 		        headers 
 		    );
@@ -77,6 +75,8 @@ $(function() {
 		    	 ajax.upload.addEventListener("progress", function(event) {
 		    		 var progress = parseInt(event.loaded / event.total * 100);
 		    		 $("#beehub-directory-upload-dialog").find('td[id="beehub-directory-'+fileName+'"]').html("<div class='progress progress-success progress-striped'><div class='bar' style='width: "+progress+"%;'>"+progress+"%</div></div>");
+
+		    	 
 		    	 }, false);
 		    } else {
 		    	$("#beehub-directory-upload-dialog").find('td[id="beehub-directory-'+fileName+'"]').html('Bezig... (ik kan geen voortgang laten zien in deze browser)');
@@ -97,46 +97,75 @@ $(function() {
 		$("#beehub-directory-upload-dialog").html("");
 		var upload_files = new Object();
 		var files = $('#beehub-directory-upload-hidden')[0].files;
+		var filesHash = {};
+		for (var i = 0; i < files.length; i++) {
+			filesHash[files[i].name] = files[i];
+		};
 		var appendString=''
 	 	appendString = appendString + '<table class="table"><tbody>';
 		for (var i = 0; i < files.length; i++) {
-			appendString = appendString + '<tr><td>'+files[i].name+'</td><td width="50%" id="beehub-directory-'+files[i].name+'"></td></tr>'
+			appendString = appendString + '<tr><td>'+files[i].name+'</td><td width="60%" id="beehub-directory-'+files[i].name+'"></td></tr>'
 		};	
 		appendString = appendString +'</tbody></table>';
 		$("#beehub-directory-upload-dialog").append(appendString);
 
+		function checkFileName(file, callback){
+			var webdav = new nl.sara.webdav.Client();
+			webdav.head(location.pathname + file.name, function(status, body, headers){
+				if (status === 404)  {
+					uploadToServer( files[counter].name, files[counter], callback );
+					return;
+				};
+				if (status === 200) {
+					var overwriteButton = '<button id="beehub-directory-upload-overwrite-'+file.name+'" name="'+file.name+'" class="btn btn-danger">Overwrite</button>'
+					var renameButton = '<button id="beehub-directory-upload-rename-'+file.name+'" class="btn btn-success">Rename</button>'
+					var cancelButton = '<button id="beehub-directory-upload-cancel-'+file.name+'" name="'+file.name+'" class="btn btn-success">Cancel</button>'
+					$("#beehub-directory-upload-dialog").find('td[id="beehub-directory-'+file.name+'"]').html("File exist on server!<br/>"+renameButton+" "+overwriteButton+" "+cancelButton);
+					// overwrite handler
+					$("#beehub-directory-upload-dialog").find('button[id="beehub-directory-upload-overwrite-'+file.name+'"]').click(function(){
+						var fileName = $("#beehub-directory-upload-dialog").find('button[id="beehub-directory-upload-overwrite-'+file.name+'"]').attr('name');
+						uploadToServer(fileName, filesHash[fileName], null );
+					})
+					// cancel handler
+					$("#beehub-directory-upload-dialog").find('button[id="beehub-directory-upload-cancel-'+file.name+'"]').click(function(){
+						var fileName = $("#beehub-directory-upload-dialog").find('button[id="beehub-directory-upload-cancel-'+file.name+'"]').attr('name');
+						$("#beehub-directory-upload-dialog").find('td[id="beehub-directory-'+fileName+'"]').html("<div class='progress progress-danger progress-striped'><div class='bar' style='width: 100%;'>Canceled</div></div>");
+					})
+					callback();
+				} else {
+					// pas balk aan
+				}
+			},"");
+		};
+		
 	    function handleUpload() {
 	        counter++;
 	        if ( counter < files.length ) {
-	          uploadToServer( files[counter], handleUpload );
+	        	$("#beehub-directory-upload-dialog").scrollTop(counter*50);
+	        	// test if file exist
+	        	checkFileName( files[counter], handleUpload );
 	        } else {
 	        	$('#beehub-directory-close-upload-button').button("enable");
-//	    		$("#beehub-directory-close-upload-button").attr("disabled", false).addClass("ui-state-enabled");
-//	    		$("#beehub-directory-close-upload-button").click(function(){
-//		        	window.location.reload();
-//	    		})
-//	        	$("#beehub-directory-close-upload-button").atrr("disabled", false);
-
 	        }
 	      } // End of handleUpload()
 	    
 
 		$("#beehub-directory-upload-dialog").dialog({
 	    	modal: true,
-	    	maxHeight: 300,
+	    	maxHeight: 500,
 	    	closeOnEscape: false,
 	    	dialogClass: "no-close",
 	    	width: 500,
 	    	buttons: [{
 				text: "Ready",
 				id: 'beehub-directory-close-upload-button',
+		    	disabled: true,
 				click: function() {
 					window.location.reload();
 				}
 			}]
 	    });
 		// Start upload
-	    $('#beehub-directory-close-upload-button').button("disable");
 		counter = -1;
 		handleUpload();
 	});
