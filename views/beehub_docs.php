@@ -36,42 +36,41 @@ require 'views/header.php';
     <div class="tab-content">
       <div class="tab-pane active" id="pane-mounting-windows">
         <ol>
-          <li>Open "Computer" from the "start" menu.</li>
-          <li>Right click with your mouse.</li>
+          <li>Open "Computer" from (the right part of) the "start" menu.</li>
+          <li>Right click with your mouse on "Computer" (in the left part of the window).</li>
           <li>Select "Add a Network Location".</li>
           <li>
             Click "Next":<br/>
-            <img style="margin-bottom: 1em;" src="/system/img/docs/windows_xp_my_network_places_next.jpg"/><br />
+            <img style="margin-bottom: 1em;" src="/system/img/docs/windows_step1_add_network_location.png"/><br />
           </li>
           <li>
-            Select "Choose another network location" and click "Next":<br/>
-            <img style="margin-bottom: 1em;" src="/system/img/docs/windows_xp_choose_another_network.jpg"/><br />
+            Select "Choose a custom network location" and click "Next":<br/>
+            <img style="margin-bottom: 1em;" src="/system/img/docs/windows_step2_where_to_create.png"/><br />
           </li>
           <li>
             Enter <tt>https://beehub.nl/</tt> and click "Next":<br/>
-            <img style="margin-bottom: 1em;" src="/system/img/docs/windows_xp_webdav_URL1.jpg"/><br />
+            <img style="margin-bottom: 1em;" src="/system/img/docs/windows_step3_location.png"/><br />
           </li>
           <li>
             Enter your BeeHub user name and password and click "OK":<br/>
-            <img style="margin-bottom: 1em;" src="/system/img/docs/windows_xp_username_password.jpg"/><br />
+            <img style="margin-bottom: 1em;" src="/system/img/docs/windows_step4_authentication.png"/><br />
           </li>
           <li>
             Enter a name for your BeeHub connection. The default is probably fine, but you can call the connection anything you like:<br/>
-            <img style="margin-bottom: 1em;" src="/system/img/docs/windows_xp_connection_name.jpg"/><br />
+            <img style="margin-bottom: 1em;" src="/system/img/docs/windows_step5_name.png"/><br />
           </li>
           <li>
             Click "Finish":<br/>
-            <img style="margin-bottom: 1em;" src="/system/img/docs/windows_xp_my_succes.jpg"/><br />
+            <img style="margin-bottom: 1em;" src="/system/img/docs/windows_step6_finish.png"/><br />
           </li>
         </ol>
         <p>You now have created a BeeHup connection. Click "Start", and then "My Network Places" to connect the next time.</p>
         <p>
           Double click your BeeHub connection:<br/>
-          <img style="margin-bottom: 1em;" src="/system/img/docs/windows_xp_my_network_places_finished.jpg"/><br />
+          <img style="margin-bottom: 1em;" src="/system/img/docs/windows_step7_computer.png"/><br />
         </p>
         <p>
-          Now you can browse your files:<br/>
-          <img style="margin-bottom: 1em;" src="/system/img/docs/windows_xp_fileBrowser.jpg"/><br />
+          Now you can browse your files like in any other folder on your computer.
         </p>
       </div>
       <div class="tab-pane" id="pane-mounting-osx">
