@@ -23,6 +23,7 @@ require 'views/header.php';
   <li class="active"><a href="#pane-mounting" data-toggle="tab">Mounting BeeHub</a></li>
   <li><a href="#pane-tac" data-toggle="tab">Terms and Conditions</a></li>
   <!--li><a href="#pane-sla" data-toggle="tab">Service Level Agreement</a></li-->
+  <li><a href="#pane-backup" data-toggle="tab">Backup policy</a></li>
 </ul>
 
 <div class="tab-content">
@@ -177,6 +178,16 @@ dav:/> <b>▍</b></pre>
   </div>
   <div class="tab-pane" id="pane-sla">
     <h2>Service Level Agreement (SLA)</h2>
+  </div>
+  <div class="tab-pane" id="pane-backup">
+    <h2>Backup policy</h2>
+    <p>All data on BeeHub is backup on a daily basis. At 23:00h an incremental backup is made, copying all changes to the backup system.</p>
+    <ul>
+      <li>The most recent version of files will be kept in backup indefinitely.</li>
+      <li>Older versions of files will be kept for 21 days.</li>
+      <li>If a file is removed, old versions will be kept for 30 days. This means that after 30 days a removed file is no longer recoverable!</li>
+    </ul>
+    <p>Please note that the backup system only checks once a day for different versions of a file. New files and changes within a file which are removed before 23:00h the same day can not be recovered from backup.</p>
   </div>
 </div>
 
