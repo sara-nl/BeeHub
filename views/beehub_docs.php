@@ -11,23 +11,86 @@ $header = '<style type="text/css">
 		width: 110px !important;
 }
 </style>';
-$footer= '<!--script type="text/javascript" src="/system/js/docs.js"></script-->';
+$footer= '<script type="text/javascript" src="/system/js/docs.js"></script>';
 
 require 'views/header.php';
 ?>
-<div class="container-fluid">
+<div class="container-fluid"> 
 <div class="row-fluid">
 <div class="span12">
-<h1>Documentation</h1>
+<!-- <h1>Documentation</h1> -->
 <ul class="nav nav-tabs" id="top-level-tab">
-  <li class="active"><a href="#pane-mounting" data-toggle="tab">Mounting BeeHub</a></li>
+	<li class="active"><a href="#pane-getting-started" data-toggle="tab">Getting started</a></li>
+<!-- 	<li><a href="#pane-sponsors" data-toggle="tab">Sponsors</a></li> -->
+	<li><a href="#pane-account" data-toggle="tab">Account</a></li>
+  <li><a href="#pane-mounting" data-toggle="tab">Mount</a></li>
+  <li><a href="#pane-share" data-toggle="tab">Share</a></li>
   <li><a href="#pane-tac" data-toggle="tab">Terms and Conditions</a></li>
   <!--li><a href="#pane-sla" data-toggle="tab">Service Level Agreement</a></li-->
   <li><a href="#pane-backup" data-toggle="tab">Backup policy</a></li>
 </ul>
 
 <div class="tab-content">
-  <div class="tab-pane active" id="pane-mounting">
+  <div class="tab-pane active" id="pane-getting-started">
+  	<h3>Getting started</h3>
+	  <ol>
+<!-- 	  	<li> -->
+<!-- 	  		<b>Find a sponsor</b> -->
+<!-- 	  		<ul> -->
+<!-- 	  			<li> -->
+<!-- 	  				You need at least one sponsor to store your data on BeeHub.  -->
+<!-- 	  			</li> -->
+<!-- 	  			<li> -->
+<!-- 	  				More info: <a id='beehub-docs-find-sponsor'>sponsors</a> -->
+<!-- 	  			</li> -->
+<!-- 	  		</ul> -->
+<!-- 	  	</li> -->
+	  	<li>
+	  		<b>Create an account</b>
+	  		<ul>
+	  			<li>
+	  				More info: <a id="beehub-docs-create-account">account</a>
+	  			</li>
+	  		</ul>
+	  	</li>
+	  	<li>
+	  			<b>Mount BeeHub</b>
+	  		  <ul>
+	  		  	<li>To access your BeeHub data you need to mount BeeHub. There are serveral ways
+	  		  			to do this.
+	  		  	</li>
+	  		  	<li>
+	  		  		More info: <a id='beehub-docs-mount'>mount</a>
+	  		  	</li>
+	  		  </ul>
+	  	<li>
+	  			<b>Share your data</b>
+	  			<ul>
+	  				<li>
+	  					Your data can be shared to users, groups or the world.
+	  				</li>
+	  				<li>
+	  					More info: <a id='beehub-docs-share'>share</a>
+	  				</li>
+	  			</ul>
+	  	</li>
+	  </ol>
+  </div> 
+  <!--   End getting started tab -->
+  <div class="tab-pane" id="pane-sponsors">
+  	<h3>Sponsors</h3>
+  
+   - wat is een sponsor
+   - ...
+  </div>
+  <!--   End sponsors tab -->
+  <div class="tab-pane" id="pane-account">
+   <h3>Account</h3> 
+   accounts - lokaal, SURFconext
+  </div>
+  <!--   End account tab -->
+  <div class="tab-pane" id="pane-mounting">
+  	<h3>Mount</h3> 
     <p>After you’ve completed getting an account, a new BeeHub account has been created for you. What happens next depends on which operating system you're running. Please jump to the appropriate section on this page. If your favorite operating system or client is not on this page, please <a href="mailto:support@beehub.nl" rel="nofollow">let us know</a>.</p>
     <ul class="nav nav-tabs" id="mounting-tab">
       <li class="active"><a href="#pane-mounting-windows" data-toggle="tab">Windows</a></li>
@@ -163,8 +226,14 @@ dav:/> <b>▍</b></pre>
       </div>
     </div>
   </div>
+	 <div class="tab-pane" id="pane-share">
+	 <h3>Share your data</h3> 
+	 
+   groepen en acl's
+  </div>
+  <!--   End share tab -->
   <div class="tab-pane" id="pane-tac">
-    <h2>Terms and Conditions</h2>
+    <h3>Terms and Conditions</h3>
     <p><strong>By registering with <em>BeeHub</em> you shall be deemed to accept these conditions of use:</strong></p>
     <ol>
       <li>You shall only use BeeHub to perform work, or transmit or store data consistent with the stated goals and policies of your sponsor and in compliance with these conditions of use.</li>
@@ -180,7 +249,7 @@ dav:/> <b>▍</b></pre>
     <h2>Service Level Agreement (SLA)</h2>
   </div>
   <div class="tab-pane" id="pane-backup">
-    <h2>Backup policy</h2>
+    <h3>Backup policy</h3>
     <p>All data on BeeHub is backup on a daily basis. At 23:00h an incremental backup is made, copying all changes to the backup system.</p>
     <ul>
       <li>The most recent version of files will be kept in backup indefinitely.</li>
