@@ -23,12 +23,12 @@ require 'views/header.php';
 	<li class="active"><a href="#pane-getting-started" data-toggle="tab">Getting started</a></li>
 <!-- 	<li><a href="#pane-sponsors" data-toggle="tab">Sponsors</a></li> -->
 	<li><a href="#pane-account" data-toggle="tab">Accounts</a></li>
-  <li><a href="#pane-mounting" data-toggle="tab">Mount</a></li>
+  <li><a href="#pane-mounting" data-toggle="tab">Connect</a></li>
   <li><a href="#pane-share" data-toggle="tab">Share</a></li>
   <li><a href="#pane-tac" data-toggle="tab">Terms and Conditions</a></li>
   <!--li><a href="#pane-sla" data-toggle="tab">Service Level Agreement</a></li-->
   <li><a href="#pane-backup" data-toggle="tab">Backup policy</a></li>
-<!--   <li><a href="#pane-faq" data-toggle="tab">Faq</a></li> -->
+  <li><a href="#pane-faq" data-toggle="tab">Faq</a></li>
 </ul>
 
 <div class="tab-content">
@@ -55,13 +55,13 @@ require 'views/header.php';
 	  		</ul>
 	  	</li>
 	  	<li>
-	  			<b>Mount BeeHub</b>
+	  			<b>Connect to BeeHub</b>
 	  		  <ul>
-	  		  	<li>To access your BeeHub data you need to mount BeeHub. There are serveral ways
+	  		  	<li>To access your BeeHub data you need to make a connection with BeeHub. There are serveral ways
 	  		  			to do this.
 	  		  	</li>
 	  		  	<li>
-	  		  		More info: <a id='beehub-docs-mount'>mount</a>
+	  		  		More info: <a id='beehub-docs-mount'>connect</a>
 	  		  	</li>
 	  		  </ul>
 	  	<li>
@@ -90,8 +90,8 @@ require 'views/header.php';
    There are two types of accounts:
    <ul><li>
    	<h5>BeeHub account</h5>
-   	<p>A BeeHub account is an account created localy on the BeeHub server.<br/>
-   	With this account you can connect to BeeHub by
+   	<p>A BeeHub account is an account created localy on the BeeHub server.<br/></p>
+   	<p>With this account you can connect to BeeHub by:</p>
    	  <ul>
    	   	<li>a browser like Firefox, Chrome, Internet Explorer </li>
    	   	<li>a commandline tool like curl</li>
@@ -111,7 +111,7 @@ require 'views/header.php';
   </div>
   <!--   End account tab -->
   <div class="tab-pane" id="pane-mounting">
-  	<h3>Mount</h3> 
+  	<h3>Connect to BeeHub</h3> 
     <p>After you’ve completed getting an account, a new BeeHub account has been created for you. What happens next depends on which operating system you're running. Please jump to the appropriate section on this page. If your favorite operating system or client is not on this page, please <a href="mailto:support@beehub.nl" rel="nofollow">let us know</a>.</p>
     <ul class="nav nav-tabs" id="mounting-tab">
       <li class="active"><a href="#pane-mounting-windows" data-toggle="tab">Windows</a></li>
@@ -249,7 +249,7 @@ dav:/> <b>▍</b></pre>
   </div>
 	 <div class="tab-pane" id="pane-share">
 		 <h3>Share your data</h3>    
-		 <p>There are two ways to share your data</p>
+		 <p>There are two ways to share your data:</p>
 		 <ul>
 		 	<li>
 		 		<b>Create a group</b>
@@ -272,7 +272,7 @@ dav:/> <b>▍</b></pre>
 		<p>With the <a title="BeeHub Web Interface" href="/home" target="_blank">BeeHub Web Interface</a>  
 		it is possible to share your BeeHub data with others. At this moment the best browsers to use are firefox and chrome.</p>
 		
-		<p>The user interface contains three panels</p>
+		<p>The user interface contains three panels:</p>
 		<ul> 
 			<li>Directory Panel</li>
 			<li>Content Panel</li>
@@ -294,7 +294,7 @@ dav:/> <b>▍</b></pre>
 		match (grant or deny) the items below this match will not be read anymore. When no match is found access is denied 
 		to the object the ACL belongs to.</p>
 		
-		<p>The BeeHub ACL consists of</p>
+		<p>The BeeHub ACL consists of:</p>
 		<ul>
 			<li>Protected entries</li>
 			<li>Normal entries</li>
@@ -306,7 +306,7 @@ dav:/> <b>▍</b></pre>
 		from a parent directory of the object.  In the ACL panel the row is gray and in the column inherited the object from 
 		which the ACL entry is inherited is shown as a link.</p>
 		
-		<p>An ACL entry consists of</p>
+		<p>An ACL entry consists of:</p>
 		<ul>
 			<li>principal</li>
 			<li>privileges</li>
@@ -352,11 +352,14 @@ dav:/> <b>▍</b></pre>
 	 <h3>Frequently asked questions</h3> 
      <ol>
 	  	<li>
-	  		<b>Why do you you need a local account if you already have a SURFconext account? </b>
+	  		<b>I see .DS_Store files in my BeeHub directories? </b>
 	  		<ul>
-	  			<li>
-	  				Antwoord
-	  			</li>
+	  			<li>These files are create by Mac OS X</li>
+	  			<li>You can run the following command to disable storing .DS_Store files on network shares:</li>
+	  				<ul>
+  						<li><code>defaults write com.apple.desktopservices DSDontWriteNetworkStores true</code></li>
+	  				</ul>
+	  			<li>See <a href="http://en.wikipedia.org/wiki/.DS_Store">wikipedia</a> for more info</li>
 	  		</ul>
 	  	</li>
 	  </ol>
