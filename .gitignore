@@ -7,3 +7,4 @@ config.ini
 /public/system/js/webdavlib.js
 /simplesamlphp/
 /views/beehub_directory.php
+/simplesamlphp-1.10.0
