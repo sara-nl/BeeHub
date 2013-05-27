@@ -11,4 +11,5 @@ phpdoc \
   --parseprivate \
   --sourcecode \
   --defaultpackagename BeeHub \
+  --output "HTML:Smarty:PHP"
   --title "BeeHub Documentation"
