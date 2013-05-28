@@ -165,6 +165,9 @@ dav:/> <b>▍</b></pre>
   </div>
   <div class="tab-pane" id="pane-tac">
     <h2>Terms and Conditions</h2>
+    <p>Researchers affiliated with Dutch research centers, universities and academical medical centers can register with BeeHub and use 100GB of storage for scientific purposes. SURFsara can at any time decide to decrease or increase this quota. If your quota is decreased, we will not remove any data directly. If we intent to delete data, we will notify you two weeks in advance on the registered e-mail address.</p>
+    <p>If you require more space, you could either apply for storage space through e-infra. See <a href="https://www.surfsara.nl/systems/beehub/new-users">the SURFsara website</a> for more information on this.</p>
+    <p>If you are not affiliated to a Dutch research center or university, you could contact us for a sales quote by sending an e-mail to <a href="mailto:support@beehub.nl">support@beehub.nl</a>.</p>
     <p><strong>By registering with <em>BeeHub</em> you shall be deemed to accept these conditions of use:</strong></p>
     <ol>
       <li>You shall only use BeeHub to perform work, or transmit or store data consistent with the stated goals and policies of your sponsor and in compliance with these conditions of use.</li>
