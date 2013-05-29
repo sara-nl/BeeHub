@@ -10,7 +10,7 @@
 <?php endif; ?>
 <br/>
 </form>
-    <form id="createuserform" class="form-horizontal" action="<?= BeeHub::$CONFIG['namespace']['users_path'] ?>" method="post">
+    <form id="createuserform" class="form-horizontal" action="<?= BeeHub::USERS_PATH ?>" method="post">
 	    <div class="control-group">
 		    <label class="control-label" for="username">User name</label>
 		    <div class="controls">

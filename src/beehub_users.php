@@ -90,7 +90,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
 
     // Fetch the user and store extra properties
     $user = BeeHub_Registry::inst()->resource(
-      BeeHub::$CONFIG['namespace']['users_path'] . rawurlencode($user_name)
+      BeeHub::USERS_PATH . rawurlencode($user_name)
     );
     $user->set_password($password);
     $user->user_set(DAV::PROP_DISPLAYNAME, $displayname);
@@ -119,7 +119,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
     if (!mkdir($userdir)) {
       throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
     }
-    xattr_set( $userdir, rawurlencode('DAV: owner'), BeeHub::$CONFIG['namespace']['users_path'] . rawurlencode($user_name) );
+    xattr_set( $userdir, rawurlencode('DAV: owner'), BeeHub::USERS_PATH . rawurlencode($user_name) );
     // TODO: this should not be hard coded. When a users is accepted by his/her first sponsor, this should automatically be set.
     xattr_set( $userdir, rawurlencode(BeeHub::PROP_SPONSOR), '/system/sponsors/e-infra' );
 
@@ -144,7 +144,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
     );
     $retval = array();
     while ($row = $stmt->fetch_row()) {
-      $retval[] = BeeHub::$CONFIG['namespace']['users_path'] .
+      $retval[] = BeeHub::USERS_PATH .
         rawurlencode($row[0]);
     }
     $stmt->free_result();

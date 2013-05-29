@@ -337,7 +337,7 @@ BeeHub';
       $this->users = array();
       $members = array();
       while ( $row = $stmt->fetch_row() ) {
-        $user_path = BeeHub::$CONFIG['namespace']['users_path'] .
+        $user_path = BeeHub::USERS_PATH .
           rawurlencode($row[0]);
         $this->users[$user_path] = array(
           'is_invited' => !!$row[1],

@@ -270,7 +270,7 @@ BeeHub';
       $this->users = array();
       $members = array();
       while ( $row = $statement_users->fetch_row() ) {
-        $user_path = BeeHub::$CONFIG['namespace']['users_path'] .
+        $user_path = BeeHub::USERS_PATH .
           rawurlencode($row[0]);
         $this->users[$user_path] = array(
           'is_admin' => !!$row[1],

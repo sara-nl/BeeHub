@@ -21,7 +21,7 @@ ln -vs "$(pwd)/js-webdav-client/dist.js" public/system/js/webdavlib.js
 chmod -v 2777 public/system/js/server/
 if [[ -e public/system/js/server/principals.js ]]; then
   cat > public/system/js/server/principals.js <<EOM
-nl.sara.beehub.users_path = "/system/users/";nl.sara.beehub.groups_path = "/system/groups/";nl.sara.beehub.sponsors_path = "/system/sponsors/";nl.sara.beehub.principals = {"users":{},"groups":{},"sponsors":{}};
+nl.sara.beehub.principals = {"users":{},"groups":{},"sponsors":{}};
 EOM
 fi
 

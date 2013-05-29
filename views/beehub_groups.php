@@ -138,7 +138,7 @@
 	<!-- Create tab -->
 	<br/>
 	<div id="panel-create" class="tab-pane fade">
-    <form id="createGroupForm" class="form-horizontal" action="<?= BeeHub::$CONFIG['namespace']['groups_path'] ?>" method="post">
+    <form id="createGroupForm" class="form-horizontal" action="<?= BeeHub::GROUPS_PATH ?>" method="post">
 	    <div class="control-group">
 		    <label class="control-label" for="groupName">Group name</label>
 		    <div class="controls">

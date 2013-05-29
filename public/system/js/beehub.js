@@ -13,6 +13,15 @@ if (nl.sara.beehub.codec === undefined) {
   nl.sara.beehub.codec = {};
 }
 
+// Some static values change these also in /src/beehub.php
+nl.sara.beehub.users_path            = "/system/users/";
+nl.sara.beehub.groups_path           = "/system/groups/";
+nl.sara.beehub.sponsors_path         = "/system/sponsors/";
+nl.sara.beehub.forbidden_group_names = [
+  "home",
+  "system"
+];
+
 // in a anonymous function, to not pollute the global namespace:
 (function () {
 	var active;

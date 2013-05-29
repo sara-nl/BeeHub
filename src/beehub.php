@@ -72,6 +72,16 @@ class BeeHub {
   public static $SPONSOR_PROPS = array(
     self::PROP_DESCRIPTION     => true,
   );
+  // For the next values: check if you also need to change them in /system/js/beehub.js
+  public static $FORBIDDEN_GROUP_NAMES = array(
+    'home',
+    'system',
+  );
+  const SYSTEM_PATH     = "/system/";
+  const USERS_PATH      = "/system/users/";
+  const GROUPS_PATH     = "/system/groups/";
+  const SPONSORS_PATH   = "/system/sponsors/";
+  const JAVASCRIPT_PATH = "/system/js/server/";
 
 
   /**#@+
@@ -169,7 +179,7 @@ class BeeHub {
    */
   public static function user($name) {
     if ($name[0] !== '/')
-      $name = BeeHub::$CONFIG['namespace']['users_path'] .
+      $name = BeeHub::USERS_PATH .
         rawurlencode($name);
     $retval = BeeHub_Registry::inst()->resource( $name );
     if ( !$retval || !( $retval instanceof BeeHub_User ) ) throw new DAV_Status(
@@ -185,7 +195,7 @@ class BeeHub {
    */
   public static function group($name) {
     if ($name[0] !== '/')
-      $name = BeeHub::$CONFIG['namespace']['groups_path'] .
+      $name = BeeHub::GROUPS_PATH .
         rawurlencode($name);
     $retval = BeeHub_Registry::inst()->resource( $name );
     if ( !$retval || !( $retval instanceof BeeHub_Group ) ) throw new DAV_Status(
@@ -201,7 +211,7 @@ class BeeHub {
    */
   public static function sponsor($name) {
     if ($name[0] !== '/')
-      $name = BeeHub::$CONFIG['namespace']['sponsors_path'] .
+      $name = BeeHub::SPONSORS_PATH .
         rawurlencode($name);
     $retval = BeeHub_Registry::inst()->resource( $name );
     if ( !$retval || !( $retval instanceof BeeHub_Sponsor ) ) throw new DAV_Status(
@@ -239,7 +249,7 @@ class BeeHub {
                `beehub_group_members`.`user_name` = ?
       ', 's', $user->name);
       while ($row = $statement->fetch_row()) {
-        $notifications[] = array('type'=>'group_invitation', 'data'=>array('group'=>BeeHub::$CONFIG['namespace']['groups_path'] . $row[0], 'displayname'=>$row[1]));
+        $notifications[] = array('type'=>'group_invitation', 'data'=>array('group'=>BeeHub::GROUPS_PATH . $row[0], 'displayname'=>$row[1]));
       }
 
       // Fetch all group membership requests
@@ -260,7 +270,7 @@ class BeeHub {
                )
       ', 's', $user->name);
       while ($row = $statement->fetch_row()) {
-        $notifications[] = array( 'type'=>'group_request', 'data'=>array( 'group'=>BeeHub::$CONFIG['namespace']['groups_path'] . $row[0], 'group_displayname'=>$row[1], 'user'=>BeeHub::$CONFIG['namespace']['users_path'] . $row[2], 'user_displayname'=>$row[3], 'user_email'=>$row[4] ) );
+        $notifications[] = array( 'type'=>'group_request', 'data'=>array( 'group'=>BeeHub::GROUPS_PATH . $row[0], 'group_displayname'=>$row[1], 'user'=>BeeHub::USERS_PATH . $row[2], 'user_displayname'=>$row[3], 'user_email'=>$row[4] ) );
       }
 
       // Fetch all sponsor membership requests
@@ -280,7 +290,7 @@ class BeeHub {
                )
       ', 's', $user->name);
       while ($row = $statement->fetch_row()) {
-        $notifications[] = array( 'type'=>'sponsor_request', 'data'=>array( 'sponsor'=>BeeHub::$CONFIG['namespace']['sponsors_path'] . $row[0], 'sponsor_displayname'=>$row[1], 'user'=>BeeHub::$CONFIG['namespace']['users_path'] . $row[2], 'user_displayname'=>$row[3], 'user_email'=>$row[4] ) );
+        $notifications[] = array( 'type'=>'sponsor_request', 'data'=>array( 'sponsor'=>BeeHub::SPONSORS_PATH . $row[0], 'sponsor_displayname'=>$row[1], 'user'=>BeeHub::USERS_PATH . $row[2], 'user_displayname'=>$row[3], 'user_email'=>$row[4] ) );
       }
     }
     return $notifications;
