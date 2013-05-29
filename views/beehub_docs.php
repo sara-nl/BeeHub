@@ -28,7 +28,7 @@ require 'views/header.php';
 
 <div class="tab-content">
   <div class="tab-pane active" id="pane-mounting">
-    <p>After you’ve completed getting an account, a new BeeHub account has been created for you. What happens next depends on which operating system you're running. Please jump to the appropriate section on this page. If your favorite operating system or client is not on this page, please <a href="mailto:grid.support@surfsara.nl" rel="nofollow">let us know</a>.</p>
+    <p>After you’ve completed getting an account, a new BeeHub account has been created for you. What happens next depends on which operating system you're running. Please jump to the appropriate section on this page. If your favorite operating system or client is not on this page, please <a href="mailto:support@beehub.nl" rel="nofollow">let us know</a>.</p>
     <ul class="nav nav-tabs" id="mounting-tab">
       <li class="active"><a href="#pane-mounting-windows" data-toggle="tab">Windows</a></li>
       <li><a href="#pane-mounting-osx" data-toggle="tab">Mac OS-X</a></li>
@@ -167,12 +167,12 @@ dav:/> <b>▍</b></pre>
     <h2>Terms and Conditions</h2>
     <p>Researchers affiliated with Dutch research centers, universities and academical medical centers can register with BeeHub and use 100GB of storage for scientific purposes. SURFsara can at any time decide to decrease or increase this quota. If your quota is decreased, we will not remove any data directly. If we intent to delete data, we will notify you two weeks in advance on the registered e-mail address.</p>
     <p>If you require more space, you could either apply for storage space through e-infra. See <a href="https://www.surfsara.nl/systems/beehub/new-users">the SURFsara website</a> for more information on this.</p>
-    <p>If you are not affiliated to a Dutch research center or university, you could contact us for a sales quote by sending an e-mail to <a href="mailto:grid.support@surfsara.nl">grid.support@surfsara.nl</a>.</p>
+    <p>If you are not affiliated to a Dutch research center or university, you could contact us for a sales quote by sending an e-mail to <a href="mailto:support@beehub.nl">support@beehub.nl</a>.</p>
     <p><strong>By registering with <em>BeeHub</em> you shall be deemed to accept these conditions of use:</strong></p>
     <ol>
       <li>You shall only use BeeHub to perform work, or transmit or store data consistent with the stated goals and policies of your sponsor and in compliance with these conditions of use.</li>
       <li>You shall not use BeeHub for any unlawful purpose and not (attempt to) breach or circumvent any BeeHub administrative or security controls. You shall respect copyright and confidentiality agreements and protect your BeeHub credentials (e.g. private keys, passwords), sensitive data and files.</li>
-      <li>You shall immediately report any known or suspected security breach or misuse of BeeHub or BeeHub credentials to <a href="mailto:grid.support@surfsara.nl">grid.support@surfsara.nl</a>.</li>
+      <li>You shall immediately report any known or suspected security breach or misuse of BeeHub or BeeHub credentials to <a href="mailto:support@beehub.nl">support@beehub.nl</a>.</li>
       <li>Use of BeeHub is at your own risk. There is no guarantee that BeeHub will be available at any time or that it will suit any purpose.</li>
       <li>Logged information, including information provided by you for registration purposes, shall be used for administrative, operational, accounting, monitoring and security purposes only. Although efforts are made to maintain confidentiality, no guarantees are given.</li>
       <li>BeeHub operators are entitled to regulate and terminate access for administrative, operational and security purposes and you shall immediately comply with their instructions.</li>
