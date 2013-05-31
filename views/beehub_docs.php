@@ -352,7 +352,7 @@ dav:/> <b>▍</b></pre>
 	 <h3>Frequently asked questions</h3> 
      <ol>
 	  	<li>
-	  		<b>I see .DS_Store files in my BeeHub directories? </b>
+	  		<b>Why do I have .DS_Store files in my BeeHub directories? </b>
 	  		<ul>
 	  			<li>These files are create by Mac OS X</li>
 	  			<li>You can run the following command to disable storing .DS_Store files on network shares:</li>
