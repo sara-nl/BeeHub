@@ -10,10 +10,12 @@ $members    All members of this directory
 $aclAllowed = $this->property_priv_read(array(DAV::PROP_ACL));
 $aclAllowed = $aclAllowed[DAV::PROP_ACL];
 $header = '<style type="text/css">
+// Background color path
 .breadcrumb {
   background-color: white !important;
 }	
-		
+
+// Do not show close button on dialog
 .no-close .ui-dialog-titlebar-close {
 	display: none;
 }
@@ -90,14 +92,16 @@ require 'views/header.php';
 			      		$member->user_prop_owner()
 			      );
 			   ?>
-				<tr id="<?= DAV::unslashify($member->path) ?>">
-					<td width="10px" data-toggle="tooltip" title="Rename file"><i class="icon-edit" ></i></td>
+	
+				<tr>
+					<td width="10px" data-toggle="tooltip" title="Rename file"><i class="icon-edit beehub-directory-edit" ></i></td>
 					<td width="10px"><input type="checkbox"></td>
 					<?php if (substr($member->path,-1) === '/'):?>
-							<td><a href=<?= DAV::unslashify($member->path) ?>><b><?= $member->user_prop_displayname() ?>/</b></a></td>
+							<td class="beehub-directory-name"><a href=<?= DAV::unslashify($member->path)?>><b><?= $member->user_prop_displayname() ?>/</b></a></td>
 					<?php else :?>
-							<td><a href=<?= DAV::unslashify($member->path) ?>><?= $member->user_prop_displayname() ?></a></td>
+							<td class="beehub-directory-name"><a href=<?= DAV::unslashify($member->path) ?>><?= $member->user_prop_displayname() ?></a></td>
 					<?php endif;?>
+					<td class="beehub-directory-rename-td"  hidden='true'><input class="beehub-directory-rename-form" name=<?= $member->user_prop_displayname()  ?> value=<?= $member->user_prop_displayname() ?>></input></td>
 					<?php 
 // 					  Calculate size
 						$size = $member->user_prop_getcontentlength();
@@ -119,7 +123,7 @@ require 'views/header.php';
 					?>
 					<td><?= $showsize?></td>
 					<?php if (substr($member->path,-1) === '/'):?>
-							<td><i class="icon-folder-close beehub-directory-openselected" style="cursor: pointer">></i></td>
+							<td><i name=<?=DAV::unslashify($member->path)?> class="icon-folder-close beehub-directory-openselected" style="cursor: pointer">></i></td>
 					<?php else :?>
 							<td><?= $member->user_prop_getcontenttype()?></td>
 					<?php endif;?>
@@ -159,8 +163,7 @@ require 'views/header.php';
 
 <!-- Dialogs -->
 <!-- Upload -->
-<div id="beehub-directory-upload-dialog" title="Upload" hidden='true'>
-<!-- </div> -->
+<div id="beehub-directory-upload-dialog" title="Upload" hidden='true'></div>
 <?php
 
 $footer= '
