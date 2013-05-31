@@ -21,7 +21,7 @@ ln -vs "$(pwd)/js-webdav-client/dist.js" public/system/js/webdavlib.js
 chmod -v 2777 public/system/js/server/
 if [[ -e public/system/js/server/principals.js ]]; then
   cat > public/system/js/server/principals.js <<EOM
-nl.sara.beehub.users_path = "/system/users/";nl.sara.beehub.groups_path = "/system/groups/";nl.sara.beehub.sponsors_path = "/system/sponsors/";nl.sara.beehub.principals = {"users":{},"groups":{},"sponsors":{}};
+nl.sara.beehub.principals = {"users":{},"groups":{},"sponsors":{}};
 EOM
 fi
 
@@ -36,5 +36,20 @@ echo "Don't forget:"
 echo " - to create sponsor e-infra"
 echo " - to create an admin user"
 echo " - to create the data directory, /home/ /system/, /system/users/, /system/groups/, /system/sponsors/ directories (no x-attributes required)"
+echo ""
+echo "The apache configuration should include the following:"
+echo " - Use /public as document root"
+echo " - \"AccessFileName .htaccess\" and \"AllowOverride All\" for the document root"
+echo " - Have at least the following modules installed:"
+echo "   * mod_rewrite"
+echo "   * mod_ssl"
+echo "   * php 5.3 or higher"
+echo " - Listen for HTTP connections (preferably on port 80)"
+echo " - Listen for HTTPS connections (preferably on port 443, but always 363 ports after the HTTP port)"
+echo ""
+echo "PHP should have the following extensions installed:"
+echo " - xattr (from PECL)"
+echo " - php-xml"
+echo " - mysqli"
 
 exit 0

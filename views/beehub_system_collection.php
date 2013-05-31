@@ -26,7 +26,7 @@ require 'views/header.php';
 <div class="row-fluid">
   <div class="span12">
     <h5>Compatibility issues</h5>
-    BeeHub does not support Internet Explorer versions 8 or earlier. There are a few functions which don't work in Internet Explorer 9. For full compatibility, please use the latest version of Firefox, Chrome, Chromium, Safari or any other up-2-date browser that has sufficient support for the web standards. For help, you can contact us at <a href="mailto:grid.support@surfsara.nl?subject=I%20got%20stung%20by%20a%20Bee%21">grid.support@surfsara.nl</a>.
+    BeeHub does not support Internet Explorer versions 8 or earlier. There are a few functions which don't work in Internet Explorer 9. For full compatibility, please use the latest version of Firefox, Chrome, Chromium, Safari or any other up-2-date browser that has sufficient support for the web standards. For help, you can contact us at <a href="mailto:support@beehub.nl?subject=I%20got%20stung%20by%20a%20Bee%21">support@beehub.nl</a>.
   </div>
 </div>
 <?php require 'views/footer.php'; ?>

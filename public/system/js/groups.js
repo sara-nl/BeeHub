@@ -146,7 +146,7 @@ $(function() {
 		 groupNameField.parent().parent().removeClass('error');
 
 		 // value not system
-		 if (RegExp('^system$|^home$','i').test(groupNameField.val())) {
+		 if ( nl.sara.beehub.forbidden_group_names.indexOf( groupNameField.val() ) > -1 ) {
 			showError(groupNameField.val()+' is not a valid groupname.');
 			return false;
 		 }

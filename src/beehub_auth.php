@@ -112,10 +112,10 @@ class BeeHub_Auth {
       if ( $row = $statement->fetch_row() ) { // We found a user, this is the one that's logged in!
         $this->SURFconext = true;
         $this->set_user( $row[0] );
-      } elseif ($_SERVER['REQUEST_URI'] !== BeeHub::$CONFIG['namespace']['users_path']) {
+      } elseif ($_SERVER['REQUEST_URI'] !== BeeHub::USERS_PATH) {
         throw new DAV_Status(
           DAV::HTTP_TEMPORARY_REDIRECT,
-          BeeHub::urlbase(true) . BeeHub::$CONFIG['namespace']['users_path']
+          BeeHub::urlbase(true) . BeeHub::USERS_PATH
         );
       }
     } elseif ( ('conext' === @$_GET['login']) ) { // We don't know this SURFconext ID, this is a new user
@@ -152,7 +152,7 @@ class BeeHub_Auth {
    */
   private function set_user($user_name) {
     BeeHub_ACL_Provider::inst()->CURRENT_USER_PRINCIPAL =
-      BeeHub::$CONFIG['namespace']['users_path'] . $user_name;
+      BeeHub::USERS_PATH . $user_name;
   }
 
 

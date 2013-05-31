@@ -14,4 +14,7 @@ $(function (){
 	$('#beehub-docs-share').click(function(){
 		$('#top-level-tab a[href="#pane-share"]').tab('show'); // Select tab by name
 	});
+  $('.second_backup_policy_link').click(function() {
+    $('#top-level-tab a[href="#pane-backup"]').tab('show');
+  });
 });

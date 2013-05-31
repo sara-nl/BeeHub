@@ -51,10 +51,10 @@ class BeeHub_Registry implements DAV_Registry {
    */
   public function resource( $path ) {
     $path = DAV::unslashify( $path );
-    $systemPath   = DAV::unslashify( BeeHub::$CONFIG['namespace']['system_path']   );
-    $usersPath    = DAV::unslashify( BeeHub::$CONFIG['namespace']['users_path']    );
-    $groupsPath   = DAV::unslashify( BeeHub::$CONFIG['namespace']['groups_path']   );
-    $sponsorsPath = DAV::unslashify( BeeHub::$CONFIG['namespace']['sponsors_path'] );
+    $systemPath   = DAV::unslashify( BeeHub::SYSTEM_PATH   );
+    $usersPath    = DAV::unslashify( BeeHub::USERS_PATH    );
+    $groupsPath   = DAV::unslashify( BeeHub::GROUPS_PATH   );
+    $sponsorsPath = DAV::unslashify( BeeHub::SPONSORS_PATH );
     if (isset($this->resourceCache[$path])) {
       return $this->resourceCache[$path];
     }

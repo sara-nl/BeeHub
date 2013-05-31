@@ -34,7 +34,7 @@ if ( !isset($_GET['nosystem']) &&
        ) ) ) {
   DAV::redirect(
     DAV::HTTP_SEE_OTHER,
-    BeeHub::$CONFIG['namespace']['system_path']
+    BeeHub::SYSTEM_PATH
   );
   return;
 }
@@ -56,11 +56,11 @@ DAV::$UNAUTHORIZED = array( BeeHub_Auth::inst(), 'unauthorized' );
 $path = DAV::unslashify(DAV::$PATH);
 $noRequireAuth = (
   (
-    $path === DAV::unslashify( BeeHub::$CONFIG['namespace']['users_path'] ) &&
+    $path === DAV::unslashify( BeeHub::USERS_PATH ) &&
     in_array( $_SERVER['REQUEST_METHOD'], array('GET', 'POST', 'HEAD') )
   ) ||
   (
-    $path === DAV::unslashify( BeeHub::$CONFIG['namespace']['system_path'] ) &&
+    $path === DAV::unslashify( BeeHub::SYSTEM_PATH ) &&
     in_array($_SERVER['REQUEST_METHOD'], array('GET', 'HEAD') )
   )
 );

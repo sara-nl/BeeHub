@@ -21,10 +21,6 @@ if (!$simpleSaml->isAuthenticated()) {
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'GET') {
-  $surfconext_description = @$attributes['urn:mace:terena.org:attribute-def:schacHomeOrganization'][0];
-  if (empty($surfconext_description)) {
-    $surfconext_description = 'Unknown';
-  }
   require_once('views' . DIRECTORY_SEPARATOR . 'saml_connect.php');
   exit;
 }
@@ -49,7 +45,11 @@ BeeHub_DB::execute('UPDATE `beehub_users` SET `surfconext_id`=null, `surfconext_
 // And connect it to the current user
 $user->user_set(BeeHub::PROP_SURFCONEXT, $surfId);
 $attributes = $simpleSaml->getAttributes();
-$user->user_set(BeeHub::PROP_SURFCONEXT_DESCRIPTION, $_POST['surfconext_description']);
+$surfconext_description = @$attributes['urn:mace:terena.org:attribute-def:schacHomeOrganization'][0];
+if (empty($surfconext_description)) {
+  $surfconext_description = 'Unknown account';
+}
+$user->user_set(BeeHub::PROP_SURFCONEXT_DESCRIPTION, $surfconext_description);
 $user->storeProperties();
 
 // Redirect to the user's profile page

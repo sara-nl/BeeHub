@@ -150,7 +150,7 @@ class BeeHub_User extends BeeHub_Principal {
       );
       $groups = array();
       while ($row = $statement_groups->fetch_row()) {
-        $groups[] = BeeHub::$CONFIG['namespace']['groups_path'] .
+        $groups[] = BeeHub::GROUPS_PATH .
           rawurlencode($row[0]);
       }
       $statement_groups->free_result();
@@ -165,7 +165,7 @@ class BeeHub_User extends BeeHub_Principal {
       );
       $sponsors = array();
       while ($row = $statement_sponsors->fetch_row()) {
-        $sponsors[] = BeeHub::$CONFIG['namespace']['sponsors_path'] .
+        $sponsors[] = BeeHub::SPONSORS_PATH .
           rawurlencode($row[0]);
       }
       $statement_sponsors->free_result();
@@ -419,7 +419,10 @@ BeeHub';
   public function user_set($name, $value = null) {
     switch($name) {
       case BeeHub::PROP_EMAIL:
-        //TODO: check e-mail format
+        if ( filter_var($value, FILTER_VALIDATE_EMAIL) === false ) {
+          throw new DAV_Status(DAV::HTTP_BAD_REQUEST, 'Incorrect e-mail address format');
+        }
+        break;
     }
     //TODO: check this implementation
     return parent::user_set($name, $value);
