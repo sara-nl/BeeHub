@@ -419,7 +419,10 @@ BeeHub';
   public function user_set($name, $value = null) {
     switch($name) {
       case BeeHub::PROP_EMAIL:
-        //TODO: check e-mail format
+        if ( filter_var($value, FILTER_VALIDATE_EMAIL) === false ) {
+          throw new DAV_Status(DAV::HTTP_BAD_REQUEST, 'Incorrect e-mail address format');
+        }
+        break;
     }
     //TODO: check this implementation
     return parent::user_set($name, $value);
