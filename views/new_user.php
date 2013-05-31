@@ -29,14 +29,6 @@
 		    	<input type="email" id="user_displayName" name="email" value="<?= $email_address ?>" required/>
 		    </div>
 	    </div>
-	  <?php if (BeeHub_Auth::inst()->simpleSaml()->isAuthenticated()) : ?> 
-	      <div class="control-group">
-		    	<label class="control-label" for="surfconext_description">SURFconext description</label>
-		    	<div class="controls">
-		    		<input type="text" id="surfconext_description" name="surfconext_description" value="<?= $surfconext_description ?>"/>
-		    	</div>
-	    	</div>
-		<?php endif; ?> 
 	    <div class="control-group">
 		    <label class="control-label" for="username_password">Password</label>
 		    <div class="controls">

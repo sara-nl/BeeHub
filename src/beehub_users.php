@@ -39,15 +39,13 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
     }
     $display_name = '';
     $email_address = '';
-    $surfconext_description = '';
     if (BeeHub_Auth::inst()->simpleSaml()->isAuthenticated()) {
       $as = BeeHub_Auth::inst()->simpleSaml();
       $attrs = $as->getAttributes();
       $display_name = @$attrs['urn:mace:dir:attribute-def:displayName'][0];
       $email_address = @$attrs['urn:mace:dir:attribute-def:mail'][0];
-      $surfconext_description = @$attrs['urn:mace:terena.org:attribute-def:schacHomeOrganization'][0];
     }
-    $this->include_view('new_user', array('display_name'=>$display_name, 'email_address'=>$email_address, 'surfconext_description'=>$surfconext_description));
+    $this->include_view('new_user', array('display_name'=>$display_name, 'email_address'=>$email_address));
   }
 
 
@@ -60,7 +58,6 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
     $email = $_POST['email'];
     $password = (!empty($_POST['password']) ? $_POST['password'] : null);
     $user_name = $_POST['user_name'];
-    $surfconext_description = @$_POST['surfconext_description'];
     // User name must be one of the following characters a-zA-Z0-9_-., starting with an alphanumeric character and must be between 1 and 255 characters long
     if (empty($displayname) ||
         !preg_match('/^[a-zA-Z0-9]{1}[a-zA-Z0-9_\-\.]{0,254}$/D', $user_name)) {
@@ -110,6 +107,11 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
     if ($auth->simpleSaml()->isAuthenticated()) {
       $surfId = $auth->simpleSaml()->getAuthData("saml:sp:NameID");
       $surfId = $surfId['Value'];
+      $attributes = $auth->simpleSaml()->getAttributes();
+      $surfconext_description = @$attributes['urn:mace:terena.org:attribute-def:schacHomeOrganization'][0];
+      if (empty($surfconext_description)) {
+        $surfconext_description = 'Unknown';
+      }
       $user->user_set(BeeHub::PROP_SURFCONEXT, $surfId);;
       $user->user_set(BeeHub::PROP_SURFCONEXT_DESCRIPTION, $surfconext_description);
     }

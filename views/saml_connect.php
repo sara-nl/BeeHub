@@ -10,18 +10,12 @@ $attributes = $simpleSaml->getAttributes();
   <div>E-mail address: <em><?= !empty($attributes['urn:mace:dir:attribute-def:mail']) ? $attributes['urn:mace:dir:attribute-def:mail'][0] : 'not provided' ?></em></div>
   <div>Organization: <em><?= !empty($attributes['urn:mace:terena.org:attribute-def:schacHomeOrganization']) ? $attributes['urn:mace:terena.org:attribute-def:schacHomeOrganization'][0] : 'not provided' ?></em></div>
 </p>
-<p>Please provide a description for this SURFconext account so you can recognize it easily later on.</p>
+<p>For security reasons, please provide your password.</p>
 <form class="form-horizontal" method="post">
   <div class="control-group">
     <label class="control-label" for="password">BeeHub password:</label>
     <div class="controls">
       <input type="password" id="password" name="password" required="required" />
-    </div>
-  </div>
-  <div class="control-group">
-    <label class="control-label" for="surfconext_description">SURFconext description:</label>
-    <div class="controls">
-      <input type="text" id="surfconext_description" name="surfconext_description" value="<?= DAV::xmlescape($surfconext_description) ?>" required="required" />
     </div>
   </div>
   <div class="control-group">
