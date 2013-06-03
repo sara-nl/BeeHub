@@ -42,6 +42,7 @@ require 'views/header.php';
 			$i=0;
 			$newpath='';
 			foreach($crumb as $value) {
+        $value = urldecode($value);
 				// first and last value are empty
 				if ($value!=='') {
 						$newpath .= '/'.$value;
@@ -56,9 +57,9 @@ require 'views/header.php';
 			print "</ul>";
 		?></h4>
 		<?php if (DAV::unslashify($this->collection()->path) != "") :?>
-		  <button id="<?= DAV::unslashify($this->collection()->path) ?>" class="btn btn-small beehub-directory-goup"><i class="icon-chevron-up" ></i>  Up</button>
+		  <button id="<?= DAV::unslashify($this->collection()->path) ?>" class="btn btn-small beehub-directory-group"><i class="icon-chevron-up" ></i>  Up</button>
 		<?php else:?>
-			<button id="<?= DAV::unslashify($this->collection()->path) ?>" class="btn btn-small beehub-directory-goup" disabled="disabled"><i class="icon-chevron-up" ></i>  Up</button>
+			<button id="<?= DAV::unslashify($this->collection()->path) ?>" class="btn btn-small beehub-directory-group" disabled="disabled"><i class="icon-chevron-up" ></i>  Up</button>
 		<?php endif;?>
 		<button id="<?= preg_replace( '@^/system/users/(.*)@', '/home/\1/', BeeHub_Auth::inst()->current_user()->path)?>" class="btn btn-small beehub-directory-gohome" data-toggle="tooltip" title="Go to home folder"><i class="icon-home"></i> Home</button>
 		<input id="beehub-directory-upload-hidden" type="file" name="files[]" hidden='true' multiple>

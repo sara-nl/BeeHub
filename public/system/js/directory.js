@@ -47,7 +47,7 @@ $(function() {
 	});
 	
 	// Go up one directory handler
-	$('.beehub-directory-goup').click(function() {
+	$('.beehub-directory-group').click(function() {
 		window.location.href=$(this).attr("id");
 	});
 	
@@ -71,6 +71,7 @@ $(function() {
 			'Content-Type': 'application/octet-stream'
 		};
 		
+		// closure for variable file
 		function callback2(file) {
 	        return function(status) {
 				// Forbidden
@@ -185,26 +186,31 @@ $(function() {
 	 */
 	function checkFileName(fileName, file, callback, filesHash){
 		var webdav = new nl.sara.webdav.Client();
-		webdav.head(path + fileName, function(status, body, headers){
-			// Fil does nog exist
-			if (status === 404)  {
-				uploadToServer( fileName, file, callback);
-				return;
-			};
-			// File exist
-			if (status === 200) {
-				var overwriteButton = '<button id="beehub-directory-upload-overwrite-'+fileName+'" name="'+fileName+'" class="btn btn-danger">Overwrite</button>'
-				var renameButton = '<button id="beehub-directory-upload-rename-'+fileName+'" class="btn btn-success">Rename</button>'
-				var cancelButton = '<button id="beehub-directory-upload-cancel-'+fileName+'" name="'+fileName+'" class="btn btn-success">Cancel</button>'
-				$("#beehub-directory-upload-dialog").find('td[id="beehub-directory-'+fileName+'"]').html("File exist on server!<br/>"+renameButton+" "+overwriteButton+" "+cancelButton);
-				setOverwriteHandler(fileName, filesHash);
-				setCancelHandler(fileName);
-				setRenameHandler(fileName, file.name, filesHash);
-				if (callback !== null) {
-					callback();
-				}
-			} 
-		},"");
+		
+		// closure for variables fileName, file, callback  
+		function callback2(fileName,file,callback){
+			return function(status, body, headers){
+				// File does nog exist
+				if (status === 404)  {
+					uploadToServer( fileName, file, callback);
+					return;
+				};
+				// File exist
+				if (status === 200) {
+					var overwriteButton = '<button id="beehub-directory-upload-overwrite-'+fileName+'" name="'+fileName+'" class="btn btn-danger">Overwrite</button>'
+					var renameButton = '<button id="beehub-directory-upload-rename-'+fileName+'" class="btn btn-success">Rename</button>'
+					var cancelButton = '<button id="beehub-directory-upload-cancel-'+fileName+'" name="'+fileName+'" class="btn btn-success">Cancel</button>'
+					$("#beehub-directory-upload-dialog").find('td[id="beehub-directory-'+fileName+'"]').html("File exist on server!<br/>"+renameButton+" "+overwriteButton+" "+cancelButton);
+					setOverwriteHandler(fileName, filesHash);
+					setCancelHandler(fileName);
+					setRenameHandler(fileName, file.name, filesHash);
+					if (callback !== null) {
+						callback();
+					}
+				} 
+			}
+		}
+		webdav.head(path + fileName, callback2(fileName,file,callback) ,"");
 	};
 	
 	/**
@@ -293,6 +299,7 @@ $(function() {
 	 */
 	function moveObject(fileNameOrg, fileNameNew, overwriteMode, element){
 		var webdav = new nl.sara.webdav.Client();
+		
 		function callback(fileOrg, fileNew, element) {
 			return function(status) {
 				if (status === 412) {
@@ -315,6 +322,7 @@ $(function() {
 				}
 			}
 		};
+		 
 		webdav.move(path + fileNameOrg,callback(fileNameOrg,fileNameNew, element), path +fileNameNew,  overwriteMode);
 	};
 	
