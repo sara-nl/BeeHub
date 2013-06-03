@@ -280,6 +280,7 @@ $(function() {
 		$(this).closest("tr").find(".beehub-directory-name").hide();
 		// Show form
 		$(this).closest("tr").find(".beehub-directory-rename-td").show();
+		$(this).closest("tr").find(".beehub-directory-rename-td").find(':input').focus();
 	});
 	
 	// RENAME
@@ -290,29 +291,42 @@ $(function() {
 	 * @param string fileNameNew
 	 * 
 	 */
-	function moveObject(fileNameOrg, fileNameNew, overwriteMode){
+	function moveObject(fileNameOrg, fileNameNew, overwriteMode, element){
 		var webdav = new nl.sara.webdav.Client();
-		function callback(fileOrg, fileNew) { // put here your variables
+		function callback(fileOrg, fileNew, element) {
 			return function(status) {
 				if (status === 412) {
-					if (confirm('File exists, overwrite?')) {
-						moveItem(fileOrg, fileNew, nl.sara.webdav.Client.SILENT_OVERWRITE);
-					} else {
-						console.log("nee");
-						// form weer naar list
-					}
+					var overwriteButton='<button id="beehub-directory-rename-overwrite-button" class="btn btn-danger">Overwrite</button>'
+					var cancelButton='<button id="beehub-directory-rename-cancel-button" class="btn btn-success">Cancel</button>'
+					$("#beehub-directory-rename-dialog").html('<h5><b><i>'+fileNameNew+'</b></i> already exist in the current directory!</h5><br><center>'+overwriteButton+' '+cancelButton)+'</center>';
+					$("#beehub-directory-rename-dialog").dialog({
+						   modal: true
+						    });
+					$("#beehub-directory-rename-overwrite-button").click(function(){
+						moveObject(fileOrg, fileNew, nl.sara.webdav.Client.SILENT_OVERWRITE, element);
+					})
+					$("#beehub-directory-rename-cancel-button").click(function(){
+						element.closest("tr").find(".beehub-directory-rename-td").find(':input').val(fileNameOrg);
+						$("#beehub-directory-rename-dialog").dialog("close");
+					})
 				} 
 				if (status === 201 || status === 204) {
 					window.location.reload();
 				}
 			}
 		};
-		webdav.move(path + fileNameOrg,callback(fileNameOrg,fileNameNew), path +fileNameNew,  overwriteMode);
+		webdav.move(path + fileNameOrg,callback(fileNameOrg,fileNameNew, element), path +fileNameNew,  overwriteMode);
 	};
 	
 	// Rename handler
 	$('.beehub-directory-rename-form').change(function(){
-		moveObject($(this).attr('name'),$(this).val(), nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
+		moveObject($(this).attr('name'),$(this).val(), nl.sara.webdav.Client.FAIL_ON_OVERWRITE, $(this));
+	})
+	
+	// Blur: erase rename form field
+	$('.beehub-directory-rename-form').blur(function(){
+		$(this).closest("tr").find(".beehub-directory-name").show();
+		$(this).closest("tr").find(".beehub-directory-rename-td").hide();
 	})
 	
 //	$("#beehub-directory-contents-table").tablesorter();

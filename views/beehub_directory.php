@@ -94,14 +94,14 @@ require 'views/header.php';
 			   ?>
 	
 				<tr>
-					<td width="10px" data-toggle="tooltip" title="Rename file"><i class="icon-edit beehub-directory-edit" ></i></td>
+					<td width="10px" data-toggle="tooltip" title="Rename file"><i class="icon-edit beehub-directory-edit" style="cursor: pointer"></i></td>
 					<td width="10px"><input type="checkbox"></td>
 					<?php if (substr($member->path,-1) === '/'):?>
-							<td class="beehub-directory-name"><a href=<?= DAV::unslashify($member->path)?>><b><?= $member->user_prop_displayname() ?>/</b></a></td>
+							<td class="beehub-directory-name"><a href='<?= DAV::unslashify($member->path)?>'><b><?= $member->user_prop_displayname() ?>/</b></a></td>
 					<?php else :?>
-							<td class="beehub-directory-name"><a href=<?= DAV::unslashify($member->path) ?>><?= $member->user_prop_displayname() ?></a></td>
+							<td class="beehub-directory-name"><a href='<?= DAV::unslashify($member->path) ?>'><?= $member->user_prop_displayname() ?></a></td>
 					<?php endif;?>
-					<td class="beehub-directory-rename-td"  hidden='true'><input class="beehub-directory-rename-form" name=<?= $member->user_prop_displayname()  ?> value=<?= $member->user_prop_displayname() ?>></input></td>
+					<td class="beehub-directory-rename-td"  hidden='true'><input class="beehub-directory-rename-form" name='<?= $member->user_prop_displayname()  ?>' value='<?= $member->user_prop_displayname() ?>'></td>
 					<?php 
 // 					  Calculate size
 						$size = $member->user_prop_getcontentlength();
@@ -164,6 +164,8 @@ require 'views/header.php';
 <!-- Dialogs -->
 <!-- Upload -->
 <div id="beehub-directory-upload-dialog" title="Upload" hidden='true'></div>
+<div id="beehub-directory-rename-dialog" title="Warning!" hidden='true'></div>
+
 <?php
 
 $footer= '
