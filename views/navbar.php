@@ -17,7 +17,7 @@
     ) : BeeHub::urlbase(false) . '?nosystem' ?>">Files</a></li>
               <?php if (BeeHub_Auth::inst()->is_authenticated()) : ?>
                 <li id="navbar-li-groups"><a href="<?= DAV::xmlescape(BeeHub::$CONFIG['namespace']['groups_path']) ?>">Groups</a></li>
-<?php /*                <li id="navbar-li-sponsors"><a href="<?= DAV::xmlescape(BeeHub::$CONFIG['namespace']['sponsors_path']) ?>">Sponsors</a></li> */ ?>
+								<li id="navbar-li-sponsors"><a href="<?= DAV::xmlescape(BeeHub::$CONFIG['namespace']['sponsors_path']) ?>">Sponsors</a></li>
               <?php endif; ?>
               <li id="navbar-li-docs"><a href="/system/docs.php">Docs</a></li>
             </ul>

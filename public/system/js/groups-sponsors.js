@@ -1,4 +1,14 @@
 $(function() {
+  // Check if it is group or sponsor page
+  var groups = false;
+  var sponsors = false;
+  if (location.pathname == '/system/groups') {
+    groups = true;
+  } else if ((location.pathname == '/system/sponsors')) {
+    sponsors = true;
+  }
+  console.log(location.pathname);
+  console.log(groups+"-"+sponsors);
 	// prevent hide previous collaped item
 	$('.accordion-heading').click(function (e) {
 	  $(this).next().collapse("toggle");
@@ -20,22 +30,29 @@ $(function() {
 	var joinListener = function(button){
 		// Send leave request to server
 		var client = new nl.sara.webdav.Client();
-		client.post(button.val(), function(status){
-		  if (status != 200) {
-				alert('Something went wrong on the server. No changes were made.');
-				return;
-		  };
-		  // Change button to join button
-		  var cancelrequestbutton = $('<button type="button" value="'+button.val()+'" class="btn btn-danger joinleavebutton">Cancel request</button>');
-		  cancelrequestbutton.click(function () {
-	            joinLeaveListener($(this));
-	        });
-	      button.closest('a').append(cancelrequestbutton);
-	      button.remove();
-		}, 'join=1');
+		
+		// closure for ajax request
+		function callback(button){
+			return function(status){
+				  if (status != 200) {
+						alert('Something went wrong on the server. No changes were made.');
+						return;
+				  };
+				  // Change button to join button
+				  var cancelrequestbutton = $('<button type="button" value="'+button.val()+'" class="btn btn-danger bh-gs-join-leave-button">Cancel request</button>');
+				  cancelrequestbutton.click(function () {
+			            joinLeaveListener($(this));
+			        });
+			      button.closest('a').append(cancelrequestbutton);
+			      button.remove();
+				}
+		}
+		
+		client.post(button.val(), callback(button) , 'join=1');
 	}
 
-	$('.joinbutton').on('click', function (e) {
+	$('.bh-gs-join-button').on('click', function (e) {
+		// TODO zorgen dat dit voor sponsors ook werkt.
 		joinListener($(this));
 	});
 
@@ -53,14 +70,15 @@ $(function() {
 					return;
 				};
 				// Change button to join button
-				var joinbutton = $('<button type="button" value="'+button.val()+'" class="btn btn-success joinbutton">Join</button>');
+				var joinbutton = $('<button type="button" value="'+button.val()+'" class="btn btn-success bh-gs-join-button">Join</button>');
 				joinbutton.click(function () {
 		            joinListener($(this));
 		        });
 		        button.closest('a').append(joinbutton);
 		        button.remove();
 		        // Remove group from mygroups
-		        var leavebutton = $('[id="panel-mygroups"]').find('[value="'+button.val()+'"]');
+		        // TODO zorgen dat dit goed gaat voor sponsors
+		        var leavebutton = $('[id="bh-groups-panel-mygroups"]').find('[value="'+button.val()+'"]');
 		        if (leavebutton.length !=0) {
 		        	leavebutton.closest('.accordion-group').remove();
 		        }
@@ -71,49 +89,59 @@ $(function() {
 	/*
 	 * Action when the leave button in a group is clicked
 	 */
-	$('.joinleavebutton').on('click', function (e) {
+	$('.bh-gs-join-leave-button').on('click', function (e) {
+		// Zorgen dat dit voor sponsors ook werkt
 		joinLeaveListener($(this));
 	});
-
+	
 	/*
 	 * Action when the leave button in a group is clicked
 	 */
-	$('.mygroupsleavebutton').on('click', function (e) {
+	$('.bh-gs-mygs-leave-button').on('click', function (e) {
+		// TODO actie voor sponsors toevoegen
 		var button = $(this);
 	   // Are you sure?
 		if (confirm('Are you sure you want to leave the group '+button.parent().prev().html()+' ?')) {
 			// Send leave request to server
 			var client = new nl.sara.webdav.Client();
-			client.post(button.val(), function(status, data){
-        if (status === 409) {
-          alert("You can't leave this group, you're the last administrator! Don't leave your group without a leader, please appoint a new administrator before leaving them!");
-          return;
-        }else if (status !== 200) {
-					alert('Something went wrong on the server. No changes were made.');
-					return;
-			  };
-			  button.closest('.accordion-group').remove();
-			  var leavebutton = $('[id="panel-join"]').find('[value="'+button.val()+'"]');
-			  var joinbutton = $('<button type="button" value="'+button.val()+'" class="btn btn-success joinbutton">Join</button>');
-			  joinbutton.click(function () {
-				joinListener($(this));
-			  });
-			  leavebutton.closest('a').append(joinbutton);
-		      leavebutton.remove();
-			}, 'leave=1');
-	    }
+
+			function callback(button){
+				return function(status, data){
+				  if (status === 409) {
+				    alert("You can't leave this group, you're the last administrator! Don't leave your group without a leader, please appoint a new administrator before leaving them!");
+			      return;
+			    } else if (status !== 200) {
+			      alert('Something went wrong on the server. No changes were made.');
+						return;
+			    };
+          button.closest('.accordion-group').remove();
+          // TODO zorgen dat dit goed gaat voor sponsors
+          var leavebutton = $('[id="bh-groups-panel-join"]').find('[value="'+button.val()+'"]');
+          var joinbutton = $('<button type="button" value="'+button.val()+'" class="btn btn-success bh-gs-join-button">Join</button>');
+          joinbutton.click(function () {
+            joinListener($(this));
+          });
+          leavebutton.closest('a').append(joinbutton);
+          leavebutton.remove();
+				}
+			}
+			client.post(button.val(), callback(button) , 'leave=1');
+		}
 	});
 
 	/*
 	 * Action when the filter field is changed
 	 */
-	 $('#filterbyname').keyup(function () {
+	// TODO voor sponsors, functie eruit
+	 $('#bh-groups-filter-by-name').keyup(function () {
 		var filterfield = $(this);
 		// when field is empty, filter icon
 		$(this).parent().find('[id="iconerase"]').remove();
-		$(this).parent().find('[id="iconfilter"]').remove();
+		// TODO zorgen dat dit ook werkt voor sponsors
+		$(this).parent().find('[id="bh-groups-icon-filter"]').remove();
 		if (filterfield.val().length == 0){
-			var iconfilter = $('<span class="add-on" id="iconfilter"><i class="icon-filter" ></i></span>');
+			// Zorgen dat dit ook werkt voor sponsors
+			var iconfilter = $('<span class="add-on" id="bh-groups-icon-filter"><i class="icon-filter" ></i></span>');
 			$(this).parent().prepend(iconfilter);
 		// when field is not empty, erase icon with listener
 		} else {
@@ -125,7 +153,8 @@ $(function() {
 			});
 		}
 		var regex = new RegExp(filterfield.val(), 'gi' );
-		$('div#joingroups.accordion').find('.accordion-group').filter(function(index) {
+		// TODO sponsors
+		$('div#bh-groups-join-groups.accordion').find('.accordion-group').filter(function(index) {
 			$(this).hide();
 			return $(this).find('th').html().match(regex) != null;
 		}).show();
@@ -178,15 +207,15 @@ $(function() {
 	/*
 	 * Action when the groupsname field will change
 	 */
-	 $('#groupName').change(function () {
+	 $('#bh-groups-group-name').change(function () {
 		 groupNameListener($(this));
 	 })
 
 	 /*
 	 * Action when the Create group button is clicked
 	 */
-	 $('#createGroupForm').submit(function (e) {
-		 if (!groupNameListener($('#groupName'))) {
+	 $('#bh-groups-create-group-form').submit(function (e) {
+		 if (!groupNameListener($('#bh-groups-group-name'))) {
 			 e.preventDefault();
 		 }
 	 });
