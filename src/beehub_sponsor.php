@@ -66,7 +66,7 @@ class BeeHub_Sponsor extends BeeHub_Principal {
 EOS;
       $statement = BeeHub_DB::execute($query, 's', $this->name);
       while ($row = $statement->fetch_row()) {
-        $members[] = Array(
+        $members[$row[0]] = Array(
           'user_name' => $row[0],
           'displayname' => $row[1],
           'is_admin' => !!$row[2],
@@ -355,6 +355,46 @@ BeeHub';
   }
 
 
+  public function user_prop_group_member_set() {
+    return $this->user_prop( DAV::PROP_GROUP_MEMBER_SET );
+  }
+
+
+  /**
+   * Determines whether the currently logged in user is an administrator of this sponsor or not.
+   *
+   * @return  boolean  True if the currently logged in user is an administrator of this sponsor, false otherwise
+   */
+  public function is_admin() {
+    if ( BeeHub_ACL_Provider::inst()->wheel() ) return true;
+    $this->init_props();
+    return ( $current_user = BeeHub_Auth::inst()->current_user() ) &&
+           ( $tmp = @$this->users[$current_user->path] ) &&
+           $tmp['is_admin'];
+  }
+
+
+  public function is_member() {
+    $this->init_props();
+    return ( $current_user = BeeHub_Auth::inst()->current_user() ) &&
+           ( $tmp = @$this->users[$current_user->path] ) &&
+           $tmp['is_accepted'];
+  }
+
+
+  public function is_requested() {
+    $this->init_props();
+    return ( $current_user = BeeHub_Auth::inst()->current_user() ) &&
+           ( $tmp = @$this->users[$current_user->path] ) &&
+           !$tmp['is_accepted'];
+  }
+
+
+  public function user_propname() {
+    return BeeHub::$SPONSOR_PROPS;
+  }
+
+
   /**
    * @param array $properties
    * @return array an array of (property => isReadable) pairs.
@@ -364,41 +404,6 @@ BeeHub';
     if ( @$retval[DAV::PROP_GROUP_MEMBER_SET] )
       $retval[DAV::PROP_GROUP_MEMBER_SET] = $this->is_admin();
     return $retval;
-  }
-
-
-  public function user_prop_acl_internal() {
-    $this->init_props();
-    $retval = array();
-    foreach($this->users as $user_path => $user_info) {
-      if ($user_info['is_admin']) {
-        $retval[] = new DAVACL_Element_ace(
-          $user_path, false, array(
-            DAVACL::PRIV_WRITE
-          ), false, false
-        );
-      }
-    }
-    return $retval;
-  }
-
-
-  public function user_prop_group_member_set() {
-    return $this->user_prop(DAV::PROP_GROUP_MEMBER_SET);
-  }
-
-
-  /**
-   * Determines whether the currently logged in user is an administrator of this sponsor or not.
-   *
-   * @return  boolean  True if the currently logged in user is an administrator of this group, false otherwise
-   */
-  public function is_admin() {
-    if ( BeeHub_ACL_Provider::inst()->wheel() ) return true;
-    $this->init_props();
-    return ( $current_user = $this->user_prop_current_user_principal() ) &&
-           ( $tmp = @$this->users[$current_user] ) &&
-           $tmp['is_admin'];
   }
 
 

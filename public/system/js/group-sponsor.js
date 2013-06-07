@@ -17,7 +17,6 @@ $(function (){
   } else if ((path == '/system/sponsor/')) {
     group_or_sponsor = "sponsor";
   }
-  
   $('#bh-'+group_or_sponsor+'-invite-typeahead').typeahead({
 	  source: function (query, process) {
 	        // implementation

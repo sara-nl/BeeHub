@@ -78,7 +78,7 @@
         <?php
       $i = 1;
       foreach ($sponsors as $sponsor) :
-        if ( $sponsor->is_member() || $sponsor->is_invited() )      		 
+        if ( $sponsor->is_member())      		 
           continue;
         ?> 
         <div class="accordion-group">

@@ -129,7 +129,7 @@ $(function() {
 		}
 	});
 
-	function filterByName(){
+	function filterByName(){ 
 	  filterfield=$(this);
     // when field is empty, filter icon
     $(this).parent().find('[id="bh-gs-icon-erase"]').remove();
@@ -137,7 +137,7 @@ $(function() {
     $(this).parent().find('[id="bh-'+group_or_sponsor+'s-icon-filter"]').remove();
     if (filterfield.val().length == 0){
       // Zorgen dat dit ook werkt voor sponsors
-      var iconfilter = $('<span class="add-on" id="bh-'+group+'s-icon-filter"><i class="icon-filter" ></i></span>');
+      var iconfilter = $('<span class="add-on" id="bh-'+group_or_sponsor+'s-icon-filter"><i class="icon-filter" ></i></span>');
       $(this).parent().prepend(iconfilter);
     // when field is not empty, erase icon with listener
     } else {

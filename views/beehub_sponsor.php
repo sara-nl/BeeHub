@@ -62,7 +62,7 @@ require 'views/header.php';
   <form id="bh-sponsor-invite-sponsor-form" class="form-horizontal">
   	<div class="control-group">
   		<div class="controls bh-gs-invite_members">
-  			<button  type="submit" class="btn btn-primary">Invite user</button>
+  			<button  type="submit" class="btn btn-primary">Add user</button>
   			<input type="text" id="bh-sponsor-invite-typeahead" data-provide="typeahead" placeholder="Type username..." autocomplete="off" required>
   		</div>
    </div>
