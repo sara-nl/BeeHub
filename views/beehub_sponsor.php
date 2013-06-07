@@ -59,35 +59,35 @@ require 'views/header.php';
 <?php if ( $this->is_member() ) : ?>
   <h2>Current members</h2>
   <br/>
-  <form id="bh-sponsor-invite-sponsor-form" class="form-horizontal">
-  	<div class="control-group">
-  		<div class="controls bh-gs-invite_members">
-  			<button  type="submit" class="btn btn-primary">Add user</button>
-  			<input type="text" id="bh-sponsor-invite-typeahead" data-provide="typeahead" placeholder="Type username..." autocomplete="off" required>
-  		</div>
-   </div>
-  </form>
-
-  <?php foreach ($members as $member) :
-    if ($member['is_invited']) : ?>
-      <div class="row-fluid" id="bh-sponsor-user-<?= DAV::xmlescape($member['user_name']) ?>">
-        <div class="span12 well well-small"><table width="100%"><tbody><tr>
-          <th align="left"><?= DAV::xmlescape($member['displayname']) ?> </th>
-          <?php if ($this->is_admin()) : ?>
-          <td align="right">
-            <!-- Promote or demote? -->
-            <?php if ( $member['is_admin'] ) : ?>
-            <button type="button" value="<?= DAV::xmlescape($member['user_name']) ?>" class="btn btn-primary demote_link">Demote to member</button>
-            <?php else : ?>
-            <button type="button" value="<?= DAV::xmlescape($member['user_name']) ?>" class="btn btn-primary promote_link">Promote to admin</button>
-            <?php endif; ?>
-            <button type="button" value="<?= DAV::xmlescape($member['user_name']) ?>" class="btn btn-danger remove_link">Remove member</button>
-          </td>
-          <?php endif; ?>
-        </tr></tbody></table></div>
+  <?php if ( $this->is_admin() ) : ?>
+    <form id="bh-sponsor-invite-sponsor-form" class="form-horizontal">
+      <div class="control-group">
+        <div class="controls bh-gs-invite_members">
+          <button  type="submit" class="btn btn-primary">Add user</button>
+          <input type="text" id="bh-sponsor-invite-typeahead" data-provide="typeahead" placeholder="Type username..." autocomplete="off" required>
+        </div>
       </div>
-      <?php
-    endif;
+    </form>
+  <?php endif; ?>
+
+  <?php foreach ($members as $member) : ?>
+    <div class="row-fluid" id="bh-sponsor-user-<?= DAV::xmlescape($member['user_name']) ?>">
+      <div class="span12 well well-small"><table width="100%"><tbody><tr>
+        <th align="left"><?= DAV::xmlescape($member['displayname']) ?> </th>
+        <?php if ($this->is_admin()) : ?>
+        <td align="right">
+          <!-- Promote or demote? -->
+          <?php if ( $member['is_admin'] ) : ?>
+          <button type="button" value="<?= DAV::xmlescape($member['user_name']) ?>" class="btn btn-primary demote_link">Demote to member</button>
+          <?php else : ?>
+          <button type="button" value="<?= DAV::xmlescape($member['user_name']) ?>" class="btn btn-primary promote_link">Promote to admin</button>
+          <?php endif; ?>
+          <button type="button" value="<?= DAV::xmlescape($member['user_name']) ?>" class="btn btn-danger remove_link">Remove member</button>
+        </td>
+        <?php endif; ?>
+      </tr></tbody></table></div>
+    </div>
+    <?php
   endforeach;
 endif;
 

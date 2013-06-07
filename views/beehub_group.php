@@ -59,14 +59,16 @@ require 'views/header.php';
 <?php if ( $this->is_member() ) : ?>
   <h2>Current members</h2>
   <br/>
-  <form id="bh-group-invite-group-form" class="form-horizontal">
-  	<div class="control-group">
-  		<div class="controls bh-gs-invite_members">
-  			<button  type="submit" class="btn btn-primary">Invite user</button>
-  			<input type="text" id="bh-group-invite-typeahead" data-provide="typeahead" placeholder="Type username..." autocomplete="off" required>
-  		</div>
-   </div>
-  </form>
+  <?php if ( $this->is_admin() ) : ?>
+    <form id="bh-group-invite-group-form" class="form-horizontal">
+      <div class="control-group">
+        <div class="controls bh-gs-invite_members">
+          <button  type="submit" class="btn btn-primary">Invite user</button>
+          <input type="text" id="bh-group-invite-typeahead" data-provide="typeahead" placeholder="Type username..." autocomplete="off" required>
+        </div>
+      </div>
+    </form>
+  <?php endif; ?>
 
   <?php foreach ($members as $member) :
     if ($member['is_invited']) : ?>

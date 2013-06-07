@@ -121,7 +121,7 @@ BeeHub';
           }
         }
       }
-      $this->change_memberships(array($current_user->name), false, true, false, null, true);
+      $this->change_memberships(array($current_user->name), false, false, false, null);
       if (!is_null($message)) {
         BeeHub::email($recipients,
                       'BeeHub notification: membership request for sponsor ' . $this->prop(DAV::PROP_DISPLAYNAME),
@@ -139,7 +139,7 @@ BeeHub';
         foreach ($_POST[$key] as $uri) {
           $members[] = DAV::parseURI($uri, false);
         }
-        $members = array_map(array('BeeHub_Group', 'get_user_name'), $members);
+        $members = array_map(array('BeeHub_Sponsor', 'get_user_name'), $members);
         switch ($key) {
           case 'add_members':
             foreach ($members as $member) {
@@ -167,7 +167,7 @@ BeeHub';
             break;
           case 'delete_admins':
             $this->check_admin_remove($members);
-            $this->change_memberships($members, true, false, true, false);
+            $this->change_memberships($members, false, false, null, false);
             break;
           case 'delete_members':
             $this->delete_members($members);

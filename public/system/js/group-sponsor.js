@@ -12,9 +12,9 @@ $(function (){
   } 
   // Check if it is group or sponsor page 
   var group_or_sponsor="";
-  if (path == '/system/group/') {
+  if ( path.substr(0, nl.sara.beehub.groups_path.length) == nl.sara.beehub.groups_path ) {
     group_or_sponsor = "group";
-  } else if ((path == '/system/sponsor/')) {
+  } else if ( path.substr(0, nl.sara.beehub.sponsors_path.length) == nl.sara.beehub.sponsors_path ) {
     group_or_sponsor = "sponsor";
   }
   $('#bh-'+group_or_sponsor+'-invite-typeahead').typeahead({
