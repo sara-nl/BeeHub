@@ -263,26 +263,31 @@ class BeeHub {
         $notifications[] = array( 'type'=>'group_request', 'data'=>array( 'group'=>BeeHub::$CONFIG['namespace']['groups_path'] . $row[0], 'group_displayname'=>$row[1], 'user'=>BeeHub::$CONFIG['namespace']['users_path'] . $row[2], 'user_displayname'=>$row[3], 'user_email'=>$row[4] ) );
       }
 
-      // Fetch all sponsor membership requests
-      $statement = BeeHub_DB::execute('
-        SELECT `beehub_sponsors`.`sponsor_name`,
-               `beehub_sponsors`.`displayname`,
-               `beehub_users`.`user_name`,
-               `beehub_users`.`displayname`,
-               `beehub_users`.`email`
-          FROM `beehub_sponsor_members` JOIN `beehub_sponsors` USING(`sponsor_name`) JOIN `beehub_users` USING(`user_name`)
-         WHERE `beehub_sponsor_members`.`is_accepted` = 0 AND
-               `beehub_sponsor_members`.`sponsor_name` IN (
-                  SELECT `beehub_sponsor_members`.`sponsor_name`
-                    FROM `beehub_sponsor_members`
-                   WHERE `beehub_sponsor_members`.`is_admin` = 1 AND
-                         `beehub_sponsor_members`.`user_name` = ?
-               )
-      ', 's', $user->name);
-      while ($row = $statement->fetch_row()) {
-        $notifications[] = array( 'type'=>'sponsor_request', 'data'=>array( 'sponsor'=>BeeHub::$CONFIG['namespace']['sponsors_path'] . $row[0], 'sponsor_displayname'=>$row[1], 'user'=>BeeHub::$CONFIG['namespace']['users_path'] . $row[2], 'user_displayname'=>$row[3], 'user_email'=>$row[4] ) );
-      }
-    }
+      // If the user doesn't have a sponsor, he can't do anything.
+      if ( count( $user->prop( BeeHub::PROP_SPONSOR_MEMBERSHIP ) ) === 0 ) {
+        $notifications[] = array( 'type'=>'no_sponsor', 'data'=>array() );
+      }else{
+        // Fetch all sponsor membership requests
+        $statement = BeeHub_DB::execute('
+          SELECT `beehub_sponsors`.`sponsor_name`,
+                `beehub_sponsors`.`displayname`,
+                `beehub_users`.`user_name`,
+                `beehub_users`.`displayname`,
+                `beehub_users`.`email`
+            FROM `beehub_sponsor_members` JOIN `beehub_sponsors` USING(`sponsor_name`) JOIN `beehub_users` USING(`user_name`)
+          WHERE `beehub_sponsor_members`.`is_accepted` = 0 AND
+                `beehub_sponsor_members`.`sponsor_name` IN (
+                    SELECT `beehub_sponsor_members`.`sponsor_name`
+                      FROM `beehub_sponsor_members`
+                    WHERE `beehub_sponsor_members`.`is_admin` = 1 AND
+                          `beehub_sponsor_members`.`user_name` = ?
+                )
+        ', 's', $user->name);
+        while ($row = $statement->fetch_row()) {
+          $notifications[] = array( 'type'=>'sponsor_request', 'data'=>array( 'sponsor'=>BeeHub::$CONFIG['namespace']['sponsors_path'] . $row[0], 'sponsor_displayname'=>$row[1], 'user'=>BeeHub::$CONFIG['namespace']['users_path'] . $row[2], 'user_displayname'=>$row[3], 'user_email'=>$row[4] ) );
+        }
+      } // end else for if ( count( $user->prop( BeeHub::PROP_SPONSOR_MEMBERSHIP ) ) === 0 )
+    } // end if ($auth->is_authenticated())
     return $notifications;
   }
 
