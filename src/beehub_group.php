@@ -51,19 +51,19 @@ class BeeHub_Group extends BeeHub_Principal {
    * @see DAV_Resource::method_GET()
    */
   public function method_GET() {
-    $query = <<<EOS
-    SELECT `user_name`,
-           `displayname`,
-           `is_admin`,
-           `is_invited`,
-           `is_requested`
-      FROM `beehub_users`
-INNER JOIN `beehub_group_members`
-     USING (`user_name`)
-     WHERE `group_name` = ?;
-EOS;
     $members = array();
     if ( $this->is_member() ) {
+      $query = <<<EOS
+      SELECT `user_name`,
+            `displayname`,
+            `is_admin`,
+            `is_invited`,
+            `is_requested`
+        FROM `beehub_users`
+  INNER JOIN `beehub_group_members`
+      USING (`user_name`)
+      WHERE `group_name` = ?;
+EOS;
       $statement = BeeHub_DB::execute($query, 's', $this->name);
       while ($row = $statement->fetch_row()) {
         $members[$row[0]] = Array(
@@ -255,7 +255,6 @@ BeeHub';
         $this->name, $user_name, $newInvited,
         $newRequested, $newAdmin
       );
-      // TODO: sent the user an e-mail
     }
   }
 

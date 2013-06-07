@@ -1,14 +1,17 @@
 $(function() {
+  var path = location.pathname;
+  // add slash to the end of path
+  if (!path.match(/\/$/)) {
+    path=path+'/'; 
+  } 
   // Check if it is group or sponsor page
-  var groups = false;
-  var sponsors = false;
-  if (location.pathname == '/system/groups') {
-    groups = true;
-  } else if ((location.pathname == '/system/sponsors')) {
-    sponsors = true;
+  var group_or_sponsor="";
+  if (path == '/system/groups/') {
+    group_or_sponsor = "group";
+  } else if ((path == '/system/sponsors/')) {
+    group_or_sponsor = "sponsor";
   }
-  console.log(location.pathname);
-  console.log(groups+"-"+sponsors);
+  
 	// prevent hide previous collaped item
 	$('.accordion-heading').click(function (e) {
 	  $(this).next().collapse("toggle");
@@ -52,13 +55,12 @@ $(function() {
 	}
 
 	$('.bh-gs-join-button').on('click', function (e) {
-		// TODO zorgen dat dit voor sponsors ook werkt.
 		joinListener($(this));
 	});
 
 	var joinLeaveListener = function(button){
 	   // Are you sure?
-		if (confirm('Are you sure you want to cancel membership of the group '+button.closest('td').prev().html()+' ?')) {
+		if (confirm('Are you sure you want to cancel membership of the '+group_or_sponsor+' '+button.closest('td').prev().html()+' ?')) {
 			// Send leave request to server
 			var client = new nl.sara.webdav.Client();
 			client.post(button.val(), function(status){
@@ -76,9 +78,9 @@ $(function() {
 		        });
 		        button.closest('a').append(joinbutton);
 		        button.remove();
-		        // Remove group from mygroups
+		        // Remove group from mygroups or my sponsors
 		        // TODO zorgen dat dit goed gaat voor sponsors
-		        var leavebutton = $('[id="bh-groups-panel-mygroups"]').find('[value="'+button.val()+'"]');
+		        var leavebutton = $('[id="bh-'+group_or_sponsor+'s-panel-my'+group_or_sponsor+'s"]').find('[value="'+button.val()+'"]');
 		        if (leavebutton.length !=0) {
 		        	leavebutton.closest('.accordion-group').remove();
 		        }
@@ -90,7 +92,6 @@ $(function() {
 	 * Action when the leave button in a group is clicked
 	 */
 	$('.bh-gs-join-leave-button').on('click', function (e) {
-		// Zorgen dat dit voor sponsors ook werkt
 		joinLeaveListener($(this));
 	});
 	
@@ -98,17 +99,16 @@ $(function() {
 	 * Action when the leave button in a group is clicked
 	 */
 	$('.bh-gs-mygs-leave-button').on('click', function (e) {
-		// TODO actie voor sponsors toevoegen
 		var button = $(this);
 	   // Are you sure?
-		if (confirm('Are you sure you want to leave the group '+button.parent().prev().html()+' ?')) {
+		if (confirm('Are you sure you want to leave the '+group_or_sponsor+' '+button.parent().prev().html()+' ?')) {
 			// Send leave request to server
 			var client = new nl.sara.webdav.Client();
 
 			function callback(button){
 				return function(status, data){
 				  if (status === 409) {
-				    alert("You can't leave this group, you're the last administrator! Don't leave your group without a leader, please appoint a new administrator before leaving them!");
+				    alert("You can't leave this "+group_or_sponsor+", you're the last administrator! Don't leave your "+group_or-sponsor+" without a leader, please appoint a new administrator before leaving them!");
 			      return;
 			    } else if (status !== 200) {
 			      alert('Something went wrong on the server. No changes were made.');
@@ -116,7 +116,7 @@ $(function() {
 			    };
           button.closest('.accordion-group').remove();
           // TODO zorgen dat dit goed gaat voor sponsors
-          var leavebutton = $('[id="bh-groups-panel-join"]').find('[value="'+button.val()+'"]');
+          var leavebutton = $('[id="bh-'+group_or_sponsor+'s-panel-join"]').find('[value="'+button.val()+'"]');
           var joinbutton = $('<button type="button" value="'+button.val()+'" class="btn btn-success bh-gs-join-button">Join</button>');
           joinbutton.click(function () {
             joinListener($(this));
@@ -129,36 +129,37 @@ $(function() {
 		}
 	});
 
+	function filterByName(){
+	  filterfield=$(this);
+    // when field is empty, filter icon
+    $(this).parent().find('[id="bh-gs-icon-erase"]').remove();
+    // TODO zorgen dat dit ook werkt voor sponsors
+    $(this).parent().find('[id="bh-'+group_or_sponsor+'s-icon-filter"]').remove();
+    if (filterfield.val().length == 0){
+      // Zorgen dat dit ook werkt voor sponsors
+      var iconfilter = $('<span class="add-on" id="bh-'+group+'s-icon-filter"><i class="icon-filter" ></i></span>');
+      $(this).parent().prepend(iconfilter);
+    // when field is not empty, erase icon with listener
+    } else {
+      var iconerase = $('<span class="add-on" id="bh-gs-icon-erase"><i class="icon-remove-circle" ></i></span>');
+      $(this).parent().prepend(iconerase);
+      $('#bh-gs-icon-erase').on('click', function (e) {
+        filterfield.val("");
+        filterfield.trigger('keyup');
+      });
+    }
+    var regex = new RegExp(filterfield.val(), 'gi' );
+    // TODO sponsors
+    $('div#bh-'+group_or_sponsor+'s-join-'+group_or_sponsor+'s.accordion').find('.accordion-group').filter(function(index) {
+      $(this).hide();
+      return $(this).find('th').html().match(regex) != null;
+    }).show();
+	}
+	
 	/*
 	 * Action when the filter field is changed
 	 */
-	// TODO voor sponsors, functie eruit
-	 $('#bh-groups-filter-by-name').keyup(function () {
-		var filterfield = $(this);
-		// when field is empty, filter icon
-		$(this).parent().find('[id="iconerase"]').remove();
-		// TODO zorgen dat dit ook werkt voor sponsors
-		$(this).parent().find('[id="bh-groups-icon-filter"]').remove();
-		if (filterfield.val().length == 0){
-			// Zorgen dat dit ook werkt voor sponsors
-			var iconfilter = $('<span class="add-on" id="bh-groups-icon-filter"><i class="icon-filter" ></i></span>');
-			$(this).parent().prepend(iconfilter);
-		// when field is not empty, erase icon with listener
-		} else {
-			var iconerase = $('<span class="add-on" id="iconerase"><i class="icon-remove-circle" ></i></span>');
-			$(this).parent().prepend(iconerase);
-			$('#iconerase').on('click', function (e) {
-				filterfield.val("");
-				filterfield.trigger('keyup');
-			});
-		}
-		var regex = new RegExp(filterfield.val(), 'gi' );
-		// TODO sponsors
-		$('div#bh-groups-join-groups.accordion').find('.accordion-group').filter(function(index) {
-			$(this).hide();
-			return $(this).find('th').html().match(regex) != null;
-		}).show();
-	 });
+	 $('#bh-'+group_or_sponsor+'s-filter-by-name').keyup(filterByName);
 
 	var groupNameListener = function(groupNameField){
 		 var showError = function(error){

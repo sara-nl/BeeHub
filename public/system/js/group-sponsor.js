@@ -5,7 +5,20 @@ $(function (){
 	setTimeout(function () { that.hide() }, 250);
   };
   
-  $('#inviteTypeahead').typeahead({
+  var path = location.pathname;
+  // add slash to the end of path
+  if (!path.match(/\/$/)) {
+    path=path+'/'; 
+  } 
+  // Check if it is group or sponsor page 
+  var group_or_sponsor="";
+  if (path == '/system/group/') {
+    group_or_sponsor = "group";
+  } else if ((path == '/system/sponsor/')) {
+    group_or_sponsor = "sponsor";
+  }
+  
+  $('#bh-'+group_or_sponsor+'-invite-typeahead').typeahead({
 	  source: function (query, process) {
 	        // implementation
 		    users = [];
@@ -38,7 +51,7 @@ $(function (){
 	    // check if username is valid
   }).blur(function(){
 	    if(map[$(this).val()] == null) {
-	        $('#inviteTypeahead').val('');
+	        $('#bh-'+group_or_sponsor+'-invite-typeahead').val('');
 	        invitedUser = ""; 
 	      }
 	  });
@@ -46,13 +59,13 @@ $(function (){
   /*
    * Action when the invite button is clicked
    */
-  $('#inviteGroupForm').submit(function (event) {
+  $('#bh-'+group_or_sponsor+'-invite-'+group_or_sponsor+'-form').submit(function (event) {
 	  event.preventDefault();
 	  if (invitedUser !== ""){
 		  var client = new nl.sara.webdav.Client();
 			client.post(window.location.pathname, function(status){
 			  if (status === 409) {
-			    alert('You are not allowed to remove all the group administrators from a group. Leave at least one group administrator in the group or appoint a new group administrator!');  
+			    alert('You are not allowed to remove all the '+group_or_sponsor+' administrators from a '+group_or_sponsor+'. Leave at least one '+group_or_sponsor+' administrator in the '+group_or_sponsor+' or appoint a new '+group_or_sponsor+' administrator!');  
 			    return;
 			  }
 			  if (status === 403) {
@@ -63,7 +76,7 @@ $(function (){
 				alert('Something went wrong on the server. No changes were made.');
 				return;
 			  };
-			  $('#inviteTypeahead').val("");
+			  $('#bh-'+group_or_sponsor+'-invite-typeahead').val("");
 			  alert(nl.sara.beehub.principals.users[invitedUser] + " has been invited.");
 			}, 'add_members[]='+invitedUser);
 	  }
@@ -73,7 +86,7 @@ $(function (){
  /*
   * Action when the save button is clicked
   */
- $('#editGroupForm').submit(function (e) {
+ $('#bh-'+group_or_sponsor+'-edit-form').submit(function (e) {
 	e.preventDefault();
     var setProps = new Array();
     var displayname = new nl.sara.webdav.Property();
@@ -91,30 +104,30 @@ $(function (){
       location.pathname,
       function(status, data) {
     	if (status === 207) {
-	        $('#groupDisplayNameValue').html($('input[name="displayname"]').val());
-	        $('#groupDescriptionValue').html($('textarea[name="description"]').val());
-	        $('#beehub-group-display').removeClass('hide');
-	        $('#beehub-group-edit').addClass('hide');
+	        $('#bh-'+group_or_sponsor+'-display-name-value').html($('input[name="displayname"]').val());
+	        $('#bh-'+group_or_sponsor+'-description-value').html($('textarea[name="description"]').val());
+	        $('#bh-'+group_or_sponsor+'-display').removeClass('hide');
+	        $('#bh-'+group_or_sponsor+'-edit').addClass('hide');
     	} else {
-    		alert("Something went wrong. The group is not changed.")
+    		alert("Something went wrong. The '+group_or_sponsor+' is not changed.")
     	}
       }, setProps);
 
     return false;
   });
 	
-  $('#cancel-button').click(
+  $('#bh-'+group_or_sponsor+'-cancel-button').click(
 	function() {
-	  $('input[name="displayname"]').val($('#groupDisplayNameValue').html());
-	  $('textarea[name="description"]').val($('#groupDescriptionValue').html());
-	  $('#beehub-group-display').removeClass('hide');
-      $('#beehub-group-edit').addClass('hide');
+	  $('input[name="displayname"]').val($('#bh-'+group_or_sponsor+'-display-name-value').html());
+	  $('textarea[name="description"]').val($('#bh-'+group_or_sponsor+'-description-value').html());
+	  $('#bh-'+group_or_sponsor+'-display').removeClass('hide');
+      $('#bh-'+group_or_sponsor+'-edit').addClass('hide');
   }); // End of button click event listener
   
-  $('#edit-group-button').click(
+  $('#bh-'+group_or_sponsor+'-edit-button').click(
     function() {
-      $('#beehub-group-display').addClass('hide');
-      $('#beehub-group-edit').removeClass('hide');
+      $('#bh-'+group_or_sponsor+'-display').addClass('hide');
+      $('#bh-'+group_or_sponsor+'-edit').removeClass('hide');
     }
   );
 	
@@ -124,7 +137,7 @@ $(function (){
 	  var client = new nl.sara.webdav.Client();
 		client.post(window.location.pathname, function(status){
 		  if (status === 409) {
-		    alert('You are not allowed to remove all the group administrators from a group. Leave at least one group administrator in the group or appoint a new group administrator!');  
+		    alert('You are not allowed to remove all the '+group_or_sponsor+' administrators from a '+group_or_sponsor+'. Leave at least one '+group_or_sponsor+' administrator in the '+group_or_sponsor+' or appoint a new '+group_or_sponsor+' administrator!');  
 		    return;
 		  }
 		  if (status === 403) {
@@ -173,14 +186,14 @@ $(function (){
     var client = new nl.sara.webdav.Client();
 	client.post(window.location.pathname, function(status){
 	  if (status === 409) {
-	    alert('You are not allowed to remove all the group administrators from a group. Leave at least one group administrator in the group or appoint a new group administrator!');  
+	    alert('You are not allowed to remove all the '+group_or_sponsor+' administrators from a '+group_or_sponsor+'. Leave at least one '+group_or_sponsor+' administrator in the '+group_or_sponsor+' or appoint a new '+group_or_sponsor+' administrator!');  
 	    return;
 	  }
 	  if (status !== 200) {
 			alert('Something went wrong on the server. No changes were made.');
 			return;
 	  };
-	  $('#user-'+button.val()).remove();
+	  $('#bh-'+group_or_sponsor+'-user-'+button.val()).remove();
 	}, 'delete_members[]='+button.val());
   }; // End of remove_link event listener
   $('.remove_link').on('click', function (e) {

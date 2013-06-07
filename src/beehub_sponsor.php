@@ -22,46 +22,64 @@
 /**
  * A sponsor principal
  *
- * @TODO Checken of de properties in de juiste gevallen afschermd worden
  * @package BeeHub
  */
 class BeeHub_Sponsor extends BeeHub_Principal {
 
   const RESOURCETYPE = '<sponsor xmlns="http://beehub.nl/" />';
 
+  private $users = null;
+
+
+  public function user_prop_acl_internal() {
+    $this->init_props();
+    $retval = array();
+    foreach($this->users as $user_path => $user_info) {
+      if ($user_info['is_admin']) {
+        $retval[] = new DAVACL_Element_ace(
+          $user_path, false, array(
+            DAVACL::PRIV_WRITE
+          ), false, false
+        );
+      }
+    }
+    return $retval;
+  }
+
+
   /**
    * @return string an HTML file
    * @see DAV_Resource::method_GET()
    */
   public function method_GET() {
-    throw DAV::forbidden();
-    $query = <<<EOS
-    SELECT `user_name`,
-           `displayname`,
-           `is_admin`,
-           `is_accepted`
-      FROM `beehub_users`
-INNER JOIN `beehub_sponsor_members`
-     USING (`user_name`)
-     WHERE `beehub_sponsor_members`.`sponsor_name` = ?;
-EOS;
-    $statement = BeeHub_DB::execute($query, 's', $this->name);
     $members = array();
-    while ($row = $statement->fetch_row()) {
-      $members[] = Array(
-        'user_name' => $row[0],
-        'displayname' => $row[1],
-        'is_admin' => !!$row[2],
-        'is_accepted' => !!$row[3]
-      );
+    if ( $this->is_member() ) {
+      $query = <<<EOS
+      SELECT `user_name`,
+            `displayname`,
+            `is_admin`,
+            `is_accepted`
+        FROM `beehub_users`
+  INNER JOIN `beehub_sponsor_members`
+      USING (`user_name`)
+      WHERE `beehub_sponsor_members`.`sponsor_name` = ?;
+EOS;
+      $statement = BeeHub_DB::execute($query, 's', $this->name);
+      while ($row = $statement->fetch_row()) {
+        $members[] = Array(
+          'user_name' => $row[0],
+          'displayname' => $row[1],
+          'is_admin' => !!$row[2],
+          'is_accepted' => !!$row[3]
+        );
+      }
+      $statement->free_result();
     }
-    $statement->free_result();
     $this->include_view( null, array( 'members' => $members ) );
   }
 
 
   public function method_POST ( &$headers ) {
-    throw DAV::forbidden();
     $auth = BeeHub_Auth::inst();
     if (!$auth->is_authenticated()) {
       throw DAV::forbidden();
@@ -78,7 +96,7 @@ EOS;
     // Allow users to request or remove membership
     $current_user = $auth->current_user();
     if (isset($_POST['leave'])) {
-      $this->delete_members(array(BeeHub_Auth::inst()->current_user()->path));
+      $this->delete_members(array($current_user->name));
     }
     if (isset($_POST['join'])) {
       $statement = BeeHub_DB::execute('SELECT `is_accepted` FROM `beehub_sponsor_members` WHERE `user_name`=? AND `sponsor_name`=?',
@@ -88,9 +106,9 @@ EOS;
         $message =
 'Dear sponsor administrator,
 
-' . $current_user->prop(DAV::PROP_DISPLAYNAME) . ' wants to join the sponsor \'' . $this->prop(DAV::PROP_DISPLAYNAME) . '\'. One of the sponsor administrators needs to either accept or reject this membership request. Please see your notifications in BeeHub to do this:
+' . $current_user->prop(DAV::PROP_DISPLAYNAME) . ' (' . $current_user->prop(BeeHub::PROP_EMAIL) . ') wants to join the sponsor \'' . $this->prop(DAV::PROP_DISPLAYNAME) . '\'. One of the sponsor administrators needs to either accept or reject this membership request. Please see your notifications in BeeHub to do this:
 
-' . BeeHub::urlbase(true) . '?show_notifications=1
+' . BeeHub::urlbase(true) . '/system/?show_notifications=1
 
 Best regards,
 
@@ -103,7 +121,7 @@ BeeHub';
           }
         }
       }
-      $this->change_memberships(array(BeeHub_Auth::inst()->current_user()->path), false, true, false, null, true);
+      $this->change_memberships(array($current_user->name), false, true, false, null, true);
       if (!is_null($message)) {
         BeeHub::email($recipients,
                       'BeeHub notification: membership request for sponsor ' . $this->prop(DAV::PROP_DISPLAYNAME),
@@ -111,7 +129,7 @@ BeeHub';
       }
     }
 
-    //First add members, admins and requests
+    // Run administrator actions: add members, admins and requests
     foreach ($admin_functions as $key) {
       if (isset($_POST[$key])) {
         $members = array();
@@ -121,6 +139,7 @@ BeeHub';
         foreach ($_POST[$key] as $uri) {
           $members[] = DAV::parseURI($uri, false);
         }
+        $members = array_map(array('BeeHub_Group', 'get_user_name'), $members);
         switch ($key) {
           case 'add_members':
             foreach ($members as $member) {
@@ -147,6 +166,7 @@ BeeHub';
             $this->change_memberships($members, true, true, true, true);
             break;
           case 'delete_admins':
+            $this->check_admin_remove($members);
             $this->change_memberships($members, true, false, true, false);
             break;
           case 'delete_members':
@@ -184,7 +204,7 @@ BeeHub';
    * @param   Boolean  $existingAdmin     Optionally; The value the 'admin' field should have if the membership is already in the database. If ommited values will not be changed for existing membership
    * @return  void
    */
-  protected function change_memberships($members, $newAccepted, $newAdmin, $existingAccepted = null, $existingAdmin = null){
+  public function change_memberships($members, $newAccepted, $newAdmin, $existingAccepted = null, $existingAdmin = null){
     if (count($members) === 0) {
       return;
     }
@@ -200,18 +220,20 @@ BeeHub';
     } else {
       $existingAdmin = ($existingAdmin ? 1 : 0);
     }
-    foreach ($members as $member) {
-      $user_name = rawurldecode(basename($member));
+    foreach ($members as $user_name) {
       BeeHub_DB::execute(
         'INSERT INTO `beehub_sponsor_members`
            (`sponsor_name`, `user_name`, `is_accepted`, `is_admin`)
          VALUES (?, ?, ?, ?)
          ON DUPLICATE KEY
-           UPDATE `is_accepted` = ' . $existingAccepted . ', `is_admin` = ' . $existingAdmin,
-        'ssii', $this->name, $user_name,
-        $newAccepted, $newAdmin
+           UPDATE `is_accepted` = ' . $existingAccepted . ',
+                  `is_admin` = ' . $existingAdmin,
+        'ssii',
+        $this->name,
+        $user_name,
+        $newAccepted,
+        $newAdmin
       );
-      // TODO: sent the user an e-mail
     }
   }
 
@@ -225,8 +247,10 @@ BeeHub';
     if (count($members) === 0) {
       return;
     }
-    foreach ($members as $member) {
-      $user_name = rawurldecode(basename($member));
+    $this->check_admin_remove($members);
+
+    // Then delete all the members
+    foreach ($members as $user_name) {
       BeeHub_DB::execute(
         'DELETE FROM `beehub_sponsor_members`
          WHERE `sponsor_name` = ?
@@ -237,7 +261,30 @@ BeeHub';
   }
 
 
-  private $users = null;
+  private function check_admin_remove($members) {
+    if (count($members) === 0) {
+      return;
+    }
+    // Check if this request is not removing all administrators from this group
+    $escaped_members = array_map(array(BeeHub_DB::mysqli(), 'real_escape_string'), $members);
+    $check_admin_statement = BeeHub_DB::execute(
+      "SELECT COUNT(`user_name`)
+         FROM `beehub_sponsor_members`
+        WHERE `is_admin` = 1 AND
+              `sponsor_name` = ? AND
+              `user_name` NOT IN ('" . implode("','", $escaped_members) . "')",
+      's', $this->name
+    );
+    $row = $check_admin_statement->fetch_row();
+    if ($row[0] === 0) {
+      throw new DAV_Status(DAV::HTTP_CONFLICT, 'You are not allowed to remove all the sponsor administrators from a group. Leave at least one sponsor administrator in the group or appoint a new sponsor administrator!');
+    }
+  }
+
+
+  private static function get_user_name($user_name) {
+    return rawurldecode(basename($user_name));
+  }
 
 
   protected function init_props() {

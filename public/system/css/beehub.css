@@ -27,15 +27,25 @@
     padding-left:25px;
 }
 
-/* Changes in bootstrap defaults*/
+/* Changes in bootstrap defaults for groups and sponsors*/
 .accordion-group:hover {
   background-color: #D1E2D3 !important;
 }
-
 .accordion-group-active {
   background-color: #E8F1E9 !important;
 }
-
 .accordion-group-active:hover {
   background-color: #D1E2D3 !important;
+}
+
+/* Settings for group and sponsor pages*/
+/* Kan volgens mij weg */
+/* .fieldname {
+  text-align: right;
+} */
+.bh-gs-invite_members {
+    margin-left: 20px !important;
+}
+.bh-gs-display-gs {
+    width: 110px !important;
 }
