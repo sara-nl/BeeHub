@@ -24,16 +24,16 @@ $header = '<style type="text/css">
 require 'views/header.php';
 ?>
 <!-- Tabs-->
-<ul id="beehub-directory-tabs" class="nav nav-tabs">
-  <li class="active"><a href="#beehub-directory-panel-contents" data-toggle="tab">Contents</a></li>
-  <li><a href="#beehub-directory-panel-acl" data-toggle="tab">ACL</a></li>
+<ul id="bh-dir-tabs" class="nav nav-tabs">
+  <li class="active"><a href="#bh-dir-panel-contents" data-toggle="tab">Contents</a></li>
+  <li><a href="#bh-dir-panel-acl" data-toggle="tab">ACL</a></li>
 </ul>
 
 <!-- Tab contents -->
 <div class="tab-content">
 
 	<!-- Contents tab -->
-<div id="beehub-directory-panel-contents" class="tab-pane fade in active"> <h4>
+<div id="bh-dir-panel-contents" class="tab-pane fade in active"> <h4>
 		<?php 
 			$crumb = explode("/", $this->path);
 			print "<ul class='breadcrumb'>";
@@ -49,7 +49,7 @@ require 'views/header.php';
 					if ($i===$last) {
 						print "<li class='active'>$value</li>";
 					} else {
-						print "<li><a href='". $newpath ."'>$value</a><span class='divider'>&raquo;</span></li>";
+						print "<li><a href='". $newpath ."'>$value</a><span class='divider'>/</span></li>";
 					}
 				}
 				$i++;
@@ -57,23 +57,23 @@ require 'views/header.php';
 			print "</ul>";
 		?></h4>
 		<?php if (DAV::unslashify($this->collection()->path) != "") :?>
-		  <button id="<?= DAV::unslashify($this->collection()->path) ?>" class="btn btn-small beehub-directory-group"><i class="icon-chevron-up" ></i>  Up</button>
+		  <button id="<?= DAV::unslashify($this->collection()->path) ?>" class="btn btn-small bh-dir-group"><i class="icon-chevron-up" ></i>  Up</button>
 		<?php else:?>
-			<button id="<?= DAV::unslashify($this->collection()->path) ?>" class="btn btn-small beehub-directory-group" disabled="disabled"><i class="icon-chevron-up" ></i>  Up</button>
+			<button id="<?= DAV::unslashify($this->collection()->path) ?>" class="btn btn-small bh-dir-group" disabled="disabled"><i class="icon-chevron-up" ></i>  Up</button>
 		<?php endif;?>
-		<button id="<?= preg_replace( '@^/system/users/(.*)@', '/home/\1/', BeeHub_Auth::inst()->current_user()->path)?>" class="btn btn-small beehub-directory-gohome" data-toggle="tooltip" title="Go to home folder"><i class="icon-home"></i> Home</button>
-		<input id="beehub-directory-upload-hidden" type="file" name="files[]" hidden='true' multiple>
-		<button id="beehub-directory-upload" data-toggle="tooltip" title="Upload to current folder" class="btn btn-small" ><i class="icon-upload" ></i> Upload</button>
-		<button id="beehub-directory-newfolder" data-toggle="tooltip" title="Create new folder in current folder" class="btn btn-small"><i class="icon-folder-close" ></i> New</button>
-		<button id="beehub-directory-copy" data-toggle="tooltip" title="Copy selected to other folder" class="btn btn-small" disabled="disabled"><i class="icon-hand-right" ></i> Copy</button>
-		<button id="beehub-directory-move" data-toggle="tooltip" title="Move selected to other folder" class="btn btn-small" disabled="disabled"><i class="icon-move" ></i> Move</button>
-		<button id="beehub-directory-delete" data-toggle="tooltip" title="Delete selected" class="btn btn-small" disabled="disabled"><i class="icon-remove" ></i> Delete</button>
+		<button id="<?= preg_replace( '@^/system/users/(.*)@', '/home/\1/', BeeHub_Auth::inst()->current_user()->path)?>" class="btn btn-small bh-dir-gohome" data-toggle="tooltip" title="Go to home folder"><i class="icon-home"></i> Home</button>
+		<input id="bh-dir-upload-hidden" type="file" name="files[]" hidden='true' multiple>
+		<button id="bh-dir-upload" data-toggle="tooltip" title="Upload to current folder" class="btn btn-small" ><i class="icon-upload" ></i> Upload</button>
+		<button id="bh-dir-newfolder" data-toggle="tooltip" title="Create new folder in current folder" class="btn btn-small"><i class="icon-folder-close" ></i> New</button>
+		<button id="bh-dir-copy" data-toggle="tooltip" title="Copy selected to other folder" class="btn btn-small" disabled="disabled"><i class="icon-hand-right" ></i> Copy</button>
+		<button id="bh-dir-move" data-toggle="tooltip" title="Move selected to other folder" class="btn btn-small" disabled="disabled"><i class="icon-move" ></i> Move</button>
+		<button id="bh-dir-delete" data-toggle="tooltip" title="Delete selected" class="btn btn-small" disabled="disabled"><i class="icon-remove" ></i> Delete</button>
 		<br/><br/>
-		<table id="beehub-directory-content-table" class="table table-striped">
+		<table id="bh-dir-content-table" class="table table-striped">
 			<thead>
 				<tr>
 					<th></th>
-					<th><input type="checkbox"></th>
+					<th><input type="checkbox" class="bh-dir-checkboxgroup"></th> 
 					<th>Name</th>
 					<th>Size</th>
 					<th>Type</th>
@@ -95,14 +95,14 @@ require 'views/header.php';
 			   ?>
 	
 				<tr>
-					<td width="10px" data-toggle="tooltip" title="Rename file"><i class="icon-edit beehub-directory-edit" style="cursor: pointer"></i></td>
-					<td width="10px"><input type="checkbox"></td>
+					<td width="10px" data-toggle="tooltip" title="Rename file"><i class="icon-edit bh-dir-edit" style="cursor: pointer"></i></td>
+					<td width="10px"><input type="checkbox" class="bh-dir-checkbox" value='<?= $member->user_prop_displayname()  ?>'></td>
 					<?php if (substr($member->path,-1) === '/'):?>
-							<td class="beehub-directory-name"><a href='<?= DAV::unslashify($member->path)?>'><b><?= $member->user_prop_displayname() ?>/</b></a></td>
+							<td class="bh-dir-name"><a href='<?= DAV::unslashify($member->path)?>'><b><?= $member->user_prop_displayname() ?>/</b></a></td>
 					<?php else :?>
-							<td class="beehub-directory-name"><a href='<?= DAV::unslashify($member->path) ?>'><?= $member->user_prop_displayname() ?></a></td>
+							<td class="bh-dir-name"><a href='<?= DAV::unslashify($member->path) ?>'><?= $member->user_prop_displayname() ?></a></td>
 					<?php endif;?>
-					<td class="beehub-directory-rename-td"  hidden='true'><input class="beehub-directory-rename-form" name='<?= $member->user_prop_displayname()  ?>' value='<?= $member->user_prop_displayname() ?>'></td>
+					<td class="bh-dir-rename-td"  hidden='true'><input class="bh-dir-rename-form" name='<?= $member->user_prop_displayname()  ?>' value='<?= $member->user_prop_displayname() ?>'></td>
 					<?php 
 // 					  Calculate size
 						$size = $member->user_prop_getcontentlength();
@@ -124,7 +124,7 @@ require 'views/header.php';
 					?>
 					<td><?= $showsize?></td>
 					<?php if (substr($member->path,-1) === '/'):?>
-							<td><i name=<?=DAV::unslashify($member->path)?> class="icon-folder-close beehub-directory-openselected" style="cursor: pointer">></i></td>
+							<td><i name=<?=DAV::unslashify($member->path)?> class="icon-folder-close bh-dir-openselected" style="cursor: pointer">></i></td>
 					<?php else :?>
 							<td><?= $member->user_prop_getcontenttype()?></td>
 					<?php endif;?>
@@ -144,9 +144,9 @@ require 'views/header.php';
 	</div> <!-- End contents tab -->
 	
 		<!-- Acl tab -->
-  <div id="beehub-directory-panel-acl" class="tab-pane fade">
+  <div id="bh-dir-panel-acl" class="tab-pane fade">
     <h4>ACL <?= $this->path?></h4>
-  	<table id="beehub-directory-acl-table" class="table table-striped">
+  	<table id="bh-dir-acl-table" class="table table-striped">
 			<thead>
 				<tr>
 					<th>Principal</th>
@@ -155,7 +155,7 @@ require 'views/header.php';
 					<th>Inherited</th>
 				</tr>
 			</thead>
-			<tbody id="beehub-directory-aclcontent">
+			<tbody id="bh-dir-aclcontent">
 			</tbody>
 		</table>
   </div> <!-- End Acl tab -->
@@ -164,8 +164,8 @@ require 'views/header.php';
 
 <!-- Dialogs -->
 <!-- Upload -->
-<div id="beehub-directory-upload-dialog" title="Upload" hidden='true'></div>
-<div id="beehub-directory-rename-dialog" title="Warning!" hidden='true'></div>
+<div id="bh-dir-upload-dialog" title="Upload" hidden='true'></div>
+<div id="bh-dir-rename-dialog" title="Warning!" hidden='true'></div>
 
 <?php
 
