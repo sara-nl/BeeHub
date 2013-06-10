@@ -255,7 +255,7 @@ $(function() {
 
 		$("#bh-dir-upload-dialog").dialog({
 	    	modal: true,
-	    	height: 400,
+	    	maxHeight: 400,
 	    	closeOnEscape: false,
 	    	dialogClass: "no-close",
 	    	width: 600,
@@ -338,8 +338,7 @@ $(function() {
 	})
 	
 //	$("#bh-dir-contents-table").tablesorter();
-	// CHECKBOXES
-	
+	// CHECKBOXES	
 	$('.bh-dir-checkboxgroup').click(function(e){
 		if ($(this).prop('checked')) {
 			$('.bh-dir-checkbox').each(function(){
@@ -370,6 +369,79 @@ $(function() {
       $('#bh-dir-delete').attr("disabled","disabled");
 		};
 		// Enable copy, move, delete buttons when 1 or more are selected
+	})
+	
+	// DELETE
+	 /**
+   * Delete an object from an array and when not finished call this function again
+   * with the next item of the array
+   * 
+   * @param array deleteArray
+   * @param integer counter
+   * 
+   */
+	function deleteItem(deleteArray, counter){
+    var webdav = new nl.sara.webdav.Client();
+    
+    function callback(deleteArray, counter) {
+      return function(status) {
+        $("#bh-dir-delete-dialog").scrollTop(counter*35);
+        if (status == 204) {
+          $("#bh-dir-delete-dialog").find('td[id="bh-dir-delete-'+deleteArray[counter].value+'"]').html("<b>Deleted</b>");
+        } else {
+          $("#bh-dir-delete-dialog").find('td[id="bh-dir-delete-'+deleteArray[counter].value+'"]').html("<b>Unknown error</b>");
+        }
+        if (deleteArray[counter+1] != undefined) {
+          deleteItem(deleteArray,counter+1);
+        } else {
+          $('#bh-dir-delete-button').button({label:"Ready"});
+          $('#bh-dir-delete-button').button("enable");
+          $('#bh-dir-delete-button').removeClass("btn-danger");
+          $('#bh-dir-cancel-delete-button').hide();
+          $('#bh-dir-delete-button').unbind('click').click(function(){
+            window.location.reload();
+          })
+        }
+      }
+    };
+     
+    webdav.remove(path + deleteArray[counter].value,callback(deleteArray, counter));
+	}
+	
+	// Delete handler
+	$('#bh-dir-delete').click(function(e){
+    $("#bh-dir-delete-dialog").html("");
+    var appendString='';
+    appendString = appendString + '<table class="table"><tbody>';
+    var deleteArray=[];
+    $('.bh-dir-checkbox:checked').each(function(){
+      appendString = appendString + '<tr><td>'+$(this).val()+'</td><td width="20%" id="bh-dir-delete-'+$(this).val()+'"></td></tr>'
+    });
+    appendString = appendString +'</tbody></table>';
+    $("#bh-dir-delete-dialog").append(appendString);
+    $("#bh-dir-delete-dialog").dialog({
+      modal: true,
+      maxHeight: 400,
+      closeOnEscape: false,
+      dialogClass: "no-close",
+      minWidth: 400,
+      buttons: [{
+        text: "Cancel",
+        id: 'bh-dir-cancel-delete-button',
+        click: function() {
+         $(this).dialog("close");
+        }
+      }, {
+        text: "Delete",
+        id: 'bh-dir-delete-button',
+        click: function() {
+          $('#bh-dir-delete-button').button({label:"Deleting..."});
+          $('#bh-dir-delete-button').button("disable");
+          deleteItem($('.bh-dir-checkbox:checked'),0);
+        }
+      }]
+    });
+    $("#bh-dir-delete-button").addClass("btn-danger");
 	})
 	
 	// ACL TAB ACTIONS/FUNCTIONS

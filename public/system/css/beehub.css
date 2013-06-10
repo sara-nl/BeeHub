@@ -21,3 +21,12 @@
 #notifications li:nth-child(even) {
   background-color: #e8f1e9;
 }
+
+/* Background color path */
+.breadcrumb {
+  background-color: white !important;
+} 
+/* Do not show close button on dialog */
+.no-close .ui-dialog-titlebar-close {
+  display: none !important;
+}

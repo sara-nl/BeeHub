@@ -17,7 +17,7 @@ $header = '<style type="text/css">
 
 // Do not show close button on dialog
 .no-close .ui-dialog-titlebar-close {
-	display: none;
+	display: none !important;
 }
 }
 </style>';
@@ -166,6 +166,7 @@ require 'views/header.php';
 <!-- Upload -->
 <div id="bh-dir-upload-dialog" title="Upload" hidden='true'></div>
 <div id="bh-dir-rename-dialog" title="Warning!" hidden='true'></div>
+<div id="bh-dir-delete-dialog" title="Delete" hidden='true'></div>
 
 <?php
 
