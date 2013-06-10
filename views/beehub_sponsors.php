@@ -8,8 +8,8 @@
 
 <!-- Tabs-->
 <ul id="beehub-top-tabs" class="nav nav-tabs">
-  <li class="active"><a href="#bh-sponsors-panel-mysponsors" data-toggle="tab">My sponsors</a></li>
-  <li><a href="#bh-sponsors-panel-join" data-toggle="tab">Join</a></li>
+  <li class="active"><a href="#bh-gs-panel-mygs" data-toggle="tab">My sponsors</a></li>
+  <li><a href="#bh-gs-panel-join" data-toggle="tab">Join</a></li>
 </ul>
 
 <!-- Tab contents -->
@@ -17,9 +17,9 @@
 
 	<!-- My Sponsors tab -->
 	<br/>
-  <div id="bh-sponsors-panel-mysponsors" class="tab-pane fade in active">
+  <div id="bh-gs-panel-mygs" class="tab-pane fade in active">
   	<!--    List with my sponsors -->
-    <div class="accordion" id="bh-sponsors-mysponsors">
+    <div class="accordion" id="bh-gs-mygs">
         <?php
       $i = 1;
       foreach ($sponsors as $sponsor) :
@@ -27,7 +27,7 @@
       ?>
         <div class="accordion-group">
           <div class="accordion-heading">
-            <div class="accordion-toggle" data-toggle="collapse" data-parent="#bh-sponsors-mysponsors" href="#bh-sponsors-mysponsors-<?= $i ?>">
+            <div class="accordion-toggle" data-toggle="collapse" data-parent="#bh-gs-mygs" href="#bh-gs-mygs-<?= $i ?>">
               <table width="100%"><tbody><tr>
                 <th align="left"><?= DAV::xmlescape($sponsor->prop_displayname()) ?></th>
                 <td align="right">
@@ -43,7 +43,7 @@
               </tr></tbody></table>
             </div>
           </div>
-          <div id="bh-sponsors-mysponsors-<?= $i ?>" class="accordion-body collapse">
+          <div id="bh-gs-mygs-<?= $i ?>" class="accordion-body collapse">
 
             <div class="accordion-inner">
               <?= DAV::xmlescape($sponsor->prop(BeeHub::PROP_DESCRIPTION)) ?>
@@ -60,21 +60,21 @@
 	<!--   End my sponsors tab -->
 
 	<!-- Join tab -->
-  <div id="bh-sponsors-panel-join" class="tab-pane fade">
+  <div id="bh-gs-panel-join" class="tab-pane fade">
 <!-- 	  <br> -->
 	  <div class="control-group">
 <!-- 	    <label class="control-label" for="inputIcon">Filter by name:</label> -->
 		    <div class="controls">
 			    <div class="input-prepend">
- 				    <span class="add-on" id="bh-sponsors-icon-filter"><i class="icon-filter"></i></span>
-				    <input class="span3" id="bh-sponsors-filter-by-name" type="text" placeholder="Filter by name..." autocomplete="off" />
+ 				    <span class="add-on" id="bh-gs-icon-filter"><i class="icon-filter"></i></span>
+				    <input class="span3" id="bh-gs-filter-by-name" type="text" placeholder="Filter by name..." autocomplete="off" />
 			    </div>
 	    </div>
     </div>
   	<br>
 
 		<!--    List with all sponsors -->
-    <div class="accordion" id="bh-sponsors-join-sponsors">
+    <div class="accordion" id="bh-gs-join-gs">
         <?php
       $i = 1;
       foreach ($sponsors as $sponsor) :
@@ -83,7 +83,7 @@
         ?> 
         <div class="accordion-group">
           <div class="accordion-heading">
-            <div class="accordion-toggle" data-toggle="collapse" data-parent="#bh-sponsors-join-sponsors" href="#bh-sponsors-join-sponsors-<?= $i ?>">
+            <div class="accordion-toggle" data-toggle="collapse" data-parent="#bh-gs-join-gs" href="#bh-gs-join-gs-<?= $i ?>">
               <table width="100%"><tbody><tr>
                 <th align="left"><?= DAV::xmlescape($sponsor->prop_displayname()) ?></th>
                 <td align="right">
@@ -97,7 +97,7 @@
               </tr></tbody></table>
             </div>
           </div>
-          <div id="bh-sponsors-join-sponsors-<?= $i ?>" class="accordion-body collapse">
+          <div id="bh-gs-join-gs-<?= $i ?>" class="accordion-body collapse">
             <div class="accordion-inner">
               <?= DAV::xmlescape($sponsor->prop(BeeHub::PROP_DESCRIPTION)) ?>
             </div>

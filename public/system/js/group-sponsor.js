@@ -17,7 +17,7 @@ $(function (){
   } else if ( path.substr(0, nl.sara.beehub.sponsors_path.length) == nl.sara.beehub.sponsors_path ) {
     group_or_sponsor = "sponsor";
   }
-  $('#bh-'+group_or_sponsor+'-invite-typeahead').typeahead({
+  $('#bh-gs-invite-typeahead').typeahead({
 	  source: function (query, process) {
 	        // implementation
 		    users = [];
@@ -50,7 +50,7 @@ $(function (){
 	    // check if username is valid
   }).blur(function(){
 	    if(map[$(this).val()] == null) {
-	        $('#bh-'+group_or_sponsor+'-invite-typeahead').val('');
+	        $('#bh-gs-invite-typeahead').val('');
 	        invitedUser = ""; 
 	      }
 	  });
@@ -58,26 +58,37 @@ $(function (){
   /*
    * Action when the invite button is clicked
    */
-  $('#bh-'+group_or_sponsor+'-invite-'+group_or_sponsor+'-form').submit(function (event) {
+  $('#bh-gs-invite-gs-form').submit(function (event) {
 	  event.preventDefault();
 	  if (invitedUser !== ""){
 		  var client = new nl.sara.webdav.Client();
-			client.post(window.location.pathname, function(status){
-			  if (status === 409) {
-			    alert('You are not allowed to remove all the '+group_or_sponsor+' administrators from a '+group_or_sponsor+'. Leave at least one '+group_or_sponsor+' administrator in the '+group_or_sponsor+' or appoint a new '+group_or_sponsor+' administrator!');  
-			    return;
-			  }
-			  if (status === 403) {
-				 alert('You are not allowed to perform this action!');  
-				 return;
-			  }
-			  if (status != 200) {
-				alert('Something went wrong on the server. No changes were made.');
-				return;
-			  };
-			  $('#bh-'+group_or_sponsor+'-invite-typeahead').val("");
-			  alert(nl.sara.beehub.principals.users[invitedUser] + " has been invited.");
-			}, 'add_members[]='+invitedUser);
+		  
+		  // Closure for ajax request
+		  function callback(group_or_sponsor, invitedUser) {
+		    return function(status){
+	        if (status === 409) {
+	          alert('You are not allowed to remove all the '+group_or_sponsor+' administrators from a '+group_or_sponsor+'. Leave at least one '+group_or_sponsor+' administrator in the '+group_or_sponsor+' or appoint a new '+group_or_sponsor+' administrator!');  
+	          return;
+	        }
+	        if (status === 403) {
+	         alert('You are not allowed to perform this action!');  
+	         return;
+	        }
+	        if (status != 200) {
+	        alert('Something went wrong on the server. No changes were made.');
+	        return;
+	        };
+	        $('#bh-gs-invite-typeahead').val("");
+	        if (group_or_sponsor == "group") {
+	           alert(nl.sara.beehub.principals.users[invitedUser] + " has been invited.");
+	        } else if (group_or_sponsor == "sponsor") {
+	          alert(nl.sara.beehub.principals.users[invitedUser] + " has been added.");
+	          window.location.reload();
+	        }
+	      }
+		  }
+		  
+			client.post(window.location.pathname, callback(group_or_sponsor, invitedUser), 'add_members[]='+invitedUser);
 	  }
   });
   
@@ -85,7 +96,7 @@ $(function (){
  /*
   * Action when the save button is clicked
   */
- $('#bh-'+group_or_sponsor+'-edit-form').submit(function (e) {
+ $('#bh-gs-edit-form').submit(function (e) {
 	e.preventDefault();
     var setProps = new Array();
     var displayname = new nl.sara.webdav.Property();
@@ -103,10 +114,10 @@ $(function (){
       location.pathname,
       function(status, data) {
     	if (status === 207) {
-	        $('#bh-'+group_or_sponsor+'-display-name-value').html($('input[name="displayname"]').val());
-	        $('#bh-'+group_or_sponsor+'-description-value').html($('textarea[name="description"]').val());
-	        $('#bh-'+group_or_sponsor+'-display').removeClass('hide');
-	        $('#bh-'+group_or_sponsor+'-edit').addClass('hide');
+	        $('#bh-gs-display-name-value').html($('input[name="displayname"]').val());
+	        $('#bh-gs-description-value').html($('textarea[name="description"]').val());
+	        $('#bh-gs-display').removeClass('hide');
+	        $('#bh-gs-edit').addClass('hide');
     	} else {
     		alert("Something went wrong. The '+group_or_sponsor+' is not changed.")
     	}
@@ -115,18 +126,18 @@ $(function (){
     return false;
   });
 	
-  $('#bh-'+group_or_sponsor+'-cancel-button').click(
+  $('#bh-gs-cancel-button').click(
 	function() {
-	  $('input[name="displayname"]').val($('#bh-'+group_or_sponsor+'-display-name-value').html());
-	  $('textarea[name="description"]').val($('#bh-'+group_or_sponsor+'-description-value').html());
-	  $('#bh-'+group_or_sponsor+'-display').removeClass('hide');
-      $('#bh-'+group_or_sponsor+'-edit').addClass('hide');
+	  $('input[name="displayname"]').val($('#bh-gs-display-name-value').html());
+	  $('textarea[name="description"]').val($('#bh-gs-description-value').html());
+	  $('#bh-gs-display').removeClass('hide');
+      $('#bh-gs-edit').addClass('hide');
   }); // End of button click event listener
   
-  $('#bh-'+group_or_sponsor+'-edit-button').click(
+  $('#bh-gs-edit-button').click(
     function() {
-      $('#bh-'+group_or_sponsor+'-display').addClass('hide');
-      $('#bh-'+group_or_sponsor+'-edit').removeClass('hide');
+      $('#bh-gs-display').addClass('hide');
+      $('#bh-gs-edit').removeClass('hide');
     }
   );
 	
@@ -134,26 +145,30 @@ $(function (){
 	var button = $(event.target);
 	// send request to server
 	  var client = new nl.sara.webdav.Client();
-		client.post(window.location.pathname, function(status){
-		  if (status === 409) {
-		    alert('You are not allowed to remove all the '+group_or_sponsor+' administrators from a '+group_or_sponsor+'. Leave at least one '+group_or_sponsor+' administrator in the '+group_or_sponsor+' or appoint a new '+group_or_sponsor+' administrator!');  
-		    return;
-		  }
-		  if (status === 403) {
-			 alert('You are not allowed to perform this action!');  
-			 return;
-		  }
-		  if (status != 200) {
-			alert('Something went wrong on the server. No changes were made.');
-			return;
-		  };
-			// if succeeded, change button to promote to admin
-		  var promotebutton = $('<button type="button" value="'+button.val()+'" class="btn btn-primary promote_link">Promote to admin</button>');
-		  promotebutton.click(handlePromote);
-		  var cell = button.parent('td');
-	      cell.prepend(promotebutton);
-	      button.remove();
-		}, 'delete_admins[]='+button.val());
+	  
+	  function callback(group_or_sponsor, button) {
+	    return function(status){
+	      if (status === 409) {
+	        alert('You are not allowed to remove all the '+group_or_sponsor+' administrators from a '+group_or_sponsor+'. Leave at least one '+group_or_sponsor+' administrator in the '+group_or_sponsor+' or appoint a new '+group_or_sponsor+' administrator!');  
+	        return;
+	      }
+	      if (status === 403) {
+	       alert('You are not allowed to perform this action!');  
+	       return;
+	      }
+	      if (status != 200) {
+	      alert('Something went wrong on the server. No changes were made.');
+	      return;
+	      };
+	      // if succeeded, change button to promote to admin
+	      var promotebutton = $('<button type="button" value="'+button.val()+'" class="btn btn-primary promote_link">Promote to admin</button>');
+	      promotebutton.click(handlePromote);
+	      var cell = button.parent('td');
+	        cell.prepend(promotebutton);
+	        button.remove();
+	    }
+	  }
+		client.post(window.location.pathname, callback(group_or_sponsor, button), 'delete_admins[]='+button.val());
   }
 
   $('.demote_link').click(handleDemote);
@@ -162,38 +177,47 @@ $(function (){
 	  var button = $(event.target);
 	// send request to server
 	  var client = new nl.sara.webdav.Client();
-		client.post(window.location.pathname, function(status){
-		  if (status === 403) {
-			alert('You are not allowed to perform this action!');  
-			return;
-		  }
-		  if (status !== 200) {
-			alert('Something went wrong on the server. No changes were made.'+status);
-			return;
-		  };
-		  var demotebutton = $('<button type="button" value="'+button.val()+'" class="btn btn-primary demote_link">Demote to member</button>');
-		  demotebutton.click(handleDemote);
-		  var cell = button.parent('td');
-	      cell.prepend(demotebutton);
-	      button.remove();
-		}, 'add_admins[]='+button.val());
+	  
+	  // Closure for ajax request
+	  function callback(button) {
+	    return function(status){
+	      if (status === 403) {
+	        alert('You are not allowed to perform this action!');  
+	        return;
+	        }
+	        if (status !== 200) {
+	        alert('Something went wrong on the server. No changes were made.'+status);
+	        return;
+	        };
+	        var demotebutton = $('<button type="button" value="'+button.val()+'" class="btn btn-primary demote_link">Demote to member</button>');
+	        demotebutton.click(handleDemote);
+	        var cell = button.parent('td');
+	          cell.prepend(demotebutton);
+	          button.remove();
+	      }
+	  }
+		client.post(window.location.pathname, callback(button), 'add_admins[]='+button.val());
   }
   $('.promote_link').click(handlePromote);
   
   var handleRemove = function(button){
 	// send request to server
     var client = new nl.sara.webdav.Client();
-	client.post(window.location.pathname, function(status){
-	  if (status === 409) {
-	    alert('You are not allowed to remove all the '+group_or_sponsor+' administrators from a '+group_or_sponsor+'. Leave at least one '+group_or_sponsor+' administrator in the '+group_or_sponsor+' or appoint a new '+group_or_sponsor+' administrator!');  
-	    return;
-	  }
-	  if (status !== 200) {
-			alert('Something went wrong on the server. No changes were made.');
-			return;
-	  };
-	  $('#bh-'+group_or_sponsor+'-user-'+button.val()).remove();
-	}, 'delete_members[]='+button.val());
+    
+    function callback(group_or_sponsor) {
+      return function(status){
+        if (status === 409) {
+          alert('You are not allowed to remove all the '+group_or_sponsor+' administrators from a '+group_or_sponsor+'. Leave at least one '+group_or_sponsor+' administrator in the '+group_or_sponsor+' or appoint a new '+group_or_sponsor+' administrator!');  
+          return;
+        }
+        if (status !== 200) {
+          alert('Something went wrong on the server. No changes were made.');
+          return;
+        };
+        $('#bh-gs-user-'+button.val()).remove();
+     }
+  }
+	client.post(window.location.pathname, callback(group_or_sponsor) , 'delete_members[]='+button.val());
   }; // End of remove_link event listener
   $('.remove_link').on('click', function (e) {
 		handleRemove($(this));

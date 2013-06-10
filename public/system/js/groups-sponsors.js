@@ -4,11 +4,11 @@ $(function() {
   if (!path.match(/\/$/)) {
     path=path+'/'; 
   } 
-  // Check if it is group or sponsor page
+  // Check if it is group or sponsor page 
   var group_or_sponsor="";
-  if (path == '/system/groups/') {
+  if ( path.substr(0, nl.sara.beehub.groups_path.length) == nl.sara.beehub.groups_path ) {
     group_or_sponsor = "group";
-  } else if ((path == '/system/sponsors/')) {
+  } else if ( path.substr(0, nl.sara.beehub.sponsors_path.length) == nl.sara.beehub.sponsors_path ) {
     group_or_sponsor = "sponsor";
   }
   
@@ -63,28 +63,32 @@ $(function() {
 		if (confirm('Are you sure you want to cancel membership of the '+group_or_sponsor+' '+button.closest('td').prev().html()+' ?')) {
 			// Send leave request to server
 			var client = new nl.sara.webdav.Client();
-			client.post(button.val(), function(status){
-        if (status === 409) {
-          alert("You can't leave this group, you're the last administrator! Don't leave your herd without a shepherd, please appoint a new administrator before leaving them!");
-          return;
-        }else if (status != 200) {
-					alert('Something went wrong on the server. No changes were made.');
-					return;
-				};
-				// Change button to join button
-				var joinbutton = $('<button type="button" value="'+button.val()+'" class="btn btn-success bh-gs-join-button">Join</button>');
-				joinbutton.click(function () {
-		            joinListener($(this));
-		        });
-		        button.closest('a').append(joinbutton);
-		        button.remove();
-		        // Remove group from mygroups or my sponsors
-		        // TODO zorgen dat dit goed gaat voor sponsors
-		        var leavebutton = $('[id="bh-'+group_or_sponsor+'s-panel-my'+group_or_sponsor+'s"]').find('[value="'+button.val()+'"]');
-		        if (leavebutton.length !=0) {
-		        	leavebutton.closest('.accordion-group').remove();
-		        }
-			}, 'leave=1');
+			
+			// Closure for ajax request
+			function callback(button){
+			  return function(status){
+	        if (status === 409) {
+	          alert("You can't leave this group, you're the last administrator! Don't leave your herd without a shepherd, please appoint a new administrator before leaving them!");
+	          return;
+	        }else if (status != 200) {
+	          alert('Something went wrong on the server. No changes were made.');
+	          return;
+	        };
+	        // Change button to join button
+	        var joinbutton = $('<button type="button" value="'+button.val()+'" class="btn btn-success bh-gs-join-button">Join</button>');
+	        joinbutton.click(function () {
+	                joinListener($(this));
+	            });
+	            button.closest('a').append(joinbutton);
+	            button.remove();
+	            // Remove group from mygroups or my sponsors
+	            var leavebutton = $('[id="bh-gs-panel-mygs"]').find('[value="'+button.val()+'"]');
+	            if (leavebutton.length !=0) {
+	              leavebutton.closest('.accordion-group').remove();
+	            }
+	      }
+			}
+			client.post(button.val(), callback(button), 'leave=1');
 	    }
 	}
 
@@ -108,7 +112,7 @@ $(function() {
 			function callback(button){
 				return function(status, data){
 				  if (status === 409) {
-				    alert("You can't leave this "+group_or_sponsor+", you're the last administrator! Don't leave your "+group_or-sponsor+" without a leader, please appoint a new administrator before leaving them!");
+				    alert("You can't leave this "+group_or_sponsor+", you're the last administrator! Don't leave your "+group_or_sponsor+" without a leader, please appoint a new administrator before leaving them!");
 			      return;
 			    } else if (status !== 200) {
 			      alert('Something went wrong on the server. No changes were made.');
@@ -116,7 +120,7 @@ $(function() {
 			    };
           button.closest('.accordion-group').remove();
           // TODO zorgen dat dit goed gaat voor sponsors
-          var leavebutton = $('[id="bh-'+group_or_sponsor+'s-panel-join"]').find('[value="'+button.val()+'"]');
+          var leavebutton = $('[id="bh-gs-panel-join"]').find('[value="'+button.val()+'"]');
           var joinbutton = $('<button type="button" value="'+button.val()+'" class="btn btn-success bh-gs-join-button">Join</button>');
           joinbutton.click(function () {
             joinListener($(this));
@@ -133,11 +137,10 @@ $(function() {
 	  filterfield=$(this);
     // when field is empty, filter icon
     $(this).parent().find('[id="bh-gs-icon-erase"]').remove();
-    // TODO zorgen dat dit ook werkt voor sponsors
-    $(this).parent().find('[id="bh-'+group_or_sponsor+'s-icon-filter"]').remove();
+    $(this).parent().find('[id="bh-gs-icon-filter"]').remove();
     if (filterfield.val().length == 0){
       // Zorgen dat dit ook werkt voor sponsors
-      var iconfilter = $('<span class="add-on" id="bh-'+group_or_sponsor+'s-icon-filter"><i class="icon-filter" ></i></span>');
+      var iconfilter = $('<span class="add-on" id="bh-gs-icon-filter"><i class="icon-filter" ></i></span>');
       $(this).parent().prepend(iconfilter);
     // when field is not empty, erase icon with listener
     } else {
@@ -149,8 +152,7 @@ $(function() {
       });
     }
     var regex = new RegExp(filterfield.val(), 'gi' );
-    // TODO sponsors
-    $('div#bh-'+group_or_sponsor+'s-join-'+group_or_sponsor+'s.accordion').find('.accordion-group').filter(function(index) {
+    $('div#bh-gs-join-gs.accordion').find('.accordion-group').filter(function(index) {
       $(this).hide();
       return $(this).find('th').html().match(regex) != null;
     }).show();
@@ -159,7 +161,7 @@ $(function() {
 	/*
 	 * Action when the filter field is changed
 	 */
-	 $('#bh-'+group_or_sponsor+'s-filter-by-name').keyup(filterByName);
+	 $('#bh-gs-filter-by-name').keyup(filterByName);
 
 	var groupNameListener = function(groupNameField){
 		 var showError = function(error){
