@@ -29,7 +29,12 @@ $(function() {
 	if (!path.match(/\/$/)) {
 		path=path+'/'; 
 	} 
-	
+//	$(function(){
+//	  $(".floating-header").affix();
+//	});
+	$("#bh-dir-affix-table th").each(function() {
+	$(this).width($(this).width());
+	}); 
 	// solving bug: https://github.com/twitter/bootstrap/issues/6094
 	// conflict bootstrap and jquery
 	var btn = $.fn.button.noConflict() // reverts $.fn.button to jqueryui btn
@@ -76,14 +81,13 @@ $(function() {
 	        return function(status) {
 				// Forbidden
 				if (status === 403) {
-					$("#bh-dir-upload-dialog").find('td[id="bh-dir-'+file.name+'"]').html("<div class='progress progress-danger progress-striped'><div class='bar' style='width: 100%;'>Forbidden</div></div>");
-				}
-				// Succeeded
-				if (status === 201 || status === 204) {
-					$("#bh-dir-upload-dialog").find('td[id="bh-dir-'+file.name+'"]').html("<div class='progress progress-success progress-striped'><div class='bar' style='width: 100%;'>100%</div></div>");
+					$("#bh-dir-dialog").find('td[id="bh-dir-'+file.name+'"]').html("<div class='progress progress-danger progress-striped'><div class='bar' style='width: 100%;'>Forbidden</div></div>");
+				//succeeded
+				} else if (status === 201 || status === 204) {
+					$("#bh-dir-dialog").find('td[id="bh-dir-'+file.name+'"]').html("<div class='progress progress-success progress-striped'><div class='bar' style='width: 100%;'>100%</div></div>");
 				// Unknown error
 				} else {
-					$("#bh-dir-upload-dialog").find('td[id="bh-dir-'+file.name+'"]').html("<div class='progress progress-danger progress-striped'><div class='bar' style='width: 100%;'>Unknown error</div></div>");
+					$("#bh-dir-dialog").find('td[id="bh-dir-'+file.name+'"]').html("<div class='progress progress-danger progress-striped'><div class='bar' style='width: 100%;'>Unknown error</div></div>");
 				};
 				if (callback !== null) {
 					callback();
@@ -101,12 +105,12 @@ $(function() {
 	    	 // progress bar
 	    	 ajax.upload.addEventListener("progress", function(event) {
 	    		 var progress = parseInt(event.loaded / event.total * 100);
-	    		 $("#bh-dir-upload-dialog").find('td[id="bh-dir-'+file.name+'"]').html("<div class='progress progress-success progress-striped'><div class='bar' style='width: "+progress+"%;'>"+progress+"%</div></div>");
+	    		 $("#bh-dir-dialog").find('td[id="bh-dir-'+file.name+'"]').html("<div class='progress progress-success progress-striped'><div class='bar' style='width: "+progress+"%;'>"+progress+"%</div></div>");
 
 	    	 
 	    	 }, false);
 	    } else {
-	    	$("#bh-dir-upload-dialog").find('td[id="bh-dir-'+file.name+'"]').html('Bezig... (ik kan geen voortgang laten zien in deze browser)');
+	    	$("#bh-dir-dialog").find('td[id="bh-dir-'+file.name+'"]').html('Bezig... (ik kan geen voortgang laten zien in deze browser)');
 	    }
 		ajax.send(file);  
 	};
@@ -119,7 +123,7 @@ $(function() {
 	 * 
 	 */
 	function setOverwriteHandler(fileName, filesHash){
-		$("#bh-dir-upload-dialog").find('button[id="bh-dir-upload-overwrite-'+fileName+'"]').click(function(){
+		$("#bh-dir-dialog").find('button[id="bh-dir-upload-overwrite-'+fileName+'"]').click(function(){
 			uploadToServer(fileName, filesHash[fileName], null );
 		})
 	};
@@ -131,8 +135,8 @@ $(function() {
 	 * 
 	 */
 	function setCancelHandler(fileName) {
-		$("#bh-dir-upload-dialog").find('button[id="bh-dir-upload-cancel-'+fileName+'"]').click(function(){
-			$("#bh-dir-upload-dialog").find('td[id="bh-dir-'+fileName+'"]').html("<div class='progress progress-danger progress-striped'><div class='bar' style='width: 100%;'>Canceled</div></div>");
+		$("#bh-dir-dialog").find('button[id="bh-dir-upload-cancel-'+fileName+'"]').click(function(){
+			$("#bh-dir-dialog").find('td[id="bh-dir-'+fileName+'"]').html("<div class='progress progress-danger progress-striped'><div class='bar' style='width: 100%;'>Canceled</div></div>");
 		})
 	}
 	
@@ -144,28 +148,28 @@ $(function() {
 	 * @param object filesHash
 	 */
 	function setRenameHandler(fileName, fileNameOrg, filesHash){
-		$("#bh-dir-upload-dialog").find('button[id="bh-dir-upload-rename-'+fileName+'"]').click(function(){
+		$("#bh-dir-dialog").find('button[id="bh-dir-upload-rename-'+fileName+'"]').click(function(){
 			// search fileName td and make input field
-			var fileNameOrg= $("#bh-dir-upload-dialog").find('td[id="bh-dir-'+fileName+'"]').prev().html();
-			var buttonsOrg = $("#bh-dir-upload-dialog").find('td[id="bh-dir-'+fileName+'"]').html();
-			$("#bh-dir-upload-dialog").find('td[id="bh-dir-'+fileName+'"]').prev().html("<input id='bh-dir-upload-rename-input-"+fileName+"' value='"+fileName+"'></input>");
+			var fileNameOrg= $("#bh-dir-dialog").find('td[id="bh-dir-'+fileName+'"]').prev().html();
+			var buttonsOrg = $("#bh-dir-dialog").find('td[id="bh-dir-'+fileName+'"]').html();
+			$("#bh-dir-dialog").find('td[id="bh-dir-'+fileName+'"]').prev().html("<input id='bh-dir-upload-rename-input-"+fileName+"' value='"+fileName+"'></input>");
 			// change buttons - cancel and upload
 			var renameUploadButton = '<button id="bh-dir-upload-rename-upload-'+fileNameOrg+'" name="'+fileNameOrg+'" class="btn btn-success">Upload</button>'
 			var renameCancelButton = '<button id="bh-dir-upload-rename-cancel-'+fileNameOrg+'" class="btn btn-danger">Cancel</button>'
-			$("#bh-dir-upload-dialog").find('td[id="bh-dir-'+fileName+'"]').html(renameUploadButton+" "+renameCancelButton);
+			$("#bh-dir-dialog").find('td[id="bh-dir-'+fileName+'"]').html(renameUploadButton+" "+renameCancelButton);
 			// handler cancel rename
-			$("#bh-dir-upload-dialog").find('button[id="bh-dir-upload-rename-cancel-'+fileName+'"]').click(function(){
-				$("#bh-dir-upload-dialog").find('td[id="bh-dir-'+fileNameOrg+'"]').html(buttonsOrg);
-				$("#bh-dir-upload-dialog").find('td[id="bh-dir-'+fileNameOrg+'"]').prev().html(fileNameOrg);
+			$("#bh-dir-dialog").find('button[id="bh-dir-upload-rename-cancel-'+fileName+'"]').click(function(){
+				$("#bh-dir-dialog").find('td[id="bh-dir-'+fileNameOrg+'"]').html(buttonsOrg);
+				$("#bh-dir-dialog").find('td[id="bh-dir-'+fileNameOrg+'"]').prev().html(fileNameOrg);
 				setOverwriteHandler(fileName, filesHash);
 				setCancelHandler(fileName);
 				setRenameHandler(fileName, fileNameOrg, filesHash);
 			})
 			// add handler upload rename
-			$("#bh-dir-upload-dialog").find('button[id="bh-dir-upload-rename-upload-'+fileName+'"]').click(function(){
-				var newName = $("#bh-dir-upload-dialog").find('input[id="bh-dir-upload-rename-input-'+fileName+'"]').val();
+			$("#bh-dir-dialog").find('button[id="bh-dir-upload-rename-upload-'+fileName+'"]').click(function(){
+				var newName = $("#bh-dir-dialog").find('input[id="bh-dir-upload-rename-input-'+fileName+'"]').val();
 				if (newName !== fileName) {
-					$("#bh-dir-upload-dialog").find('td[id="bh-dir-'+fileNameOrg+'"]').prev().html(fileName+" <br/> <b>renamed to</b> <br/> "+newName);
+					$("#bh-dir-dialog").find('td[id="bh-dir-'+fileNameOrg+'"]').prev().html(fileName+" <br/> <b>renamed to</b> <br/> "+newName);
 				};
 				checkFileName(newName, filesHash[fileName], null, filesHash);
 			})
@@ -200,7 +204,7 @@ $(function() {
 					var overwriteButton = '<button id="bh-dir-upload-overwrite-'+fileName+'" name="'+fileName+'" class="btn btn-danger">Overwrite</button>'
 					var renameButton = '<button id="bh-dir-upload-rename-'+fileName+'" class="btn btn-success">Rename</button>'
 					var cancelButton = '<button id="bh-dir-upload-cancel-'+fileName+'" name="'+fileName+'" class="btn btn-success">Cancel</button>'
-					$("#bh-dir-upload-dialog").find('td[id="bh-dir-'+fileName+'"]').html("File exist on server!<br/>"+renameButton+" "+overwriteButton+" "+cancelButton);
+					$("#bh-dir-dialog").find('td[id="bh-dir-'+fileName+'"]').html("File exist on server!<br/>"+renameButton+" "+overwriteButton+" "+cancelButton);
 					setOverwriteHandler(fileName, filesHash);
 					setCancelHandler(fileName);
 					setRenameHandler(fileName, file.name, filesHash);
@@ -220,7 +224,7 @@ $(function() {
     function handleUpload(files, filesHash) {
         counter++;
         if ( counter < files.length ) {
-        	$("#bh-dir-upload-dialog").scrollTop(counter*50);
+        	$("#bh-dir-dialog").scrollTop(counter*50);
         	checkFileName( files[counter].name, files[counter], function(){handleUpload(files, filesHash)}, filesHash );
         } else { 
         	$('#bh-dir-close-upload-button').button("enable");
@@ -238,7 +242,7 @@ $(function() {
 	// Upload dialog
 	var counter;
 	$('#bh-dir-upload-hidden').change(function(){
-		$("#bh-dir-upload-dialog").html("");
+		$("#bh-dir-dialog").html("");
 		var upload_files = new Object();
 		var files = $('#bh-dir-upload-hidden')[0].files;
 		var filesHash = {};
@@ -251,11 +255,12 @@ $(function() {
 			appendString = appendString + '<tr><td>'+files[i].name+'</td><td width="60%" id="bh-dir-'+files[i].name+'"></td></tr>'
 		};	
 		appendString = appendString +'</tbody></table>';
-		$("#bh-dir-upload-dialog").append(appendString);
+		$("#bh-dir-dialog").append(appendString);
 
-		$("#bh-dir-upload-dialog").dialog({
+		$("#bh-dir-dialog").dialog({
 	    	modal: true,
 	    	maxHeight: 400,
+	    	title: " Upload",
 	    	closeOnEscape: false,
 	    	dialogClass: "no-close",
 	    	width: 600,
@@ -293,11 +298,29 @@ $(function() {
           };
           if (status === 405){
             createFolder(name,counter+1);
+            return;
+          };
+          if (status === 403) {
+            $('#bh-dir-dialog').html("You are not allowed to create a new folder.");
           } else {
-            alert("Unknown error");
+            $('#bh-dir-dialog').html("Unknown error.");
           }
+          $('#bh-dir-dialog').dialog({
+            modal: true,
+            maxHeight: 400,
+            title: " Error!",
+            closeOnEscape: false,
+            dialogClass: "no-close",
+            buttons: [{
+              text: "Ok",
+              click: function() {
+                $(this).dialog("close");
+              }
+            }]
+          });
 	      }
 	    };
+	    
 	    if (counter === 0) {
 	      webdav.mkcol(path+name,callback(name, counter));
 	    } else {
@@ -335,16 +358,17 @@ $(function() {
 				if (status === 412) {
 					var overwriteButton='<button id="bh-dir-rename-overwrite-button" class="btn btn-danger">Overwrite</button>'
 					var cancelButton='<button id="bh-dir-rename-cancel-button" class="btn btn-success">Cancel</button>'
-					$("#bh-dir-rename-dialog").html('<h5><b><i>'+fileNameNew+'</b></i> already exist in the current directory!</h5><br><center>'+overwriteButton+' '+cancelButton)+'</center>';
-					$("#bh-dir-rename-dialog").dialog({
-						   modal: true
+					$("#bh-dir-dialog").html('<h5><b><i>'+fileNameNew+'</b></i> already exist in the current directory!</h5><br><center>'+overwriteButton+' '+cancelButton)+'</center>';
+					$("#bh-dir-dialog").dialog({
+						   modal: true,
+						   title: "Warning"
 						    });
 					$("#bh-dir-rename-overwrite-button").click(function(){
 						moveObject(fileOrg, fileNew, nl.sara.webdav.Client.SILENT_OVERWRITE, element);
 					})
 					$("#bh-dir-rename-cancel-button").click(function(){
 						element.closest("tr").find(".bh-dir-rename-td").find(':input').val(fileNameOrg);
-						$("#bh-dir-rename-dialog").dialog("close");
+						$("#bh-dir-dialog").dialog("close");
 					})
 				} 
 				if (status === 201 || status === 204) {
@@ -415,12 +439,6 @@ $(function() {
     
     function callback(deleteArray, counter) {
       return function(status) {
-        $("#bh-dir-delete-dialog").scrollTop(counter*35);
-        if (status == 204) {
-          $("#bh-dir-delete-dialog").find('td[id="bh-dir-delete-'+deleteArray[counter].value+'"]').html("<b>Deleted</b>");
-        } else {
-          $("#bh-dir-delete-dialog").find('td[id="bh-dir-delete-'+deleteArray[counter].value+'"]').html("<b>Unknown error</b>");
-        }
         if (deleteArray[counter+1] != undefined) {
           deleteItem(deleteArray,counter+1);
         } else {
@@ -432,6 +450,17 @@ $(function() {
             window.location.reload();
           })
         }
+        $("#bh-dir-dialog").scrollTop(counter*35);
+        if (status === 403) {
+          $("#bh-dir-dialog").find('td[id="bh-dir-delete-'+deleteArray[counter].value+'"]').html("<b>Forbidden</b>");
+          return;
+        }
+        if (status == 204) {
+          $("#bh-dir-dialog").find('td[id="bh-dir-delete-'+deleteArray[counter].value+'"]').html("<b>Deleted</b>");
+        } else {
+          $("#bh-dir-dialog").find('td[id="bh-dir-delete-'+deleteArray[counter].value+'"]').html("<b>Unknown error</b>");
+        }
+ 
       }
     };
      
@@ -440,7 +469,7 @@ $(function() {
 	
 	// Delete handler
 	$('#bh-dir-delete').click(function(e){
-    $("#bh-dir-delete-dialog").html("");
+    $("#bh-dir-dialog").html("");
     var appendString='';
     appendString = appendString + '<table class="table"><tbody>';
     var deleteArray=[];
@@ -448,10 +477,11 @@ $(function() {
       appendString = appendString + '<tr><td>'+$(this).val()+'</td><td width="20%" id="bh-dir-delete-'+$(this).val()+'"></td></tr>'
     });
     appendString = appendString +'</tbody></table>';
-    $("#bh-dir-delete-dialog").append(appendString);
-    $("#bh-dir-delete-dialog").dialog({
+    $("#bh-dir-dialog").append(appendString);
+    $("#bh-dir-dialog").dialog({
       modal: true,
       maxHeight: 400,
+      title: "Delete",
       closeOnEscape: false,
       dialogClass: "no-close",
       minWidth: 400,

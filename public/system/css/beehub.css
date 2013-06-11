@@ -30,3 +30,17 @@
 .no-close .ui-dialog-titlebar-close {
   display: none !important;
 }
+
+/* Prevent scrolling */
+#bh-dir-affix.affix {
+    position: fixed;
+    top: 35px;
+    width: 100%;
+    background-color: white;
+}
+#bh-dir-affix-table.affix {
+	position: fixed;
+  background-color: white;
+  top: 135px;
+  width: 100%;
+}
