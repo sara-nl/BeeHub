@@ -9,18 +9,6 @@ $members    All members of this directory
 // used for acl
 $aclAllowed = $this->property_priv_read(array(DAV::PROP_ACL));
 $aclAllowed = $aclAllowed[DAV::PROP_ACL];
-$header = '<style type="text/css">
-// Background color path
-.breadcrumb {
-  background-color: white !important;
-}	
-
-// Do not show close button on dialog
-.no-close .ui-dialog-titlebar-close {
-	display: none !important;
-}
-}
-</style>';
 require 'views/header.php';
 ?>
 <!-- Tabs-->

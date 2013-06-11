@@ -274,10 +274,40 @@ $(function() {
 	});
 	// END UPLOAD
 	
+	/*
+	 * Create new folder. When new foldername already exist add counter to the name
+	 * of the folder
+	 * 
+	 * @param string name
+	 * @param integer counter
+	 * 
+	 */
+	function createFolder(name, counter){
+	   var webdav = new nl.sara.webdav.Client();
+	    
+	    function callback(name, counter) {
+	      return function(status) {
+          if (status === 201) {
+            window.location.reload();
+            return;
+          };
+          if (status === 405){
+            createFolder(name,counter+1);
+          } else {
+            alert("Unknown error");
+          }
+	      }
+	    };
+	    if (counter === 0) {
+	      webdav.mkcol(path+name,callback(name, counter));
+	    } else {
+	      webdav.mkcol(path+name+'_'+counter,callback(name, counter));
+	    }
+	}
 	
 	// New folder handler
 	$('#bh-dir-newfolder').click(function() {
-		alert("deze knop werkt nog niet - newfolder"); 
+	  createFolder("new_folder", 0);
 	});
 	
 	// Edit handler
