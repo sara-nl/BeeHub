@@ -22,23 +22,20 @@
  * Beehub Client
  * @author Laura Leistikow (laura.leistikow@surfsara.nl)
  */
-$(function() {
-	
+  $(function() {
+ 
 	var path = location.pathname;
 	// add slash to the end of path
 	if (!path.match(/\/$/)) {
 		path=path+'/'; 
 	} 
-//	$(function(){
-//	  $(".floating-header").affix();
-//	});
-	$("#bh-dir-affix-table th").each(function() {
-	$(this).width($(this).width());
-	}); 
+
 	// solving bug: https://github.com/twitter/bootstrap/issues/6094
 	// conflict bootstrap and jquery
 	var btn = $.fn.button.noConflict() // reverts $.fn.button to jqueryui btn
 	$.fn.btn = btn // assigns bootstrap button functionality to $.fn.btn
+	
+//	$('#bh-dir-tree').css({visibility:"hidden"});
 	
 	// CONTENTS TAB
 	// Open selected handler: this can be a file or a directory
@@ -503,6 +500,21 @@ $(function() {
     });
     $("#bh-dir-delete-button").addClass("btn-danger");
 	})
+	
+	 // TREE
+	 // Tree slide handler
+   $(".bh-dir-tree-slide-trigger").hover(function(){
+    $(".bh-dir-tree-slide").toggle("fast");
+    $(this).toggleClass("active");
+    return false;
+  }, function(){
+    // No action;
+  });
+	$(".bh-dir-tree-slide-trigger").click(function(){
+	   $(".bh-dir-tree-slide").toggle("fast");
+	    $(this).toggleClass("active");
+	    return false;
+	});
 	
 	// ACL TAB ACTIONS/FUNCTIONS
 	$("#bh-dir-acl-table tbody").sortable();

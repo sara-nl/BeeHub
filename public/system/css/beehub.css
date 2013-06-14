@@ -22,6 +22,7 @@
   background-color: #e8f1e9;
 }
 
+/* CLIENT */
 /* Background color path */
 .breadcrumb {
   background-color: white !important;
@@ -31,16 +32,80 @@
   display: none !important;
 }
 
-/* Prevent scrolling */
-#bh-dir-affix.affix {
-    position: fixed;
-    top: 35px;
-    width: 100%;
-    background-color: white;
+/* Make space for tree slide out */
+#bh-dir-content-table {
+	width: 99%;
 }
-#bh-dir-affix-table.affix {
-	position: fixed;
-  background-color: white;
-  top: 135px;
-  width: 100%;
+
+/* Align with tabs */
+.bh-dir-breadcrumb {
+	padding:0 !important;
 }
+
+/* Tree settings */
+.bh-dir-tree-slide {
+position: fixed ;
+top: 150px;
+right: 0;
+display: none;
+background: #000000;
+border-radius: 20px;
+border-radius: 20px;
+width: 330px;
+height: auto;
+padding: 30px 30px 30px 30px;
+filter: alpha(opacity=85);
+opacity: .85;
+}
+.bh-dir-tree-slide p{
+margin: 0 0 15px 0;
+padding: 0;
+color: #cccccc;
+}
+.bh-dir-tree-slide a, .bh-dir-tree-slide a:visited{
+margin: 0;
+padding: 0;
+color: #9FC54E;
+text-decoration: none;
+}
+.bh-dir-tree-slide a:hover, .bh-dir-tree-slide a:visited:hover{
+margin: 0;
+padding: 0;
+color: #ffffff;
+text-decoration: none;
+}
+a.bh-dir-tree-slide-trigger{
+position: fixed;
+border-top-left-radius: 5px;
+border-bottom-left-radius: 5px;
+text-decoration: none;
+top: 170px; right: 0;
+font-size: 16px;
+letter-spacing:-1px;
+font-family: verdana, helvetica, arial, sans-serif;
+color:#fff;
+padding: 15px 10px 15px 15px;
+font-weight: 700;
+background:#333333 url(/system/img/plus.png) 85% 55% no-repeat;
+display: block;
+}
+
+a.bh-dir-tree-slide-trigger:hover {
+position: fixed;
+text-decoration: none;
+top: 170px; right: 0;
+font-size: 16px;
+letter-spacing:-1px;
+font-family: verdana, helvetica, arial, sans-serif;
+color:#fff;
+padding: 15px 10px 15px 15px;
+font-weight: 700;
+background:#222222 url(/system/img/plus.png) 85% 55% no-repeat;
+border-top-left-radius: 5px;
+border-bottom-left-radius: 5px;
+display: block;
+}
+a.active.bh-dir-tree-slide-trigger {
+background:black url(/system/img/minus.png) 85% 55% no-repeat !important;
+}
+
