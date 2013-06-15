@@ -23,13 +23,16 @@
  * @author Laura Leistikow (laura.leistikow@surfsara.nl)
  */
   $(function() {
- 
+    
 	var path = location.pathname;
 	// add slash to the end of path
 	if (!path.match(/\/$/)) {
 		path=path+'/'; 
 	} 
-
+  $("#bh-dir-content-table th").each(function() {
+    $(this).width($(this).width());
+  }); 
+  
 	// solving bug: https://github.com/twitter/bootstrap/issues/6094
 	// conflict bootstrap and jquery
 	var btn = $.fn.button.noConflict() // reverts $.fn.button to jqueryui btn

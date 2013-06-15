@@ -11,57 +11,63 @@ $aclAllowed = $this->property_priv_read(array(DAV::PROP_ACL));
 $aclAllowed = $aclAllowed[DAV::PROP_ACL];
 require 'views/header.php';
 ?>
-<h4>
-	<?php 
-		$crumb = explode("/", $this->path);
-		print "<ul class='breadcrumb bh-dir-breadcrumb'>";
-		print "<li><a href='/'>BeeHub root</a><span class='divider'>&raquo;</span></li>";
-		$last = count($crumb)-2;
-		$i=0;
-		$newpath='';
-		foreach($crumb as $value) {
-      $value = urldecode($value);
-			// first and last value are empty
-			if ($value!=='') {
-				$newpath .= '/'.$value;
-				if ($i===$last) {
-					print "<li class='active'>$value</li>";
-				} else {
-					print "<li><a href='". $newpath ."'>$value</a><span class='divider'>/</span></li>";
+<div class="bh-dir-fixed-header">
+	<h4>
+		<?php 
+			$crumb = explode("/", $this->path);
+			print "<ul class='breadcrumb bh-dir-breadcrumb '>";
+			print "<li><a href='/'>BeeHub root</a><span class='divider'>&raquo;</span></li>";
+			$last = count($crumb)-2;
+			$i=0;
+			$newpath='';
+			foreach($crumb as $value) {
+	      $value = urldecode($value);
+				// first and last value are empty
+				if ($value!=='') {
+					$newpath .= '/'.$value;
+					if ($i===$last) {
+						print "<li class='active'>$value</li>";
+					} else {
+						print "<li><a href='". $newpath ."'>$value</a><span class='divider'>/</span></li>";
+					}
 				}
+				$i++;
 			}
-			$i++;
-		}
-		print "</ul>";
-	?>
-</h4>
+			print "</ul>";
+		?>
+	</h4>
+</div><!-- End class fixed header -->
+
+<div id="bh-dir-allocate-space"></div>
 
 <!-- Tabs-->
-<ul id="bh-dir-tabs" class="nav nav-tabs">
-  <li class="active"><a href="#bh-dir-panel-contents" data-toggle="tab">Contents</a></li>
-  <li><a href="#bh-dir-panel-acl" data-toggle="tab">ACL</a></li>
-</ul>
-
+<div class="bh-dir-fixed-tabs">
+	<ul id="bh-dir-tabs" class="nav nav-tabs">
+	  <li class="active"><a href="#bh-dir-panel-contents" data-toggle="tab">Contents</a></li>
+	  <li><a href="#bh-dir-panel-acl" data-toggle="tab">ACL</a></li>
+	</ul>
+</div> <!-- End class fixed tabs -->
+	
 <!-- Tab contents -->
 <div class="tab-content ">
 	<!-- Contents tab -->
 	<div id="bh-dir-panel-contents" class="tab-pane fade in active">
-		<?php if (DAV::unslashify($this->collection()->path) != "") :?>
-		  <button id="<?= DAV::unslashify($this->collection()->path) ?>" class="btn btn-small bh-dir-group"><i class="icon-chevron-up" ></i>  Up</button>
-		<?php else:?>
-			<button id="<?= DAV::unslashify($this->collection()->path) ?>" class="btn btn-small bh-dir-group" disabled="disabled"><i class="icon-chevron-up" ></i>  Up</button>
-		<?php endif;?>
-		<button id="<?= preg_replace( '@^/system/users/(.*)@', '/home/\1/', BeeHub_Auth::inst()->current_user()->path)?>" class="btn btn-small bh-dir-gohome" data-toggle="tooltip" title="Go to home folder"><i class="icon-home"></i> Home</button>
-		<input id="bh-dir-upload-hidden" type="file" name="files[]" hidden='true' multiple>
-		<button id="bh-dir-upload" data-toggle="tooltip" title="Upload to current folder" class="btn btn-small" ><i class="icon-upload" ></i> Upload</button>
-		<button id="bh-dir-newfolder" data-toggle="tooltip" title="Create new folder in current folder" class="btn btn-small"><i class="icon-folder-close" ></i> New</button>
-		<button id="bh-dir-copy" data-toggle="tooltip" title="Copy selected to other folder" class="btn btn-small" disabled="disabled"><i class="icon-hand-right" ></i> Copy</button>
-		<button id="bh-dir-move" data-toggle="tooltip" title="Move selected to other folder" class="btn btn-small" disabled="disabled"><i class="icon-move" ></i> Move</button>
-		<button id="bh-dir-delete" data-toggle="tooltip" title="Delete selected" class="btn btn-small" disabled="disabled"><i class="icon-remove" ></i> Delete</button>
-		<br/><br/>
-  
+		<div class="bh-dir-fixed-buttons">
+			<?php if (DAV::unslashify($this->collection()->path) != "") :?>
+			  <button id="<?= DAV::unslashify($this->collection()->path) ?>" class="btn btn-small bh-dir-group"><i class="icon-chevron-up" ></i>  Up</button>
+			<?php else:?>
+				<button id="<?= DAV::unslashify($this->collection()->path) ?>" class="btn btn-small bh-dir-group" disabled="disabled"><i class="icon-chevron-up" ></i>  Up</button>
+			<?php endif;?>
+			<button id="<?= preg_replace( '@^/system/users/(.*)@', '/home/\1/', BeeHub_Auth::inst()->current_user()->path)?>" class="btn btn-small bh-dir-gohome" data-toggle="tooltip" title="Go to home folder"><i class="icon-home"></i> Home</button>
+			<input id="bh-dir-upload-hidden" type="file" name="files[]" hidden='true' multiple>
+			<button id="bh-dir-upload" data-toggle="tooltip" title="Upload to current folder" class="btn btn-small" ><i class="icon-upload" ></i> Upload</button>
+			<button id="bh-dir-newfolder" data-toggle="tooltip" title="Create new folder in current folder" class="btn btn-small"><i class="icon-folder-close" ></i> New</button>
+			<button id="bh-dir-copy" data-toggle="tooltip" title="Copy selected to other folder" class="btn btn-small" disabled="disabled"><i class="icon-hand-right" ></i> Copy</button>
+			<button id="bh-dir-move" data-toggle="tooltip" title="Move selected to other folder" class="btn btn-small" disabled="disabled"><i class="icon-move" ></i> Move</button>
+			<button id="bh-dir-delete" data-toggle="tooltip" title="Delete selected" class="btn btn-small" disabled="disabled"><i class="icon-remove" ></i> Delete</button>
+		</div>
 		<table id="bh-dir-content-table" class="table table-striped persist-area" >
-			<thead>
+			<thead class="bh-dir-fixed-table">
 				<tr>
 					<th ></th>
 					<th><input type="checkbox" class="bh-dir-checkboxgroup"></th> 
