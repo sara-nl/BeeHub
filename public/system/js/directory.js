@@ -67,7 +67,7 @@
       // css class name applied to the sticky header row (tr)
       stickyHeaders : 'tablesorter-stickyHeader',
       // apply sticky header top below the top of the browser window
-      stickyHeaders_offset : 185,
+      stickyHeaders_offset : 186,
     }
   });
   

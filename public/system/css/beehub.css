@@ -144,7 +144,9 @@ background:black url(/system/img/minus.png) 85% 55% no-repeat !important;
   height: 127px;
   width: 100%;
 }
-
+.bootstrap-header {
+	border-bottom: 1px solid white !important;
+}
 /* Align checkboxes */
 .tablesorter-header-inner {
 	padding-left: 0px !important;
