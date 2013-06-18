@@ -11,6 +11,7 @@ $aclAllowed = $this->property_priv_read(array(DAV::PROP_ACL));
 $aclAllowed = $aclAllowed[DAV::PROP_ACL];
 require 'views/header.php';
 ?>
+
 <div class="bh-dir-fixed-header">
 	<h4>
 		<?php 
@@ -38,45 +39,58 @@ require 'views/header.php';
 	</h4>
 </div><!-- End class fixed header -->
 
-<div id="bh-dir-allocate-space"></div>
-
-<!-- Tabs-->
-<div class="bh-dir-fixed-tabs">
+<!-- Tabs--> 
+<div class="bh-dir-fixed-tabs"> 
 	<ul id="bh-dir-tabs" class="nav nav-tabs">
 	  <li class="active"><a href="#bh-dir-panel-contents" data-toggle="tab">Contents</a></li>
 	  <li><a href="#bh-dir-panel-acl" data-toggle="tab">ACL</a></li>
 	</ul>
 </div> <!-- End class fixed tabs -->
-	
+
+<div class="bh-dir-fixed-buttons">
+		<?php if (DAV::unslashify($this->collection()->path) != "") :?>
+	  <button id="<?= DAV::unslashify($this->collection()->path) ?>" class="btn btn-small bh-dir-group"><i class="icon-chevron-up" ></i>  Up</button>
+	<?php else:?>
+		<button id="<?= DAV::unslashify($this->collection()->path) ?>" class="btn btn-small bh-dir-group" disabled="disabled"><i class="icon-chevron-up" ></i>  Up</button>
+	<?php endif;?>
+	<button id="<?= preg_replace( '@^/system/users/(.*)@', '/home/\1/', BeeHub_Auth::inst()->current_user()->path)?>" class="btn btn-small bh-dir-gohome" data-toggle="tooltip" title="Go to home folder"><i class="icon-home"></i> Home</button>
+	<input id="bh-dir-upload-hidden" type="file" name="files[]" hidden='true' multiple>
+	<button id="bh-dir-upload" data-toggle="tooltip" title="Upload to current folder" class="btn btn-small" ><i class="icon-upload" ></i> Upload</button>
+	<button id="bh-dir-newfolder" data-toggle="tooltip" title="Create new folder in current folder" class="btn btn-small"><i class="icon-folder-close" ></i> New</button>
+	<button id="bh-dir-copy" data-toggle="tooltip" title="Copy selected to other folder" class="btn btn-small" disabled="disabled"><i class="icon-hand-right" ></i> Copy</button>
+	<button id="bh-dir-move" data-toggle="tooltip" title="Move selected to other folder" class="btn btn-small" disabled="disabled"><i class="icon-move" ></i> Move</button>
+	<button id="bh-dir-delete" data-toggle="tooltip" title="Delete selected" class="btn btn-small" disabled="disabled"><i class="icon-remove" ></i> Delete</button>
+</div>
+		
+<!-- Dialog -->
+<div id="bh-dir-dialog" hidden='true'></div>
+
+<!-- Tree slide out -->
+<div class="bh-dir-tree-slide">
+	<h3>Sliding Tree Panel</h3>
+	<p>Hier komt de boom</p>
+</div>
+<a class="bh-dir-tree-slide-trigger" href="#"></a>
+		
 <!-- Tab contents -->
-<div class="tab-content ">
+<div class="tab-content">
+<!-- Fixed divs don't use space -->
+	<div class="bh-dir-allocate-space"></div>
 	<!-- Contents tab -->
 	<div id="bh-dir-panel-contents" class="tab-pane fade in active">
-		<div class="bh-dir-fixed-buttons">
-			<?php if (DAV::unslashify($this->collection()->path) != "") :?>
-			  <button id="<?= DAV::unslashify($this->collection()->path) ?>" class="btn btn-small bh-dir-group"><i class="icon-chevron-up" ></i>  Up</button>
-			<?php else:?>
-				<button id="<?= DAV::unslashify($this->collection()->path) ?>" class="btn btn-small bh-dir-group" disabled="disabled"><i class="icon-chevron-up" ></i>  Up</button>
-			<?php endif;?>
-			<button id="<?= preg_replace( '@^/system/users/(.*)@', '/home/\1/', BeeHub_Auth::inst()->current_user()->path)?>" class="btn btn-small bh-dir-gohome" data-toggle="tooltip" title="Go to home folder"><i class="icon-home"></i> Home</button>
-			<input id="bh-dir-upload-hidden" type="file" name="files[]" hidden='true' multiple>
-			<button id="bh-dir-upload" data-toggle="tooltip" title="Upload to current folder" class="btn btn-small" ><i class="icon-upload" ></i> Upload</button>
-			<button id="bh-dir-newfolder" data-toggle="tooltip" title="Create new folder in current folder" class="btn btn-small"><i class="icon-folder-close" ></i> New</button>
-			<button id="bh-dir-copy" data-toggle="tooltip" title="Copy selected to other folder" class="btn btn-small" disabled="disabled"><i class="icon-hand-right" ></i> Copy</button>
-			<button id="bh-dir-move" data-toggle="tooltip" title="Move selected to other folder" class="btn btn-small" disabled="disabled"><i class="icon-move" ></i> Move</button>
-			<button id="bh-dir-delete" data-toggle="tooltip" title="Delete selected" class="btn btn-small" disabled="disabled"><i class="icon-remove" ></i> Delete</button>
-		</div>
-		<table id="bh-dir-content-table" class="table table-striped persist-area" >
-			<thead class="bh-dir-fixed-table">
+		<table id="bh-dir-content-table" class="tablesorter" >
+			<thead>
 				<tr>
-					<th ></th>
-					<th><input type="checkbox" class="bh-dir-checkboxgroup"></th> 
+					<th width="10px"></th>
+					<th width="10px"><input type="checkbox" class="bh-dir-checkboxgroup"></th> 
 					<th>Name</th>
+<!-- 			Hidden rename column -->
+					<th hidden='true'></th>
 					<th>Size</th>
 					<th>Type</th>
 					<th>Modified</th>
 					<th>Owner</th>
-					<th></th>
+					<th width="10px"></th>
 				</tr>
 			</thead>
 			<tbody>
@@ -159,16 +173,6 @@ require 'views/header.php';
   
 </div><!-- End tab div -->
 
-<!-- Dialog -->
-<div id="bh-dir-dialog" hidden='true'></div>
-
-<!-- Tree slide out -->
-<div class="bh-dir-tree-slide">
-	<h3>Sliding Tree Panel</h3>
-	<p>Hier komt de boom</p>
-</div>
-<a class="bh-dir-tree-slide-trigger" href="#"></a>
-
 <?php
 
 $footer= '
@@ -191,6 +195,9 @@ $footer= '
       aclxmldocument.loadXML(aclxml);
     }
   </script>
+	<link rel="stylesheet" href="/system/js/plugins/tablesorter/css/theme.bootstrap.css">
   <script type="text/javascript" src="/system/js/directory.js"></script>
+	<script type="text/javascript" src="/system/js/plugins/tablesorter/js/jquery.tablesorter.js"></script>
+	<script type="text/javascript" src="/system/js/plugins/tablesorter/js/jquery.tablesorter.widgets.js"></script>
 ';
 require 'views/footer.php';

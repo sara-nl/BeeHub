@@ -35,6 +35,7 @@
 /* Make space for tree slide out */
 #bh-dir-content-table {
 	width: 99%;
+	top: 185px;
 }
 
 /* Align with tabs */
@@ -56,6 +57,7 @@ height: auto;
 padding: 30px 30px 30px 30px;
 filter: alpha(opacity=85);
 opacity: .85;
+z-index: 600;
 }
 .bh-dir-tree-slide p{
 margin: 0 0 15px 0;
@@ -88,6 +90,7 @@ padding: 15px 10px 15px 15px;
 font-weight: 700;
 background:#333333 url(/system/img/plus.png) 85% 55% no-repeat;
 display: block;
+z-index: 600;
 }
 
 a.bh-dir-tree-slide-trigger:hover {
@@ -117,6 +120,7 @@ background:black url(/system/img/minus.png) 85% 55% no-repeat !important;
     width: 100%;
     height:55;
     background-color: white; 
+      z-index: 500;
 }
 .bh-dir-fixed-tabs {
     position: fixed;     
@@ -124,36 +128,25 @@ background:black url(/system/img/minus.png) 85% 55% no-repeat !important;
     width: 100%;
     height: 50px;
     background-color: white; 
+      z-index: 500;
+    
 }
 .bh-dir-fixed-buttons {
     position: fixed;     
     top: 145px;
     width: 100%;
-    height: 40px;
+    height: 41px;
     background-color: white; 
-}
-.bh-dir-fixed-table {
-    position: fixed;   
-    top: 185px;
-    width: 100%;
-    background-color: white; 
+    z-index: 500; 
 }
 
-#bh-dir-allocate-space {
-	height: 165px;
-}
- */
-
-/* #bh-dir-affix-tabs {
-    position: fixed;
-    top: 80px;
-    width: 100%;
-    background-color: white; 
-}
-
-#bh-dir-affix-table.affix {
-  position: fixed;
-  background-color: white;+  top: 135px;
+.bh-dir-allocate-space {
+  height: 127px;
   width: 100%;
-} */
+}
 
+/* Align checkboxes */
+.tablesorter-header-inner {
+	padding-left: 0px !important;
+	border-bottom-width: 0px;
+}
