@@ -138,6 +138,19 @@ class BeeHub {
   }
 
 
+  /**
+   * Shows a decent HTML page with an error for the end-user
+   * @param   type  $message  The message to show. Could contain HTML.
+   * @param   type  $status   The HTTP status code to return
+   * @return  void
+   */
+  public static function htmlError($message, $status = DAV::HTTP_OK) {
+    DAV::header( array( 'status' => $status ) );
+    require( 'views/html_error.php' );
+    exit;
+  }
+
+
   public static function localPath($path) {
     return DAV::unslashify(self::$CONFIG['environment']['datadir'] . rawurldecode($path));
   }
