@@ -53,6 +53,8 @@
     // this will apply the bootstrap theme if "uitheme" widget is included
     // the widgetOptions.uitheme is no longer required to be set
     theme : "bootstrap",
+    // sort on date
+    sortList: [[6,1] ],
     headers: { 
       0 : { sorter: false },
       1 : { sorter: false },
