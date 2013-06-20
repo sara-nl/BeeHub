@@ -49,3 +49,6 @@
 .bh-gs-display-gs {
     width: 110px !important;
 }
+.long_text {
+  max-width: 900px;
+}

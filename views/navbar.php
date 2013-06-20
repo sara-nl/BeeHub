@@ -53,6 +53,7 @@
                     <?php else: ?>
                       <li><a href="<?= BeeHub::urlbase(true) . DAV::$PATH . '?login=conext' ?>">With SURFconext</a></li>
                     <?php endif; ?>
+                    <li><a href="<?= BeeHub::urlbase(true) . '/system/password_reset.php' ?>">I forgot my password</a></li>
                   </ul>
                 </li>
               <?php endif ?>

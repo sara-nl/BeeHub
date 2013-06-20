@@ -23,6 +23,13 @@
 require_once dirname(__FILE__) . '/beehub.php';
 BeeHub::handle_method_spoofing();
 
+// IE 8 or older really don't work at all anymore. Prompt the user to upgrade
+if ( ( $_SERVER['REQUEST_METHOD'] === 'GET' ) &&
+     ( ( ( DAV::determine_client() & ~ DAV::CLIENT_IE ) & ( DAV::CLIENT_IE_OLD | DAV::CLIENT_IE8 ) ) > 0 )
+   ) {
+  BeeHub::htmlError( file_get_contents( dirname( dirname ( __FILE__ ) ) . '/views/error_old_browser.html' ) );
+}
+
 // If a GET request on the root doesn't have this server as a referer, redirect to the homepage:
 // TODO: This can also be done in the apache configuration...
 if ( !isset($_GET['nosystem']) &&
