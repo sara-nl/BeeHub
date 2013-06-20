@@ -11,19 +11,34 @@ require 'views/header.php';
 <!-- Tab contents -->
 <div class="tab-content">
   <div id="panel-request-code" class="tab-pane fade <?= !isset($_GET['reset_code']) ? 'in active' : '' ?>">
-    <p>If you&#39;ve forgotten your password, you can request a reset code here. This code will allow you to choose a new password. After completing this form, an e-mail will be sent to the e-mail address attached to your account.</p>
+    <p class="long_text">If you&#39;ve forgotten your password, you can request a reset code here. This code will allow you to choose a new password. After completing this form, an e-mail will be sent to the e-mail address attached to your account.</p>
     <br />
     <form class="form-horizontal" method="post">
-      <p>E-mail address: <input type="text" name="email" /></p>
-      <p>OR</p>
-      <p>Username: <input type="text" name="username" /></p>
-      <br />
-      <p><button type="submit" class="btn">Request reset code</button></p>
+      <div class="control-group">
+        <label class="control-label" for="username">Username</label>
+        <div class="controls">
+          <input type="text" id="username" name="username" />
+        </div>
+      </div>
+      <div class="control-group">
+        <div class="controls">OR</div>
+      </div>
+      <div class="control-group">
+        <label class="control-label" for="email">E-mail address</label>
+        <div class="controls">
+          <input type="text" id="email" name="email" />
+        </div>
+      </div>
+      <div class="control-group">
+        <div class="controls">
+          <button type="submit" class="btn">Request reset code</button>
+        </div>
+      </div>
     </form>
   </div>
 
   <div id="panel-enter-code" class="tab-pane fade <?= isset($_GET['reset_code']) ? 'in active' : '' ?>">
-    <p>Please fill out the reset code you received in your e-mail and choose a new password.</p>
+    <p class="long_text">Please fill out the reset code you received in your e-mail and choose a new password.</p>
     <br />
     <form class="form-horizontal" method="post">
       <div class="control-group">

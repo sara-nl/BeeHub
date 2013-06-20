@@ -13,6 +13,14 @@ if ( empty( $_SERVER['HTTPS'] ) ) {
   die();
 }
 
+BeeHub_Auth::inst()->handle_authentication(false);
+
+// If you are logged in, you don't need this page, so let's redirect you to the homepage
+if ( BeeHub_Auth::inst()->is_authenticated() ) {
+  header( 'location: ' . BeeHub::urlbase(true) . '/system/' );
+  die();
+}
+
 header('Content-Type: text/html; charset="UTF-8"');
 
 // A GET requests just gives you the forms
@@ -22,7 +30,9 @@ if ( $_SERVER['REQUEST_METHOD'] === 'GET' ) {
   
   //First try to get the username
   $username = null;
-  if ( isset( $_POST['email'] ) && !empty( $_POST['email'] ) ) {
+  if ( isset( $_POST['username'] ) && !empty( $_POST['username'] ) ) {
+    $username = $_POST['username'];
+  }elseif ( isset( $_POST['email'] ) && !empty( $_POST['email'] ) ) {
     $statement_props = BeeHub_DB::execute(
         'SELECT `user_name`
          FROM `beehub_users`
@@ -32,8 +42,6 @@ if ( $_SERVER['REQUEST_METHOD'] === 'GET' ) {
     if ( !is_null($row) ) {
       $username = $row[0];
     }
-  }elseif ( isset( $_POST['username'] ) && !empty( $_POST['username'] ) ) {
-    $username = $_POST['username'];
   }
   
   // Then find the actual user

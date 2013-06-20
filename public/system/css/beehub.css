@@ -21,3 +21,6 @@
 #notifications li:nth-child(even) {
   background-color: #e8f1e9;
 }
+.long_text {
+  max-width: 900px;
+}
