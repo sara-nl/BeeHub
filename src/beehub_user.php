@@ -150,7 +150,7 @@ class BeeHub_User extends BeeHub_Principal {
       );
       $groups = array();
       while ($row = $statement_groups->fetch_row()) {
-        $groups[] = BeeHub::$CONFIG['namespace']['groups_path'] .
+        $groups[] = BeeHub::GROUPS_PATH .
           rawurlencode($row[0]);
       }
       $statement_groups->free_result();
@@ -165,7 +165,7 @@ class BeeHub_User extends BeeHub_Principal {
       );
       $sponsors = array();
       while ($row = $statement_sponsors->fetch_row()) {
-        $sponsors[] = BeeHub::$CONFIG['namespace']['sponsors_path'] .
+        $sponsors[] = BeeHub::SPONSORS_PATH .
           rawurlencode($row[0]);
       }
       $statement_sponsors->free_result();
@@ -419,10 +419,40 @@ BeeHub';
   public function user_set($name, $value = null) {
     switch($name) {
       case BeeHub::PROP_EMAIL:
-        //TODO: check e-mail format
+        if ( filter_var($value, FILTER_VALIDATE_EMAIL) === false ) {
+          throw new DAV_Status(DAV::HTTP_BAD_REQUEST, 'Incorrect e-mail address format');
+        }
+        break;
     }
-    //TODO: check this implementation
     return parent::user_set($name, $value);
+  }
+  
+  
+  public function create_password_reset_code() {
+    $reset_code = md5(time() . ' yrn 67%$ V 4e eshgbJGEc43y5f*INTj67rbf3cw rv' . rand(0, 10000));
+    BeeHub_DB::execute(
+      'UPDATE `beehub_users`
+          SET `password_reset_code` = ?,
+              `password_reset_expiration` = NOW() + INTERVAL 1 HOUR
+        WHERE `user_name` = ?',
+      'ss', $reset_code, $this->name
+    );
+    return $reset_code;
+  }
+  
+  
+  public function check_password_reset_code($reset_code) {
+    $updateStatement = BeeHub_DB::execute(
+      'UPDATE `beehub_users`
+          SET `password_reset_code` = null,
+              `password_reset_expiration` = null
+        WHERE `user_name` = ?
+          AND `password_reset_code` = ?
+          AND `password_reset_expiration` > NOW()',
+      'ss', $this->name, $reset_code
+    );
+    
+    return ($updateStatement->statement->affected_rows > 0);
   }
 
 

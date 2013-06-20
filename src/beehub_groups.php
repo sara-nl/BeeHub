@@ -48,10 +48,9 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
     if (empty($user_sponsor)) {
       throw DAV::forbidden("Only users with a sponsor are allowed to create groups");
     }
-    // Group name must be one of the following characters a-zA-Z0-9_-., starting with an alphanumeric character and must be between 1 and 255 characters long and can't be 'system' or 'home'
+    // Group name must be one of the following characters a-zA-Z0-9_-., starting with an alphanumeric character and must be between 1 and 255 characters long and can't be one of the forbidden names
     if (empty($displayname) ||
-        (strtolower($group_name) == 'home') ||
-        (strtolower($group_name) == 'system') ||
+        in_array( strtolower($group_name), BeeHub::$FORBIDDEN_GROUP_NAMES ) ||
         !preg_match('/^[a-zA-Z0-9]{1}[a-zA-Z0-9_\-\.]{0,254}$/D', $group_name)) {
       throw new DAV_Status(DAV::HTTP_BAD_REQUEST);
     }
@@ -76,7 +75,7 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
     }
 
     // Fetch the user and store extra properties
-    $group = BeeHub_Registry::inst()->resource(BeeHub::$CONFIG['namespace']['groups_path'] . $group_name);
+    $group = BeeHub_Registry::inst()->resource(BeeHub::GROUPS_PATH . $group_name);
     $group->user_set(DAV::PROP_DISPLAYNAME, $displayname);
     if (!empty($description)) {
       $group->user_set(BeeHub::PROP_DESCRIPTION, $description);
@@ -94,13 +93,13 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
       throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
     }
     xattr_set( $groupdir, rawurlencode('DAV: owner'), BeeHub::$CONFIG['namespace']['wheel_path'] );
-    xattr_set( $groupdir, rawurlencode('DAV: acl'), '[["' . BeeHub::$CONFIG['namespace']['groups_path'] . rawurlencode($group->name) . '",false,["DAV: read", "DAV: write", "DAV: read-acl"],false]]' );
+    xattr_set( $groupdir, rawurlencode('DAV: acl'), '[["' . BeeHub::GROUPS_PATH . rawurlencode($group->name) . '",false,["DAV: read", "DAV: write", "DAV: read-acl"],false]]' );
     xattr_set( $groupdir, rawurlencode(BeeHub::PROP_SPONSOR), $user_sponsor );
 
     // Group created, redirect to the group page
     DAV::redirect(
       DAV::HTTP_SEE_OTHER,
-      BeeHub::$CONFIG['namespace']['groups_path'] . rawurlencode($group->name)
+      BeeHub::GROUPS_PATH . rawurlencode($group->name)
     );
   }
 
@@ -122,7 +121,7 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
     );
     $retval = array();
     while ($row = $stmt->fetch_row()) {
-      $retval[] = BeeHub::$CONFIG['namespace']['groups_path'] .
+      $retval[] = BeeHub::GROUPS_PATH .
         rawurlencode($row[0]);
     }
     $stmt->free_result();

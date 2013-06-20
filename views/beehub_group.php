@@ -8,56 +8,48 @@
  */
 
 $header = '<style type="text/css">
-.fieldname {
-  text-align: right;
-}
-.inviteMembers {
-		margin-left: 20px !important;
-}
-.displayGroup {
-		width: 110px !important;
-}
+
 </style>';
 
 require 'views/header.php';
 ?>
 <h1>Group</h1>
-<div class="row-fluid" id="beehub-group-display">
+<div class="row-fluid" id="bh-gs-display">
     <dl class="dl-horizontal">
-      <dt class="displayGroup" >Name</dt>
-      <dd id="groupNameValue"><?= DAV::xmlescape( $this->name) ?></dd>
-      <dt class="displayGroup" >Display name</dt>
-      <dd id="groupDisplayNameValue"><?= DAV::xmlescape( $this->user_prop( DAV::PROP_DISPLAYNAME ) ) ?></dd>
-      <dt class="displayGroup">Description</dt>
-      <dd id="groupDescriptionValue" style="white-space: pre-wrap;"><?= DAV::xmlescape( $this->user_prop(BeeHub::PROP_DESCRIPTION) ) ?></dd>
+      <dt class="bh-gs-display-gs" >Name</dt>
+      <dd><?= DAV::xmlescape( $this->name) ?></dd>
+      <dt class="bh-gs-display-gs" >Display name</dt>
+      <dd id="bh-gs-display-name-value"><?= DAV::xmlescape( $this->user_prop( DAV::PROP_DISPLAYNAME ) ) ?></dd>
+      <dt class="bh-gs-display-gs">Description</dt>
+      <dd id="bh-gs-description-value" style="white-space: pre-wrap;"><?= DAV::xmlescape( $this->user_prop(BeeHub::PROP_DESCRIPTION) ) ?></dd>
       <?php if ( $this->is_admin() ) : ?>
         <br/>
-        <dt class="displayGroup"></dt>
-        <dd class="btn" id="edit-group-button">Edit group</dd>
+        <dt class="bh-gs-display-gs"></dt>
+        <dd class="btn" id="bh-gs-edit-button">Edit group</dd>
       <?php endif; ?>
     </dl>
 </div>
 
-<div class="row-fluid hide" id="beehub-group-edit">
+<div class="row-fluid hide" id="bh-gs-edit">
   <div class="span12">
   	<br/>
-    <form id="editGroupForm" class="form-horizontal" action="<?= DAV::xmlescape($this->path) ?>" method="post">
+    <form id="bh-gs-edit-form" class="form-horizontal" action="<?= DAV::xmlescape($this->path) ?>" method="post">
       <div class="control-group">
-        <label class="control-label displayGroup" for="groupDisplayName">Display name</label>
+        <label class="control-label bh-gs-display-gs" for="bh-gs-display-name">Display name</label>
         <div class="controls">
-          <input type="text" id="groupDisplayName" name="displayname" value="<?= DAV::xmlescape( $this->user_prop_displayname() ) ?>" required />
+          <input type="text" id="bh-gs-display-name" name="displayname" value="<?= DAV::xmlescape( $this->user_prop_displayname() ) ?>" required />
         </div>
       </div>
       <div class="control-group">
-        <label class="control-label displayGroup" for="groupDescription">Group description</label>
+        <label class="control-label bh-gs-display-gs" for="bh-gs-gs-description">Group description</label>
         <div class="controls">
-          <textarea class="input-xlarge" id="groupDescription" rows="5" name="description"><?= DAV::xmlescape( $this->user_prop(BeeHub::PROP_DESCRIPTION) ) ?></textarea>
+          <textarea class="input-xlarge" id="bh-gs-gs-description" rows="5" name="description"><?= DAV::xmlescape( $this->user_prop(BeeHub::PROP_DESCRIPTION) ) ?></textarea>
         </div>
       </div>
       <div class="control-group">
         <div class="controls">
           <button type="submit" class="btn btn-primary">Save</button>
-          <button id="cancel-button" type="button" class="btn btn">Cancel</button>
+          <button id="bh-gs-cancel-button" type="button" class="btn btn">Cancel</button>
         </div>
       </div>
     </form>
@@ -67,18 +59,20 @@ require 'views/header.php';
 <?php if ( $this->is_member() ) : ?>
   <h2>Current members</h2>
   <br/>
-  <form id="inviteGroupForm" class="form-horizontal">
-  	<div class="control-group">
-  		<div class="controls inviteMembers">
-  			<button  type="submit" class="btn btn-primary">Invite user</button>
-  			<input type="text" id="inviteTypeahead" data-provide="typeahead" placeholder="Type username..." autocomplete="off" required>
-  		</div>
-   </div>
-  </form>
+  <?php if ( $this->is_admin() ) : ?>
+    <form id="bh-gs-invite-gs-form" class="form-horizontal">
+      <div class="control-group">
+        <div class="controls bh-gs-invite_members">
+          <button  type="submit" class="btn btn-primary">Invite user</button>
+          <input type="text" id="bh-gs-invite-typeahead" data-provide="typeahead" placeholder="Type username..." autocomplete="off" required>
+        </div>
+      </div>
+    </form>
+  <?php endif; ?>
 
   <?php foreach ($members as $member) :
     if ($member['is_invited']) : ?>
-      <div class="row-fluid" id="user-<?= DAV::xmlescape($member['user_name']) ?>">
+      <div class="row-fluid" id="bh-gs-user-<?= DAV::xmlescape($member['user_name']) ?>">
         <div class="span12 well well-small"><table width="100%"><tbody><tr>
           <th align="left"><?= DAV::xmlescape($member['displayname']) ?> </th>
           <?php if ($this->is_admin()) : ?>
@@ -99,5 +93,5 @@ require 'views/header.php';
   endforeach;
 endif;
 
-$footer='<script type="text/javascript" src="/system/js/group.js"></script>';
+$footer='<script type="text/javascript" src="/system/js/group-sponsor.js"></script>';
 require 'views/footer.php';

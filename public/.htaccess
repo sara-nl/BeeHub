@@ -1,0 +1,17 @@
+RewriteEngine On
+
+# Don't rewrite if the request is for an existing file
+RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} !-f
+
+# Don't rewrite if the request is for an existing (soft)link
+RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} !-l
+
+# Don't rewrite if the request is for an existing directory
+#RewriteCond %{DOCUMENT_ROOT}%{REQUEST_URI} !-d
+
+# The next line IS important, as the REQUEST_URI for simplesaml may make it
+# difficult to recognize the file to lookup in the filesystem
+# i.e. /system/simplesaml/module.php/saml/sp/metadata.php/SURFconext
+RewriteCond %{REQUEST_URI} !^/system/simplesaml/.*
+
+RewriteRule .* /index.php [NC,L]

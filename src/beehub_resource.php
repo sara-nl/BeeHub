@@ -237,18 +237,25 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
   }
 
 
-  public function include_view(
-    $view_name_BeEhUb_MaGiC = null,
-    $parameters_BeEhUb_MaGiC = null
-  ) {
-    if (is_null($view_name_BeEhUb_MaGiC))
-      $view_name_BeEhUb_MaGiC = strtolower(get_class($this));
-    if (is_null($parameters_BeEhUb_MaGiC))
-      $parameters_BeEhUb_MaGiC = array();
-    foreach ( $parameters_BeEhUb_MaGiC as $param_BeEhUb_MaGiC => $value_BeEhUb_MaGiC ) {
-      $$param_BeEhUb_MaGiC = $value_BeEhUb_MaGiC;
+  /**
+   * Include a view (mostly an HTML page) to present to the user
+   * @param   type   $view_name   Optionally; The name of the view. If omitted, the name of the current class is used.
+   * @param   array  $parameters  Optionally; Variables which should be available in the view. This should be an array with variable names as array keys.
+   * @return  void
+   */
+  public function include_view() {
+    if ( ( func_num_args() > 1 ) && !is_null( func_get_arg(1) ) ) {
+      foreach ( func_get_arg(1) as $param_BeEhUb_MaGiC => $value_BeEhUb_MaGiC ) {
+        $$param_BeEhUb_MaGiC = $value_BeEhUb_MaGiC;
+      }
+      unset($param_BeEhUb_MaGiC, $value_BeEhUb_MaGiC);
     }
-    require( 'views/' . $view_name_BeEhUb_MaGiC . '.php' );
+
+    if ( ( func_num_args() > 0 ) && !is_null( func_get_arg(0) ) ) {
+      require( 'views/' . func_get_arg(0) . '.php' );
+    }else{
+      require( 'views/' . strtolower( get_class( $this ) ) . '.php' );
+    }
   }
 
 
