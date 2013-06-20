@@ -67,8 +67,14 @@ require 'views/header.php';
 
 <!-- Tree slide out -->
 <div class="bh-dir-tree-slide">
-	<h3>Sliding Tree Panel</h3>
-	<p>Hier komt de boom</p>
+	<table id="example-advanced">
+	  <tr data-tt-id="1">
+	    <td>Parent</td>
+	  </tr>
+	  <tr data-tt-id="2" data-tt-parent-id="1">
+	    <td>Child</td>
+	  </tr>
+	</table>
 </div>
 <a class="bh-dir-tree-slide-trigger" href="#"></a>
 		
@@ -77,9 +83,9 @@ require 'views/header.php';
 <!-- Fixed divs don't use space -->
 	<div class="bh-dir-allocate-space"></div>
 	<!-- Contents tab -->
-	<div id="bh-dir-panel-contents" class="tab-pane fade in active">
-		<table id="bh-dir-content-table" class="tablesorter" >
-			<thead>
+	<div id="bh-dir-panel-contents" class="tab-pane fade in active">   
+		<table id="bh-dir-content-table" class="table table-striped" >
+			<thead class="bh-dir-table-header">
 				<tr>
 					<th width="10px"></th>
 					<th width="10px"><input type="checkbox" class="bh-dir-checkboxgroup"></th> 
@@ -195,9 +201,10 @@ $footer= '
       aclxmldocument.loadXML(aclxml);
     }
   </script>
-	<link rel="stylesheet" href="/system/js/plugins/tablesorter/css/theme.bootstrap.css">
+	<link href="/system/js/plugins/treetable/stylesheets/jquery.treetable.css" rel="stylesheet" type="text/css" />
   <script type="text/javascript" src="/system/js/directory.js"></script>
 	<script type="text/javascript" src="/system/js/plugins/tablesorter/js/jquery.tablesorter.js"></script>
 	<script type="text/javascript" src="/system/js/plugins/tablesorter/js/jquery.tablesorter.widgets.js"></script>
+	<script src="/system/js/plugins/treetable/javascripts/src/jquery.treetable.js"></script>
 ';
 require 'views/footer.php';

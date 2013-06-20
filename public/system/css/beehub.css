@@ -45,71 +45,71 @@
 
 /* Tree settings */
 .bh-dir-tree-slide {
-position: fixed ;
-top: 150px;
-right: 0;
-display: none;
-background: #000000;
-border-radius: 20px;
-border-radius: 20px;
-width: 330px;
-height: auto;
-padding: 30px 30px 30px 30px;
-filter: alpha(opacity=85);
-opacity: .85;
-z-index: 600;
+	position: fixed ;
+	top: 150px;
+	right: 0;
+	display: none;
+	background: #000000;
+	border-radius: 20px;
+	border-radius: 20px;
+	width: 330px;
+	height: auto;
+	padding: 30px 30px 30px 30px;
+	filter: alpha(opacity=85);
+	opacity: .85;
+	z-index: 100;
 }
 .bh-dir-tree-slide p{
-margin: 0 0 15px 0;
-padding: 0;
-color: #cccccc;
+	margin: 0 0 15px 0;
+	padding: 0;
+	color: #cccccc;
 }
 .bh-dir-tree-slide a, .bh-dir-tree-slide a:visited{
-margin: 0;
-padding: 0;
-color: #9FC54E;
-text-decoration: none;
+	margin: 0;
+	padding: 0;
+	color: #9FC54E;
+	text-decoration: none;
 }
 .bh-dir-tree-slide a:hover, .bh-dir-tree-slide a:visited:hover{
-margin: 0;
-padding: 0;
-color: #ffffff;
-text-decoration: none;
+	margin: 0;
+	padding: 0;
+	color: #ffffff;
+	text-decoration: none;
 }
 a.bh-dir-tree-slide-trigger{
-position: fixed;
-border-top-left-radius: 5px;
-border-bottom-left-radius: 5px;
-text-decoration: none;
-top: 170px; right: 0;
-font-size: 16px;
-letter-spacing:-1px;
-font-family: verdana, helvetica, arial, sans-serif;
-color:#fff;
-padding: 15px 10px 15px 15px;
-font-weight: 700;
-background:#333333 url(/system/img/plus.png) 85% 55% no-repeat;
-display: block;
-z-index: 600;
+	position: fixed;
+	border-top-left-radius: 5px;
+	border-bottom-left-radius: 5px;
+	text-decoration: none;
+	top: 170px; right: 0;
+	font-size: 16px;
+	letter-spacing:-1px;
+	font-family: verdana, helvetica, arial, sans-serif;
+	color:#fff;
+	padding: 15px 10px 15px 15px;
+	font-weight: 700;
+	background:#333333 url(/system/img/plus.png) 85% 55% no-repeat;
+	display: block;
+	z-index: 100;
 }
 
 a.bh-dir-tree-slide-trigger:hover {
-position: fixed;
-text-decoration: none;
-top: 170px; right: 0;
-font-size: 16px;
-letter-spacing:-1px;
-font-family: verdana, helvetica, arial, sans-serif;
-color:#fff;
-padding: 15px 10px 15px 15px;
-font-weight: 700;
-background:#222222 url(/system/img/plus.png) 85% 55% no-repeat;
-border-top-left-radius: 5px;
-border-bottom-left-radius: 5px;
-display: block;
+	position: fixed;
+	text-decoration: none;
+	top: 170px; right: 0;
+	font-size: 16px;
+	letter-spacing:-1px;
+	font-family: verdana, helvetica, arial, sans-serif;
+	color:#fff;
+	padding: 15px 10px 15px 15px;
+	font-weight: 700;
+	background:#222222 url(/system/img/plus.png) 85% 55% no-repeat;
+	border-top-left-radius: 5px;
+	border-bottom-left-radius: 5px;
+	display: block;
 }
 a.active.bh-dir-tree-slide-trigger {
-background:black url(/system/img/minus.png) 85% 55% no-repeat !important;
+  background:black url(/system/img/minus.png) 85% 55% no-repeat !important;
 }
 
 /* Prevent scrolling */
@@ -120,7 +120,7 @@ background:black url(/system/img/minus.png) 85% 55% no-repeat !important;
     width: 100%;
     height:55;
     background-color: white; 
-      z-index: 500;
+    z-index: 100;
 }
 .bh-dir-fixed-tabs {
     position: fixed;     
@@ -128,8 +128,7 @@ background:black url(/system/img/minus.png) 85% 55% no-repeat !important;
     width: 100%;
     height: 50px;
     background-color: white; 
-      z-index: 500;
-    
+    z-index: 100;
 }
 .bh-dir-fixed-buttons {
     position: fixed;     
@@ -137,18 +136,16 @@ background:black url(/system/img/minus.png) 85% 55% no-repeat !important;
     width: 100%;
     height: 41px;
     background-color: white; 
-    z-index: 500; 
+    z-index: 100; 
 }
-
 .bh-dir-allocate-space {
   height: 127px;
   width: 100%;
 }
-.bootstrap-header {
-	border-bottom: 1px solid white !important;
-}
-/* Align checkboxes */
-.tablesorter-header-inner {
-	padding-left: 0px !important;
-	border-bottom-width: 0px;
+/* Bootstrap table header */
+#bh-dir-content-table-sticky,.bh-dir-table-header  {
+	background-color: #F5F5F5;
+  background-image: -moz-linear-gradient(center top , #FFFFFF, #E6E6E6);
+  background-repeat: repeat-x;
+  border-bottom: 2px solid #E6E6E6;
 }
