@@ -424,8 +424,35 @@ BeeHub';
         }
         break;
     }
-    //TODO: check this implementation
     return parent::user_set($name, $value);
+  }
+  
+  
+  public function create_password_reset_code() {
+    $reset_code = md5(time() . ' yrn 67%$ V 4e eshgbJGEc43y5f*INTj67rbf3cw rv' . rand(0, 10000));
+    BeeHub_DB::execute(
+      'UPDATE `beehub_users`
+          SET `password_reset_code` = ?,
+              `password_reset_expiration` = NOW() + INTERVAL 1 HOUR
+        WHERE `user_name` = ?',
+      'ss', $reset_code, $this->name
+    );
+    return $reset_code;
+  }
+  
+  
+  public function check_password_reset_code($reset_code) {
+    $updateStatement = BeeHub_DB::execute(
+      'UPDATE `beehub_users`
+          SET `password_reset_code` = null,
+              `password_reset_expiration` = null
+        WHERE `user_name` = ?
+          AND `password_reset_code` = ?
+          AND `password_reset_expiration` > NOW()',
+      'ss', $this->name, $reset_code
+    );
+    
+    return ($updateStatement->statement->affected_rows > 0);
   }
 
 

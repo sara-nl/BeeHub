@@ -136,6 +136,8 @@ CREATE TABLE `beehub_users` (
   `sponsor_name` varchar(255) default NULL COMMENT 'The default sponsor for files of this user',
   `verification_code` varchar(32) default NULL COMMENT 'If the user still has to verify his e-mail address, he/she is sent an e-mail with this code',
   `verification_expiration` timestamp NULL default NULL COMMENT 'The moment when the verification_code should expire',
+  `password_reset_code` varchar(32) NULL default NULL COMMENT 'If the user wants a password reset, he/she is sent an e-mail with this code',
+  `password_reset_expiration` timestamp NULL default NULL COMMENT 'The moment the password_reset_code should expire',
   PRIMARY KEY  (`user_name`),
   UNIQUE KEY `surfconext_id` (`surfconext_id`),
   KEY `sponsor_name` (`sponsor_name`),
