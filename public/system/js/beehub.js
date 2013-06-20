@@ -89,6 +89,9 @@ nl.sara.beehub.forbidden_group_names = [
           client.post(data.sponsor, nl.sara.beehub.reload_notifications, 'delete_members[]=' + data.user);
         });
         break;
+      case 'no_sponsor':
+        notification.html('You don\'t have a sponsor, therefore you can\'t store any data on BeeHub! See the (<a href="' + nl.sara.beehub.sponsors_path + '">sponsors page</a> to request a membership of a sponsor.');
+        break;
     }
 
     return notification;

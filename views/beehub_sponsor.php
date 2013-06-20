@@ -1,90 +1,95 @@
 <?php
-
 /*
  * Available variables:
- * $this  The BeeHub_Sponsor instance representing the current sponsor
+ * $sponsor  The BeeHub_Sponsor instance representing the current sponsor
  * $members  A 2 dimensional array containing all members. Each member array
- * contains 4 keys: user_name, displayname, is_admin, is_accepted. For example:
- * $members[0]['user_name']
+ *   contains 5 keys: user_name, displayname, admin, invited and requested.
+ *   For example: $members[0]['user_name']
  */
 
-
 $header = '<style type="text/css">
-.fieldname {
-  text-align: right;
-}
-</style>';
-$footer = '<script type="text/javascript" src="/system/js/sponsor.js"></script>';
-require 'views/header.php';
 
+</style>';
+
+require 'views/header.php';
 ?>
 <h1>Sponsor</h1>
-<form method="post">
-  <div class="row-fluid">
-    <div class="span2 fieldname">Group name</div>
-    <div class="span10 fieldvalue"><?= DAV::xmlescape($this->name) ?></div>
-  </div>
-  <div class="row-fluid">
-    <div class="span2 fieldname">Display name</div>
-    <div class="span10 fieldvalue"><input type="text" name="displayname" value="<?= DAV::xmlescape($this->prop(DAV::PROP_DISPLAYNAME)) ?>" /></div>
-  </div>
-  <div class="row-fluid">
-    <div class="span2 fieldname">Description</div>
-    <div class="span10 fieldvalue"><input type="text" name="description" value="<?= DAV::xmlescape($this->prop(BeeHub::PROP_DESCRIPTION)) ?>" /></div>
-  </div>
-  <button id="save_sponsor_buton" class="btn">Save</button>
-</form>
+<div class="row-fluid" id="bh-gs-display">
+    <dl class="dl-horizontal">
+      <dt class="bh-gs-display-gs" >Name</dt>
+      <dd><?= DAV::xmlescape( $this->name) ?></dd>
+      <dt class="bh-gs-display-gs" >Display name</dt>
+      <dd id="bh-gs-display-name-value"><?= DAV::xmlescape( $this->user_prop( DAV::PROP_DISPLAYNAME ) ) ?></dd>
+      <dt class="bh-gs-display-gs">Description</dt>
+      <dd id="bh-gs-description-value" style="white-space: pre-wrap;"><?= DAV::xmlescape( $this->user_prop(BeeHub::PROP_DESCRIPTION) ) ?></dd>
+      <?php if ( $this->is_admin() ) : ?>
+        <br/>
+        <dt class="bh-gs-display-gs"></dt>
+        <dd class="btn" id="bh-gs-edit-button">Edit sponsor</dd>
+      <?php endif; ?>
+    </dl>
+</div>
 
-<form id="membership_form" method="post">
-  <h2>Requests</h2>
-  <p>The following users requested for you to sponsor them:</p>
-  <table>
-    <thead>
-      <tr>
-        <th>user_name</th>
-        <th>Display name</th>
-        <th>Accept?</th>
-        <th>Delete?</th>
-      </tr>
-    </thead>
-    <tbody>
-      <?php foreach ($members as $member) :
-        if (!$member['is_accepted']) : ?>
-          <tr class="member_row" id="<?= BeeHub::USERS_PATH . rawurlencode($member['user_name']) ?>">
-            <td><?= DAV::xmlescape($member['user_name']) ?></td>
-            <td><?= DAV::xmlescape($member['displayname']) ?></td>
-            <td><a href="#" class="accept_link">Accept</a></td>
-            <td><a href="#" class="remove_link">Delete</a></td>
-          </tr>
-        <?php endif;
-      endforeach; ?>
-    </tbody>
-  </table>
+<div class="row-fluid hide" id="bh-gs-edit">
+  <div class="span12">
+  	<br/>
+    <form id="bh-gs-edit-form" class="form-horizontal" action="<?= DAV::xmlescape($this->path) ?>" method="post">
+      <div class="control-group">
+        <label class="control-label bh-gs-display-gs" for="bh-gs-display-name">Display name</label>
+        <div class="controls">
+          <input type="text" id="bh-gs-display-name" name="displayname" value="<?= DAV::xmlescape( $this->user_prop_displayname() ) ?>" required />
+        </div>
+      </div>
+      <div class="control-group">
+        <label class="control-label bh-gs-display-gs" for="bh-gs-sponsor-description">Group description</label>
+        <div class="controls">
+          <textarea class="input-xlarge" id="bh-gs-sponsor-description" rows="5" name="description"><?= DAV::xmlescape( $this->user_prop(BeeHub::PROP_DESCRIPTION) ) ?></textarea>
+        </div>
+      </div>
+      <div class="control-group">
+        <div class="controls">
+          <button type="submit" class="btn btn-primary">Save</button>
+          <button id="bh-gs-cancel-button" type="button" class="btn btn">Cancel</button>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
 
+<?php if ( $this->is_member() ) : ?>
   <h2>Current members</h2>
-  <p>The following users are member:</p>
-  <table>
-    <thead>
-      <tr>
-        <th>user_name</th>
-        <th>Display name</th>
-        <th>is_admin?</th>
-        <th>Delete?</th>
-      </tr>
-    </thead>
-    <tbody id="current_members">
-      <?php foreach ($members as $member) :
-        if ($member['is_accepted']) : ?>
-          <tr class="member_row" id="<?= BeeHub::USERS_PATH . rawurlencode($member['user_name']) ?>">
-            <td><?= DAV::xmlescape($member['user_name']) ?></td>
-            <td><?= DAV::xmlescape($member['displayname']) ?></td>
-            <td><?= ($member['is_admin'] ? 'jep <a href="#" class="demote_link">demote</a>' : 'nope <a href="#" class="promote_link">promote</a>') ?></td>
-            <td><a href="#" class="remove_link">Delete</a></td>
-          </tr>
-        <?php endif;
-      endforeach; ?>
-    </tbody>
-  </table>
-  <input type="submit" value="Store" />
-</form>
-<?php require 'views/footer.php'; ?>
+  <br/>
+  <?php if ( $this->is_admin() ) : ?>
+    <form id="bh-gs-invite-gs-form" class="form-horizontal">
+      <div class="control-group">
+        <div class="controls bh-gs-invite_members">
+          <button  type="submit" class="btn btn-primary">Add user</button>
+          <input type="text" id="bh-gs-invite-typeahead" data-provide="typeahead" placeholder="Type username..." autocomplete="off" required>
+        </div>
+      </div>
+    </form>
+  <?php endif; ?>
+
+  <?php foreach ($members as $member) : ?>
+    <div class="row-fluid" id="bh-gs-user-<?= DAV::xmlescape($member['user_name']) ?>">
+      <div class="span12 well well-small"><table width="100%"><tbody><tr>
+        <th align="left"><?= DAV::xmlescape($member['displayname']) ?> </th>
+        <?php if ($this->is_admin()) : ?>
+        <td align="right">
+          <!-- Promote or demote? -->
+          <?php if ( $member['is_admin'] ) : ?>
+          <button type="button" value="<?= DAV::xmlescape($member['user_name']) ?>" class="btn btn-primary demote_link">Demote to member</button>
+          <?php else : ?>
+          <button type="button" value="<?= DAV::xmlescape($member['user_name']) ?>" class="btn btn-primary promote_link">Promote to admin</button>
+          <?php endif; ?>
+          <button type="button" value="<?= DAV::xmlescape($member['user_name']) ?>" class="btn btn-danger remove_link">Remove member</button>
+        </td>
+        <?php endif; ?>
+      </tr></tbody></table></div>
+    </div>
+    <?php
+  endforeach;
+endif;
+
+$footer='<script type="text/javascript" src="/system/js/group-sponsor.js"></script>';
+require 'views/footer.php';
