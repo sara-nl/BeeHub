@@ -49,14 +49,11 @@
 	top: 150px;
 	right: 0;
 	display: none;
-	background: #000000;
+	background: #E8F1E9;
 	border-radius: 20px;
 	border-radius: 20px;
-	width: 330px;
-	height: auto;
-	padding: 30px 30px 30px 30px;
-	filter: alpha(opacity=85);
-	opacity: .85;
+/* 	 overflow:auto !important;
+ */  direction:ltr !important;
 	z-index: 100;
 }
 .bh-dir-tree-slide p{
@@ -147,5 +144,15 @@ a.active.bh-dir-tree-slide-trigger {
 	background-color: #F5F5F5;
   background-image: -moz-linear-gradient(center top , #FFFFFF, #E6E6E6);
   background-repeat: repeat-x;
-  border-bottom: 2px solid #E6E6E6;
+  border-bottom: 2px solid white;
+}
+
+ul.dynatree-container{
+	background-color: #E8F1E9 !important;
+	/* border: 0px !important; */
+	max-height: 400px !important;
+	width: auto !important;
+/* 	overflow:auto !important;
+  direction:ltr !important; */
+  padding: 20px 20px 20px 20px !important;  
 }

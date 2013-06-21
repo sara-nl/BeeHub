@@ -40,47 +40,101 @@
     widthFixed: false,
     widgets : ['stickyHeaders' ],
     widgetOptions : {
-//      // css class name applied to the sticky header row (tr)
-//      stickyHeaders : 'tablesorter-stickyHeader',
       // apply sticky header top below the top of the browser window
       stickyHeaders_offset : 186,
     }
   });
-//  $("#bh-dir-treetable").treetable();
-  $("#example-advanced").treetable({ expandable: true });
 
-//Highlight selected row
-$("#example-advanced tbody tr").mousedown(function() {
- $("tr.selected").removeClass("selected");
- $(this).addClass("selected");
+  $("#bh-dir-tree").dynatree({
+    onActivate: function(node) {
+        // A DynaTreeNode object is passed to the activation handler
+        // Note: we also get this event, if persistence is on, and the page is reloaded.
+        alert("You activated " + node.data.title);
+    },
+    persist: true,
+    children: treecontents,
+    onLazyRead: function(node){
+      var client = new nl.sara.webdav.Client();
+      var resourcetypeProp = new nl.sara.webdav.Property();
+      resourcetypeProp.tagname = 'resourcetype';
+      resourcetypeProp.namespace='DAV:';
+      var properties = [resourcetypeProp];
+      client.propfind(node.data.id, function(status, data) {
+        // Callback
+        if (status != 207) {
+          // Server returned an error condition: set node status accordingly
+          node.setLazyNodeStatus(DTNodeStatus_Error, {
+            tooltip: data.faultDetails,
+            info: data.faultString
+          });
+        };
+        var res = [];
+        $.each(data.getResponseNames(), function(pathindex){
+          var path = data.getResponseNames()[pathindex];
+          
+          if (node.data.id !== path) {
+            if (data.getResponse(path).getProperty('DAV:','resourcetype') !== undefined) {
+              var resourcetypeProp = data.getResponse(path).getProperty('DAV:','resourcetype');
+              if ((resourcetypeProp.xmlvalue.length == 1)
+                  &&(nl.sara.webdav.Ie.getLocalName(resourcetypeProp.xmlvalue.item(0))=='collection')
+                  &&(resourcetypeProp.xmlvalue.item(0).namespaceURI=='DAV:')) 
+              {
+                var name = path;
+                while (name.substring(name.length-1) == '/') {
+                  name = name.substr(0, name.length-1);
+                }
+                name = decodeURIComponent(name.substr(name.lastIndexOf('/')+1));
+                res.push({
+                  'title': name,
+                  'id' : path,
+                  'isFolder': 'true',
+                  'isLazy' : 'true'
+                });
+              }
+            }
+          };
+        });
+        // PWS status OK
+        node.setLazyNodeStatus(DTNodeStatus_Ok);
+        node.addChild(res);
+        // end callback
+      },1,properties);
+    }
 });
 
-//Drag & Drop Example Code
-$("#example-advanced .file, #example-advanced .folder").draggable({
- helper: "clone",
- opacity: .75,
- refreshPositions: true,
- revert: "invalid",
- revertDuration: 300,
- scroll: true
-});
-
-$("#example-advanced .folder").each(function() {
- $(this).parents("tr").droppable({
-   accept: ".file, .folder",
-   drop: function(e, ui) {
-     var droppedEl = ui.draggable.parents("tr");
-     $("#example-advanced").treetable("move", droppedEl.data("ttId"), $(this).data("ttId"));
-   },
-   hoverClass: "accept",
-   over: function(e, ui) {
-     var droppedEl = ui.draggable.parents("tr");
-     if(this != droppedEl[0] && !$(this).is(".expanded")) {
-       $("#example-advanced").treetable("expandNode", $(this).data("ttId"));
-     }
-   }
- });
-});
+//
+////Highlight selected row
+//$("#example-advanced tbody tr").mousedown(function() {
+// $("tr.selected").removeClass("selected");
+// $(this).addClass("selected");
+//});
+//
+////Drag & Drop Example Code
+//$("#example-advanced .file, #example-advanced .folder").draggable({
+// helper: "clone",
+// opacity: .75,
+// refreshPositions: true,
+// revert: "invalid",
+// revertDuration: 300,
+// scroll: true
+//});
+//
+//$("#example-advanced .folder").each(function() {
+// $(this).parents("tr").droppable({
+//   accept: ".file, .folder",
+//   drop: function(e, ui) {
+//     var droppedEl = ui.draggable.parents("tr");
+//     $("#example-advanced").treetable("move", droppedEl.data("ttId"), $(this).data("ttId"));
+//   },
+//   hoverClass: "accept",
+//   over: function(e, ui) {
+//     var droppedEl = ui.draggable.parents("tr");
+//     if(this != droppedEl[0] && !$(this).is(".expanded")) {
+//       $("#example-advanced").treetable("expandNode", $(this).data("ttId"));
+//     }
+//   }
+// });
+//});
 	// solving bug: https://github.com/twitter/bootstrap/issues/6094
 	// conflict bootstrap and jquery
 	var btn = $.fn.button.noConflict() // reverts $.fn.button to jqueryui btn

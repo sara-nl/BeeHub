@@ -10,8 +10,42 @@ $members    All members of this directory
 $aclAllowed = $this->property_priv_read(array(DAV::PROP_ACL));
 $aclAllowed = $aclAllowed[DAV::PROP_ACL];
 require 'views/header.php';
-?>
 
+/**
+ * @var $path string a slashified path to a directory
+ */
+function createTree2( $path, $oldpath = null, $oldmembers = null ) {
+  $dir = BeeHub_Registry::inst()->resource( $path );
+  $members = array();
+  foreach ($dir as $member) {
+    if ( '/' !== substr( $member, -1 ) ||
+         ( '/' === $path && $member === 'system/' ) )
+      continue;
+    $tmp = array(
+      'title'     => rawurldecode( DAV::unslashify( $member ) ),
+      'id'       => $path . $member,
+      'isFolder'     => 'true',
+    	'isLazy' => 'true',
+    	'expand' => 'true',
+      'activate' => ( $oldpath === $path . $member ? 'true' : 'false' )
+    );
+    if ( $tmp['activate'] === 'true' ) {
+      $tmp['children'] = $oldmembers;
+      $tmp['isLazy'] = 'false';
+    } else {
+    	$tmp['isLazy'] = 'true';
+    };
+    $members[] = $tmp;
+  }
+  if ( '/' === $path )
+    return $members;
+  return createTree2(
+    DAV::slashify( dirname( $path ) ),
+    $path, $members
+  );
+}
+$testtree = createTree2( DAV::slashify( dirname( $this->path ) ) );
+?>
 <div class="bh-dir-fixed-header">
 	<h4>
 		<?php 
@@ -66,16 +100,24 @@ require 'views/header.php';
 <div id="bh-dir-dialog" hidden='true'></div>
 
 <!-- Tree slide out -->
-<div class="bh-dir-tree-slide">
-	<table id="example-advanced">
-	  <tr data-tt-id="1">
-	    <td>Parent</td>
-	  </tr>
-	  <tr data-tt-id="2" data-tt-parent-id="1">
-	    <td>Child</td>
-	  </tr>
-	</table>
+<div id="bh-dir-tree" class="bh-dir-tree-slide">
+	<ul>
+	  <?php
+			foreach ($members as $member) :
+				if (DAV::unslashify($member->path) === '/system') {
+			    continue;
+			  }
+			  if (substr($member->path,-1) === '/'):
+		?>
+		<li id="<?= $member->user_prop_displayname() ?>" class="folder"><?= $member->user_prop_displayname() ?>
+		<ul><li></li></ul>
+		<?php 
+			endif;
+		  endforeach;
+		?>
+		</ul>
 </div>
+
 <a class="bh-dir-tree-slide-trigger" href="#"></a>
 		
 <!-- Tab contents -->
@@ -183,6 +225,7 @@ require 'views/header.php';
 
 $footer= '
 	<script type="text/javascript">
+ 		var treecontents = ' . json_encode($testtree)  . ';
  		//   create acl variable
     var aclxml = ' .
     json_encode(
@@ -201,10 +244,11 @@ $footer= '
       aclxmldocument.loadXML(aclxml);
     }
   </script>
-	<link href="/system/js/plugins/treetable/stylesheets/jquery.treetable.css" rel="stylesheet" type="text/css" />
+	<link href="/system/js/plugins/dynatree/src/skin/ui.dynatree.css" rel="stylesheet" type="text/css" />
+	<script type="text/javascript" src="/system/js/plugins/dynatree/jquery/jquery.cookie.js"></script>
+	<script type="text/javascript" src="/system/js/plugins/dynatree/src/jquery.dynatree.js"></script>
   <script type="text/javascript" src="/system/js/directory.js"></script>
 	<script type="text/javascript" src="/system/js/plugins/tablesorter/js/jquery.tablesorter.js"></script>
 	<script type="text/javascript" src="/system/js/plugins/tablesorter/js/jquery.tablesorter.widgets.js"></script>
-	<script src="/system/js/plugins/treetable/javascripts/src/jquery.treetable.js"></script>
 ';
 require 'views/footer.php';
