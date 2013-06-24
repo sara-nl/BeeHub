@@ -34,8 +34,8 @@
 
 /* Make space for tree slide out */
 #bh-dir-content-table {
-	width: 99%;
-	top: 185px;
+/* 	width: 99%;
+ */	top: 185px;
 }
 
 /* Align with tabs */
@@ -46,17 +46,21 @@
 /* Tree settings */
 .bh-dir-tree-slide {
 	position: fixed ;
-	top: 150px;
+	top: 189px;
+	bottom: 0px;
 	right: 0;
 	display: none;
-	background: #E8F1E9;
-	border-radius: 20px;
-	border-radius: 20px;
-/* 	 overflow:auto !important;
- */  direction:ltr !important;
+	 direction:ltl !important;
+	
+/* 	background: #E8F1E9;*/
+	border-left: 5px solid #E6E6E6;
+	border-top: 5px solid #E6E6E6;
+/* 	 border-top: 5px solid #FFFFFF; */
+	
+	/*border-top: 5px solid #008741; */
 	z-index: 100;
 }
-.bh-dir-tree-slide p{
+/* .bh-dir-tree-slide p{
 	margin: 0 0 15px 0;
 	padding: 0;
 	color: #cccccc;
@@ -72,41 +76,11 @@
 	padding: 0;
 	color: #ffffff;
 	text-decoration: none;
-}
+} */
 a.bh-dir-tree-slide-trigger{
 	position: fixed;
-	border-top-left-radius: 5px;
-	border-bottom-left-radius: 5px;
-	text-decoration: none;
-	top: 170px; right: 0;
-	font-size: 16px;
-	letter-spacing:-1px;
-	font-family: verdana, helvetica, arial, sans-serif;
-	color:#fff;
-	padding: 15px 10px 15px 15px;
-	font-weight: 700;
-	background:#333333 url(/system/img/plus.png) 85% 55% no-repeat;
-	display: block;
+	top: 192px; right: 0;
 	z-index: 100;
-}
-
-a.bh-dir-tree-slide-trigger:hover {
-	position: fixed;
-	text-decoration: none;
-	top: 170px; right: 0;
-	font-size: 16px;
-	letter-spacing:-1px;
-	font-family: verdana, helvetica, arial, sans-serif;
-	color:#fff;
-	padding: 15px 10px 15px 15px;
-	font-weight: 700;
-	background:#222222 url(/system/img/plus.png) 85% 55% no-repeat;
-	border-top-left-radius: 5px;
-	border-bottom-left-radius: 5px;
-	display: block;
-}
-a.active.bh-dir-tree-slide-trigger {
-  background:black url(/system/img/minus.png) 85% 55% no-repeat !important;
 }
 
 /* Prevent scrolling */
@@ -148,11 +122,13 @@ a.active.bh-dir-tree-slide-trigger {
 }
 
 ul.dynatree-container{
-	background-color: #E8F1E9 !important;
-	/* border: 0px !important; */
-	max-height: 400px !important;
-	width: auto !important;
-/* 	overflow:auto !important;
+	background-color: white !important;
+	border: 5px none !important;
+	direction:ltl !important;
+	min-width: 200px !important;
+/*   max-height: 400px !important;
+ 	width: auto !important; */
+	/* overflow:auto !important;
   direction:ltr !important; */
-  padding: 20px 20px 20px 20px !important;  
-}
+/*   padding: 20px 20px 20px 20px !important;  
+ */}

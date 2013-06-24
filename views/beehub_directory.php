@@ -25,16 +25,15 @@ function createTree2( $path, $oldpath = null, $oldmembers = null ) {
       'title'     => rawurldecode( DAV::unslashify( $member ) ),
       'id'       => $path . $member,
       'isFolder'     => 'true',
-    	'isLazy' => 'true',
-    	'expand' => 'true',
-      'activate' => ( $oldpath === $path . $member ? 'true' : 'false' )
+    	'isLazy' => 'true'
+    		
+//       'expand' => ( $oldpath === $path . $member ? 'true' : 'false' )
     );
-    if ( $tmp['activate'] === 'true' ) {
-      $tmp['children'] = $oldmembers;
-      $tmp['isLazy'] = 'false';
-    } else {
-    	$tmp['isLazy'] = 'true';
-    };
+//     if ( $tmp['expand'] === 'true' ) {
+//       $tmp['children'] = $oldmembers;
+//     } else {
+//     	$tmp['isLazy'] = 'true';
+//     };
     $members[] = $tmp;
   }
   if ( '/' === $path )
@@ -118,7 +117,7 @@ $testtree = createTree2( DAV::slashify( dirname( $this->path ) ) );
 		</ul>
 </div>
 
-<a class="bh-dir-tree-slide-trigger" href="#"></a>
+<a class="bh-dir-tree-slide-trigger" href="#"><i class="icon-chevron-left"></i> </a>
 		
 <!-- Tab contents -->
 <div class="tab-content">

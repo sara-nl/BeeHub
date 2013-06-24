@@ -23,7 +23,7 @@
  * @author Laura Leistikow (laura.leistikow@surfsara.nl)
  */
   $(function() {
-    
+      
 	var path = location.pathname;
 	// add slash to the end of path
 	if (!path.match(/\/$/)) {
@@ -611,6 +611,7 @@
    $(".bh-dir-tree-slide-trigger").hover(function(){
     $(".bh-dir-tree-slide").toggle("fast");
     $(this).toggleClass("active");
+    $('.bh-dir-tree-slide-trigger i').toggleClass('icon-chevron-left icon-chevron-right');
     return false;
   }, function(){
     // No action;
@@ -618,6 +619,7 @@
 	$(".bh-dir-tree-slide-trigger").click(function(){
 	   $(".bh-dir-tree-slide").toggle("fast");
 	    $(this).toggleClass("active");
+	    $('.bh-dir-tree-slide-trigger i').toggleClass('icon-chevron-left icon-chevron-right');
 	    return false;
 	});
 	
