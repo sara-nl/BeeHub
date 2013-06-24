@@ -118,20 +118,7 @@ public function method_DELETE( $name )
  */
 public function method_GET() {
   $this->assert(DAVACL::PRIV_READ);
-
-  # TODO oops, the document isn't generated as a stream? Here, an object is
-  # created for each member resource, and stored in memory. This will crash
-  # the server for large directories!
-  # It would be nicer if these objects were created one at a time, and then
-  # forgotten.
-  # @see BeeHub::Registry::forget()
-  $members = array();
-  foreach ($this as $member){
-    $members[$member] = BeeHub_Registry::inst()->resource($this->path . $member);
-  }
-  $this->include_view( null, array(
-      'members' => $members
-  ));
+  $this->include_view();
 }
 
 
