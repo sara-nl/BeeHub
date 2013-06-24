@@ -99,7 +99,6 @@ class BeeHub_Auth {
           // User could not be authenticated with supplied credentials, but we
           // require authentication, so we ask again!
           $this->unauthorized();
-          exit;
         }
       } else { // Authentication succeeded: store credentials!
         $this->set_user(rawurlencode( $_SERVER['PHP_AUTH_USER'] ));
@@ -112,10 +111,10 @@ class BeeHub_Auth {
       if ( $row = $statement->fetch_row() ) { // We found a user, this is the one that's logged in!
         $this->SURFconext = true;
         $this->set_user( $row[0] );
-      } elseif ($_SERVER['REQUEST_URI'] !== BeeHub::$CONFIG['namespace']['users_path']) {
+      } elseif ($_SERVER['REQUEST_URI'] !== BeeHub::USERS_PATH) {
         throw new DAV_Status(
           DAV::HTTP_TEMPORARY_REDIRECT,
-          BeeHub::urlbase(true) . BeeHub::$CONFIG['namespace']['users_path']
+          BeeHub::urlbase(true) . BeeHub::USERS_PATH
         );
       }
     } elseif ( ('conext' === @$_GET['login']) ) { // We don't know this SURFconext ID, this is a new user
@@ -123,23 +122,21 @@ class BeeHub_Auth {
     } elseif ( ( 'passwd' === @$_GET['login'] ) || $requireAuth ) {
       // If the user didn't send any credentials, but we require authentication, ask for it!
       $this->unauthorized();
-      exit;
     }
 
     // If the current user is logged in, but has no verified e-mail address.
     // He/she is not authorized to do anything, but will get a message that we
     // want a verified e-mail address. Although he has to be able to verify
     // his e-mail address of course (so GET and POST on /system/users/<name>
-    // is allowed
+    // is allowed)
     $user = $this->current_user();
     if (!is_null($user)) {
       $email = $user->prop(BeeHub::PROP_EMAIL);
       if ( empty($email) &&
            DAV::unslashify(DAV::$PATH) != DAV::unslashify($user->path) ) {
-        // TODO: how to sent this message with this status code in a webDAV/Pieter friendly way?
-        // TODO: Kick Niek in the ass for this prutswerkje. [PvB]
-        header('HTTP/1.1 ' . DAV::status_code(DAV::HTTP_FORBIDDEN));
-        die("Your e-mail address has not been verified yet. If you don't verify your e-mail address within 24 hours after creating your account, your account will be deleted. Please check your mailbox for the verification e-mail with instructions on how to proceed. Or copy the verification code from that e-mail and fill it out in your profile page: " . BeeHub::urlbase(true) . $user->path);
+        $message = file_get_contents( dirname( dirname ( __FILE__ ) ) . '/views/error_no_verified_email.html' );
+        $message = str_replace( '%USER_PATH%', BeeHub::urlbase(true) . $user->path, $message );
+        BeeHub::htmlError( $message, DAV::HTTP_FORBIDDEN );
       }
     }
   }
@@ -152,7 +149,7 @@ class BeeHub_Auth {
    */
   private function set_user($user_name) {
     BeeHub_ACL_Provider::inst()->CURRENT_USER_PRINCIPAL =
-      BeeHub::$CONFIG['namespace']['users_path'] . $user_name;
+      BeeHub::USERS_PATH . $user_name;
   }
 
 
@@ -203,20 +200,13 @@ class BeeHub_Auth {
    */
   public function unauthorized() {
     DAV::header( array(
-      'status' => DAV::HTTP_UNAUTHORIZED,
       'WWW-Authenticate' => 'Basic realm="' . BeeHub::$CONFIG['authentication']['realm'] . '"',
       'Content-Type' => BeeHub::best_xhtml_type()
     ) );
-    // TODO: Shouldn't this HTML text contain a link to alternative means of
-    // authentication, such as SURFconext? [PvB]
-    echo <<<EOS
-<html><head>
-  <title>HTTP/1.1 Unauthorized</title>
-</head><body>
-  <h1>HTTP/1.1 Unauthorized</h1>
-  <p>Sorry…</p>
-</body></html>
-EOS;
+    BeeHub::htmlError(
+            file_get_contents( dirname( dirname ( __FILE__ ) ) . '/views/error_unauthorized.html' ) ,
+            DAV::HTTP_UNAUTHORIZED
+    );
   }
 
 

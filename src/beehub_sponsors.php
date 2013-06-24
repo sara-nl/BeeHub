@@ -50,7 +50,6 @@ class BeeHub_Sponsors extends BeeHub_Principal_Collection {
    * @see DAV_Resource::method_GET()
    */
   public function method_GET() {
-    throw DAV::forbidden();
     $sponsors = array();
     foreach ($this as $sponsor)
       $sponsors[] = BeeHub_Registry::inst()->resource($this->path . $sponsor );

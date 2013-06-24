@@ -6,7 +6,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </a>
-          <a class="brand" href="<?= DAV::xmlescape(BeeHub::$CONFIG['namespace']['system_path']) ?>">BeeHub</a>
+          <a class="brand" href="<?= DAV::xmlescape(BeeHub::SYSTEM_PATH) ?>">BeeHub</a>
           <div class="nav-collapse collapse">
             <ul class="nav">
               <li id="navbar-li-files"><a href="<?=
@@ -16,8 +16,8 @@
       BeeHub_Auth::inst()->current_user()->path
     ) : BeeHub::urlbase(false) . '?nosystem' ?>">Files</a></li>
               <?php if (BeeHub_Auth::inst()->is_authenticated()) : ?>
-                <li id="navbar-li-groups"><a href="<?= DAV::xmlescape(BeeHub::$CONFIG['namespace']['groups_path']) ?>">Groups</a></li>
-<?php /*                <li id="navbar-li-sponsors"><a href="<?= DAV::xmlescape(BeeHub::$CONFIG['namespace']['sponsors_path']) ?>">Sponsors</a></li> */ ?>
+                <li id="navbar-li-groups"><a href="<?= DAV::xmlescape(BeeHub::GROUPS_PATH) ?>">Groups</a></li>
+								<li id="navbar-li-sponsors"><a href="<?= DAV::xmlescape(BeeHub::SPONSORS_PATH) ?>">Sponsors</a></li>
               <?php endif; ?>
               <li id="navbar-li-docs"><a href="/system/docs.php">Docs</a></li>
             </ul>
@@ -39,11 +39,11 @@
                     <?php if (@BeeHub_Auth::inst()->surfconext()) : ?>
                       <li><a href="<?= DAV::$PATH . '?logout=yes' ?>">Log out</a></li>
                     <?php endif ?>
-                    <li><a href="<?= BeeHub::urlbase(false) . BeeHub::$CONFIG['namespace']['system_path'] ?>">Go anonymous</a></li>
+                    <li><a href="<?= BeeHub::urlbase(false) . BeeHub::SYSTEM_PATH ?>">Go anonymous</a></li>
                   </ul>
                 </li>
               <?php else : ?>
-                <li><a href="<?= BeeHub::$CONFIG['namespace']['users_path'] ?>">Sign up</a></li>
+                <li><a href="<?= BeeHub::USERS_PATH ?>">Sign up</a></li>
                 <li class="dropdown">
                   <a href="#" class="dropdown-toggle" data-toggle="dropdown">Log in <span class="caret"></span></a>
                   <ul class="dropdown-menu">
@@ -53,6 +53,7 @@
                     <?php else: ?>
                       <li><a href="<?= BeeHub::urlbase(true) . DAV::$PATH . '?login=conext' ?>">With SURFconext</a></li>
                     <?php endif; ?>
+                    <li><a href="<?= BeeHub::urlbase(true) . '/system/password_reset.php' ?>">I forgot my password</a></li>
                   </ul>
                 </li>
               <?php endif ?>

@@ -13,6 +13,15 @@ if (nl.sara.beehub.codec === undefined) {
   nl.sara.beehub.codec = {};
 }
 
+// Some static values change these also in /src/beehub.php
+nl.sara.beehub.users_path            = "/system/users/";
+nl.sara.beehub.groups_path           = "/system/groups/";
+nl.sara.beehub.sponsors_path         = "/system/sponsors/";
+nl.sara.beehub.forbidden_group_names = [
+  "home",
+  "system"
+];
+
 // in a anonymous function, to not pollute the global namespace:
 (function () {
 	var active;
@@ -79,6 +88,9 @@ if (nl.sara.beehub.codec === undefined) {
         $('.btn-danger', notification).click(function() {
           client.post(data.sponsor, nl.sara.beehub.reload_notifications, 'delete_members[]=' + data.user);
         });
+        break;
+      case 'no_sponsor':
+        notification.html('You don\'t have a sponsor, therefore you can\'t store any data on BeeHub! See the (<a href="' + nl.sara.beehub.sponsors_path + '">sponsors page</a> to request a membership of a sponsor.');
         break;
     }
 

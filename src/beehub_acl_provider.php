@@ -107,7 +107,7 @@ public function user_prop_acl_restrictions() {
 
 
 public function user_prop_principal_collection_set() {
-  return array(BeeHub::$CONFIG['namespace']['groups_path'], BeeHub::$CONFIG['namespace']['users_path']);
+  return array(BeeHub::GROUPS_PATH, BeeHub::USERS_PATH);
 }
 
 

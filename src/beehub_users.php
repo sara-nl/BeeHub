@@ -39,15 +39,13 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
     }
     $display_name = '';
     $email_address = '';
-    $surfconext_description = '';
     if (BeeHub_Auth::inst()->simpleSaml()->isAuthenticated()) {
       $as = BeeHub_Auth::inst()->simpleSaml();
       $attrs = $as->getAttributes();
       $display_name = @$attrs['urn:mace:dir:attribute-def:displayName'][0];
       $email_address = @$attrs['urn:mace:dir:attribute-def:mail'][0];
-      $surfconext_description = @$attrs['urn:mace:terena.org:attribute-def:schacHomeOrganization'][0];
     }
-    $this->include_view('new_user', array('display_name'=>$display_name, 'email_address'=>$email_address, 'surfconext_description'=>$surfconext_description));
+    $this->include_view('new_user', array('display_name'=>$display_name, 'email_address'=>$email_address));
   }
 
 
@@ -60,7 +58,6 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
     $email = $_POST['email'];
     $password = (!empty($_POST['password']) ? $_POST['password'] : null);
     $user_name = $_POST['user_name'];
-    $surfconext_description = @$_POST['surfconext_description'];
     // User name must be one of the following characters a-zA-Z0-9_-., starting with an alphanumeric character and must be between 1 and 255 characters long
     if (empty($displayname) ||
         !preg_match('/^[a-zA-Z0-9]{1}[a-zA-Z0-9_\-\.]{0,254}$/D', $user_name)) {
@@ -90,7 +87,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
 
     // Fetch the user and store extra properties
     $user = BeeHub_Registry::inst()->resource(
-      BeeHub::$CONFIG['namespace']['users_path'] . rawurlencode($user_name)
+      BeeHub::USERS_PATH . rawurlencode($user_name)
     );
     $user->set_password($password);
     $user->user_set(DAV::PROP_DISPLAYNAME, $displayname);
@@ -110,6 +107,11 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
     if ($auth->simpleSaml()->isAuthenticated()) {
       $surfId = $auth->simpleSaml()->getAuthData("saml:sp:NameID");
       $surfId = $surfId['Value'];
+      $attributes = $auth->simpleSaml()->getAttributes();
+      $surfconext_description = @$attributes['urn:mace:terena.org:attribute-def:schacHomeOrganization'][0];
+      if (empty($surfconext_description)) {
+        $surfconext_description = 'Unknown account';
+      }
       $user->user_set(BeeHub::PROP_SURFCONEXT, $surfId);;
       $user->user_set(BeeHub::PROP_SURFCONEXT_DESCRIPTION, $surfconext_description);
     }
@@ -119,7 +121,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
     if (!mkdir($userdir)) {
       throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
     }
-    xattr_set( $userdir, rawurlencode('DAV: owner'), BeeHub::$CONFIG['namespace']['users_path'] . rawurlencode($user_name) );
+    xattr_set( $userdir, rawurlencode('DAV: owner'), BeeHub::USERS_PATH . rawurlencode($user_name) );
     // TODO: this should not be hard coded. When a users is accepted by his/her first sponsor, this should automatically be set.
     xattr_set( $userdir, rawurlencode(BeeHub::PROP_SPONSOR), '/system/sponsors/e-infra' );
 
@@ -144,7 +146,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
     );
     $retval = array();
     while ($row = $stmt->fetch_row()) {
-      $retval[] = BeeHub::$CONFIG['namespace']['users_path'] .
+      $retval[] = BeeHub::USERS_PATH .
         rawurlencode($row[0]);
     }
     $stmt->free_result();

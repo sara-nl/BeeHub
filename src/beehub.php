@@ -72,6 +72,16 @@ class BeeHub {
   public static $SPONSOR_PROPS = array(
     self::PROP_DESCRIPTION     => true,
   );
+  // For the next values: check if you also need to change them in /system/js/beehub.js
+  public static $FORBIDDEN_GROUP_NAMES = array(
+    'home',
+    'system',
+  );
+  const SYSTEM_PATH     = "/system/";
+  const USERS_PATH      = "/system/users/";
+  const GROUPS_PATH     = "/system/groups/";
+  const SPONSORS_PATH   = "/system/sponsors/";
+  const JAVASCRIPT_PATH = "/system/js/server/";
 
 
   /**#@+
@@ -128,6 +138,19 @@ class BeeHub {
   }
 
 
+  /**
+   * Shows a decent HTML page with an error for the end-user
+   * @param   type  $message  The message to show. Could contain HTML.
+   * @param   type  $status   The HTTP status code to return
+   * @return  void
+   */
+  public static function htmlError($message, $status = DAV::HTTP_OK) {
+    DAV::header( array( 'status' => $status ) );
+    require( 'views/html_error.php' );
+    exit;
+  }
+
+
   public static function localPath($path) {
     return DAV::unslashify(self::$CONFIG['environment']['datadir'] . rawurldecode($path));
   }
@@ -169,7 +192,7 @@ class BeeHub {
    */
   public static function user($name) {
     if ($name[0] !== '/')
-      $name = BeeHub::$CONFIG['namespace']['users_path'] .
+      $name = BeeHub::USERS_PATH .
         rawurlencode($name);
     $retval = BeeHub_Registry::inst()->resource( $name );
     if ( !$retval || !( $retval instanceof BeeHub_User ) ) throw new DAV_Status(
@@ -185,7 +208,7 @@ class BeeHub {
    */
   public static function group($name) {
     if ($name[0] !== '/')
-      $name = BeeHub::$CONFIG['namespace']['groups_path'] .
+      $name = BeeHub::GROUPS_PATH .
         rawurlencode($name);
     $retval = BeeHub_Registry::inst()->resource( $name );
     if ( !$retval || !( $retval instanceof BeeHub_Group ) ) throw new DAV_Status(
@@ -201,7 +224,7 @@ class BeeHub {
    */
   public static function sponsor($name) {
     if ($name[0] !== '/')
-      $name = BeeHub::$CONFIG['namespace']['sponsors_path'] .
+      $name = BeeHub::SPONSORS_PATH .
         rawurlencode($name);
     $retval = BeeHub_Registry::inst()->resource( $name );
     if ( !$retval || !( $retval instanceof BeeHub_Sponsor ) ) throw new DAV_Status(
@@ -239,7 +262,7 @@ class BeeHub {
                `beehub_group_members`.`user_name` = ?
       ', 's', $user->name);
       while ($row = $statement->fetch_row()) {
-        $notifications[] = array('type'=>'group_invitation', 'data'=>array('group'=>BeeHub::$CONFIG['namespace']['groups_path'] . $row[0], 'displayname'=>$row[1]));
+        $notifications[] = array('type'=>'group_invitation', 'data'=>array('group'=>BeeHub::GROUPS_PATH . $row[0], 'displayname'=>$row[1]));
       }
 
       // Fetch all group membership requests
@@ -260,29 +283,34 @@ class BeeHub {
                )
       ', 's', $user->name);
       while ($row = $statement->fetch_row()) {
-        $notifications[] = array( 'type'=>'group_request', 'data'=>array( 'group'=>BeeHub::$CONFIG['namespace']['groups_path'] . $row[0], 'group_displayname'=>$row[1], 'user'=>BeeHub::$CONFIG['namespace']['users_path'] . $row[2], 'user_displayname'=>$row[3], 'user_email'=>$row[4] ) );
+        $notifications[] = array( 'type'=>'group_request', 'data'=>array( 'group'=>BeeHub::GROUPS_PATH . $row[0], 'group_displayname'=>$row[1], 'user'=>BeeHub::USERS_PATH . $row[2], 'user_displayname'=>$row[3], 'user_email'=>$row[4] ) );
       }
 
-      // Fetch all sponsor membership requests
-      $statement = BeeHub_DB::execute('
-        SELECT `beehub_sponsors`.`sponsor_name`,
-               `beehub_sponsors`.`displayname`,
-               `beehub_users`.`user_name`,
-               `beehub_users`.`displayname`,
-               `beehub_users`.`email`
-          FROM `beehub_sponsor_members` JOIN `beehub_sponsors` USING(`sponsor_name`) JOIN `beehub_users` USING(`user_name`)
-         WHERE `beehub_sponsor_members`.`is_accepted` = 0 AND
-               `beehub_sponsor_members`.`sponsor_name` IN (
-                  SELECT `beehub_sponsor_members`.`sponsor_name`
-                    FROM `beehub_sponsor_members`
-                   WHERE `beehub_sponsor_members`.`is_admin` = 1 AND
-                         `beehub_sponsor_members`.`user_name` = ?
-               )
-      ', 's', $user->name);
-      while ($row = $statement->fetch_row()) {
-        $notifications[] = array( 'type'=>'sponsor_request', 'data'=>array( 'sponsor'=>BeeHub::$CONFIG['namespace']['sponsors_path'] . $row[0], 'sponsor_displayname'=>$row[1], 'user'=>BeeHub::$CONFIG['namespace']['users_path'] . $row[2], 'user_displayname'=>$row[3], 'user_email'=>$row[4] ) );
-      }
-    }
+      // If the user doesn't have a sponsor, he can't do anything.
+      if ( count( $user->prop( BeeHub::PROP_SPONSOR_MEMBERSHIP ) ) === 0 ) {
+        $notifications[] = array( 'type'=>'no_sponsor', 'data'=>array() );
+      }else{
+        // Fetch all sponsor membership requests
+        $statement = BeeHub_DB::execute('
+          SELECT `beehub_sponsors`.`sponsor_name`,
+                `beehub_sponsors`.`displayname`,
+                `beehub_users`.`user_name`,
+                `beehub_users`.`displayname`,
+                `beehub_users`.`email`
+            FROM `beehub_sponsor_members` JOIN `beehub_sponsors` USING(`sponsor_name`) JOIN `beehub_users` USING(`user_name`)
+          WHERE `beehub_sponsor_members`.`is_accepted` = 0 AND
+                `beehub_sponsor_members`.`sponsor_name` IN (
+                    SELECT `beehub_sponsor_members`.`sponsor_name`
+                      FROM `beehub_sponsor_members`
+                    WHERE `beehub_sponsor_members`.`is_admin` = 1 AND
+                          `beehub_sponsor_members`.`user_name` = ?
+                )
+        ', 's', $user->name);
+        while ($row = $statement->fetch_row()) {
+          $notifications[] = array( 'type'=>'sponsor_request', 'data'=>array( 'sponsor'=>BeeHub::SPONSORS_PATH . $row[0], 'sponsor_displayname'=>$row[1], 'user'=>BeeHub::USERS_PATH . $row[2], 'user_displayname'=>$row[3], 'user_email'=>$row[4] ) );
+        }
+      } // end else for if ( count( $user->prop( BeeHub::PROP_SPONSOR_MEMBERSHIP ) ) === 0 )
+    } // end if ($auth->is_authenticated())
     return $notifications;
   }
 
