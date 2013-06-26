@@ -92,9 +92,11 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
     if (!mkdir($groupdir)) {
       throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
     }
-    xattr_set( $groupdir, rawurlencode('DAV: owner'), BeeHub::$CONFIG['namespace']['wheel_path'] );
-    xattr_set( $groupdir, rawurlencode('DAV: acl'), '[["' . BeeHub::GROUPS_PATH . rawurlencode($group->name) . '",false,["DAV: read", "DAV: write", "DAV: read-acl"],false]]' );
-    xattr_set( $groupdir, rawurlencode(BeeHub::PROP_SPONSOR), $user_sponsor );
+    $groupdir_resource = BeeHub_Registry::inst()->resource( '/' . $group_name );
+    $groupdir_resource->user_set( DAV::PROP_OWNER, BeeHub::$CONFIG['namespace']['wheel_path'] );
+    $groupdir_resource->user_set( BeeHub::PROP_SPONSOR, $user_sponsor );
+    $groupdir_resource->user_set( DAV::PROP_ACL, '[["' . BeeHub::GROUPS_PATH . rawurlencode($group->name) . '",false,["DAV: read", "DAV: write", "DAV: read-acl"],false]]' );
+    $groupdir_resource->storeProperties();
 
     // Group created, redirect to the group page
     DAV::redirect(

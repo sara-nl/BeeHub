@@ -67,11 +67,13 @@ private function internal_create_member( $name, $collection = false ) {
   if ( !$result )
     throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
 
-  // And set the xattributes
-  xattr_set( $localPath, rawurlencode( DAV::PROP_GETETAG), BeeHub_DB::ETag() );
-  xattr_set( $localPath, rawurlencode( DAV::PROP_OWNER  ), $this->user_prop_current_user_principal() );
-  xattr_set( $localPath, rawurlencode( BeeHub::PROP_SPONSOR ), $sponsor );
-  return BeeHub_Registry::inst()->resource($path);
+  // And set the attributes
+  $new_resource = BeeHub_Registry::inst()->resource($path);
+  $new_resource->user_set( DAV::PROP_GETETAG, BeeHub_DB::ETag() );
+  $new_resource->user_set( DAV::PROP_OWNER, $this->user_prop_current_user_principal() );
+  $new_resource->user_set( BeeHub::PROP_SPONSOR, $sponsor );
+  $new_resource->storeProperties();
+  return $new_resource;
 }
 
 
@@ -82,16 +84,21 @@ public function method_COPY( $path ) {
   if (!$parent instanceof BeeHub_Directory)
     throw new DAV_Status(DAV::HTTP_FORBIDDEN);
   $parent->internal_create_member(basename($path), true);
-  // TODO: Should we check here if the xattr to be copied is in the 'user.' realm?
-  foreach(xattr_list($this->localPath) as $xattr)
-    if ( !in_array( rawurldecode($xattr), array(
-      DAV::PROP_GETETAG,
-      DAV::PROP_OWNER,
-      DAV::PROP_GROUP,
-      DAV::PROP_ACL,
-      DAV::PROP_LOCKDISCOVERY
-    ) ) )
-      xattr_set( $localPath, $xattr, xattr_get( $this->localPath, $xattr ) );
+  
+  // And copy the attributes
+  $new_resource = BeeHub_Registry::inst()->resource( $path );
+  foreach( $this->stored_props as $prop => $value ) {
+    if ( !in_array( $prop, array(
+          DAV::PROP_GETETAG,
+          DAV::PROP_OWNER,
+          BeeHub::PROP_SPONSOR,
+          DAV::PROP_ACL,
+          DAV::PROP_LOCKDISCOVERY
+          ) ) ) {
+      $new_resource->user_set( $prop, $value );
+    }
+  }
+  $new_resource->storeProperties();
 }
 
 

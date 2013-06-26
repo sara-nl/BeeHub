@@ -26,7 +26,7 @@
 class BeeHub_Users extends BeeHub_Principal_Collection {
 
   /**
-   * Returns either a form to register a new user or a form to verify your e-mail address. No authentication required.
+   * Returns a form to register a new user. No authentication required.
    * @see DAV_Resource::method_GET
    */
   public function method_GET() {
@@ -50,7 +50,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
 
 
   /**
-   * Handles both the form to register a new user and the form to verify an e-mail address. No authentication required.
+   * Handles the form to register a new user. No authentication required.
    * @see DAV_Resource::method_POST()
    */
   public function method_POST(&$headers) {
@@ -64,7 +64,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
       throw new DAV_Status(DAV::HTTP_BAD_REQUEST);
     }
     $userdir = DAV::unslashify(BeeHub::$CONFIG['environment']['datadir']) . DIRECTORY_SEPARATOR . 'home' . DIRECTORY_SEPARATOR . $user_name;
-    // Check for existing groupdir
+    // Check for existing userdir
     if (file_exists($userdir)) {
       throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
     }
@@ -93,7 +93,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
     $user->user_set(DAV::PROP_DISPLAYNAME, $displayname);
     $user->user_set(BeeHub::PROP_EMAIL, $email);
     // TODO: This should not be hard coded, a new user should not have a sponsor but request one after his account is created, but I want to inform the user about his through the not-yet-existing notification system
-    $user->user_set(BeeHub::PROP_SPONSOR, 'e-infra');
+    $user->user_set(BeeHub::PROP_SPONSOR, '/system/sponsors/e-infra');
     BeeHub_DB::execute(
       'INSERT INTO `beehub_sponsor_members`
           (`sponsor_name`, `user_name`, `is_accepted`, `is_admin`)
@@ -121,9 +121,11 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
     if (!mkdir($userdir)) {
       throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
     }
-    xattr_set( $userdir, rawurlencode('DAV: owner'), BeeHub::USERS_PATH . rawurlencode($user_name) );
+    $userdir_resource = BeeHub_Registry::inst()->resource('/home/' . $user_name);
+    $userdir_resource->user_set( DAV::PROP_OWNER, $user->path );
     // TODO: this should not be hard coded. When a users is accepted by his/her first sponsor, this should automatically be set.
-    xattr_set( $userdir, rawurlencode(BeeHub::PROP_SPONSOR), '/system/sponsors/e-infra' );
+    $userdir_resource->user_set( BeeHub::PROP_SPONSOR, rawurlencode(BeeHub::PROP_SPONSOR), '/system/sponsors/e-infra' );
+    $userdir_resource->storeProperties();
 
     // Show the confirmation
     $this->include_view('new_user_confirmation', array('email_address'=>$email));

@@ -50,9 +50,9 @@ class BeeHub_XFSResource extends BeeHub_Resource {
     if (is_null($this->stored_props)) {
       $this->stored_props = array();
       $attributes = xattr_list($this->localPath);
-      foreach ($attributes as $attribute)
-        $this->stored_props[rawurldecode($attribute)] =
-                xattr_get($this->localPath, $attribute);
+      foreach ($attributes as $attribute) {
+        $this->stored_props[rawurldecode($attribute)] = xattr_get($this->localPath, $attribute);
+      }
     }
   }
 

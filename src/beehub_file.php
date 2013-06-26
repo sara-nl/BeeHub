@@ -87,11 +87,26 @@ public function user_prop_getetag() {
  */
 public function method_COPY( $path ) {
   $this->assert(DAVACL::PRIV_READ);
-  BeeHub_Registry::inst()->resource(dirname($path))->assert(DAVACL::PRIV_WRITE);
+  $parent = BeeHub_Registry::inst()->resource( dirname( $path ) );
+  $parent->assert(DAVACL::PRIV_WRITE);
+  $parent->create_member( basename( $path ) );
   $localPath = BeeHub::localPath($path);
-  exec( 'cp --preserve=all ' . BeeHub::escapeshellarg($this->localPath) . ' ' . BeeHub::escapeshellarg($localPath) );
-  xattr_remove( $localPath, rawurlencode(DAV::PROP_ACL) );
-  xattr_remove( $localPath, rawurlencode(DAV::PROP_LOCKDISCOVERY) );
+  exec( 'cp ' . BeeHub::escapeshellarg($this->localPath) . ' ' . BeeHub::escapeshellarg($localPath) );
+  
+  // And copy the attributes
+  $new_resource = BeeHub_Registry::inst()->resource( $path );
+  foreach( $this->stored_props as $prop => $value ) {
+    if ( !in_array( $prop, array(
+          DAV::PROP_GETETAG,
+          DAV::PROP_OWNER,
+          BeeHub::PROP_SPONSOR,
+          DAV::PROP_ACL,
+          DAV::PROP_LOCKDISCOVERY
+          ) ) ) {
+      $new_resource->user_set( $prop, $value );
+    }
+  }
+  $new_resource->storeProperties();
 }
 
 
