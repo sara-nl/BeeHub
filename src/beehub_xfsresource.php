@@ -202,6 +202,32 @@ class BeeHub_XFSResource extends BeeHub_Resource {
     $this->user_set(DAV::PROP_ACL, $aces ? DAVACL_Element_ace::aces2json($aces) : null);
     $this->storeProperties();
   }
+  
+  
+  /**
+   * Gets all members who have a certain property set
+   * @param   string  $prop  The property which should be set on the member
+   * @return  array          An array with all paths to members who have the property set
+   */
+  public function get_members_with_prop($prop) {
+    $prop = urlencode( prop );
+    exec( 'getfattr --absolute-names -n "user.' . $prop . '" -R ' . BeeHub::escapeshellarg( $this->localPath ) . ' 2>/dev/null', $output );
+    $result = array();
+    $filename = null;
+    foreach ($output as $line) {
+      if (preg_match('@^# file: (.*)$@', $line, $matches)) {
+        $filename = stripcslashes( substr( realpath( $matches[1] ) , strlen( self::$CONFIG['environment']['datadir'] ) ) );
+      }elseif ( $filename &&
+               preg_match(
+                 '@^user\\.' . $prop . '="((?:\\\\.|[^"\\\\])*)"$@',
+                 $line, $matches
+               ) ) {
+        $result[$filename] = stripcslashes($matches[1]);
+      }
+    }
+    unset( $result[$this->path] );
+    return $result;
+  }
 
 
 } // class BeeHub_XFSResource
