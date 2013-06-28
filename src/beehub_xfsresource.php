@@ -48,10 +48,12 @@ class BeeHub_XFSResource extends BeeHub_Resource {
 
   protected function init_props() {
     if (is_null($this->stored_props)) {
-      $this->stored_props = array();
-      $attributes = xattr_list($this->localPath);
-      foreach ($attributes as $attribute) {
-        $this->stored_props[rawurldecode($attribute)] = xattr_get($this->localPath, $attribute);
+      $collection = BeeHub::getNoSQL()->files;
+      $document = $collection->findOne( array('path' => DAV::unslashify( $this->path ) ) );
+      if ( is_null( $document ) ) {
+        $this->stored_props = array();
+      }else{
+        $this->stored_props = $document['props'];
       }
     }
   }
@@ -183,13 +185,21 @@ class BeeHub_XFSResource extends BeeHub_Resource {
    * @throws DAV_Status in particular 507 (Insufficient Storage)
    */
   public function storeProperties() {
-    if (!$this->touched)
+    if (!$this->touched) {
       return;
-    foreach (xattr_list($this->localPath) as $attribute)
-      if (!isset($this->stored_props[rawurldecode($attribute)]))
-        xattr_remove($this->localPath, $attribute);
-    foreach ($this->stored_props as $name => $value)
-      xattr_set($this->localPath, rawurlencode($name), $value);
+    }
+    
+    $collection = BeeHub::getNoSQL()->files;
+    $document = $collection->findOne( array('path' => DAV::unslashify( $this->path ) ) );
+    if ( is_null( $document ) ) {
+      $document = array(
+          'path' => DAV::unslashify( $this->path ),
+          'props' => $this->stored_props );
+    }else{
+      $document['props'] = $this->stored_props;
+    }
+    $collection->save( $document );
+    
     $this->touched = false;
   }
 
@@ -210,23 +220,18 @@ class BeeHub_XFSResource extends BeeHub_Resource {
    * @return  array          An array with all paths to members who have the property set
    */
   public function get_members_with_prop($prop) {
-    $prop = urlencode( prop );
-    exec( 'getfattr --absolute-names -n "user.' . $prop . '" -R ' . BeeHub::escapeshellarg( $this->localPath ) . ' 2>/dev/null', $output );
-    $result = array();
-    $filename = null;
-    foreach ($output as $line) {
-      if (preg_match('@^# file: (.*)$@', $line, $matches)) {
-        $filename = stripcslashes( substr( realpath( $matches[1] ) , strlen( self::$CONFIG['environment']['datadir'] ) ) );
-      }elseif ( $filename &&
-               preg_match(
-                 '@^user\\.' . $prop . '="((?:\\\\.|[^"\\\\])*)"$@',
-                 $line, $matches
-               ) ) {
-        $result[$filename] = stripcslashes($matches[1]);
-      }
+    $collection = BeeHub::getNoSQL()->files;
+    $results = $collection->find(
+            array(
+                'path' => array( '$regex' => preg_quote( DAV::slashify( $this->path ) ) . '.*'),
+                'props.' . $prop => array( '$exists' => true ) ),
+            array('path' => 1, 'props.' . $prop => 1)
+            );
+    $returnVal = array();
+    foreach ( $results as $result ) {
+      $returnVal[$result['path']] = $result['props'][$prop];
     }
-    unset( $result[$this->path] );
-    return $result;
+    return $returnVal;
   }
 
 

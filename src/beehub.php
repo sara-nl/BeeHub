@@ -328,6 +328,12 @@ class BeeHub {
     }
     mail($recipients, $subject, $message, 'From: ' . BeeHub::$CONFIG['email']['sender_name'] . ' <' . BeeHub::$CONFIG['email']['sender_address'] . '>', '-f ' . BeeHub::$CONFIG['email']['sender_address']);
   }
+  
+  
+  public static function getNoSQL() {
+    $client = new MongoClient();
+    return $client->beehub;
+  }
 
 
 } // class BeeHub
