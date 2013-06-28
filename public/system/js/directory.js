@@ -44,14 +44,16 @@
       stickyHeaders_offset : 186,
     }
   });
-
+  
+  // Directory tree in tree panel
   $("#bh-dir-tree").dynatree({
     onActivate: function(node) {
-        // A DynaTreeNode object is passed to the activation handler
-        // Note: we also get this event, if persistence is on, and the page is reloaded.
-        alert("You activated " + node.data.title);
+      // A DynaTreeNode object is passed to the activation handler
+      // Note: we also get this event, if persistence is on, and the page is reloaded.
+//      alert("You activated " + node.data.title);
+//      window.location.reload();
     },
-    persist: true,
+    persist: false,
     children: treecontents,
     onLazyRead: function(node){
       var client = new nl.sara.webdav.Client();
@@ -100,47 +102,20 @@
         // end callback
       },1,properties);
     }
-});
+  });
+//  $("#bh-dir-tree").dynatree({
+//    onActivate: function(node) {
+//        // A DynaTreeNode object is passed to the activation handler
+//        // Note: we also get this event, if persistence is on, and the page is reloaded.
+//        alert("You activated " + node.data.title);
+//    }
+//  });
 
-//
-////Highlight selected row
-//$("#example-advanced tbody tr").mousedown(function() {
-// $("tr.selected").removeClass("selected");
-// $(this).addClass("selected");
-//});
-//
-////Drag & Drop Example Code
-//$("#example-advanced .file, #example-advanced .folder").draggable({
-// helper: "clone",
-// opacity: .75,
-// refreshPositions: true,
-// revert: "invalid",
-// revertDuration: 300,
-// scroll: true
-//});
-//
-//$("#example-advanced .folder").each(function() {
-// $(this).parents("tr").droppable({
-//   accept: ".file, .folder",
-//   drop: function(e, ui) {
-//     var droppedEl = ui.draggable.parents("tr");
-//     $("#example-advanced").treetable("move", droppedEl.data("ttId"), $(this).data("ttId"));
-//   },
-//   hoverClass: "accept",
-//   over: function(e, ui) {
-//     var droppedEl = ui.draggable.parents("tr");
-//     if(this != droppedEl[0] && !$(this).is(".expanded")) {
-//       $("#example-advanced").treetable("expandNode", $(this).data("ttId"));
-//     }
-//   }
-// });
-//});
 	// solving bug: https://github.com/twitter/bootstrap/issues/6094
 	// conflict bootstrap and jquery
 	var btn = $.fn.button.noConflict() // reverts $.fn.button to jqueryui btn
 	$.fn.btn = btn // assigns bootstrap button functionality to $.fn.btn
 	
-//	$('#bh-dir-tree').css({visibility:"hidden"});
 	
 	// CONTENTS TAB
 	// Open selected handler: this can be a file or a directory
@@ -609,7 +584,7 @@
 	 // TREE
 	 // Tree slide handler
    $(".bh-dir-tree-slide-trigger").hover(function(){
-    $(".bh-dir-tree-slide").toggle("fast");
+    $(".bh-dir-tree-slide").toggle("slow");
     $(this).toggleClass("active");
     $('.bh-dir-tree-slide-trigger i').toggleClass('icon-chevron-left icon-chevron-right');
     return false;
@@ -617,7 +592,7 @@
     // No action;
   });
 	$(".bh-dir-tree-slide-trigger").click(function(){
-	   $(".bh-dir-tree-slide").toggle("fast");
+	   $(".bh-dir-tree-slide").toggle("slow");
 	    $(this).toggleClass("active");
 	    $('.bh-dir-tree-slide-trigger i').toggleClass('icon-chevron-left icon-chevron-right');
 	    return false;

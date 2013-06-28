@@ -75,10 +75,24 @@
 }
 /* Bootstrap table header */
 #bh-dir-content-table-sticky,.bh-dir-table-header  {
-	background-color: #F5F5F5;
-  background-image: -moz-linear-gradient(center top , #FFFFFF, #E6E6E6);
-  background-repeat: repeat-x;
-  border-bottom: 2px solid white;
+	 -moz-border-bottom-colors: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    background-color: #F5F5F5;
+    background-image: -moz-linear-gradient(center top , #FFFFFF, #E6E6E6);
+    background-repeat: repeat-x;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.2) inset, 0 1px 2px rgba(0, 0, 0, 0.05);
+    color: #58595B;
+    cursor: pointer;
+    border-bottom: 2px solid white;
+    font-size: 13px;
+    line-height: 18px;
+    margin-bottom: 0;
+    padding: 4px 12px;
+    text-align: center;
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
+    vertical-align: middle;
 }
 
 
@@ -86,29 +100,25 @@
 .bh-dir-tree-slide {
   position: fixed ;
   top: 187px;
-  bottom: 0px;
+  bottom: 50px !important;
   right: 0;
   display: none;
-  border-top-left-radius:20px;
-  background-color: white !important;
-  border-left: 7px solid #E6E6E6;
-  border-top: 7px solid #E6E6E6;
-  z-index: 100;
+  z-index: 100; 
 }
 a.bh-dir-tree-slide-trigger{
   position: fixed;
-  top: 198px; right: 0;
+  top: 165px; right: 0;
   z-index: 100;
 }
 ul.dynatree-container{
-	background-color: white !important;
-	border: 5px none !important;
-	min-width: 200px !important;
-	border-top-left-radius: 20px;
-	padding: 15px !important;
+	border-left: 7px solid #E6E6E6 !important;
+  border-top: 7px solid #E6E6E6 !important;
+  border-bottom: 7px solid #E6E6E6 !important;
+  min-width: 200px !important;
+  border-top-left-radius: 20px;
+  border-bottom-left-radius: 20px;
+  padding: 15px !important;
 }
-
-
 
 /* Indent groups and sponsers */
 #bh-groups-panel-mygroups, #bh-groups-panel-join, #bh-sponsors-panel-mysponsors, #bh-sponsors-panel-join {
