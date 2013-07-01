@@ -16,24 +16,23 @@ require 'views/header.php';
  */
 function createTree2($path, $oldpath = null, $oldmembers = null) {
   $dir = BeeHub_Registry::inst()->resource($path);
+  
   $members = array();
-  foreach ($dir as $member) {
-    if ('/' !== substr($member, -1) ||
+  foreach ($dir as $member) { 	
+   if ('/' !== substr($member, -1) ||
             ( '/' === $path && $member === 'system/' ))
       continue;
     $tmp = array(
         'title' => rawurldecode(DAV::unslashify($member)),
         'id' => $path . $member,
-        'isFolder' => 'true',
-        'isLazy' => 'true'
-
-            //       'expand' => ( $oldpath === $path . $member ? 'true' : 'false' )
+        'expand' => ( $oldpath === $path . $member ? true : false ),
+    		'isFolder' => true
     );
-    //     if ( $tmp['expand'] === 'true' ) {
-    //       $tmp['children'] = $oldmembers;
-    //     } else {
-    //     	$tmp['isLazy'] = 'true';
-    //     };
+        if ( $tmp['expand'] === true ) {
+          $tmp['children'] = $oldmembers;
+        } else {
+        	$tmp['isLazy'] = true;
+        };
     $members[] = $tmp;
   }
   if ('/' === $path)
@@ -42,7 +41,6 @@ function createTree2($path, $oldpath = null, $oldmembers = null) {
           DAV::slashify(dirname($path)), $path, $members
   );
 }
-
 $testtree = createTree2(DAV::slashify(dirname($this->path)));
 ?>
 <div class="bh-dir-fixed-header">
@@ -192,7 +190,6 @@ $testtree = createTree2(DAV::slashify(dirname($this->path)));
                   $member->user_prop_owner()
           );
           ?>
-
           <tr>
             <td width="10px" data-toggle="tooltip" title="Rename file"><i
                 class="icon-edit bh-dir-edit" style="cursor: pointer"></i></td>

@@ -23,7 +23,7 @@
  * @author Laura Leistikow (laura.leistikow@surfsara.nl)
  */
   $(function() {
-      
+  
 	var path = location.pathname;
 	// add slash to the end of path
 	if (!path.match(/\/$/)) {
@@ -44,7 +44,6 @@
       stickyHeaders_offset : 186,
     }
   });
-  
   // Directory tree in tree panel
   $("#bh-dir-tree").dynatree({
     onActivate: function(node) {
@@ -543,6 +542,124 @@
      
     webdav.remove(path + deleteArray[counter].value,callback(deleteArray, counter));
 	}
+	 /**
+   * Overwrite Copy/Move/Delete handler
+   * 
+   * @param string fileName
+   * @param object fileHash
+   * 
+   */
+  function setActionOverwriteHandler(contentArray, counter, action, copyTo){
+    $("#bh-dir-dialog").find('button[id="bh-dir-action-overwrite-'+contentArray[counter].value+'"]').click(function(){
+      actionItem(contentArray, counter, action, copyTo, nl.sara.webdav.Client.SILENT_OVERWRITE, true);
+    })
+  };
+  
+  /**
+   * Cancel Copy/Move/Delete handler
+   * 
+   * @param string fileName
+   * 
+   */
+  function setActionCancelHandler(contentArray, counter, action, copyTo) {
+    $("#bh-dir-dialog").find('button[id="bh-dir-upload-cancel-'+contentArray[counter]+'"]').click(function(){
+      $("#bh-dir-dialog").find('td[id="bh-dir-'+contentArray[counter]+'"]').html("<div class='progress progress-danger progress-striped'><div class='bar' style='width: 100%;'>Canceled</div></div>");
+    })
+  }
+  
+  /**
+   * Rename Copy/Move/Delete handler
+   * 
+   * @param string fileName
+   * @param string fileNameOrg
+   * @param object filesHash
+   */
+  function setActionRenameHandler(contentArray, counter, action, copyTo){
+    var fileName = contentArray[counter];
+    $("#bh-dir-dialog").find('button[id="bh-dir-upload-rename-'+fileName+'"]').click(function(){
+      // search fileName td and make input field
+      var fileNameOrg= $("#bh-dir-dialog").find('td[id="bh-dir-'+fileName+'"]').prev().html();
+      var buttonsOrg = $("#bh-dir-dialog").find('td[id="bh-dir-'+fileName+'"]').html();
+      $("#bh-dir-dialog").find('td[id="bh-dir-'+fileName+'"]').prev().html("<input id='bh-dir-upload-rename-input-"+fileName+"' value='"+fileName+"'></input>");
+      // change buttons - cancel and upload
+      var renameUploadButton = '<button id="bh-dir-upload-rename-upload-'+fileNameOrg+'" name="'+fileNameOrg+'" class="btn btn-success">Upload</button>'
+      var renameCancelButton = '<button id="bh-dir-upload-rename-cancel-'+fileNameOrg+'" class="btn btn-danger">Cancel</button>'
+      $("#bh-dir-dialog").find('td[id="bh-dir-'+fileName+'"]').html(renameUploadButton+" "+renameCancelButton);
+      // handler cancel rename
+      $("#bh-dir-dialog").find('button[id="bh-dir-upload-rename-cancel-'+fileName+'"]').click(function(){
+        $("#bh-dir-dialog").find('td[id="bh-dir-'+fileNameOrg+'"]').html(buttonsOrg);
+        $("#bh-dir-dialog").find('td[id="bh-dir-'+fileNameOrg+'"]').prev().html(fileNameOrg);
+        setOverwriteHandler(fileName, filesHash);
+        setCancelHandler(fileName);
+        setRenameHandler(fileName, fileNameOrg, filesHash);
+      })
+      // add handler upload rename
+      $("#bh-dir-dialog").find('button[id="bh-dir-upload-rename-upload-'+fileName+'"]').click(function(){
+        var newName = $("#bh-dir-dialog").find('input[id="bh-dir-upload-rename-input-'+fileName+'"]').val();
+        if (newName !== fileName) {
+          $("#bh-dir-dialog").find('td[id="bh-dir-'+fileNameOrg+'"]').prev().html(fileName+" <br/> <b>renamed to</b> <br/> "+newName);
+        };
+        checkFileName(newName, filesHash[fileName], null, filesHash);
+      })
+    })
+  };
+	 // DELETE, COPY, MOVE selected items
+  /**
+  * Delete, Copy, Move an object from an array and when not finished call this function again
+  * with the next item of the array
+  * 
+  * @param array contentArray
+  * @param integer counter
+  * 
+  */
+ function actionItem(contentArray, counter, action, copyTo, overwrite, single){
+   var webdav = new nl.sara.webdav.Client();
+   
+   function callback(contentArray, counter, action, copyTo, overwrite, single) {
+     console.log(contentArray);
+     return function(status) {
+       if (!single) {
+         if (contentArray[counter+1] != undefined) {
+           actionItem(contentArray,counter+1, action, copyTo, overwrite, single);
+         } else {
+           $('#bh-dir-action-button').button({label:"Ready"});
+           $('#bh-dir-action-button').button({label:"Ready"});
+           $('#bh-dir-action-button').button("enable");
+           $('#bh-dir-action-button').removeClass("btn-danger");
+           $('#bh-dir-cancel-action-button').hide();
+           $('#bh-dir-action-button').unbind('click').click(function(){
+             window.location.reload();
+           })
+         }
+         $("#bh-dir-dialog").scrollTop(counter*35);
+       };
+       if (status === 403) {
+         $("#bh-dir-dialog").find('td[id="bh-dir-action-'+contentArray[counter].value+'"]').html("<b>Forbidden</b>");
+         return;
+       }
+       console.log(status);
+       if ((status === 201) || (status === 204)) {
+         $("#bh-dir-dialog").find('td[id="bh-dir-action-'+contentArray[counter].value+'"]').html("<b>Done</b>");
+       } else if (status === 412) {
+         var overwriteButton = '<button id="bh-dir-action-overwrite-'+contentArray[counter].value+'" name="'+contentArray[counter].value+'" class="btn btn-danger">Overwrite</button>'
+         var renameButton = '<button id="bh-dir-action-rename-'+contentArray[counter].value+'" class="btn btn-success">Rename</button>'
+         var cancelButton = '<button id="bh-dir-action-cancel-'+contentArray[counter].value+'" name="'+contentArray[counter].value+'" class="btn btn-success">Cancel</button>'
+
+         $("#bh-dir-dialog").find('td[id="bh-dir-action-'+contentArray[counter].value+'"]').html("Item exist on server!<br/>"+renameButton+" "+overwriteButton+" "+cancelButton);
+         setActionOverwriteHandler(contentArray, counter, action, copyTo);
+         setActionCancelHandler(contentArray, counter, action, copyTo);
+         setActionRenameHandler(contentArray, counter, action, copyTo);
+       } else {
+         $("#bh-dir-dialog").find('td[id="bh-dir-action-'+contentArray[counter].value+'"]').html("<b>Unknown error</b>");
+       }
+     }
+   };
+   if (action === "delete") { 
+     webdav.remove(path + contentArray[counter].value,callback(contentArray, counter));
+   } else if (action === "copy") { 
+     webdav.copy(path + contentArray[counter].value,callback(contentArray, counter, action, copyTo, overwrite, single),copyTo+contentArray[counter].value, overwrite);
+   }; 
+ }
 	
 	// Delete handler
 	$('#bh-dir-delete').click(function(e){
@@ -580,6 +697,56 @@
     });
     $("#bh-dir-delete-button").addClass("btn-danger");
 	})
+	
+	// COPY
+	// Copy handler
+	$('#bh-dir-copy').click(function(e) {
+	  // change click listener in tree
+	      // show dialog with items to copy and target directory
+      $("#bh-dir-tree").dynatree({
+      onActivate: function(node) {
+          // A DynaTreeNode object is passed to the activation handler
+          // Note: we also get this event, if persistence is on, and the page is reloaded.
+          $("#bh-dir-dialog").html("");
+          var appendString='';
+          appendString = appendString + '<table class="table"><tbody>';
+          var deleteArray=[];
+          $('.bh-dir-checkbox:checked').each(function(){
+            appendString = appendString + '<tr><td>'+$(this).val()+'</td><td width="60%" id="bh-dir-action-'+$(this).val()+'"></td></tr>'
+          });
+          appendString = appendString +'</tbody></table>';
+          $("#bh-dir-dialog").append(appendString);
+          $("#bh-dir-dialog").dialog({
+            modal: true,
+            maxHeight: 400,
+            title: "Copy to "+node.data.id,
+            closeOnEscape: false,
+            dialogClass: "no-close",
+            minWidth: 450,
+            buttons: [{
+              text: "Cancel",
+              id: 'bh-dir-cancel-action-button',
+              click: function() {
+               $(this).dialog("close");
+               $(".bh-dir-tree-slide-trigger").trigger('click');
+              }
+            }, {
+              text: "Copy",
+              id: 'bh-dir-action-button',
+              click: function() {
+                $('#bh-dir-action-button').button({label:"Copy items..."});
+                $('#bh-dir-action-button').button("disable");
+                actionItem($('.bh-dir-checkbox:checked'),0,"copy", node.data.id, nl.sara.webdav.Client.FAIL_ON_OVERWRITE, false);
+              }
+            }]
+          });
+          $("#bh-dir-action-button").addClass("btn-danger");
+      }
+    });
+	  // show tree
+	  $(".bh-dir-tree-slide-trigger").trigger('click');
+	  // blur on click somewhere else
+	});
 	
 	 // TREE
 	 // Tree slide handler
