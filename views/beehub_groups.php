@@ -79,7 +79,7 @@
         <?php
       $i = 1;
       foreach ($groups as $group) :
-        if ( $group->is_member() || $group->is_invited() )
+        if ( $group->is_member() )
           continue;
         ?> 
         <div class="accordion-group">
@@ -91,6 +91,8 @@
                   <!--    Leave, Cancel request or Join button -->
                   <?php if ($group->is_requested()) : ?>
                     <a><button type="button" value="<?= $group->path ?>" class="btn btn-danger bh-gs-join-leave-button">Cancel request</button></a>
+                  <?php elseif ( $group->is_invited() ) : ?>
+                    <a><button type="button" value="<?= $group->path ?>" class="btn btn-success bh-gs-join-button">Accept invitation</button></a>
                   <?php else : ?>
                     <a><button type="button" value="<?= $group->path ?>" class="btn btn-success bh-gs-join-button">Join</button></a>
                   <?php endif; ?>

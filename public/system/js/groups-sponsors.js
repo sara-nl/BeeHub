@@ -41,6 +41,12 @@ $(function() {
 						alert('Something went wrong on the server. No changes were made.');
 						return;
 				  };
+
+          if ( button.text() === 'Accept invitation' ) {
+            // TODO: this should be handled more gracefully
+            location.reload();
+            return;
+          }
 				  // Change button to join button
 				  var cancelrequestbutton = $('<button type="button" value="'+button.val()+'" class="btn btn-danger bh-gs-join-leave-button">Cancel request</button>');
 				  cancelrequestbutton.click(function () {
