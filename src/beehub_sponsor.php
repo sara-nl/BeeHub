@@ -54,26 +54,19 @@ class BeeHub_Sponsor extends BeeHub_Principal {
   public function method_GET() {
     $members = array();
     if ( $this->is_member() ) {
-      $query = <<<EOS
-      SELECT `user_name`,
-            `displayname`,
-            `is_admin`,
-            `is_accepted`
-        FROM `beehub_users`
-  INNER JOIN `beehub_sponsor_members`
-      USING (`user_name`)
-      WHERE `beehub_sponsor_members`.`sponsor_name` = ?;
-EOS;
-      $statement = BeeHub_DB::execute($query, 's', $this->name);
-      while ($row = $statement->fetch_row()) {
-        $members[$row[0]] = Array(
-          'user_name' => $row[0],
-          'displayname' => $row[1],
-          'is_admin' => !!$row[2],
-          'is_accepted' => !!$row[3]
+      $this->init_props();
+      $collection = BeeHub::getNoSQL()->principals;
+      
+      $resultset = $collection->find( array('type' => 'user', 'sponsors' => $this->name ), array( 'user_name' => true, 'displayname' => true ) );
+      $members = array();
+      foreach ( $resultset as $result ) {
+        $members[ $result['user_name'] ] = Array(
+          'user_name' => $result['user_name'],
+          'displayname' => $result['displayname'],
+          'is_admin' => $this->users[ $result['user_name'] ][ 'is_admin' ],
+          'is_accepted' => $this->users[ $result['user_name'] ][ 'is_accepted' ]
         );
       }
-      $statement->free_result();
     }
     $this->include_view( null, array( 'members' => $members ) );
   }

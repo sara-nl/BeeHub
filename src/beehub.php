@@ -330,6 +330,11 @@ class BeeHub {
   }
   
   
+  /**
+   * Return the noSQL database
+   * @todo    Move database name to the configuration file
+   * @return  MongoDB  The noSQL database
+   */
   public static function getNoSQL() {
     $client = new MongoClient();
     return $client->beehub;
