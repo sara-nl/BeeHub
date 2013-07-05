@@ -33,14 +33,10 @@ if ( $_SERVER['REQUEST_METHOD'] === 'GET' ) {
   if ( isset( $_POST['username'] ) && !empty( $_POST['username'] ) ) {
     $username = $_POST['username'];
   }elseif ( isset( $_POST['email'] ) && !empty( $_POST['email'] ) ) {
-    $statement_props = BeeHub_DB::execute(
-        'SELECT `user_name`
-         FROM `beehub_users`
-         WHERE `email` = ?', 's', $_POST['email']
-    );
-    $row = $statement_props->fetch_row();
-    if ( !is_null($row) ) {
-      $username = $row[0];
+    $collection = BeeHub::getNoSQL()->users;
+    $result = $collection->findOne( array( 'email' => $_POST['email'] ), array( 'name' => true ) );
+    if ( !is_null( $result ) ) {
+      $username = $result['name'];
     }
   }
   

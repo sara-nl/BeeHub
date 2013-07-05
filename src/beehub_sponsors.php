@@ -58,8 +58,8 @@ class BeeHub_Sponsors extends BeeHub_Principal_Collection {
 
 
   protected function init_members() {
-    $collection = BeeHub::getNoSQL()->principals;
-    $resultset = $collection->find( array('type' => 'sponsor' ), array( 'displayname' => true, 'sponsor_name' => true ) );
+    $collection = BeeHub::getNoSQL()->sponsors;
+    $resultset = $collection->find( null, array( 'displayname' => true, 'sponsor_name' => true ) );
     $members = array();
     foreach ( $resultset as $row ) {
       $members[ $row['sponsor_name'] ] = $row['displayname'];

@@ -55,16 +55,16 @@ class BeeHub_Sponsor extends BeeHub_Principal {
     $members = array();
     if ( $this->is_member() ) {
       $this->init_props();
-      $collection = BeeHub::getNoSQL()->principals;
+      $collection = BeeHub::getNoSQL()->users;
       
-      $resultset = $collection->find( array('type' => 'user', 'sponsors' => $this->name ), array( 'user_name' => true, 'displayname' => true ) );
+      $resultset = $collection->find( array( 'sponsors' => $this->name ), array( 'name' => true, 'displayname' => true ) );
       $members = array();
       foreach ( $resultset as $result ) {
-        $members[ $result['user_name'] ] = Array(
-          'user_name' => $result['user_name'],
+        $members[ $result['name'] ] = Array(
+          'user_name' => $result['name'],
           'displayname' => $result['displayname'],
-          'is_admin' => $this->users[ $result['user_name'] ][ 'is_admin' ],
-          'is_accepted' => $this->users[ $result['user_name'] ][ 'is_accepted' ]
+          'is_admin' => $this->users[ $result['name'] ][ 'is_admin' ],
+          'is_accepted' => $this->users[ $result['name'] ][ 'is_accepted' ]
         );
       }
     }

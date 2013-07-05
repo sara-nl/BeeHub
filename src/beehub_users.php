@@ -1,4 +1,4 @@
-<?php
+prin<?php
 
 /*·************************************************************************
  * Copyright ©2007-2012 SARA b.v., Amsterdam, The Netherlands
@@ -63,28 +63,22 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
         !preg_match('/^[a-zA-Z0-9]{1}[a-zA-Z0-9_\-\.]{0,254}$/D', $user_name)) {
       throw new DAV_Status(DAV::HTTP_BAD_REQUEST);
     }
+
+    // Store in the database
+    $collection = BeeHub::getNoSQL()->users;
+    $result = $collection->findOne( array( 'name' => $user_name ), array( 'name' => true) );
+    if ( !is_null( $result ) ) { // Duplicate key: bad request!
+      throw new DAV_Status(DAV::HTTP_CONFLICT, "User name already exists, please choose a different user name!");
+    }
+
     $userdir = DAV::unslashify(BeeHub::$CONFIG['environment']['datadir']) . DIRECTORY_SEPARATOR . 'home' . DIRECTORY_SEPARATOR . $user_name;
     // Check for existing userdir
     if (file_exists($userdir)) {
       throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
     }
 
-    // Store in the database
-    try{
-      $statement = BeeHub_DB::execute(
-        'INSERT INTO `beehub_users`
-            (`user_name`)
-          VALUES (?)',
-        's', $user_name
-      );
-    }catch (Exception $exception) {
-      if ($exception->getCode() === 1062) { // Duplicate key: bad request!
-        throw new DAV_Status(DAV::HTTP_CONFLICT, "User name already exists, please choose a different user name!");
-      }else{
-        throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
-      }
-    }
-
+    $collection->insert( array( 'name' => $user_name ) );
+    
     // Fetch the user and store extra properties
     $user = BeeHub_Registry::inst()->resource(
       BeeHub::USERS_PATH . rawurlencode($user_name)
@@ -134,35 +128,27 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
   public function report_principal_property_search($properties) {
     if ( 1 !== count( $properties ) ||
          ! isset( $properties[DAV::PROP_DISPLAYNAME] ) ||
-         1 !== count( $properties[DAV::PROP_DISPLAYNAME] ) )
+         1 !== count( $properties[DAV::PROP_DISPLAYNAME] ) ) {
+      
       throw new DAV_Status(
         DAV::HTTP_BAD_REQUEST,
         'You\'re searching for a property which cannot be searched.'
       );
-    $match = $properties[DAV::PROP_DISPLAYNAME][0];
-    $match = str_replace(array('_', '%'), array('\\_', '\\%'), $match) . '%';
-    $stmt = BeeHub_DB::execute(
-      'SELECT `user_name`
-       FROM `beehub_users`
-       WHERE `displayname` LIKE ?', 's', $match
-    );
-    $retval = array();
-    while ($row = $stmt->fetch_row()) {
-      $retval[] = BeeHub::USERS_PATH .
-        rawurlencode($row[0]);
     }
-    $stmt->free_result();
+    $match = '^' . preg_quote( $properties[DAV::PROP_DISPLAYNAME][0] ) . '.*$';
+    $collection = BeeHub::getNoSQL()->users;
+    $resultSet = $collection->find( array( 'displayname' => array( '$regex' => $match, '$options' => 'i' ) ), array( 'name' => true ) );
+    $retval = array();
+    foreach ( $resultSet as $row ) {
+      $retval[] = BeeHub::USERS_PATH . rawurlencode( $row['name'] );
+    }
     return $retval;
   }
 
 
   protected function init_members() {
-    $stmt = BeeHub_DB::execute('SELECT `user_name` FROM `beehub_users`');
-    $this->members = array();
-    while ($row = $stmt->fetch_row()) {
-      $this->members[] = rawurlencode($row[0]);
-    }
-    $stmt->free_result();
+    $collection = BeeHub::getNoSQL()->users;
+    $this->members = $collection->find();
   }
 
 

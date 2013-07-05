@@ -53,28 +53,20 @@ class BeeHub_Group extends BeeHub_Principal {
   public function method_GET() {
     $members = array();
     if ( $this->is_member() ) {
-      $query = <<<EOS
-      SELECT `user_name`,
-            `displayname`,
-            `is_admin`,
-            `is_invited`,
-            `is_requested`
-        FROM `beehub_users`
-  INNER JOIN `beehub_group_members`
-      USING (`user_name`)
-      WHERE `group_name` = ?;
-EOS;
-      $statement = BeeHub_DB::execute($query, 's', $this->name);
-      while ($row = $statement->fetch_row()) {
-        $members[$row[0]] = Array(
-          'user_name' => $row[0],
-          'displayname' => $row[1],
-          'is_admin' => ($row[2] === 1),
-          'is_invited' => ($row[3] === 1),
-          'is_requested' => ($row[4] === 1)
+      $this->init_props();
+      $collection = BeeHub::getNoSQL()->users;
+      
+      $resultset = $collection->find( array( 'groups' => $this->name ), array( 'name' => true, 'displayname' => true ) );
+      $members = array();
+      foreach ( $resultset as $result ) {
+        $members[ $result['name'] ] = Array(
+          'user_name'    => $result['name'],
+          'displayname'  => $result['displayname'],
+          'is_admin'     => $this->users[ $result['name'] ][ 'is_admin' ],
+          'is_invited'   => $this->users[ $result['name'] ][ 'is_invited' ],
+          'is_requested' => $this->users[ $result['name'] ][ 'is_requested' ]
         );
       }
-      $statement->free_result();
     }
     $this->include_view( null, array( 'members' => $members ) );
   }

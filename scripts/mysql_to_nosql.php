@@ -11,19 +11,27 @@ $mysqli = new mysqli(
         $CONFIG['mysql']['database']
       );
 $mongo = new Mongo();
-$collection = $mongo->beehub->principals;
+$db = $mongo->beehub;
 
 $name = $displayname = null;
 foreach( array( 'user', 'group', 'sponsor' ) as $thing ) {
+  $collection = $db->__get($thing . 's');
   $resultset = $mysqli->query(
     "SELECT   *
      FROM     `beehub_{$thing}s`",
     MYSQLI_STORE_RESULT
   );
+
   while ( $row = $resultset->fetch_assoc() ) {
-    $principal = array( 'type' => $thing );
+    $principal = array();
     foreach ( $row as $key => $value ) {
       if ( !is_null($value) ) {
+        if ( $key === $thing . '_name' ) {
+          $key = 'name';
+        }
+        if ( ( $thing === 'user' ) && ( $key === 'sponsor_name' ) ) {
+          $key = 'default_sponsor';
+        }
         $principal[$key] = $value;
       }
     }
@@ -32,15 +40,26 @@ foreach( array( 'user', 'group', 'sponsor' ) as $thing ) {
     switch ($thing) {
       case 'user':
         foreach( array('group', 'sponsor') as $subthing ) {
-          $membershipset = $mysqli->query(
-            "SELECT   `" . $subthing . "_name`
-             FROM     `beehub_" . $subthing . "_members`
-             WHERE    `user_name` = '" . $mysqli->escape_string( $principal[ 'user_name' ] ) . "'",
-            MYSQLI_STORE_RESULT
-          );
+          if ( $subthing === 'group' ) {
+            $membershipset = $mysqli->query(
+              "SELECT   `group_name`
+               FROM     `beehub_group_members`
+               WHERE    `user_name` = '" . $mysqli->escape_string( $principal[ 'name' ] ) . "'
+               AND      `is_invited` = 1
+               AND      `is_requested` = 1",
+              MYSQLI_STORE_RESULT
+            );
+          }else{
+            $membershipset = $mysqli->query(
+              "SELECT   `sponsor_name`
+               FROM     `beehub_sponsor_members`
+               WHERE    `user_name` = '" . $mysqli->escape_string( $principal[ 'name' ] ) . "'
+               AND      `is_accepted` = 1",
+              MYSQLI_STORE_RESULT
+            );
+          }
           $principal[ $subthing . 's' ] = array();
           while ( $membership = $membershipset->fetch_assoc() ) {
-            unset( $membership['user_name'] );
             $principal[ $subthing . 's' ][] = $membership[$subthing . '_name'];
           }
         }
@@ -50,7 +69,7 @@ foreach( array( 'user', 'group', 'sponsor' ) as $thing ) {
         $membershipset = $mysqli->query(
           "SELECT   *
            FROM     `beehub_" . $thing . "_members`
-           WHERE    `" . $thing . "_name` = '" . $mysqli->escape_string( $principal[ $thing . '_name' ] ) . "'",
+           WHERE    `" . $thing . "_name` = '" . $mysqli->escape_string( $principal[ 'name' ] ) . "'",
           MYSQLI_STORE_RESULT
         );
         $principal[ 'members' ] = array();

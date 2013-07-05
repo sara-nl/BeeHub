@@ -101,16 +101,17 @@ class BeeHub_Auth {
           $this->unauthorized();
         }
       } else { // Authentication succeeded: store credentials!
-        $this->set_user(rawurlencode( $_SERVER['PHP_AUTH_USER'] ));
+        $this->set_user( $_SERVER['PHP_AUTH_USER'] );
       }
       // end of: if (user sent username/passwd)
     } elseif ( ( 'passwd' !== @$_GET['login'] ) && $this->simpleSAML_authentication->isAuthenticated() ) {
       $surfId = $this->simpleSAML_authentication->getAuthData("saml:sp:NameID");
       $surfId = $surfId['Value'];
-      $statement = BeeHub_DB::execute('SELECT `user_name` FROM `beehub_users` WHERE `surfconext_id`=?', 's', $surfId);
-      if ( $row = $statement->fetch_row() ) { // We found a user, this is the one that's logged in!
+      $collection = BeeHub::getNoSQL()->users;
+      $result = $collection->findOne( array( 'surfconext_id' => $surfId ), array( 'name' => true ) );
+      if ( !is_null( $result ) ) { // We found a user, this is the one that's logged in!
         $this->SURFconext = true;
-        $this->set_user( $row[0] );
+        $this->set_user( $result['name'] );
       } elseif ($_SERVER['REQUEST_URI'] !== BeeHub::USERS_PATH) {
         throw new DAV_Status(
           DAV::HTTP_TEMPORARY_REDIRECT,
@@ -149,7 +150,7 @@ class BeeHub_Auth {
    */
   private function set_user($user_name) {
     BeeHub_ACL_Provider::inst()->CURRENT_USER_PRINCIPAL =
-      BeeHub::USERS_PATH . $user_name;
+      BeeHub::USERS_PATH . rawurlencode( $user_name );
   }
 
 
