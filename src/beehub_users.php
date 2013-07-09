@@ -1,4 +1,4 @@
-prin<?php
+<?php
 
 /*·************************************************************************
  * Copyright ©2007-2012 SARA b.v., Amsterdam, The Netherlands
@@ -77,7 +77,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
       throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
     }
 
-    $collection->insert( array( 'name' => $user_name ) );
+    $collection->insert( array( 'name' => $user_name, 'sponsors' => array(), 'groups' => array() ) );
     
     // Fetch the user and store extra properties
     $user = BeeHub_Registry::inst()->resource(
@@ -86,16 +86,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
     $user->set_password($password);
     $user->user_set(DAV::PROP_DISPLAYNAME, $displayname);
     $user->user_set(BeeHub::PROP_EMAIL, $email);
-    // TODO: This should not be hard coded, a new user should not have a sponsor but request one after his account is created, but I want to inform the user about his through the not-yet-existing notification system
-    $user->user_set(BeeHub::PROP_SPONSOR, '/system/sponsors/e-infra');
-    BeeHub_DB::execute(
-      'INSERT INTO `beehub_sponsor_members`
-          (`sponsor_name`, `user_name`, `is_accepted`, `is_admin`)
-        VALUES (\'e-infra\', ?, ?, ?)
-        ON DUPLICATE KEY
-          UPDATE `is_accepted` = 1',
-      'sii', $user_name, 1, 0
-    );
+    
     // Just to be clear: the above lines will have to be deleted somewhere in the future, but the lines below should stay
     $auth = BeeHub_Auth::inst();
     if ($auth->simpleSaml()->isAuthenticated()) {
@@ -110,6 +101,10 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
       $user->user_set(BeeHub::PROP_SURFCONEXT_DESCRIPTION, $surfconext_description);
     }
     $user->storeProperties();
+    
+    // TODO: This should not be hard coded, a new user should not have a sponsor but request one after his account is created, but I want to inform the user about his through the not-yet-existing notification system
+    $sponsor = BeeHub_Registry::inst()->resource('/system/sponsors/e-infra');
+    $sponsor->change_memberships( array( $user_name ), 1, 0, 1 );
 
     // And create a user directory
     if (!mkdir($userdir)) {
@@ -148,7 +143,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
 
   protected function init_members() {
     $collection = BeeHub::getNoSQL()->users;
-    $this->members = $collection->find();
+    $this->members = $collection->find()->sort( array( 'displayname' => 1 ) );
   }
 
 

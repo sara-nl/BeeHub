@@ -336,7 +336,10 @@ class BeeHub {
    * @return  MongoDB  The noSQL database
    */
   public static function getNoSQL() {
-    $client = new MongoClient();
+    static $client;
+    if ( ! ( $client instanceof MongoClient ) ) {
+      $client = new MongoClient();
+    }
     return $client->beehub;
   }
 

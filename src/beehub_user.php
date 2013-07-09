@@ -98,7 +98,7 @@ class BeeHub_User extends BeeHub_Principal {
         throw new DAV_Status( DAV::HTTP_NOT_FOUND );
       }
 
-      $this->stored_props[DAV::PROP_DISPLAYNAME] = $result['displayname'];
+      $this->stored_props[DAV::PROP_DISPLAYNAME] = @$result['displayname'];
       if ( isset( $result['email'] ) ) {
         $this->stored_props[BeeHub::PROP_EMAIL]  = $result['email'];
       }

@@ -63,8 +63,8 @@ class BeeHub_Sponsor extends BeeHub_Principal {
         $members[ $result['name'] ] = Array(
           'user_name' => $result['name'],
           'displayname' => $result['displayname'],
-          'is_admin' => $this->users[ $result['name'] ][ 'is_admin' ],
-          'is_accepted' => $this->users[ $result['name'] ][ 'is_accepted' ]
+          'is_admin' => $this->users[ BeeHub::USERS_PATH . $result['name'] ][ 'is_admin' ],
+          'is_accepted' => $this->users[ BeeHub::USERS_PATH . $result['name'] ][ 'is_accepted' ]
         );
       }
     }
@@ -92,10 +92,8 @@ class BeeHub_Sponsor extends BeeHub_Principal {
       $this->delete_members(array($current_user->name));
     }
     if (isset($_POST['join'])) {
-      $statement = BeeHub_DB::execute('SELECT `is_accepted` FROM `beehub_sponsor_members` WHERE `user_name`=? AND `sponsor_name`=?',
-                                      'ss', $current_user->name, $this->name);
       $message = null;
-      if ( !( $row = $statement->fetch_row() ) || ( $row[0] != 1 ) ) { // This user is not invited for this group, so sent the administrators an e-mail with this request
+      if ( $this->is_member() ) { // This user is not invited for this group, so sent the administrators an e-mail with this request
         $message =
 'Dear sponsor administrator,
 
@@ -137,9 +135,7 @@ BeeHub';
           case 'add_members':
             foreach ($members as $member) {
               $user = BeeHub::user($member);
-              $statement = BeeHub_DB::execute('SELECT `is_accepted` FROM `beehub_sponsor_members` WHERE `user_name`=? AND `sponsor_name`=?',
-                                              'ss', $user->name, $this->name);
-              if ( !( $row = $statement->fetch_row() ) || ( $row[0] == 0 ) ) { // The user was not a member of this sponsor yet, so notify him/her
+              if ( ! $this->is_member( $user ) ) { // The user was not a member of this sponsor yet, so notify him/her
                 $message =
 'Dear ' . $user->prop(DAV::PROP_DISPLAYNAME) . ',
 
@@ -201,33 +197,47 @@ BeeHub';
     if (count($members) === 0) {
       return;
     }
-    $newAccepted = ($newAccepted ? 1 : 0);
-    $newAdmin = ($newAdmin ? 1 : 0);
-    if (is_null($existingAccepted)) {
-      $existingAccepted = "`is_accepted`";
-    } else {
-      $existingAccepted = ($existingAccepted ? 1 : 0);
-    }
-    if (is_null($existingAdmin)) {
-      $existingAdmin = "`is_admin`";
-    } else {
-      $existingAdmin = ($existingAdmin ? 1 : 0);
-    }
+    $collection = BeeHub::getNoSQL()->sponsors;
+    $userCollection = BeeHub::getNoSQL()->users;
+    $document = $collection->findOne( array( 'name' => $this->name ) );
+    
     foreach ($members as $user_name) {
-      BeeHub_DB::execute(
-        'INSERT INTO `beehub_sponsor_members`
-           (`sponsor_name`, `user_name`, `is_accepted`, `is_admin`)
-         VALUES (?, ?, ?, ?)
-         ON DUPLICATE KEY
-           UPDATE `is_accepted` = ' . $existingAccepted . ',
-                  `is_admin` = ' . $existingAdmin,
-        'ssii',
-        $this->name,
-        $user_name,
-        $newAccepted,
-        $newAdmin
+      $user = $userCollection->findOne( array( 'name' => $user_name ) );
+      if ( is_null( $user ) ) {
+        throw new DAV_Status(DAV::HTTP_CONFLICT, "Not all users exist!");
+      }
+      if ( array_key_exists( $user_name, $document['members'] ) ) {
+        if ( !is_null( $existingAccepted ) ) {
+          $document['members'][$user_name]['is_accepted'] = ($existingAccepted ? 1 : 0);
+        }
+        if ( !is_null( $existingAdmin ) ) {
+          $document['members'][$user_name]['is_admin'] = ($existingAdmin ? 1 : 0);
+        }
+      }else{
+        $document['members'][$user_name] = array(
+            'is_accepted' => ($newAccepted ? 1 : 0),
+            'is_admin' => ($newAdmin ? 1 : 0)
+        );
+      }
+      
+      // Also change the user document if the membership is accepted
+      if ( ( $document['members'][$user_name]['is_accepted'] === 1 ) &&
+           ! in_array( $this->name, $user['sponsors'] ) ) {
+        $user['sponsors'][] = $this->name;
+        $userCollection->save( $user );
+      }
+      
+      // And finaly, also the properties of this object
+      $this->users[ BeeHub::USERS_PATH . $user_name ] = array(
+        'is_admin' => !!$document['members'][$user_name]['is_admin'],
+        'is_accepted' => !!$document['members'][$user_name]['is_accepted']
       );
+      if ( ( $document['members'][$user_name]['is_accepted'] === 1 ) &&
+           ! in_array( $user_name, $this->stored_props[DAV::PROP_GROUP_MEMBER_SET] ) ) {
+        $this->stored_props[DAV::PROP_GROUP_MEMBER_SET][] = BeeHub::USERS_PATH . rawurlencode( $user_name );
+      }
     }
+    $collection->save( $document );
   }
 
   /**
@@ -241,16 +251,32 @@ BeeHub';
       return;
     }
     $this->check_admin_remove($members);
+    $collection = BeeHub::getNoSQL()->sponsors;
+    $userCollection = BeeHub::getNoSQL()->users;
+    $document = $collection->findOne( array( 'name' => $this->name ) );
 
     // Then delete all the members
     foreach ($members as $user_name) {
-      BeeHub_DB::execute(
-        'DELETE FROM `beehub_sponsor_members`
-         WHERE `sponsor_name` = ?
-           AND `user_name` = ?',
-        'ss', $this->name, $user_name
-      );
+      unset( $document['members'][$user_name] );
+      
+      // Also change the user document
+      $user = $userCollection->findOne( array( 'name' => $user_name ) );
+      if ( ! is_null( $user ) ) {
+        $key = array_search( $this->name, $user['sponsors'] );
+        if ( $key !== false ) {
+          unset( $user['sponsors'][$key] );
+          $userCollection->save( $user );
+        }
+      }
+      
+      // And unset the necessary properties of this object
+      unset( $this->users[ BeeHub::USERS_PATH . rawurlencode( $user_name ) ] );
+      $key = array_search( BeeHub::USERS_PATH . rawurlencode( $user_name ), $this->stored_props[DAV::PROP_GROUP_MEMBER_SET] );
+      if ( $key !== false ) {
+        unset( $this->stored_props[DAV::PROP_GROUP_MEMBER_SET][$key] );
+      }
     }
+    $collection->save( $document );
   }
 
 
@@ -258,20 +284,16 @@ BeeHub';
     if (count($members) === 0) {
       return;
     }
+    
     // Check if this request is not removing all administrators from this group
-    $escaped_members = array_map(array(BeeHub_DB::mysqli(), 'real_escape_string'), $members);
-    $check_admin_statement = BeeHub_DB::execute(
-      "SELECT COUNT(`user_name`)
-         FROM `beehub_sponsor_members`
-        WHERE `is_admin` = 1 AND
-              `sponsor_name` = ? AND
-              `user_name` NOT IN ('" . implode("','", $escaped_members) . "')",
-      's', $this->name
-    );
-    $row = $check_admin_statement->fetch_row();
-    if ($row[0] === 0) {
-      throw new DAV_Status(DAV::HTTP_CONFLICT, 'You are not allowed to remove all the sponsor administrators from a group. Leave at least one sponsor administrator in the group or appoint a new sponsor administrator!');
+    foreach ( $this->users as $user_name => $membership ) {
+      if ( ( $membership['is_admin'] ) &&
+           ! in_array( self::get_user_name($user_name), $members ) ) {
+        return;
+      }
     }
+    
+    throw new DAV_Status(DAV::HTTP_CONFLICT, 'You are not allowed to remove all the sponsor administrators from a group. Leave at least one sponsor administrator in the group or appoint a new sponsor administrator!');
   }
 
 
@@ -283,44 +305,28 @@ BeeHub';
   protected function init_props() {
     if (is_null($this->stored_props)) {
       $this->stored_props = array();
-
-      $statement_props = BeeHub_DB::execute(
-        'SELECT
-          `displayname`,
-          `description`
-         FROM `beehub_sponsors`
-         WHERE `sponsor_name` = ?',
-        's', $this->name
-      );
-      $row = $statement_props->fetch_row();
-      if ( is_null($row) )
+      
+      $collection = BeeHub::getNoSQL()->sponsors;
+      $document = $collection->findOne( array( 'name' => $this->name ) );
+      if ( is_null( $document ) ) {
         throw new DAV_Status( DAV::HTTP_NOT_FOUND );
+      }
+      
+      $this->stored_props[DAV::PROP_DISPLAYNAME] = @$document['displayname'];
+      $this->stored_props[BeeHub::PROP_DESCRIPTION] = DAV::xmlescape(@$document['description']);
 
-      $this->stored_props[DAV::PROP_DISPLAYNAME] = $row[0];
-      $this->stored_props[BeeHub::PROP_DESCRIPTION] =
-        DAV::xmlescape($row[1]);
-      $statement_props->free_result();
-
-      $statement_users = BeeHub_DB::execute(
-        'SELECT `user_name`, `is_admin`, `is_accepted`
-         FROM `beehub_sponsor_members`
-         WHERE `sponsor_name` = ?',
-        's', $this->name
-      );
       $this->users = array();
       $members = array();
-      while ( $row = $statement_users->fetch_row() ) {
-        $user_path = BeeHub::USERS_PATH .
-          rawurlencode($row[0]);
-        $this->users[$user_path] = array(
-          'is_admin' => !!$row[1],
-          'is_accepted' => !!$row[2]
+      foreach ( $document['members'] as $username => $membership ) {
+        $this->users[ BeeHub::USERS_PATH . rawurlencode( $username ) ] = array(
+          'is_admin' => !!$membership['is_admin'],
+          'is_accepted' => !!$membership['is_accepted']
         );
-        if (!!$row[2])
-          $members[] = $user_path;
+        if ( !!$membership['is_accepted'] ) {
+          $members[] = BeeHub::USERS_PATH . rawurlencode( $username );
+        }
       }
       $this->stored_props[DAV::PROP_GROUP_MEMBER_SET] = $members;
-      $statement_users->free_result();
     }
   }
 
@@ -330,18 +336,17 @@ BeeHub';
    * @throws DAV_Status in particular 507 (Insufficient Storage)
    */
   public function storeProperties() {
-    if (!$this->touched)
+    if (!$this->touched) {
       return;
-    $statement_update = BeeHub_DB::execute(
-      'UPDATE `beehub_sponsors`
-          SET `displayname` = ?,
-              `description` = ?
-        WHERE `sponsor_name` = ?',
-      'sss',
-      @$this->stored_props[DAV::PROP_DISPLAYNAME],
-      DAV::xmlunescape( @$this->stored_props[BeeHub::PROP_DESCRIPTION] ),
-      $this->name
+    }
+    
+    $collection = BeeHub::getNoSQL()->sponsors;
+    $update_document = array(
+        'displayname' => @$this->stored_props[DAV::PROP_DISPLAYNAME],
+        'description' => DAV::xmlunescape( @$this->stored_props[BeeHub::PROP_DESCRIPTION] )
     );
+    $collection->update( array( 'name' => $this->name ), array( '$set' => $update_document ) );
+            
     // Update the json file containing all displaynames of all privileges
     self::update_principals_json();
     $this->touched = false;
@@ -358,27 +363,41 @@ BeeHub';
    *
    * @return  boolean  True if the currently logged in user is an administrator of this sponsor, false otherwise
    */
-  public function is_admin() {
-    if ( BeeHub_ACL_Provider::inst()->wheel() ) return true;
+  public function is_admin( $user = null ) {
     $this->init_props();
-    return ( $current_user = BeeHub_Auth::inst()->current_user() ) &&
-           ( $tmp = @$this->users[$current_user->path] ) &&
+    if ( is_null($user) ) {
+      if ( BeeHub_ACL_Provider::inst()->wheel() ) {
+        return true;
+      }
+      $user = BeeHub_Auth::inst()->current_user();
+    }elseif ( ! ( $user instanceof BeeHub_User ) ) {
+      $user = BeeHub::user( $user );
+    }
+    return ( $tmp = @$this->users[$user->path] ) &&
            $tmp['is_admin'];
   }
 
 
-  public function is_member() {
+  public function is_member( $user = null ) {
     $this->init_props();
-    return ( $current_user = BeeHub_Auth::inst()->current_user() ) &&
-           ( $tmp = @$this->users[$current_user->path] ) &&
+    if ( is_null($user) ) {
+      $user = BeeHub_Auth::inst()->current_user();
+    }elseif ( ! ( $user instanceof BeeHub_User ) ) {
+      $user = BeeHub::user( $user );
+    }
+    return ( $tmp = @$this->users[$user->path] ) &&
            $tmp['is_accepted'];
   }
 
 
-  public function is_requested() {
+  public function is_requested( $user = null ) {
     $this->init_props();
-    return ( $current_user = BeeHub_Auth::inst()->current_user() ) &&
-           ( $tmp = @$this->users[$current_user->path] ) &&
+    if ( is_null($user) ) {
+      $user = BeeHub_Auth::inst()->current_user();
+    }elseif ( ! ( $user instanceof BeeHub_User ) ) {
+      $user = BeeHub::user( $user );
+    }
+    return ( $tmp = @$this->users[$user->path] ) &&
            !$tmp['is_accepted'];
   }
 
