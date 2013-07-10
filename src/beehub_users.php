@@ -64,7 +64,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
       throw new DAV_Status(DAV::HTTP_BAD_REQUEST);
     }
 
-    // Store in the database
+    // Check if the username doesn't exist
     $collection = BeeHub::getNoSQL()->users;
     $result = $collection->findOne( array( 'name' => $user_name ), array( 'name' => true) );
     if ( !is_null( $result ) ) { // Duplicate key: bad request!
@@ -77,6 +77,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
       throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
     }
 
+    // Store in the database
     $collection->insert( array( 'name' => $user_name, 'sponsors' => array(), 'groups' => array() ) );
     
     // Fetch the user and store extra properties

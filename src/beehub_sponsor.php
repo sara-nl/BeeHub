@@ -93,7 +93,7 @@ class BeeHub_Sponsor extends BeeHub_Principal {
     }
     if (isset($_POST['join'])) {
       $message = null;
-      if ( $this->is_member() ) { // This user is not invited for this group, so sent the administrators an e-mail with this request
+      if ( ! $this->is_member() ) { // This user is not invited for this group, so sent the administrators an e-mail with this request
         $message =
 'Dear sponsor administrator,
 
@@ -202,10 +202,13 @@ BeeHub';
     $document = $collection->findOne( array( 'name' => $this->name ) );
     
     foreach ($members as $user_name) {
+      // Check if the user exists
       $user = $userCollection->findOne( array( 'name' => $user_name ) );
       if ( is_null( $user ) ) {
         throw new DAV_Status(DAV::HTTP_CONFLICT, "Not all users exist!");
       }
+      
+      // Change or add the membership details to the sponsor document
       if ( array_key_exists( $user_name, $document['members'] ) ) {
         if ( !is_null( $existingAccepted ) ) {
           $document['members'][$user_name]['is_accepted'] = ($existingAccepted ? 1 : 0);
@@ -237,6 +240,8 @@ BeeHub';
         $this->stored_props[DAV::PROP_GROUP_MEMBER_SET][] = BeeHub::USERS_PATH . rawurlencode( $user_name );
       }
     }
+    
+    // And save the sponsor document
     $collection->save( $document );
   }
 
@@ -276,6 +281,8 @@ BeeHub';
         unset( $this->stored_props[DAV::PROP_GROUP_MEMBER_SET][$key] );
       }
     }
+    
+    // And finally save the sponsor document
     $collection->save( $document );
   }
 
