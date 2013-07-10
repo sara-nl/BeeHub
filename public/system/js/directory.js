@@ -18,32 +18,58 @@
  */
 "use strict"
 
+// Create the namespace if that's not done yet
+if (nl === undefined) {
+  /** @namespace */
+  var nl = {};
+}
+if (nl.sara === undefined) {
+  /** @namespace */
+  nl.sara = {};
+}
+if (nl.sara.beehub === undefined) {
+  /** @namespace The entire client is in this namespace. */
+  nl.sara.beehub = {};
+}
+if (nl.sara.beehub.view === undefined) {
+  /** @namespace Holds all the view classes */
+  nl.sara.beehub.view = {};
+}
+if (nl.sara.beehub.view.contents === undefined) {
+  /** @namespace Holds all the view classes */
+  nl.sara.beehub.view.contents = {};
+}
+if (nl.sara.beehub.view.tree === undefined) {
+  /** @namespace Holds all the view classes */
+  nl.sara.beehub.view.tree = {};
+}
+if (nl.sara.beehub.controller === undefined) {
+  /** @namespace Holds all the view classes */
+  nl.sara.beehub.controller = {};
+}
+if (nl.sara.beehub.view.dialog === undefined) {
+  /** @namespace Holds all the view classes */
+  nl.sara.beehub.view.dialog = {};
+}
+
+///**
+// * @class BeeHub client Resource
+// *
+// **/
+////If nl.sara.webdav.Client is already defined, we have a namespace clash!
+//if (nl.sara.webdav.view.Resource !== undefined) {
+//  throw new nl.sara.webdav.Exception('Namespace nl.sara.beehub.view.Resource already taken, could not load client.', nl.sara.webdav.Exception.NAMESPACE_TAKEN);
+//}
+//var nl.sara.beehub.view.Resource = function() {}
+//
+
+
 /** 
  * Beehub Client
  * @author Laura Leistikow (laura.leistikow@surfsara.nl)
  */
   $(function() {
-  
-	var path = location.pathname;
-	// add slash to the end of path
-	if (!path.match(/\/$/)) {
-		path=path+'/'; 
-	} 
-
-  // call the tablesorter plugin
-  $("#bh-dir-content-table").tablesorter({
-    headers: { 
-      0 : { sorter: false },
-      1 : { sorter: false },
-      8: { sorter:false }
-    },
-    widthFixed: false,
-    widgets : ['stickyHeaders' ],
-    widgetOptions : {
-      // apply sticky header top below the top of the browser window
-      stickyHeaders_offset : 186,
-    }
-  });
+    
   // Directory tree in tree panel
   $("#bh-dir-tree").dynatree({
     onActivate: function(node) {
@@ -116,21 +142,7 @@
 	$.fn.btn = btn // assigns bootstrap button functionality to $.fn.btn
 	
 	
-	// CONTENTS TAB
-	// Open selected handler: this can be a file or a directory
-	$('.bh-dir-openselected').click(function() {
-		window.location.href=$(this).attr('name');
-	});
-	
-	// Go to users homedirectory handler
-	$('.bh-dir-gohome').click(function() {
-		window.location.href=$(this).attr("id");
-	});
-	
-	// Go up one directory handler
-	$('.bh-dir-group').click(function() {
-		window.location.href=$(this).attr("id");
-	});
+
 	
 	// UPLOAD
 	/**
@@ -354,69 +366,7 @@
 		handleUpload(files, filesHash);
 	});
 	// END UPLOAD
-	
-	/*
-	 * Create new folder. When new foldername already exist add counter to the name
-	 * of the folder
-	 * 
-	 * @param string name
-	 * @param integer counter
-	 * 
-	 */
-	function createFolder(name, counter){
-	   var webdav = new nl.sara.webdav.Client();
-	    
-	    function callback(name, counter) {
-	      return function(status) {
-          if (status === 201) {
-            window.location.reload();
-            return;
-          };
-          if (status === 405){
-            createFolder(name,counter+1);
-            return;
-          };
-          if (status === 403) {
-            $('#bh-dir-dialog').html("You are not allowed to create a new folder.");
-          } else {
-            $('#bh-dir-dialog').html("Unknown error.");
-          }
-          $('#bh-dir-dialog').dialog({
-            modal: true,
-            maxHeight: 400,
-            title: " Error!",
-            closeOnEscape: false,
-            dialogClass: "no-close",
-            buttons: [{
-              text: "Ok",
-              click: function() {
-                $(this).dialog("close");
-              }
-            }]
-          });
-	      }
-	    };
-	    
-	    if (counter === 0) {
-	      webdav.mkcol(path+name,callback(name, counter));
-	    } else {
-	      webdav.mkcol(path+name+'_'+counter,callback(name, counter));
-	    }
-	}
-	
-	// New folder handler
-	$('#bh-dir-newfolder').click(function() {
-	  createFolder("new_folder", 0);
-	});
-	
-	// Edit handler
-	$('.bh-dir-edit').click(function() {
-		// Search nearest name field and hide
-		$(this).closest("tr").find(".bh-dir-name").hide();
-		// Show form
-		$(this).closest("tr").find(".bh-dir-rename-td").show();
-		$(this).closest("tr").find(".bh-dir-rename-td").find(':input').focus();
-	});
+
 	
 	// RENAME
 	/**
@@ -456,50 +406,8 @@
 		webdav.move(path + fileNameOrg,callback(fileNameOrg,fileNameNew, element), path +fileNameNew,  overwriteMode);
 	};
 	
-	// Rename handler
-	$('.bh-dir-rename-form').change(function(){
-		moveObject($(this).attr('name'),$(this).val(), nl.sara.webdav.Client.FAIL_ON_OVERWRITE, $(this));
-	})
-	
-	// Blur: erase rename form field
-	$('.bh-dir-rename-form').blur(function(){
-		$(this).closest("tr").find(".bh-dir-name").show();
-		$(this).closest("tr").find(".bh-dir-rename-td").hide();
-	})
-	
 //	$("#bh-dir-contents-table").tablesorter();
-	// CHECKBOXES	
-	$('.bh-dir-checkboxgroup').click(function(e){
-		if ($(this).prop('checked')) {
-			$('.bh-dir-checkbox').each(function(){
-				$(this).prop('checked',true);
-			});
-			$('#bh-dir-copy').removeAttr("disabled");
-			$('#bh-dir-move').removeAttr("disabled");
-			$('#bh-dir-delete').removeAttr("disabled");
-		} else {
-			$('.bh-dir-checkbox').each(function(){
-				$(this).prop('checked',false);
-			});
-	    $('#bh-dir-copy').attr("disabled","disabled");
-      $('#bh-dir-move').attr("disabled","disabled");
-      $('#bh-dir-delete').attr("disabled","disabled");
-		}
-	})
-	
-	// Enable copy, move, delete buttons when 1 or more are selected
-	$('.bh-dir-checkbox').click(function(e){
-		if ($('.bh-dir-checkbox:checked').length > 0){
-		  $('#bh-dir-copy').removeAttr("disabled");
-      $('#bh-dir-move').removeAttr("disabled");
-      $('#bh-dir-delete').removeAttr("disabled");
-		} else {
-		  $('#bh-dir-copy').attr("disabled","disabled");
-      $('#bh-dir-move').attr("disabled","disabled");
-      $('#bh-dir-delete').attr("disabled","disabled");
-		};
-		// Enable copy, move, delete buttons when 1 or more are selected
-	})
+
 	
 	// DELETE
 	 /**
@@ -549,9 +457,11 @@
    * @param object fileHash
    * 
    */
-  function setActionOverwriteHandler(contentArray, counter, action, copyTo){
-    $("#bh-dir-dialog").find('button[id="bh-dir-action-overwrite-'+contentArray[counter].value+'"]').click(function(){
-      actionItem(contentArray, counter, action, copyTo, nl.sara.webdav.Client.SILENT_OVERWRITE, true);
+  function setActionOverwriteHandler(actionConfig){
+    $("#bh-dir-dialog").find('button[id="bh-dir-action-overwrite-'+actionConfig.contents[actionConfig.counter].value+'"]').click(function(){
+      actionConfig.overwrite = nl.sara.webdav.Client.SILENT_OVERWRITE;
+      actionConfig.single = true;
+      actionItem(actionConfig);
     })
   };
   
@@ -561,9 +471,9 @@
    * @param string fileName
    * 
    */
-  function setActionCancelHandler(contentArray, counter, action, copyTo) {
-    $("#bh-dir-dialog").find('button[id="bh-dir-upload-cancel-'+contentArray[counter]+'"]').click(function(){
-      $("#bh-dir-dialog").find('td[id="bh-dir-'+contentArray[counter]+'"]').html("<div class='progress progress-danger progress-striped'><div class='bar' style='width: 100%;'>Canceled</div></div>");
+  function setActionCancelHandler(actionConfig) {
+    $("#bh-dir-dialog").find('button[id="bh-dir-action-cancel-'+actionConfig.contents[actionConfig.counter].value+'"]').click(function(){
+      $("#bh-dir-dialog").find('td[id="bh-dir-action-'+actionConfig.contents[actionConfig.counter].value+'"]').html("<div class='progress progress-danger progress-striped'><div class='bar' style='width: 100%;'>Canceled</div></div>");
     })
   }
   
@@ -574,11 +484,12 @@
    * @param string fileNameOrg
    * @param object filesHash
    */
-  function setActionRenameHandler(contentArray, counter, action, copyTo){
-    var fileName = contentArray[counter];
+  function setActionRenameHandler(actionConfig){
+    var fileName = actionConfig.contents[actionConfig.counter].value;
     $("#bh-dir-dialog").find('button[id="bh-dir-upload-rename-'+fileName+'"]').click(function(){
       // search fileName td and make input field
       var fileNameOrg= $("#bh-dir-dialog").find('td[id="bh-dir-'+fileName+'"]').prev().html();
+      actionConfig.filenameOrg = fileNameOrg;
       var buttonsOrg = $("#bh-dir-dialog").find('td[id="bh-dir-'+fileName+'"]').html();
       $("#bh-dir-dialog").find('td[id="bh-dir-'+fileName+'"]').prev().html("<input id='bh-dir-upload-rename-input-"+fileName+"' value='"+fileName+"'></input>");
       // change buttons - cancel and upload
@@ -589,9 +500,9 @@
       $("#bh-dir-dialog").find('button[id="bh-dir-upload-rename-cancel-'+fileName+'"]').click(function(){
         $("#bh-dir-dialog").find('td[id="bh-dir-'+fileNameOrg+'"]').html(buttonsOrg);
         $("#bh-dir-dialog").find('td[id="bh-dir-'+fileNameOrg+'"]').prev().html(fileNameOrg);
-        setOverwriteHandler(fileName, filesHash);
-        setCancelHandler(fileName);
-        setRenameHandler(fileName, fileNameOrg, filesHash);
+        setActionOverwriteHandler(actionConfig);
+        setActionCancelHandler(actionConfig);
+        setActionRenameHandler(actionConfig);
       })
       // add handler upload rename
       $("#bh-dir-dialog").find('button[id="bh-dir-upload-rename-upload-'+fileName+'"]').click(function(){
@@ -609,18 +520,24 @@
   * with the next item of the array
   * 
   * @param array contentArray
-  * @param integer counter
+  * @param integer actionConfig.counter
   * 
   */
- function actionItem(contentArray, counter, action, copyTo, overwrite, single){
+ function actionItem(actionConfig){
    var webdav = new nl.sara.webdav.Client();
-   
-   function callback(contentArray, counter, action, copyTo, overwrite, single) {
-     console.log(contentArray);
+   console.log("in action item");
+   console.log(actionConfig);
+   function callback(actionConfig) {
+     console.log("callback");
+     console.log(actionConfig);
      return function(status) {
-       if (!single) {
-         if (contentArray[counter+1] != undefined) {
-           actionItem(contentArray,counter+1, action, copyTo, overwrite, single);
+       console.log("in return");
+       console.log(actionConfig);
+       if (!actionConfig.single) {
+    
+         if (actionConfig.contents[actionConfig.counter] != undefined) {
+         
+           actionItem(actionConfig);
          } else {
            $('#bh-dir-action-button').button({label:"Ready"});
            $('#bh-dir-action-button').button({label:"Ready"});
@@ -631,34 +548,41 @@
              window.location.reload();
            })
          }
-         $("#bh-dir-dialog").scrollTop(counter*35);
+         $("#bh-dir-dialog").scrollTop(actionConfig.counter*35);
        };
        if (status === 403) {
-         $("#bh-dir-dialog").find('td[id="bh-dir-action-'+contentArray[counter].value+'"]').html("<b>Forbidden</b>");
+         $("#bh-dir-dialog").find('td[id="bh-dir-action-'+actionConfig.contents[actionConfig.counter].value+'"]').html("<b>Forbidden</b>");
          return;
        }
        console.log(status);
-       if ((status === 201) || (status === 204)) {
-         $("#bh-dir-dialog").find('td[id="bh-dir-action-'+contentArray[counter].value+'"]').html("<b>Done</b>");
-       } else if (status === 412) {
-         var overwriteButton = '<button id="bh-dir-action-overwrite-'+contentArray[counter].value+'" name="'+contentArray[counter].value+'" class="btn btn-danger">Overwrite</button>'
-         var renameButton = '<button id="bh-dir-action-rename-'+contentArray[counter].value+'" class="btn btn-success">Rename</button>'
-         var cancelButton = '<button id="bh-dir-action-cancel-'+contentArray[counter].value+'" name="'+contentArray[counter].value+'" class="btn btn-success">Cancel</button>'
+       console.log("in not undefined");
 
-         $("#bh-dir-dialog").find('td[id="bh-dir-action-'+contentArray[counter].value+'"]').html("Item exist on server!<br/>"+renameButton+" "+overwriteButton+" "+cancelButton);
-         setActionOverwriteHandler(contentArray, counter, action, copyTo);
-         setActionCancelHandler(contentArray, counter, action, copyTo);
-         setActionRenameHandler(contentArray, counter, action, copyTo);
+       console.log(actionConfig);
+       if ((status === 201) || (status === 204)) {
+         $("#bh-dir-dialog").find('td[id="bh-dir-action-'+actionConfig.contents[actionConfig.counter].value+'"]').html("<b>Done</b>");
+       } else if (status === 412) {
+         var overwriteButton = '<button id="bh-dir-action-overwrite-'+actionConfig.contents[actionConfig.counter].value+'" name="'+actionConfig.contents[actionConfig.counter].value+'" class="btn btn-danger">Overwrite</button>'
+         var renameButton = '<button id="bh-dir-action-rename-'+actionConfig.contents[actionConfig.counter].value+'" class="btn btn-success">Rename</button>'
+         var cancelButton = '<button id="bh-dir-action-cancel-'+actionConfig.contents[actionConfig.counter].value+'" name="'+actionConfig.contents[actionConfig.counter].value+'" class="btn btn-success">Cancel</button>'
+
+         $("#bh-dir-dialog").find('td[id="bh-dir-action-'+actionConfig.contents[actionConfig.counter].value+'"]').html("Item exist on server!<br/>"+renameButton+" "+overwriteButton+" "+cancelButton);
+         setActionOverwriteHandler(actionConfig);
+         setActionCancelHandler(actionConfig);
+         setActionRenameHandler(actionConfig);
        } else {
-         $("#bh-dir-dialog").find('td[id="bh-dir-action-'+contentArray[counter].value+'"]').html("<b>Unknown error</b>");
+         $("#bh-dir-dialog").find('td[id="bh-dir-action-'+actionConfig.contents[actionConfig.counter].value+'"]').html("<b>Unknown error</b>");
        }
      }
    };
-   if (action === "delete") { 
-     webdav.remove(path + contentArray[counter].value,callback(contentArray, counter));
-   } else if (action === "copy") { 
-     webdav.copy(path + contentArray[counter].value,callback(contentArray, counter, action, copyTo, overwrite, single),copyTo+contentArray[counter].value, overwrite);
+   
+   if (actionConfig.action === "delete") { 
+     webdav.remove(path + actionConfig.contents[actionConfig.counter].value,callback(actionConfig.contents, actionConfig.counter));
+   } else if (actionConfig.action === "copy") { 
+     console.log('nu voor copy');
+     console.log(actionConfig);
+     webdav.copy(path + actionConfig.contents[actionConfig.counter].value,callback(actionConfig),actionConfig.copyTo+actionConfig.contents[actionConfig.counter].value, actionConfig.overwrite);
    }; 
+   actionConfig.counter = actionConfig.counter +1;
  }
 	
 	// Delete handler
@@ -736,7 +660,16 @@
               click: function() {
                 $('#bh-dir-action-button').button({label:"Copy items..."});
                 $('#bh-dir-action-button').button("disable");
-                actionItem($('.bh-dir-checkbox:checked'),0,"copy", node.data.id, nl.sara.webdav.Client.FAIL_ON_OVERWRITE, false);
+//                var actionConfig = new Object();
+                var actionConfig = {
+                  contents : $('.bh-dir-checkbox:checked'),
+                  counter : 0,
+                  action : 'copy',
+                  copyTo : node.data.id,
+                  overwrite : nl.sara.webdav.Client.FAIL_ON_OVERWRITE,
+                  single : false,
+                };
+                actionItem(actionConfig);
               }
             }]
           });
@@ -838,4 +771,6 @@
 		appendString=appendString+'</tr>';
 		$('#bh-dir-aclcontent').append(appendString);
 	});
+	
+	nl.sara.beehub.view.init();
 });

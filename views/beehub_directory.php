@@ -167,7 +167,7 @@ $testtree = createTree2(DAV::slashify(dirname($this->path)));
         <tr>
           <th width="10px"></th>
           <th width="10px"><input type="checkbox"
-                                  class="bh-dir-checkboxgroup"></th>
+                                  id="bh-dir-checkboxgroup"></th>
           <th>Name</th>
           <!-- 			Hidden rename column -->
           <th hidden='true'></th>
@@ -297,10 +297,12 @@ $footer = '
  		aclxmldocument.loadXML(aclxml);
 }
  	  </script>
+ 		<script type="text/javascript" src="/system/js/directory.js"></script>
+ 		<script type="text/javascript" src="/system/js/directory_views.js"></script>
+ 		<script type="text/javascript" src="/system/js/directory_controller.js"></script>
  	  <link href="/system/js/plugins/dynatree/src/skin/ui.dynatree.css" rel="stylesheet" type="text/css" />
  	  <script type="text/javascript" src="/system/js/plugins/dynatree/jquery/jquery.cookie.js"></script>
  	  <script type="text/javascript" src="/system/js/plugins/dynatree/src/jquery.dynatree.js"></script>
- 	  <script type="text/javascript" src="/system/js/directory.js"></script>
     <script type="text/javascript" src="/system/js/plugins/tablesorter/js/jquery.tablesorter.js"></script>
  	  <script type="text/javascript" src="/system/js/plugins/tablesorter/js/jquery.tablesorter.widgets.js"></script>
  	  ';
