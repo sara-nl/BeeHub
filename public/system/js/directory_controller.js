@@ -26,6 +26,113 @@ if (!nl.sara.beehub.controller.path.match(/\/$/)) {
 } 
 
 /*
+ * Extract properties from webdav response to resource object
+ * 
+ * @param Object {data}     Webdav propfind response
+ * 
+ * @return resource object
+ */
+nl.sara.beehub.controller.extractPropsFromPropfindRequest = function(data){
+  var path = data.getResponseNames()[0];
+  var resource = new nl.sara.beehub.ClientResource(path);
+  console.log(data.getResponse(path));
+  // Get resourcetype
+  if (data.getResponse(path).getProperty('DAV:','resourcetype') !== undefined) {
+    var resourcetypeProp = data.getResponse(path).getProperty('DAV:','resourcetype');
+    if ((resourcetypeProp.xmlvalue.length == 1)
+        &&(resourcetypeProp.xmlvalue.item(0).namespaceURI=='DAV:')) 
+    { 
+      resource.setResourceType(nl.sara.webdav.Ie.getLocalName(resourcetypeProp.xmlvalue.item(0)));
+    } 
+  };
+  if (data.getResponse(path).getProperty('DAV:','displayname') !== undefined) {
+    var displaynameProp = data.getResponse(path).getProperty('DAV:','displayname');
+    if ((displaynameProp.xmlvalue.length == 1)
+        &&(displaynameProp.namespace=='DAV:')) 
+    { 
+      resource.setDisplayName(displaynameProp.getParsedValue());
+    }
+  };
+  if (data.getResponse(path).getProperty('DAV:','owner') !== undefined) {
+    var ownerProp = data.getResponse(path).getProperty('DAV:','owner');
+    // TODO request displayname
+    if ((ownerProp.xmlvalue.length == 1)
+        &&(ownerProp.xmlvalue.item(0).namespaceURI=='DAV:')) 
+    { 
+      resource.setOwner(ownerProp.xmlvalue.item(0).textContent);
+    }
+  };
+  if (data.getResponse(path).getProperty('DAV:','getlastmodified') !== undefined) {
+    var getlastmodifiedProp = data.getResponse(path).getProperty('DAV:','getlastmodified');
+    if (getlastmodifiedProp.xmlvalue.length == 1)
+      // TODO uitzoeken nameSpaceURI
+//    if ((getlastmodifiedProp.xmlvalue.length == 1)
+//        &&(getlastmodifiedProp.xmlvalue.item(0).namespaceURI=='DAV:')) 
+    { 
+      resource.setLastModified(getlastmodifiedProp.xmlvalue[0].textContent);
+    }
+  };
+  if(resource.type !== 'collection'){
+    // TODO Nog niet getest
+    if (data.getResponse(path).getProperty('DAV:','getcontentlength') !== undefined) {
+      var getcontentlengthProp = data.getResponse(path).getProperty('DAV:','getcontentlength');
+      if (getcontentlengthProp.xmlvalue.length == 1)
+        // TODO uitzoeken nameSpaceURI
+  //    if ((getcontentlengthProp.xmlvalue.length == 1)
+  //        &&(getcontentlengthProp.xmlvalue.item(0).namespaceURI=='DAV:')) 
+      { 
+        resource.setSize(getcontentlengthProp.xmlvalue[0].textContent);
+      }
+    };
+  } else {
+    resource.setSize("");
+  }
+  return resource;
+};
+
+/*
+ * Collect resource details from server and call callback function 
+ * after ajax call is finished
+ * 
+ * String   {resourcepath} Resource path
+ * Function {callback}     Callback function
+ */
+nl.sara.beehub.controller.getResourcePropsFromServer = function(resourcepath, callback){
+  // Collect resource details
+  var webdav = new nl.sara.webdav.Client();
+  var resourcetypeProp = new nl.sara.webdav.Property();
+  resourcetypeProp.tagname = 'resourcetype';
+  resourcetypeProp.namespace='DAV:';
+  var displaynameProp = new nl.sara.webdav.Property();
+  displaynameProp.tagname = 'displayname';
+  displaynameProp.namespace='DAV:';
+  var ownerProp = new nl.sara.webdav.Property();
+  ownerProp.tagname = 'owner';
+  ownerProp.namespace='DAV:';
+  var getlastmodifiedProp = new nl.sara.webdav.Property();
+  getlastmodifiedProp.tagname = 'getlastmodified';
+  getlastmodifiedProp.namespace='DAV:';
+  var getcontentlengthProp = new nl.sara.webdav.Property();
+  getcontentlengthProp.tagname = 'getcontentlength';
+  getcontentlengthProp.namespace='DAV:';
+  var properties = [resourcetypeProp, displaynameProp, getlastmodifiedProp, getcontentlengthProp];
+  
+  function createCallback(){
+    return function(status, data) {
+      // Callback
+      if (status != 207) {
+        nl.sara.beehub.view.dialog.showError("Unknown error.");
+        return;
+      };
+      var resource = nl.sara.beehub.controller.extractPropsFromPropfindRequest(data);
+      callback(resource);
+      console.log(resource);
+    };
+  };
+  webdav.propfind(resourcepath, createCallback() ,1,properties);
+};
+
+/*
  * Create new folder. When new foldername already exist add counter to the name
  * of the folder
  */
@@ -33,15 +140,15 @@ nl.sara.beehub.controller.createNewFolder = function(){
   var webdav = new nl.sara.webdav.Client();
   var foldername = 'new_folder';
   var counter = 0;
-
   /*
    * Create callback for webdav request
    */
   function createCallback() {
-    return function(status) {
+    return function(status, path) {
       if (status === 201) {
+        nl.sara.beehub.controller.getResourcePropsFromServer(path, nl.sara.beehub.view.addClientResource);
         // TODO zonder reload
-        window.location.reload();
+//        window.location.reload();
         return;
       };
       // Folder already exist
@@ -61,3 +168,41 @@ nl.sara.beehub.controller.createNewFolder = function(){
   // Webdav request
   webdav.mkcol(nl.sara.beehub.controller.path+foldername,createCallback());
 }  
+
+// RENAME
+/**
+ * Move an object
+ * 
+ * @param string fileNameOrg
+ * @param string fileNameNew
+ * 
+ */
+nl.sara.beehub.controller.renameResource = function(fileNameOrg, fileNameNew, overwriteMode, element){
+  var webdav = new nl.sara.webdav.Client();
+  
+  function callback(fileOrg, fileNew, element) {
+    return function(status) {
+      if (status === 412) {
+        var overwriteButton='<button id="bh-dir-rename-overwrite-button" class="btn btn-danger">Overwrite</button>'
+        var cancelButton='<button id="bh-dir-rename-cancel-button" class="btn btn-success">Cancel</button>'
+        $("#bh-dir-dialog").html('<h5><b><i>'+fileNameNew+'</b></i> already exist in the current directory!</h5><br><center>'+overwriteButton+' '+cancelButton)+'</center>';
+        $("#bh-dir-dialog").dialog({
+             modal: true,
+             title: "Warning"
+              });
+        $("#bh-dir-rename-overwrite-button").click(function(){
+          moveObject(fileOrg, fileNew, nl.sara.webdav.Client.SILENT_OVERWRITE, element);
+        })
+        $("#bh-dir-rename-cancel-button").click(function(){
+          element.closest("tr").find(".bh-dir-rename-td").find(':input').val(fileNameOrg);
+          $("#bh-dir-dialog").dialog("close");
+        })
+      } 
+      if (status === 201 || status === 204) {
+        window.location.reload();
+      }
+    }
+  };
+   
+  webdav.move(nl.sara.beehub.controller.path + fileNameOrg,callback(fileNameOrg,fileNameNew, element), nl.sara.beehub.controller.path +fileNameNew,  overwriteMode);
+};

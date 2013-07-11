@@ -51,6 +51,11 @@ if (nl.sara.beehub.view.dialog === undefined) {
   /** @namespace Holds all the view classes */
   nl.sara.beehub.view.dialog = {};
 }
+//
+//if (nl.sara.beehub.Resource === undefined) {
+//  /** @namespace Holds all the view classes */
+//  nl.sara.beehub.Resource = {};
+//}
 
 ///**
 // * @class BeeHub client Resource
@@ -368,43 +373,7 @@ if (nl.sara.beehub.view.dialog === undefined) {
 	// END UPLOAD
 
 	
-	// RENAME
-	/**
-	 * Move an object
-	 * 
-	 * @param string fileNameOrg
-	 * @param string fileNameNew
-	 * 
-	 */
-	function moveObject(fileNameOrg, fileNameNew, overwriteMode, element){
-		var webdav = new nl.sara.webdav.Client();
-		
-		function callback(fileOrg, fileNew, element) {
-			return function(status) {
-				if (status === 412) {
-					var overwriteButton='<button id="bh-dir-rename-overwrite-button" class="btn btn-danger">Overwrite</button>'
-					var cancelButton='<button id="bh-dir-rename-cancel-button" class="btn btn-success">Cancel</button>'
-					$("#bh-dir-dialog").html('<h5><b><i>'+fileNameNew+'</b></i> already exist in the current directory!</h5><br><center>'+overwriteButton+' '+cancelButton)+'</center>';
-					$("#bh-dir-dialog").dialog({
-						   modal: true,
-						   title: "Warning"
-						    });
-					$("#bh-dir-rename-overwrite-button").click(function(){
-						moveObject(fileOrg, fileNew, nl.sara.webdav.Client.SILENT_OVERWRITE, element);
-					})
-					$("#bh-dir-rename-cancel-button").click(function(){
-						element.closest("tr").find(".bh-dir-rename-td").find(':input').val(fileNameOrg);
-						$("#bh-dir-dialog").dialog("close");
-					})
-				} 
-				if (status === 201 || status === 204) {
-					window.location.reload();
-				}
-			}
-		};
-		 
-		webdav.move(path + fileNameOrg,callback(fileNameOrg,fileNameNew, element), path +fileNameNew,  overwriteMode);
-	};
+
 	
 //	$("#bh-dir-contents-table").tablesorter();
 
