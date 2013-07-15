@@ -76,6 +76,7 @@ foreach( array( 'user', 'group', 'sponsor' ) as $thing ) {
         while ( $membership = $membershipset->fetch_assoc() ) {
           $username = $membership['user_name'];
           unset( $membership[$thing . '_name'], $membership['user_name'] );
+          $membership = array_map( 'intval', $membership );
           $principal[ 'members' ][ $username ] = $membership;
         }
       break;
