@@ -89,7 +89,7 @@ class BeeHub_Sponsor extends BeeHub_Principal {
     // Allow users to request or remove membership
     $current_user = $auth->current_user();
     if (isset($_POST['leave'])) {
-      $this->delete_members(array($current_user->name));
+      $this->change_memberships( $current_user, self::DELETE_MEMBER );
     }
     if (isset($_POST['join'])) {
       $message = null;
@@ -112,7 +112,7 @@ BeeHub';
           }
         }
       }
-      $this->change_memberships(array($current_user->name), false, false, false, null);
+      $this->change_memberships( array( $current_user->name ), self::USER_ACCEPT );
       if (!is_null($message)) {
         BeeHub::email($recipients,
                       'BeeHub notification: membership request for sponsor ' . $this->prop(DAV::PROP_DISPLAYNAME),
@@ -123,14 +123,10 @@ BeeHub';
     // Run administrator actions: add members, admins and requests
     foreach ($admin_functions as $key) {
       if (isset($_POST[$key])) {
-        $members = array();
         if (!is_array($_POST[$key])) {
           throw new DAV_Status(DAV::HTTP_BAD_REQUEST);
         }
-        foreach ($_POST[$key] as $uri) {
-          $members[] = DAV::parseURI($uri, false);
-        }
-        $members = array_map(array('BeeHub_Sponsor', 'get_user_name'), $members);
+        $members = array_map( array( 'BeeHub_Sponsor', 'get_user_name' ), $_POST[$key] );
         switch ($key) {
           case 'add_members':
             foreach ($members as $member) {
@@ -149,17 +145,17 @@ BeeHub';
                               $message);
               }
             }
-            $this->change_memberships($members, true, false, true);
+            $this->change_memberships( $members, self::ADMIN_ACCEPT );
             break;
           case 'add_admins':
-            $this->change_memberships($members, true, true, true, true);
+            $this->change_memberships( $members, self::SET_ADMIN );
             break;
           case 'delete_admins':
             $this->check_admin_remove($members);
-            $this->change_memberships($members, false, false, null, false);
+            $this->change_memberships( $members, self::UNSET_ADMIN );
             break;
           case 'delete_members':
-            $this->delete_members($members);
+            $this->change_memberships( $members, self::DELETE_MEMBER );
             foreach ($members as $member) {
               $user = BeeHub::user($member);
               $message =
@@ -182,107 +178,253 @@ BeeHub';
       }
     }
   }
-
+  
+  
   /**
-   * Adds member requests or sets them to be an accepted member or an administrator
-   *
-   * @param   Array    $members           An array with paths to the principals to add
-   * @param   Boolean  $newAccepted       The value the 'accepted' field should have if the membership had to be added to the database
-   * @param   Boolean  $newAdmin          The value the 'admin' field should have if the membership had to be added to the database
-   * @param   Boolean  $existingAccepted  Optionally; The value the 'accepted' field should have if the membership is already in the database. If ommited values will not be changed for existing memberships
-   * @param   Boolean  $existingAdmin     Optionally; The value the 'admin' field should have if the membership is already in the database. If ommited values will not be changed for existing membership
+   * Sets a membership to be accepted by the user
+   * 
+   * If the membership is still unknown, it will be added. Else it will be
+   * ignored.
+   * 
+   * @param   string  $user_name                   The user name to add
+   * @param   array   $admins                      All admins (username as key)
+   * @param   array   $members                     All full memberships (username as key)
+   * @param   array   $user_accepted_memberships   All memberships accepted by the user (username as key)
    * @return  void
    */
-  public function change_memberships($members, $newAccepted, $newAdmin, $existingAccepted = null, $existingAdmin = null){
-    if (count($members) === 0) {
+  private function user_accept_membership( &$user_name, &$user, &$admins, &$members, &$user_accepted_memberships ) {
+    // Check what we need to do and accept the membership if needed
+    if ( array_key_exists( $user_name, $admins ) || array_key_exists( $user_name, $members ) ) {
+      return; // Don't do anything if it is an admin or an existing user
+    } elseif ( !array_key_exists( $user_name, $user_accepted_memberships ) ) {
+
+      // This is a new membership
+      $user_accepted_memberships[$user_name] = 1;
+
+      // And finaly, also the properties of this object
+      $this->users[ BeeHub::USERS_PATH . rawurlencode( $user_name ) ] = array(
+        'is_admin' => false,
+        'is_accepted' => false
+      );
+
+    }
+  }
+  
+  
+  /**
+   * Sets a membership to be accepted by an admin
+   * 
+   * If the membership is still unknown, it will be added as a full membership.
+   * If the user is an admin, nothing will change.
+   * 
+   * @param   string  $user_name                   The user name to add
+   * @param   array   $admins                      All admins (username as key)
+   * @param   array   $members                     All full memberships (username as key)
+   * @param   array   $user_accepted_memberships   All memberships accepted by the user (username as key)
+   * @return  void
+   */
+  private function admin_accept_membership( &$user_name, &$user, &$admins, &$members, &$user_accepted_memberships ) {
+    // Check what we need to do and accept the membership if needed
+    if ( array_key_exists( $user_name, $admins ) ) {
+      return; // Don't do anything if it is an admin
+    } elseif ( !array_key_exists( $user_name, $members ) ) {
+
+      if ( array_key_exists( $user_name, $user_accepted_memberships ) ) {
+        unset( $user_accepted_memberships[$user_name] );
+      }
+      $members[$user_name] = 1;
+
+      // Also change the user document
+      if ( ! is_array( $user['sponsors'] ) ) {
+        $user['sponsors'] = array();
+      }
+      if ( ! in_array( $this->name, $user['sponsors'] ) ) {
+        $user['sponsors'][] = $this->name;
+        BeeHub::getNoSQL()->users->save( $user );
+      }
+
+      // And finaly, also the properties of this object
+      $this->users[ BeeHub::USERS_PATH . rawurlencode( $user_name ) ] = array(
+        'is_admin' => false,
+        'is_accepted' => true
+      );
+      if ( ! in_array( $user_name, $this->stored_props[DAV::PROP_GROUP_MEMBER_SET] ) ) {
+        $this->stored_props[DAV::PROP_GROUP_MEMBER_SET][] = BeeHub::USERS_PATH . rawurlencode( $user_name );
+      }
+
+    }
+  }
+  
+  
+  /**
+   * Sets a member to be admin
+   * 
+   * @param   string  $user_name                   The user name to add
+   * @param   array   $admins                      All admins (username as key)
+   * @param   array   $members                     All full memberships (username as key)
+   * @return  void
+   */
+  private function set_admin( &$user_name, &$admins, &$members ) {
+    // Check what we need to do and accept the membership if needed
+    if ( array_key_exists( $user_name, $admins ) ) {
+      return; // Don't do anything if it is an admin
+    } elseif ( array_key_exists( $user_name, $members ) ) {
+
+      // Update the membership to an admin membership
+      unset( $members[$user_name] );
+      $admins[$user_name] = 1;
+
+      // And finaly, also the properties of this object
+      $this->users[ BeeHub::USERS_PATH . rawurlencode( $user_name ) ] = array(
+        'is_admin' => true,
+        'is_accepted' => true
+      );
+
+    } else {
+      throw new DAV_Status( DAV::HTTP_CONFLICT, 'Not all users are member of this group. You can\'t become an administrator of you don\'t have a membership.');
+    }
+  }
+  
+  
+  /**
+   * Sets an admin to become a relugar member
+   * 
+   * @param   string  $user_name                   The user name to add
+   * @param   array   $admins                      All admins (username as key)
+   * @param   array   $members                     All full memberships (username as key)
+   * @return  void
+   */
+  private function unset_admin( &$user_name, &$admins, &$members ) {
+    // Check what we need to do and accept the membership if needed
+    if ( array_key_exists( $user_name, $admins ) ) {
+
+      // Demote the membership to a regular membership
+      unset( $admins[$user_name] );
+      $members[$user_name] = 1;
+
+      // And finaly, also the properties of this object
+      $this->users[ BeeHub::USERS_PATH . rawurlencode( $user_name ) ] = array(
+        'is_admin' => false,
+        'is_accepted' => true
+      );
+
+    }
+  }
+  
+  
+  /**
+   * Sets an admin to become a relugar member
+   * 
+   * @param   string  $user_name                   The user name to add
+   * @param   array   $admins                      All admins (username as key)
+   * @param   array   $members                     All full memberships (username as key)
+   * @param   array   $user_accepted_memberships   All memberships accepted by the user (username as key)
+   * @return  void
+   */
+  private function delete_member( &$user_name, &$user, &$admins, &$members, &$user_accepted_memberships ) {
+    unset( $admins[$user_name], $members[$user_name], $user_accepted_memberships[$user_name] );
+
+    // Also change the user document
+    $user_key = array_search( $this->name, $user['sponsors'] );
+    if ( $user_key !== false ) {
+      if ( count($user['sponsors'] ) > 1 ) {
+        unset( $user['sponsors'][$user_key] );
+        $user['sponsors'] = array_values( $user['sponsors'] );
+      }else{
+        unset( $user['sponsors'] );
+      }
+      BeeHub::getNoSQL()->users->save( $user );
+    }
+
+    // And unset the necessary properties of this object
+    unset( $this->users[ BeeHub::USERS_PATH . rawurlencode( $user_name ) ] );
+    $key = array_search( BeeHub::USERS_PATH . rawurlencode( $user_name ), $this->stored_props[DAV::PROP_GROUP_MEMBER_SET] );
+    if ( $key !== false ) {
+      unset( $this->stored_props[DAV::PROP_GROUP_MEMBER_SET][$key] );
+    }
+  }
+  
+  
+  const USER_ACCEPT = 1;
+  const ADMIN_ACCEPT = 2;
+  const SET_ADMIN = 3;
+  const UNSET_ADMIN = 4;
+  const DELETE_MEMBER = 5;
+  
+
+  /**
+   * Adds member requests or sets them to be an invited member or an administrator
+   *
+   * @param   mixed    $users  A user, username or an array if users or usernames
+   * @param   flag     $type   What to do with this membership, use one of the class constants USER_ACCEPT, SET_ADMIN or UNSET_ADMIN
+   * @return  void
+   */
+  public function change_memberships($users, $type){
+    if ( !is_array( $users ) ) {
+      $users = array( $users );
+    }
+    if ( count($users) === 0 ) {
       return;
     }
+    $users = array_map(array( 'BeeHub_Sponsor', 'get_user_name' ), $users );
     $collection = BeeHub::getNoSQL()->sponsors;
     $userCollection = BeeHub::getNoSQL()->users;
     $document = $collection->findOne( array( 'name' => $this->name ) );
     
-    foreach ($members as $user_name) {
+    // We flip all the membership arrays so PHP will index them and speed up searches later on
+    $admins = ( isset( $document['admins'] ) ? array_flip( $document['admins'] ) : array() );
+    $members = ( isset( $document['members'] ) ? array_flip( $document['members'] ) : array() );
+    $user_accepted_memberships = ( isset( $document['user_accepted_memberships'] ) ? array_flip( $document['user_accepted_memberships'] ) : array() );
+      
+    // If we remove or demote an admin, check whether this is allowed
+    if ( ( $type === self::UNSET_ADMIN ) || 
+         ( $type === self::DELETE_MEMBER ) ) {
+      $this->check_admin_remove( $users );
+    }
+    
+    foreach ($users as $user_name) {
       // Check if the user exists
       $user = $userCollection->findOne( array( 'name' => $user_name ) );
       if ( is_null( $user ) ) {
-        throw new DAV_Status(DAV::HTTP_CONFLICT, "Not all users exist!");
+        throw new DAV_Status(DAV::HTTP_CONFLICT, "Not all users exist! " . $user_name);
       }
       
-      // Change or add the membership details to the sponsor document
-      if ( array_key_exists( $user_name, $document['members'] ) ) {
-        if ( !is_null( $existingAccepted ) ) {
-          $document['members'][$user_name]['is_accepted'] = ($existingAccepted ? 1 : 0);
-        }
-        if ( !is_null( $existingAdmin ) ) {
-          $document['members'][$user_name]['is_admin'] = ($existingAdmin ? 1 : 0);
-        }
-      }else{
-        $document['members'][$user_name] = array(
-            'is_accepted' => ($newAccepted ? 1 : 0),
-            'is_admin' => ($newAdmin ? 1 : 0)
-        );
-      }
-      
-      // Also change the user document if the membership is accepted
-      if ( ( $document['members'][$user_name]['is_accepted'] === 1 ) &&
-           ! in_array( $this->name, $user['sponsors'] ) ) {
-        $user['sponsors'][] = $this->name;
-        $userCollection->save( $user );
-      }
-      
-      // And finaly, also the properties of this object
-      $this->users[ BeeHub::USERS_PATH . $user_name ] = array(
-        'is_admin' => !!$document['members'][$user_name]['is_admin'],
-        'is_accepted' => !!$document['members'][$user_name]['is_accepted']
-      );
-      if ( ( $document['members'][$user_name]['is_accepted'] === 1 ) &&
-           ! in_array( $user_name, $this->stored_props[DAV::PROP_GROUP_MEMBER_SET] ) ) {
-        $this->stored_props[DAV::PROP_GROUP_MEMBER_SET][] = BeeHub::USERS_PATH . rawurlencode( $user_name );
+      // Check what we need to do and accept the membership if needed
+      switch ( $type ) {
+        case self::USER_ACCEPT:
+          $this->user_accept_membership( $user_name, $user, $admins, $members, $user_accepted_memberships );
+          break;
+        case self::ADMIN_ACCEPT:
+          $this->admin_accept_membership($user_name, $user, $admins, $members, $user_accepted_memberships);
+          break;
+        case self::SET_ADMIN:
+          $this->set_admin( $user_name, $admins, $members );
+          break;
+        case self::UNSET_ADMIN:
+          $this->unset_admin( $user_name, $admins, $members );
+          break;
+        case self::DELETE_MEMBER:
+          $this->delete_member( $user_name, $user, $admins, $members, $user_accepted_memberships );
+        break;
       }
     }
     
-    // And save the sponsor document
-    $collection->save( $document );
-  }
-
-  /**
-   * Delete memberships
-   *
-   * @param   Array    $members           An array with paths to the principals to add
-   * @return  void
-   */
-  protected function delete_members($members) {
-    if (count($members) === 0) {
-      return;
+    // And save the group document
+    if ( count($admins) > 0 ) {
+      $document['admins'] = array_keys( $admins );
+    } elseif ( isset( $document['admins'] ) ) {
+      unset( $document['admins'] );
     }
-    $this->check_admin_remove($members);
-    $collection = BeeHub::getNoSQL()->sponsors;
-    $userCollection = BeeHub::getNoSQL()->users;
-    $document = $collection->findOne( array( 'name' => $this->name ) );
-
-    // Then delete all the members
-    foreach ($members as $user_name) {
-      unset( $document['members'][$user_name] );
-      
-      // Also change the user document
-      $user = $userCollection->findOne( array( 'name' => $user_name ) );
-      if ( ! is_null( $user ) ) {
-        $key = array_search( $this->name, $user['sponsors'] );
-        if ( $key !== false ) {
-          unset( $user['sponsors'][$key] );
-          $userCollection->save( $user );
-        }
-      }
-      
-      // And unset the necessary properties of this object
-      unset( $this->users[ BeeHub::USERS_PATH . rawurlencode( $user_name ) ] );
-      $key = array_search( BeeHub::USERS_PATH . rawurlencode( $user_name ), $this->stored_props[DAV::PROP_GROUP_MEMBER_SET] );
-      if ( $key !== false ) {
-        unset( $this->stored_props[DAV::PROP_GROUP_MEMBER_SET][$key] );
-      }
+    if ( count($members) > 0 ) {
+      $document['members'] = array_keys( $members );
+    } elseif ( isset( $document['members'] ) ) {
+      unset( $document['members'] );
     }
-    
-    // And finally save the sponsor document
+    if ( count($user_accepted_memberships) > 0 ) {
+      $document['user_accepted_memberships'] = array_keys( $user_accepted_memberships );
+    } elseif ( isset( $document['user_accepted_memberships'] ) ) {
+      unset( $document['user_accepted_memberships'] );
+    }
     $collection->save( $document );
   }
 
@@ -304,8 +446,12 @@ BeeHub';
   }
 
 
-  private static function get_user_name($user_name) {
-    return rawurldecode(basename($user_name));
+  private static function get_user_name($user) {
+    if ( $user instanceof BeeHub_User ) {
+      return $user->name;
+    }else{
+      return rawurldecode( basename( $user ) );
+    }
   }
 
 
@@ -324,16 +470,36 @@ BeeHub';
 
       $this->users = array();
       $members = array();
-      foreach ( $document['members'] as $username => $membership ) {
+      if ( !isset( $document['members'] ) ) {
+        $document['members'] = array();
+      }
+      foreach ( $document['members'] as $username ) {
         $this->users[ BeeHub::USERS_PATH . rawurlencode( $username ) ] = array(
-          'is_admin' => !!$membership['is_admin'],
-          'is_accepted' => !!$membership['is_accepted']
+          'is_accepted' => true,
+          'is_admin' => false
         );
-        if ( !!$membership['is_accepted'] ) {
-          $members[] = BeeHub::USERS_PATH . rawurlencode( $username );
-        }
+        $members[] = BeeHub::USERS_PATH . rawurlencode( $username );
+      }
+      if ( !isset( $document['admins'] ) ) {
+        $document['admins'] = array();
+      }
+      foreach ( $document['admins'] as $username ) {
+        $this->users[ BeeHub::USERS_PATH . rawurlencode( $username ) ] = array(
+          'is_accepted' => true,
+          'is_admin' => true
+        );
+        $members[] = BeeHub::USERS_PATH . rawurlencode( $username );
       }
       $this->stored_props[DAV::PROP_GROUP_MEMBER_SET] = $members;
+      if ( !isset( $document['user_accepted_memberships'] ) ) {
+        $document['user_accepted_memberships'] = array();
+      }
+      foreach ( $document['user_accepted_memberships'] as $username ) {
+        $this->users[ BeeHub::USERS_PATH . rawurlencode( $username ) ] = array(
+          'is_accepted' => false,
+          'is_admin' => false
+        );
+      }
     }
   }
 

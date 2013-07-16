@@ -253,16 +253,10 @@ class BeeHub {
       $user = $auth->current_user();
 
       // Fetch all group invitations
-      $statement = BeeHub_DB::execute('
-        SELECT `beehub_groups`.`group_name`,
-               `beehub_groups`.`displayname`
-          FROM `beehub_group_members` JOIN `beehub_groups` USING(`group_name`)
-         WHERE `beehub_group_members`.`is_invited` = 1 AND
-               `beehub_group_members`.`is_requested` = 0 AND
-               `beehub_group_members`.`user_name` = ?
-      ', 's', $user->name);
-      while ($row = $statement->fetch_row()) {
-        $notifications[] = array('type'=>'group_invitation', 'data'=>array('group'=>BeeHub::GROUPS_PATH . $row[0], 'displayname'=>$row[1]));
+      $collection = BeeHub::getNoSQL()->groups;
+      $resultSet = $collection->find( array( 'members.' . $user->name . '.is_invited' => 1, 'members.' . $user->name . '.is_requested' => 0 ), array( 'name' => true, 'displayname' => true ) );
+      foreach ( $resultSet as $row ) {
+        $notifications[] = array('type'=>'group_invitation', 'data'=>array('group'=>BeeHub::GROUPS_PATH . $row['name'], 'displayname'=>$row['displayname']));
       }
 
       // Fetch all group membership requests

@@ -186,7 +186,7 @@ $(function (){
 	        return;
 	        }
 	        if (status !== 200) {
-	        alert('Something went wrong on the server. No changes were made.'+status);
+	        alert('Something went wrong on the server. No changes were made.');
 	        return;
 	        };
 	        var demotebutton = $('<button type="button" value="'+button.val()+'" class="btn btn-primary demote_link">Demote to member</button>');

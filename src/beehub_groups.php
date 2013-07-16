@@ -69,7 +69,7 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
     }
 
     // Store in the database
-    $collection->insert( array( 'name' => $group_name, 'members' => array() ) );
+    $collection->insert( array( 'name' => $group_name ) );
 
     // Fetch the group and store extra properties
     $group = BeeHub_Registry::inst()->resource(BeeHub::GROUPS_PATH . $group_name);
@@ -80,10 +80,9 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
     $group->storeProperties();
 
     // Add the current user as admin of the group
-    $group->change_memberships(
-      array( basename( $this->user_prop_current_user_principal() ) ),
-      true, true, true
-    );
+    $group->change_memberships( basename( $this->user_prop_current_user_principal() ), BeeHub_Group::USER_ACCEPT );
+    $group->change_memberships( basename( $this->user_prop_current_user_principal() ), BeeHub_Group::ADMIN_ACCEPT );
+    $group->change_memberships( basename( $this->user_prop_current_user_principal() ), BeeHub_Group::SET_ADMIN );
 
     // And create a group directory
     if (!mkdir($groupdir)) {
@@ -125,7 +124,7 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
 
   protected function init_members() {
     $collection = BeeHub::getNoSQL()->groups;
-    $this->members = $collection->find()->sort( array( 'displayname' => 1 ) );
+    $this->members = $collection->find( array(), array( 'name' ) )->sort( array( 'displayname' => 1 ) );
   }
 
 

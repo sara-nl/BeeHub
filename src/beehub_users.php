@@ -78,7 +78,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
     }
 
     // Store in the database
-    $collection->insert( array( 'name' => $user_name, 'sponsors' => array(), 'groups' => array() ) );
+    $collection->insert( array( 'name' => $user_name ) );
     
     // Fetch the user and store extra properties
     $user = BeeHub_Registry::inst()->resource(
@@ -105,7 +105,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
     
     // TODO: This should not be hard coded, a new user should not have a sponsor but request one after his account is created, but I want to inform the user about his through the not-yet-existing notification system
     $sponsor = BeeHub_Registry::inst()->resource('/system/sponsors/e-infra');
-    $sponsor->change_memberships( array( $user_name ), 1, 0, 1 );
+    $sponsor->change_memberships( $user_name, BeeHub_Sponsor::USER_ACCEPT );
 
     // And create a user directory
     if (!mkdir($userdir)) {

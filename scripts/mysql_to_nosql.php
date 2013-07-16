@@ -72,12 +72,34 @@ foreach( array( 'user', 'group', 'sponsor' ) as $thing ) {
            WHERE    `" . $thing . "_name` = '" . $mysqli->escape_string( $principal[ 'name' ] ) . "'",
           MYSQLI_STORE_RESULT
         );
-        $principal[ 'members' ] = array();
+        $admins = array();
+        $members = array();
+        $admin_accepted_memberships = array();
+        $user_accepted_memberships = array();
         while ( $membership = $membershipset->fetch_assoc() ) {
-          $username = $membership['user_name'];
-          unset( $membership[$thing . '_name'], $membership['user_name'] );
-          $membership = array_map( 'intval', $membership );
-          $principal[ 'members' ][ $username ] = $membership;
+          if ( $membership['is_admin'] === '1' ) {
+            $admins[] = $membership['user_name'];
+          } elseif ( ( ( @$membership['is_invited'] === '1' ) && ( @$membership['is_requested'] === '1' ) ) || ( @$membership['is_accepted'] === '1' ) ) {
+            $members[] = $membership['user_name'];
+          } elseif ( ( @$membership['is_invited'] === '1' ) && ( @$membership['is_requested'] === '0' ) ) {
+            $admin_accepted_memberships[] = $membership['user_name'];
+          } elseif ( ( ( @$membership['is_invited'] === '0' ) && ( @$membership['is_requested'] === '1' ) ) || ( @$membership['is_accepted'] === '0' ) ) {
+            $user_accepted_memberships[] = $membership['user_name'];
+          } else {
+            trigger_error( 'Unknown type of membership: ' . var_dump( $membership ) );
+          }
+        }
+        if ( count($admins) > 0 ) {
+          $principal['admins'] = $admins;
+        }
+        if ( count($members) > 0 ) {
+          $principal['members'] = $members;
+        }
+        if ( count($admin_accepted_memberships) > 0 ) {
+          $principal['admin_accepted_memberships'] = $admin_accepted_memberships;
+        }
+        if ( count($user_accepted_memberships) > 0 ) {
+          $principal['user_accepted_memberships'] = $user_accepted_memberships;
         }
       break;
     }
