@@ -69,7 +69,7 @@ private function internal_create_member( $name, $collection = false ) {
 
   // And set the attributes
   $new_resource = BeeHub_Registry::inst()->resource($path);
-  $new_resource->user_set( DAV::PROP_GETETAG, BeeHub_DB::ETag() );
+  $new_resource->user_set( DAV::PROP_GETETAG, BeeHub::ETag() );
   $new_resource->user_set( DAV::PROP_OWNER, $this->user_prop_current_user_principal() );
   $new_resource->user_set( BeeHub::PROP_SPONSOR, $sponsor );
   $new_resource->storeProperties();

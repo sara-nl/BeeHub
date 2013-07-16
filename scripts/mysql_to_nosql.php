@@ -108,4 +108,16 @@ foreach( array( 'user', 'group', 'sponsor' ) as $thing ) {
   }
 }
 
+$result = $mysqli->query("SHOW TABLE STATUS LIKE 'ETag'");
+$row = $result->fetch_array();
+$nextId = $row['Auto_increment'];
+$result->free();
+
+$systemCollection = $db->beehub_system;
+$systemCollection->remove( array( 'name' => 'etag' ) );
+$systemCollection->save( array(
+    'name' => 'etag',
+    'counter' => intval( $nextId ) )
+);
+
 $mysqli->close();

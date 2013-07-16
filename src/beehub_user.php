@@ -120,7 +120,7 @@ class BeeHub_User extends BeeHub_Principal {
         $this->password = null;
       }
       
-      if ( isset( $result['unverified_email'] ) && ( $result['verification_expiration'] > time() ) ) {
+      if ( isset( $result['unverified_email'] ) && isset( $result['verification_expiration'] ) && ( $result['verification_expiration'] > time() ) ) {
         $this->unverified_address = $result['unverified_email'];
       }
 

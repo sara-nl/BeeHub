@@ -175,7 +175,7 @@ public function method_PUT($stream) {
     try { $this->set_getcontenttype( $finfo->file( $this->localPath ) ); }
     catch (DAV_Status $e) {}
   }
-  $this->user_set( DAV::PROP_GETETAG, BeeHub_DB::ETag() );
+  $this->user_set( DAV::PROP_GETETAG, BeeHub::ETag() );
   $this->storeProperties();
 }
 
@@ -213,7 +213,7 @@ public function method_PUT_range($stream, $start, $end, $total) {
     throw $e;
   }
   fclose($resource);
-  $this->user_set( DAV::PROP_GETETAG, BeeHub_DB::ETag() );
+  $this->user_set( DAV::PROP_GETETAG, BeeHub::ETag() );
   $this->storeProperties();
 }
 

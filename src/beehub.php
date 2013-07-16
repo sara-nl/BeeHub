@@ -339,6 +339,28 @@ class BeeHub {
     return $client->beehub;
   }
 
+  
+  /**
+   * Returns a new, unique, unused ETag
+   * @return  String      The new ETag
+   * @throws  DAV_Status  When a database error occurs
+   */
+  public static function ETag() {
+    $result = BeeHub::getNoSQL()->command( array(
+      'findAndModify' => "beehub_system",
+      'query'         => array( 'name' => 'etag' ),
+      'update'        => array( '$inc' => array( 'counter' => 1 ) ),
+      'new'           => true
+    ) );
+    
+    if ( $result['ok'] != 1 ) {
+trigger_error(print_r($result, true));
+      throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR );
+    }
+    $etag = $result['value']['counter'];
+    return '"' . trim( base64_encode( pack( 'H*', dechex( $etag ) ) ), '=' ) . '"';
+  }
+
 
 } // class BeeHub
 

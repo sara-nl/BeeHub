@@ -165,13 +165,6 @@ class BeeHub_DB {
     return is_null($string) ? 'NULL' : '\'' . self::mysqli()->escape_string($string) . '\'';
   }
 
-  public static function ETag($etag = null) {
-    $etag = self::execute('INSERT INTO ETag VALUES()')->insert_id;
-    if (!($etag % 100))
-      self::execute('DELETE FROM ETag WHERE etag < ?', 'i', $etag);
-    return '"' . trim(base64_encode(pack('H*', dechex($etag))), '=') . '"';
-  }
-
   /**
    * @param string $query
    * @return mysqli_result
