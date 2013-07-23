@@ -106,6 +106,7 @@ class BeeHub_Registry implements DAV_Registry {
    * @param array $read paths to read-lock
    */
   public function shallowLock($write, $read) {
+    // TODO: Discuss with Mathijs how to do this shallow lock thing with MongoDB. Probably just set a flag (atomically) to the file document and make sure it is written to the majority of the (redundant) copies
     $whashes = $rhashes = array();
     foreach ($write as $value)
       $whashes[] = BeeHub_DB::escape_string(hash('sha256', $value, true));
@@ -165,11 +166,7 @@ class BeeHub_Registry implements DAV_Registry {
       $microsleeptimer = 0;
     }
   }
-
-  /**
-   * @param array $write paths to write-lock.
-   * @param array $read paths to read-lock
-   */
+  
   public function shallowUnlock() {
     BeeHub_DB::query('COMMIT;');
   }

@@ -91,7 +91,6 @@ public function setlock($lockroot, $depth, $owner, $timeout) {
     );
   $timeout = self::timeout($timeout);
   $locktoken = 'opaquelocktoken:' . $this->getUUIDv4URN();
-  $stmt->free_result();
   $activelock = new DAV_Element_activelock( array(
     'lockroot'  => $lockroot,
     'depth'     => $depth,
