@@ -90,9 +90,7 @@ public function setlock($lockroot, $depth, $owner, $timeout) {
       'Locks of depth infinity are not implemented.'
     );
   $timeout = self::timeout($timeout);
-  $stmt = BeeHub_DB::execute('SELECT UUID()');
-  $row = $stmt->fetch_row();
-  $locktoken = 'opaquelocktoken:' . $row[0];
+  $locktoken = 'opaquelocktoken:' . $this->getUUIDv4URN();
   $stmt->free_result();
   $activelock = new DAV_Element_activelock( array(
     'lockroot'  => $lockroot,
@@ -138,6 +136,34 @@ public function unlock($path) {
   $resource->user_set( DAV::PROP_LOCKDISCOVERY, null );
   $resource->storeProperties();
   return $retval;
+}
+
+
+private function getUUIDv4URN() {
+  // Determine octets in pairs of 2 to prevent using mt_rand with max values > 2^32
+  $octetPairs = array();
+  for ($counter = 0; $counter < 8; $counter++) {
+    $octetPairs[] = mt_rand( 0, 0xffff );
+  }
+  
+  // octet 6 should start with 0100
+  $octetPairs[3] = $octetPairs[3] & 0xfff | 0x4000 ;
+  
+  // octet 8 should start with 10
+  $octetPairs[4] = $octetPairs[4] & 0x3fff | 0x8000 ;
+  
+  // Create the correct strings
+  return 'urn:uuid:' . sprintf(
+          '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+          $octetPairs[0],
+          $octetPairs[1],
+          $octetPairs[2],
+          $octetPairs[3],
+          $octetPairs[4],
+          $octetPairs[5],
+          $octetPairs[6],
+          $octetPairs[7]
+  );
 }
 
 
