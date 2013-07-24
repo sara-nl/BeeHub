@@ -105,6 +105,12 @@ public function method_COPY( $path ) {
 public function method_DELETE( $name )
 {
   $path = $this->path . $name;
+  
+  // Remove the entry from mongoDB too
+  $filesCollection = BeeHub::getNoSQL()->selectCollection( 'files' );
+  $filesCollection->remove( array( 'path' => $path ) );
+
+  // And then from the filesystem
   $localpath = BeeHub::localPath( $path );
   $this->assert(DAVACL::PRIV_WRITE);
   if (is_dir($localpath)) {
@@ -115,6 +121,7 @@ public function method_DELETE( $name )
     if (!@unlink($localpath))
       throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
   }
+  
   BeeHub_Registry::inst()->forget($path);
 }
 

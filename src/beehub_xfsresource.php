@@ -50,7 +50,7 @@ class BeeHub_XFSResource extends BeeHub_Resource {
     if (is_null($this->stored_props)) {
       $collection = BeeHub::getNoSQL()->files;
       $document = $collection->findOne( array('path' => DAV::unslashify( $this->path ) ) );
-      if ( is_null( $document ) ) {
+      if ( is_null( $document ) || empty( $document['props'] ) ) {
         $this->stored_props = array();
       }else{
         $this->stored_props = $document['props'];
