@@ -100,75 +100,132 @@ class BeeHub_Registry implements DAV_Registry {
   public function forget($path) {
     unset($this->resourceCache[$path]);
   }
+  
+  
+  private $lockerId = null;
+          
 
   /**
    * @param array $write paths to write-lock.
    * @param array $read paths to read-lock
    */
   public function shallowLock($write, $read) {
-    // TODO: Discuss with Mathijs how to do this shallow lock thing with MongoDB. Probably just set a flag (atomically) to the file document and make sure it is written to the majority of the (redundant) copies
-    $whashes = $rhashes = array();
-    foreach ($write as $value)
-      $whashes[] = BeeHub_DB::escape_string(hash('sha256', $value, true));
-    foreach ($read as $value)
-      $rhashes[] = BeeHub_DB::escape_string(hash('sha256', $value, true));
-    sort($whashes, SORT_STRING);
-    sort($rhashes, SORT_STRING);
-    if (!empty($whashes)) {
-      BeeHub_DB::query(
-        'INSERT IGNORE INTO `shallowLocks` VALUES (' .
-        implode('),(', $whashes) . ');'
-      );
-      $whashes = implode(',', $whashes);
-      $whashes = "SELECT * FROM `shallowLocks` WHERE `pathhash` IN ($whashes) FOR UPDATE;";
+    if ( is_null( $this->lockerId ) ) {
+      $this->lockerId = uniqid( gethostname(), true );
     }
-    else
-      $whashes = null;
-    if (!empty($rhashes)) {
-      BeeHub_DB::query(
-        'INSERT IGNORE INTO `shallowLocks` VALUES (' .
-        implode('),(', $rhashes) . ');'
-      );
-      $rhashes = implode(',', $rhashes);
-      $rhashes = "SELECT * FROM `shallowLocks` WHERE `pathhash` IN ($rhashes) LOCK IN SHARE MODE;";
+    
+    // Prepare the lock (sub-)documents
+    $lockDocument = array(
+        'lockerId' => $this->lockerId,
+        'time' => time(),
+    );
+    $lockDocuments = array(
+        'write' => array( '$set' => array( 'shallowWriteLock' => $lockDocument ) ),
+        'read' => array( '$set' => array( 'shallowReadLock' => $lockDocument ) ),
+    );
+    
+    // Prepare the query documents
+    $queryDocuments = array(
+        'write' => array(
+            'path' => '',
+            'shallowWriteLock' => null,
+            'shallowReadLock' => null,
+        ),
+        'read' => array(
+            'path' => '',
+            'shallowWriteLock' => null,
+        ),
+    );
+    
+    // Prepare for the database calls
+    $returnFields = array( '_id' );
+    $options = array(
+        'new' => true,
+        'upsert' => false,
+    );
+    $lockTypes = array( 'write', 'read' );
+    $filesCollection = BeeHub::getNoSQL()->selectCollection( 'files' );
+    
+    // Make sure each path has a document in the database
+    $upsertOptions = array( 'upsert' => true );
+    foreach ( $lockTypes as $lockType ) {
+      foreach ( ${$lockType} as $key => $path ) {
+        $pathArray = array( 'path' => $path );
+        $filesCollection->findAndModify(
+            $pathArray,
+            array( '$set' => $pathArray ),
+            $returnFields,
+            $upsertOptions
+        );
+      }
     }
-    else
-      $rhashes = null;
-    $microsleeptimer = 10000; // also functions as success flag
-    while ($microsleeptimer) {
-      if ($microsleeptimer > 1280000)
-        $microsleeptimer = 1280000;
-      BeeHub_DB::query('START TRANSACTION');
-      if ($whashes)
-        try {
-          BeeHub_DB::query($whashes)->free_result();
-        } catch (BeeHub_Deadlock $e) {
-          BeeHub_DB::query('ROLLBACK');
-          usleep($microsleeptimer);
-          $microsleeptimer *= 2;
-          continue;
-        } catch (BeeHub_Timeout $e) {
-          BeeHub_DB::query('ROLLBACK');
-          throw new DAV_Status(DAV::HTTP_SERVICE_UNAVAILABLE);
+    
+    // Perform the modify action for all write locks
+    $microsleeptimer = 10000;
+    while ( true ) {
+      // Try to set as much locks as possible
+      foreach ( $lockTypes as $lockType ) {
+        $pathsCopy = ${$lockType};
+        foreach ( ${$lockType} as $key => $path ) {
+          $queryDocuments[ $lockType ][ 'path' ] = $path;
+          $result = $filesCollection->findAndModify(
+              $queryDocuments[ $lockType ],
+              $lockDocuments[ $lockType ],
+              $returnFields,
+              $options
+          );
+
+          // If it worked, remove this path from the list so it isn't tried again
+          if ( count( $result ) > 0 ) {
+            unset( $pathsCopy[ $key ] );
+          }
         }
-      if ($rhashes)
-        try {
-          BeeHub_DB::query($rhashes)->free_result();
-        } catch (BeeHub_Deadlock $e) {
-          BeeHub_DB::query('ROLLBACK');
-          usleep($microsleeptimer);
+        ${$lockType} = $pathsCopy;
+      }
+
+      // If we still have locks to set, wait before trying again
+      if ( ( count( $write ) > 0 ) || ( count( $read ) > 0 ) ) {
+        usleep($microsleeptimer);
+        // And increase the wait time each time to some maximum value
+        if ($microsleeptimer >= 640000) {
+          $microsleeptimer = 128000;
+        }else{
           $microsleeptimer *= 2;
-          continue;
-        } catch (BeeHub_Timeout $e) {
-          BeeHub_DB::query('ROLLBACK');
-          throw new DAV_Status(DAV::HTTP_SERVICE_UNAVAILABLE);
         }
-      $microsleeptimer = 0;
+      }else{
+        // No more locks to set? Break out of this 'while ( true )' loop!
+        break;
+      }
     }
   }
   
   public function shallowUnlock() {
-    BeeHub_DB::query('COMMIT;');
+    // If no lockerId has been generated, there are no locks set, so nothing to unlock
+    if ( is_null( $this->lockerId ) ) {
+      return;
+    }
+    
+    // Prepare the database calls
+    $filesCollection = BeeHub::getNoSQL()->selectCollection( 'files' );
+    $options = array(
+        'upsert' => false,
+        'multiple' => true,
+    );
+    
+    // And loose all locks from this locker with two update calls
+    $filesCollection->update(
+        array( 'shallowWriteLock.lockerId' => $this->lockerId ),
+        array( '$unset' => array( 'shallowWriteLock' => true ) ),
+        $options
+    );
+    $filesCollection->update(
+        array( 'shallowReadLock.lockerId' => $this->lockerId ),
+        array( '$unset' => array( 'shallowReadLock' => true ) ),
+        $options
+    );
   }
 
 } // class
+
+// Because our shallow locks are not automatically deleted when the script ends, let's make sure shallowUnlock is always called!
+register_shutdown_function( array( BeeHub_Registry::inst(), 'shallowUnlock' ) );
