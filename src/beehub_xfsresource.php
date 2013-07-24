@@ -50,10 +50,12 @@ class BeeHub_XFSResource extends BeeHub_Resource {
     if (is_null($this->stored_props)) {
       $collection = BeeHub::getNoSQL()->files;
       $document = $collection->findOne( array('path' => DAV::unslashify( $this->path ) ) );
-      if ( is_null( $document ) || empty( $document['props'] ) ) {
-        $this->stored_props = array();
-      }else{
-        $this->stored_props = $document['props'];
+      $this->stored_props = array();
+      
+      if ( !is_null( $document ) && !empty( $document['props'] ) ) {
+        foreach ( $document['props'] as $key => $value ) {
+          $this->stored_props[ rawurldecode( $key ) ] = $value;
+        }
       }
     }
   }
@@ -191,12 +193,24 @@ class BeeHub_XFSResource extends BeeHub_Resource {
     
     $collection = BeeHub::getNoSQL()->files;
     $document = $collection->findOne( array('path' => DAV::unslashify( $this->path ) ) );
+    
+    $urlencodedProps = array();
+    foreach ( $this->stored_props as $key => $value ) {
+      // This url encodes only the characters needed to create valid mongoDB keys. You can just run rawurldecode to decode it.
+      $encodedKey = str_replace(
+          array( '%'  , '$'  , '.'   ),
+          array( '%25', '%24', '%2E' ),
+          $key
+      );
+      $urlencodedProps[ $encodedKey ] = $value;
+    }
+    
     if ( is_null( $document ) ) {
       $document = array(
           'path' => DAV::unslashify( $this->path ),
-          'props' => $this->stored_props );
+          'props' => $urlencodedProps );
     }else{
-      $document['props'] = $this->stored_props;
+      $document['props'] = $urlencodedProps;
     }
     $collection->save( $document );
     

@@ -4,9 +4,18 @@ $CONFIG = parse_ini_file(
   dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'config.ini', true
 );
 
-$db = new Mongo();
+//Create a mongoDB 
+$db = new MongoClient();
 $collection = $db->beehub->files;
 
+/**
+ * Traverse over the files and subdirectories
+ * 
+ * @global  MongoCollection    $collection  The MongoDB collection
+ * @global  Array              $CONFIG      The configuration parameters
+ * @param   DirectoryIterator  $iterator    The DirectoryIterator to iterate over
+ * @return  void
+ */
 function traverse($iterator) {
   global $collection, $CONFIG;
   $retval = array();
@@ -19,11 +28,17 @@ function traverse($iterator) {
     } elseif ( $fileinfo->isDir() ) {
       traverse( new DirectoryIterator( $file ) );
     }
-print(substr( $file, strlen( $CONFIG['environment']['datadir'] ) ) . "\n" );
     $attributes = xattr_list($file);
     $stored_props = array();
     foreach ($attributes as $attribute) {
-      $stored_props[rawurldecode($attribute)] = xattr_get($file, $attribute);
+      // Property names are already stored url encoded in extended attributes, but we just need it a few characters to be encoded.
+      // This url encodes only the characters needed to create valid mongoDB keys. You can just run rawurldecode to decode it.
+      $encodedKey = str_replace(
+          array( '%'  , '$'  , '.'   ),
+          array( '%25', '%24', '%2E' ),
+          rawurldecode( $attribute )
+      );
+      $stored_props[ $encodedKey ] = xattr_get($file, $attribute);
     }
     $document = array(
         'path' => substr( $file, strlen( $CONFIG['environment']['datadir'] ) ),
@@ -32,4 +47,5 @@ print(substr( $file, strlen( $CONFIG['environment']['datadir'] ) ) . "\n" );
   }
 }
 
+// Traverse over the data directory so we get all files
 traverse(new DirectoryIterator( $CONFIG['environment']['datadir'] ));
