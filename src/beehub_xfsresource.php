@@ -54,7 +54,14 @@ class BeeHub_XFSResource extends BeeHub_Resource {
       
       if ( !is_null( $document ) && !empty( $document['props'] ) ) {
         foreach ( $document['props'] as $key => $value ) {
-          $this->stored_props[ rawurldecode( $key ) ] = $value;
+          $decoded_key = rawurldecode( $key );
+          if ( $decoded_key === DAV::PROP_OWNER ) {
+            $value = BeeHub::USERS_PATH . rawurlencode( $value );
+          }
+          if ( $decoded_key === BeeHub::PROP_SPONSOR ) {
+            $value = BeeHub::SPONSORS_PATH . rawurlencode( $value );
+          }
+          $this->stored_props[ $decoded_key ] = $value;
         }
       }
     }
@@ -196,6 +203,10 @@ class BeeHub_XFSResource extends BeeHub_Resource {
     
     $urlencodedProps = array();
     foreach ( $this->stored_props as $key => $value ) {
+      if ( ( $key === DAV::PROP_OWNER ) ||
+           ( $key === BeeHub::PROP_SPONSOR ) ){
+        $value = rawurldecode( basename( $value ) );
+      }
       // This url encodes only the characters needed to create valid mongoDB keys. You can just run rawurldecode to decode it.
       $encodedKey = str_replace(
           array( '%'  , '$'  , '.'   ),

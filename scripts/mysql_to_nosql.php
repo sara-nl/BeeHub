@@ -1,3 +1,4 @@
+#!/usr/bin/php
 <?php
 // Prepare the configuration and database connection
 $CONFIG = parse_ini_file(
@@ -37,6 +38,9 @@ foreach( array( 'user', 'group', 'sponsor' ) as $thing ) {
         }
         if ( ( $thing === 'user' ) && ( $key === 'sponsor_name' ) ) {
           $key = 'default_sponsor';
+          if ( substr( $value, 0, 1 ) === '/' ) { // This has changed from full path to just sponsor name. Now we make sure it is just sponsor name!
+            $value = rawurldecode( basename( $value ) );
+          }
         }
         $principal[$key] = $value;
       }

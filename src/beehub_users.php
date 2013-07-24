@@ -114,7 +114,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
     $userdir_resource = BeeHub_Registry::inst()->resource('/home/' . $user_name);
     $userdir_resource->user_set( DAV::PROP_OWNER, $user->path );
     // TODO: this should not be hard coded. When a users is accepted by his/her first sponsor, this should automatically be set.
-    $userdir_resource->user_set( BeeHub::PROP_SPONSOR, rawurlencode(BeeHub::PROP_SPONSOR), '/system/sponsors/e-infra' );
+    $userdir_resource->user_set( BeeHub::PROP_SPONSOR, '/system/sponsors/e-infra' );
     $userdir_resource->storeProperties();
 
     // Show the confirmation
