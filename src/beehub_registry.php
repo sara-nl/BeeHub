@@ -103,6 +103,7 @@ class BeeHub_Registry implements DAV_Registry {
   
   
   private $lockerId = null;
+  private $readLockedPaths = array();
           
 
   /**
@@ -115,25 +116,34 @@ class BeeHub_Registry implements DAV_Registry {
     }
     
     // Prepare the lock (sub-)documents
-    $lockDocument = array(
-        'lockerId' => $this->lockerId,
-        'time' => time(),
-    );
     $lockDocuments = array(
-        'write' => array( '$set' => array( 'shallowWriteLock' => $lockDocument ) ),
-        'read' => array( '$set' => array( 'shallowReadLock' => $lockDocument ) ),
+        'write' => array(
+            '$set' => array(
+                'shallowWriteLock' => array(
+                    'lockerId' => $this->lockerId,
+                    'time' => time(),
+                )
+            )
+        ),
+        'read' => array(
+            '$inc' => array( 'shallowReadLock.counter' => 1 ),
+            '$set' => array( 'shallowReadLock.lastest_lock' => time() ),
+        ),
     );
     
     // Prepare the query documents
     $queryDocuments = array(
         'write' => array(
             'path' => '',
-            'shallowWriteLock' => null,
-            'shallowReadLock' => null,
+            'shallowWriteLock' => array( '$exists' => false ),
+            '$or' => array (
+                array( 'shallowReadLock' => array( '$exists' => false ) ),
+                array( 'shallowReadLock.counter' => array( '$lt' => 1 ) ),
+            ),
         ),
         'read' => array(
             'path' => '',
-            'shallowWriteLock' => null,
+            'shallowWriteLock' => array( '$exists' => false ),
         ),
     );
     
@@ -177,6 +187,9 @@ class BeeHub_Registry implements DAV_Registry {
 
           // If it worked, remove this path from the list so it isn't tried again
           if ( count( $result ) > 0 ) {
+            if ( $lockType === 'read' ) {
+              $this->readLockedPaths[] = $path;
+            }
             unset( $pathsCopy[ $key ] );
           }
         }
@@ -218,11 +231,13 @@ class BeeHub_Registry implements DAV_Registry {
         array( '$unset' => array( 'shallowWriteLock' => true ) ),
         $options
     );
-    $filesCollection->update(
-        array( 'shallowReadLock.lockerId' => $this->lockerId ),
-        array( '$unset' => array( 'shallowReadLock' => true ) ),
-        $options
-    );
+    if ( count( $this->readLockedPaths ) > 0 ) {
+      $filesCollection->update(
+          array( 'path' => array( '$in' => $this->readLockedPaths ), 'shallowReadLock.counter' => array( '$gt' => 0 ) ),
+          array( '$inc' => array( 'shallowReadLock.counter' => -1 ) ),
+          $options
+      );
+    }
   }
 
 } // class
