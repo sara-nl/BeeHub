@@ -145,10 +145,7 @@ if (nl.sara.beehub.view.dialog === undefined) {
 	// conflict bootstrap and jquery
 	var btn = $.fn.button.noConflict() // reverts $.fn.button to jqueryui btn
 	$.fn.btn = btn // assigns bootstrap button functionality to $.fn.btn
-	
-	
-
-	
+		
 	// UPLOAD
 	/**
 	 * Upload file to server

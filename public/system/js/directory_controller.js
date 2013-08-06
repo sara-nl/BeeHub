@@ -35,7 +35,6 @@ if (!nl.sara.beehub.controller.path.match(/\/$/)) {
 nl.sara.beehub.controller.extractPropsFromPropfindRequest = function(data){
   var path = data.getResponseNames()[0];
   var resource = new nl.sara.beehub.ClientResource(path);
-  console.log(data.getResponse(path));
   // Get resourcetype
   if (data.getResponse(path).getProperty('DAV:','resourcetype') !== undefined) {
     var resourcetypeProp = data.getResponse(path).getProperty('DAV:','resourcetype');
@@ -72,21 +71,18 @@ nl.sara.beehub.controller.extractPropsFromPropfindRequest = function(data){
       resource.setLastModified(getlastmodifiedProp.xmlvalue[0].textContent);
     }
   };
-  if(resource.type !== 'collection'){
-    // TODO Nog niet getest
-    if (data.getResponse(path).getProperty('DAV:','getcontentlength') !== undefined) {
-      var getcontentlengthProp = data.getResponse(path).getProperty('DAV:','getcontentlength');
-      if (getcontentlengthProp.xmlvalue.length == 1)
-        // TODO uitzoeken nameSpaceURI
-  //    if ((getcontentlengthProp.xmlvalue.length == 1)
-  //        &&(getcontentlengthProp.xmlvalue.item(0).namespaceURI=='DAV:')) 
-      { 
-        resource.setSize(getcontentlengthProp.xmlvalue[0].textContent);
-      }
-    };
-  } else {
-    resource.setSize("");
-  }
+
+  if (data.getResponse(path).getProperty('DAV:','getcontentlength') !== undefined) {
+    var getcontentlengthProp = data.getResponse(path).getProperty('DAV:','getcontentlength');
+    if (getcontentlengthProp.xmlvalue.length == 1)
+      // TODO uitzoeken nameSpaceURI
+//    if ((getcontentlengthProp.xmlvalue.length == 1)
+//        &&(getcontentlengthProp.xmlvalue.item(0).namespaceURI=='DAV:')) 
+    { 
+      resource.setContentLength(getcontentlengthProp.xmlvalue[0].textContent);
+    }
+  };
+  
   return resource;
 };
 
@@ -100,22 +96,28 @@ nl.sara.beehub.controller.extractPropsFromPropfindRequest = function(data){
 nl.sara.beehub.controller.getResourcePropsFromServer = function(resourcepath, callback){
   // Collect resource details
   var webdav = new nl.sara.webdav.Client();
+  
   var resourcetypeProp = new nl.sara.webdav.Property();
   resourcetypeProp.tagname = 'resourcetype';
   resourcetypeProp.namespace='DAV:';
+  
   var displaynameProp = new nl.sara.webdav.Property();
   displaynameProp.tagname = 'displayname';
   displaynameProp.namespace='DAV:';
+  
   var ownerProp = new nl.sara.webdav.Property();
   ownerProp.tagname = 'owner';
   ownerProp.namespace='DAV:';
+  
   var getlastmodifiedProp = new nl.sara.webdav.Property();
   getlastmodifiedProp.tagname = 'getlastmodified';
   getlastmodifiedProp.namespace='DAV:';
+  
   var getcontentlengthProp = new nl.sara.webdav.Property();
   getcontentlengthProp.tagname = 'getcontentlength';
   getcontentlengthProp.namespace='DAV:';
-  var properties = [resourcetypeProp, displaynameProp, getlastmodifiedProp, getcontentlengthProp];
+  
+  var properties = [resourcetypeProp, displaynameProp, ownerProp, getlastmodifiedProp, getcontentlengthProp];
   
   function createCallback(){
     return function(status, data) {
@@ -126,7 +128,6 @@ nl.sara.beehub.controller.getResourcePropsFromServer = function(resourcepath, ca
       };
       var resource = nl.sara.beehub.controller.extractPropsFromPropfindRequest(data);
       callback(resource);
-      console.log(resource);
     };
   };
   webdav.propfind(resourcepath, createCallback() ,1,properties);
@@ -147,8 +148,6 @@ nl.sara.beehub.controller.createNewFolder = function(){
     return function(status, path) {
       if (status === 201) {
         nl.sara.beehub.controller.getResourcePropsFromServer(path, nl.sara.beehub.view.addClientResource);
-        // TODO zonder reload
-//        window.location.reload();
         return;
       };
       // Folder already exist
@@ -177,32 +176,20 @@ nl.sara.beehub.controller.createNewFolder = function(){
  * @param string fileNameNew
  * 
  */
-nl.sara.beehub.controller.renameResource = function(fileNameOrg, fileNameNew, overwriteMode, element){
+nl.sara.beehub.controller.renameResource = function(resource, fileNameNew, overwriteMode){
   var webdav = new nl.sara.webdav.Client();
   
-  function callback(fileOrg, fileNew, element) {
+  function createCallback(resource, fileNameNew) {
     return function(status) {
       if (status === 412) {
-        var overwriteButton='<button id="bh-dir-rename-overwrite-button" class="btn btn-danger">Overwrite</button>'
-        var cancelButton='<button id="bh-dir-rename-cancel-button" class="btn btn-success">Cancel</button>'
-        $("#bh-dir-dialog").html('<h5><b><i>'+fileNameNew+'</b></i> already exist in the current directory!</h5><br><center>'+overwriteButton+' '+cancelButton)+'</center>';
-        $("#bh-dir-dialog").dialog({
-             modal: true,
-             title: "Warning"
-              });
-        $("#bh-dir-rename-overwrite-button").click(function(){
-          moveObject(fileOrg, fileNew, nl.sara.webdav.Client.SILENT_OVERWRITE, element);
-        })
-        $("#bh-dir-rename-cancel-button").click(function(){
-          element.closest("tr").find(".bh-dir-rename-td").find(':input').val(fileNameOrg);
-          $("#bh-dir-dialog").dialog("close");
-        })
+        nl.sara.beehub.view.dialog.showOverwriteDialog(resource, fileNameNew);
       } 
       if (status === 201 || status === 204) {
         window.location.reload();
+        // TODO remove and add row
       }
     }
   };
    
-  webdav.move(nl.sara.beehub.controller.path + fileNameOrg,callback(fileNameOrg,fileNameNew, element), nl.sara.beehub.controller.path +fileNameNew,  overwriteMode);
+  webdav.move(resource.path,createCallback(resource, fileNameNew), nl.sara.beehub.controller.path +fileNameNew,  overwriteMode);
 };

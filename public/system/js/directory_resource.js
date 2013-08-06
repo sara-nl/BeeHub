@@ -25,8 +25,7 @@ if (nl.sara.beehub.ClientResource !== undefined) {
 /**
  * @class Webdav Resource
  *
- * @param  {String}   name            The name of the resource
- * @param  {Boolean}  isDir           True when resource is a directory
+ * @param  {String}   path            The path of the resource
  */
 nl.sara.beehub.ClientResource = function(path) {
   this.path = path;
@@ -69,33 +68,11 @@ nl.sara.beehub.ClientResource.prototype.setLastModified = function(lastmodified)
 };
 
 /**
- * Set size
- * Calculates size from contentlength
+ * Set setcontentlength
  * 
- * @param {String} contentlength Contentlength of resource
+ * @param {String} setcontentlength Length of the content
  */
-nl.sara.beehub.ClientResource.prototype.setSize = function(contentlength){
-  // Calculate size
-  // TODO nog niet getest
-  if (contentlength !== ""){
-    var size = contentlength;
-    if (size !== '' && size != 0) {
-      var unit = null;
-      units = array('B', 'KB', 'MB', 'GB', 'TB');
-      for (var i = 0, c = count(units); i < c; i++) {
-        if (size > 1024) {
-          size = size / 1024;
-        } else {
-          unit = units[i];
-          break;
-        }
-      }
-      showsize = round(size, 0) + ' ' + unit;
-    } else {
-      showsize = '';
-    }
-    this.size = size;
-  } else {
-    this.size = contentlength;
-  }
+nl.sara.beehub.ClientResource.prototype.setContentLength = function(contentlength){
+  this.contentlength = contentlength;
 };
+
