@@ -147,7 +147,7 @@ nl.sara.beehub.controller.createNewFolder = function(){
   function createCallback() {
     return function(status, path) {
       if (status === 201) {
-        nl.sara.beehub.controller.getResourcePropsFromServer(path, nl.sara.beehub.view.addClientResource);
+        nl.sara.beehub.controller.getResourcePropsFromServer(path, nl.sara.beehub.view.addResource);
         return;
       };
       // Folder already exist

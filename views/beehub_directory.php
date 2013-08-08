@@ -298,7 +298,10 @@ $footer = '
 }
  	  </script>
  		<script type="text/javascript" src="/system/js/directory.js"></script>
- 		<script type="text/javascript" src="/system/js/directory_views.js"></script>
+ 		<script type="text/javascript" src="/system/js/directory_view.js"></script>
+ 		<script type="text/javascript" src="/system/js/directory_view_content.js"></script>
+ 		<script type="text/javascript" src="/system/js/directory_view_tree.js"></script>
+ 		<script type="text/javascript" src="/system/js/directory_view_dialog.js"></script>
  		<script type="text/javascript" src="/system/js/directory_resource.js"></script>
  		<script type="text/javascript" src="/system/js/directory_controller.js"></script>
  	  <link href="/system/js/plugins/dynatree/src/skin/ui.dynatree.css" rel="stylesheet" type="text/css" />

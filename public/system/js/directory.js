@@ -35,9 +35,9 @@ if (nl.sara.beehub.view === undefined) {
   /** @namespace Holds all the view classes */
   nl.sara.beehub.view = {};
 }
-if (nl.sara.beehub.view.contents === undefined) {
+if (nl.sara.beehub.view.content === undefined) {
   /** @namespace Holds all the view classes */
-  nl.sara.beehub.view.contents = {};
+  nl.sara.beehub.view.content = {};
 }
 if (nl.sara.beehub.view.tree === undefined) {
   /** @namespace Holds all the view classes */
@@ -74,73 +74,6 @@ if (nl.sara.beehub.view.dialog === undefined) {
  * @author Laura Leistikow (laura.leistikow@surfsara.nl)
  */
   $(function() {
-    
-  // Directory tree in tree panel
-  $("#bh-dir-tree").dynatree({
-    onActivate: function(node) {
-      // A DynaTreeNode object is passed to the activation handler
-      // Note: we also get this event, if persistence is on, and the page is reloaded.
-//      alert("You activated " + node.data.title);
-//      window.location.reload();
-    },
-    persist: false,
-    children: treecontents,
-    onLazyRead: function(node){
-      var client = new nl.sara.webdav.Client();
-      var resourcetypeProp = new nl.sara.webdav.Property();
-      resourcetypeProp.tagname = 'resourcetype';
-      resourcetypeProp.namespace='DAV:';
-      var properties = [resourcetypeProp];
-      client.propfind(node.data.id, function(status, data) {
-        // Callback
-        if (status != 207) {
-          // Server returned an error condition: set node status accordingly
-          node.setLazyNodeStatus(DTNodeStatus_Error, {
-            tooltip: data.faultDetails,
-            info: data.faultString
-          });
-        };
-        var res = [];
-        $.each(data.getResponseNames(), function(pathindex){
-          var path = data.getResponseNames()[pathindex];
-          
-          if (node.data.id !== path) {
-            if (data.getResponse(path).getProperty('DAV:','resourcetype') !== undefined) {
-              var resourcetypeProp = data.getResponse(path).getProperty('DAV:','resourcetype');
-              if ((resourcetypeProp.xmlvalue.length == 1)
-                  &&(nl.sara.webdav.Ie.getLocalName(resourcetypeProp.xmlvalue.item(0))=='collection')
-                  &&(resourcetypeProp.xmlvalue.item(0).namespaceURI=='DAV:')) 
-              {
-                var name = path;
-                while (name.substring(name.length-1) == '/') {
-                  name = name.substr(0, name.length-1);
-                }
-                name = decodeURIComponent(name.substr(name.lastIndexOf('/')+1));
-                res.push({
-                  'title': name,
-                  'id' : path,
-                  'isFolder': 'true',
-                  'isLazy' : 'true'
-                });
-              }
-            }
-          };
-        });
-        // PWS status OK
-        node.setLazyNodeStatus(DTNodeStatus_Ok);
-        node.addChild(res);
-        // end callback
-      },1,properties);
-    }
-  });
-//  $("#bh-dir-tree").dynatree({
-//    onActivate: function(node) {
-//        // A DynaTreeNode object is passed to the activation handler
-//        // Note: we also get this event, if persistence is on, and the page is reloaded.
-//        alert("You activated " + node.data.title);
-//    }
-//  });
-
 	// solving bug: https://github.com/twitter/bootstrap/issues/6094
 	// conflict bootstrap and jquery
 	var btn = $.fn.button.noConflict() // reverts $.fn.button to jqueryui btn
