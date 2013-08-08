@@ -41,7 +41,7 @@ nl.sara.beehub.controller.extractPropsFromPropfindRequest = function(data){
     if ((resourcetypeProp.xmlvalue.length == 1)
         &&(resourcetypeProp.xmlvalue.item(0).namespaceURI=='DAV:')) 
     { 
-      resource.setResourceType(nl.sara.webdav.Ie.getLocalName(resourcetypeProp.xmlvalue.item(0)));
+      resource.setType(nl.sara.webdav.Ie.getLocalName(resourcetypeProp.xmlvalue.item(0)));
     } 
   };
   if (data.getResponse(path).getProperty('DAV:','displayname') !== undefined) {
@@ -185,8 +185,17 @@ nl.sara.beehub.controller.renameResource = function(resource, fileNameNew, overw
         nl.sara.beehub.view.dialog.showOverwriteDialog(resource, fileNameNew);
       } 
       if (status === 201 || status === 204) {
-        window.location.reload();
-        // TODO remove and add row
+        resource = nl.sara.beehub.view.content.getUnknownResourceValues(resource);
+
+        var newPath = resource.path.replace(/[^\/]*$/,fileNameNew);
+        
+        var resourceNew = new nl.sara.beehub.ClientResource(newPath);
+        resourceNew.setDisplayName(fileNameNew);
+        resourceNew.setType(resource.type);
+        resourceNew.setContentLength(resource.contentlength);
+        resourceNew.setLastModified(resource.lastmodified);
+        resourceNew.setOwner(resource.owner);
+        nl.sara.beehub.view.updateResource(resource, resourceNew);
       }
     }
   };

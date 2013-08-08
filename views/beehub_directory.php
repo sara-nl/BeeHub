@@ -196,11 +196,11 @@ $testtree = createTree2(DAV::slashify(dirname($this->path)));
             <td width="10px"><input type="checkbox" class="bh-dir-checkbox"
                                     value='<?= $member->user_prop_displayname() ?>'></td>
               <?php if (substr($member->path, -1) === '/'): ?>
-              <td class="bh-dir-name"><a
+              <td class="bh-dir-name displayname" name='<?= $member->user_prop_displayname() ?>'><a
                   href='<?= DAV::unslashify($member->path) ?>'><b><?= $member->user_prop_displayname() ?>/</b>
                 </a></td>
             <?php else : ?>
-              <td class="bh-dir-name"><a
+              <td class="bh-dir-name displayname" name='<?= $member->user_prop_displayname() ?>'><a
                   href='<?= DAV::unslashify($member->path) ?>'><?= $member->user_prop_displayname() ?>
                 </a></td>
             <?php endif; ?>
@@ -227,17 +227,17 @@ $testtree = createTree2(DAV::slashify(dirname($this->path)));
                 $showsize = '';
               }
               ?>
-            <td><?= $showsize ?></td>
+            <td class="contentlength" name='<?= $member->user_prop_getcontentlength()?>'><?= $showsize ?></td>
             <?php if (substr($member->path, -1) === '/'): ?>
-              <td><i name=<?= DAV::unslashify($member->path) ?>
+              <td class="type" name='collection'><i name=<?= DAV::unslashify($member->path) ?>
                      class="icon-folder-close bh-dir-openselected"
                      style="cursor: pointer">></i></td>
               <?php else : ?>
-              <td><?= $member->user_prop_getcontenttype() ?></td>
+              <td class="type" name='<?= $member->user_prop_getcontenttype() ?>'><?= $member->user_prop_getcontenttype() ?></td>
             <?php endif; ?>
-            <td><?= date('Y-m-d H:i:s', $member->user_prop_getlastmodified()) ?>
+            <td class="lastmodified" name='<?= $member->user_prop_getlastmodified() ?>'><?= date('Y-m-d H:i:s', $member->user_prop_getlastmodified()) ?>
             </td>
-            <td><?= $owner->user_prop_displayname() ?></td>
+            <td class="owner" name='<?= $owner->path ?>'><?= $owner->user_prop_displayname() ?></td>
             <?php if (substr($member->path, -1) !== '/'): ?>
               <td width="10px" data-toggle="tooltip"
                   title="Email read-only share link"><i class="icon-share"></i></td>

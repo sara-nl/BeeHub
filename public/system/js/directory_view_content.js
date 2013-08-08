@@ -79,44 +79,89 @@ nl.sara.beehub.view.content.setRowHandlers = function(){
  */
 nl.sara.beehub.view.content.createRow = function(resource){
   var row = [];
-  row.push('<tr>');
+  row.push('<tr id="'+resource.path+'">');
   // Edit column
   row.push('<td width="10px" data-toggle="tooltip" title="Rename file">');
   row.push('<i class="icon-edit bh-dir-edit" style="cursor: pointer"></i></td>');
   // Checkboxes
-//  console.log(nl.sara.beehub.view.getDisplayName(resource));
-  row.push('<td width="10px"><input type="checkbox" class="bh-dir-checkbox" value='+resource.displayname+'></td>');
+  row.push('<td width="10px"><input type="checkbox" class="bh-dir-checkbox" value="'+resource.displayname+'"></td>');
   // Name
   if (resource.type==='collection') {
-    row.push('<td class="bh-dir-name"><a href="'+resource.path+'"><b>'+resource.displayname+'/</b></a></td>');
+    row.push('<td class="bh-dir-name displayname" name="'+resource.displayname+'"><a href="'+resource.path+'"><b>'+resource.displayname+'/</b></a></td>');
   } else {
-    row.push('<td class="bh-dir-name"><a href="'+resource.path+'">'+resource.displayname+'</a></td>');
+    row.push('<td class="bh-dir-name displayname" name="'+resource.displayname+'"><a href="'+resource.path+'">'+resource.displayname+'</a></td>');
   }
-  row.push('<td class="bh-dir-rename-td" hidden="true"><input class="bh-dir-rename-form" name='+resource.displayname+' value='+resource.displayname+'></td>');
+  row.push('<td class="bh-dir-rename-td" hidden="true"><input class="bh-dir-rename-form" name="'+resource.displayname+'" value="'+resource.displayname+'"></td>');
   
   if (resource.type==='collection') {
     // Size
-    row.push('<td></td>');
+    row.push('<td class="contentlength" name="'+resource.contentlength+'"></td>');
     // Type
-    row.push('<td><i name='+resource.path+' class="icon-folder-close bh-dir-openselected" style="cursor: pointer">></i></td>');
+    row.push('<td class="type" name="'+resource.type+'"><i name="'+resource.path+'" class="icon-folder-close bh-dir-openselected" style="cursor: pointer">></i></td>');
   } else {
     // Size
-    row.push('<td>'+nl.sara.beehub.view.getSize(resource)+'</td>');
+    row.push('<td class="contentlength" name="'+resource.contentlength+'"></td>>'+nl.sara.beehub.view.getSize(resource)+'</td>');
     //Type
-    row.push('<td>'+resource.type+'</td>');
+    row.push('<td class="type" name="'+resource.type+'">'+resource.type+'</td>');
 
   }
   // Last Modified
-  row.push('<td>'+resource.lastmodified+'</td>');
+  row.push('<td class="lastmodified" name="'+resource.lastmodified+'">'+resource.lastmodified+'</td>');
   // Owner
-  row.push('<td>'+nl.sara.beehub.view.getDisplayName(resource.owner)+'</td>');
+  row.push('<td class="owner" name="'+resource.owner+'">'+nl.sara.beehub.view.getDisplayName(resource.owner)+'</td>');
   // Share link
   row.push('<td></td>');
+  row.push('</tr>');
   return row.join("");
 };
 
 /*
- * Add resource to all views
+ * Delete resource from content view
+ * 
+ * @param {Object} resource Resource object
+ */
+nl.sara.beehub.view.content.deleteResource = function(resource){
+  $("tr[id*='"+resource.path+"']").remove();
+};
+
+/*
+ * Get unknown values of resource
+ * 
+ * @param {Object} resource Resource object
+ */
+nl.sara.beehub.view.content.getUnknownResourceValues = function(resource){
+  if (resource.displayname === undefined) {
+    resource.displayname = $("tr[id*='"+resource.path+"']").find('.displayname').attr('name');
+  }
+  if (resource.type === undefined) {
+    resource.type = $("tr[id*='"+resource.path+"']").find('.type').attr('name');
+  }
+  if (resource.owner === undefined) {
+    resource.owner = $("tr[id*='"+resource.path+"']").find('.owner').attr('name');
+  }
+  if (resource.contentlength === undefined) {
+    resource.contentlength = $("tr[id*='"+resource.path+"']").find('.contentlength').attr('name');
+  }
+  if (resource.lastmodified === undefined) {
+    resource.lastmodified = $("tr[id*='"+resource.path+"']").find('.lastmodified').attr('name');
+  }
+  return resource;
+};
+
+/*
+ * Update resource from content view
+ * 
+ * @param {Object} resource Resource object
+ */
+nl.sara.beehub.view.content.updateResource = function(resourceOrg, resourceNew){
+  // delete current row
+  nl.sara.beehub.view.content.deleteResource(resourceOrg);
+  // add new row
+  nl.sara.beehub.view.content.addResource(resourceNew);
+};
+
+/*
+ * Add resource to content view
  * 
  * @param {Object} resource Resource object
  */

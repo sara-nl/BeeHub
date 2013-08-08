@@ -36,7 +36,7 @@ nl.sara.beehub.ClientResource = function(path) {
  * 
  * @param {String} type Resource type
  */
-nl.sara.beehub.ClientResource.prototype.setResourceType = function(type){
+nl.sara.beehub.ClientResource.prototype.setType = function(type){
   this.type = type;
 };
 

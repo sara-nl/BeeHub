@@ -37,6 +37,9 @@ nl.sara.beehub.view.init = function() {
  * @return String Displayname
  */
 nl.sara.beehub.view.getDisplayName = function(name){
+  if (name === undefined) {
+    return "";
+  };
   if (name.contains(nl.sara.beehub.view.userspath)) {
     var displayName = nl.sara.beehub.principals.users[name.replace(nl.sara.beehub.view.userspath,'')];
     return displayName;
@@ -57,28 +60,28 @@ nl.sara.beehub.view.getDisplayName = function(name){
 nl.sara.beehub.view.getSize = function(resource){
   // Nog niet getest
   // Calculate size
-  if (resource.contentlength !== ""){
-   var size = resource.contentlength;
-   if (size !== '' && size != 0) {
-     var unit = null;
-     units = array('B', 'KB', 'MB', 'GB', 'TB');
-     for (var i = 0, c = count(units); i < c; i++) {
-       if (size > 1024) {
-         size = size / 1024;
-       } else {
-         unit = units[i];
-         break;
-       }
-     }
-     showsize = round(size, 0) + ' ' + unit;
-   } else {
-     showsize = '';
-   }
-   size = size;
-  } else {
-   size = contentlength;
-  }
-  return size;
+//  if (resource.contentlength !== ""){
+//   var size = resource.contentlength;
+//   if (size !== '' && size != 0) {
+//     var unit = null;
+//     units = array('B', 'KB', 'MB', 'GB', 'TB');
+//     for (var i = 0, c = count(units); i < c; i++) {
+//       if (size > 1024) {
+//         size = size / 1024;
+//       } else {
+//         unit = units[i];
+//         break;
+//       }
+//     }
+//     showsize = round(size, 0) + ' ' + unit;
+//   } else {
+//     showsize = '';
+//   }
+//   size = size;
+//  } else {
+//   size = contentlength;
+//  }
+  return resource.contentlength;
 }
 
 /*
@@ -88,5 +91,17 @@ nl.sara.beehub.view.getSize = function(resource){
  */
 nl.sara.beehub.view.addResource = function(resource){
   nl.sara.beehub.view.content.addResource(resource);
+};
+
+
+
+/*
+ * Update resource to all views
+ * 
+ * @param {Object} resource Resource object
+ */
+nl.sara.beehub.view.updateResource = function(resourceOrg, resourceNew){
+  // get unknown value from resource
+  nl.sara.beehub.view.content.updateResource(resourceOrg, resourceNew);
 };
 
