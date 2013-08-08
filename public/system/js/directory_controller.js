@@ -168,9 +168,8 @@ nl.sara.beehub.controller.createNewFolder = function(){
   webdav.mkcol(nl.sara.beehub.controller.path+foldername,createCallback());
 }  
 
-// RENAME
 /**
- * Move an object
+ * Rename an object
  * 
  * @param string fileNameOrg
  * @param string fileNameNew
@@ -202,3 +201,37 @@ nl.sara.beehub.controller.renameResource = function(resource, fileNameNew, overw
    
   webdav.move(resource.path,createCallback(resource, fileNameNew), nl.sara.beehub.controller.path +fileNameNew,  overwriteMode);
 };
+
+/**
+* Delete an object from an array and when not finished call this function again
+* with the next item of the array
+* 
+* @param array deleteArray with resource objects
+* @param integer counter
+* 
+*/
+nl.sara.beehub.controller.deleteResources = function(resources, counter){
+ var webdav = new nl.sara.webdav.Client();
+ 
+ function createcallback(resources, counter) {
+   return function(status) {
+     if (resources[counter+1] != undefined) {
+       nl.sara.beehub.controller.deleteResources(resources,counter+1);
+     } else {
+       nl.sara.beehub.view.dialog.setDeleteDialogReady();
+     }
+     nl.sara.beehub.view.dialog.scrollTo(counter*35);
+     if (status === 403) {
+       nl.sara.beehub.view.dialog.updateResourceDeleteInfo(resources[counter],"Forbidden");
+       return;
+     }
+     if (status == 204) {
+       nl.sara.beehub.view.dialog.updateResourceDeleteInfo(resources[counter],"Deleted");
+       nl.sara.beehub.view.deleteResource(resources[counter]);
+     } else {
+       nl.sara.beehub.view.dialog.updateResourceDeleteInfo(resources[counter],"Unknown error");
+     }
+   }
+ };
+ webdav.remove(resources[counter].path,createcallback(resources, counter));
+}

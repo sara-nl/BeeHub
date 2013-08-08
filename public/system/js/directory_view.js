@@ -93,15 +93,21 @@ nl.sara.beehub.view.addResource = function(resource){
   nl.sara.beehub.view.content.addResource(resource);
 };
 
-
-
 /*
  * Update resource to all views
  * 
  * @param {Object} resource Resource object
  */
 nl.sara.beehub.view.updateResource = function(resourceOrg, resourceNew){
-  // get unknown value from resource
   nl.sara.beehub.view.content.updateResource(resourceOrg, resourceNew);
+};
+
+/*
+ * Delete resource from all views
+ * 
+ * @param {Object} resource Resource object
+ */
+nl.sara.beehub.view.deleteResource = function(resource){
+  nl.sara.beehub.view.content.deleteResource(resource);
 };
 

@@ -193,7 +193,7 @@ $testtree = createTree2(DAV::slashify(dirname($this->path)));
           <tr id='<?= DAV::unslashify($member->path) ?>'>
             <td width="10px" data-toggle="tooltip" title="Rename file"><i
                 class="icon-edit bh-dir-edit" style="cursor: pointer"></i></td>
-            <td width="10px"><input type="checkbox" class="bh-dir-checkbox"
+            <td width="10px"><input type="checkbox" class="bh-dir-checkbox" name='<?= DAV::unslashify($member->path)?>'
                                     value='<?= $member->user_prop_displayname() ?>'></td>
               <?php if (substr($member->path, -1) === '/'): ?>
               <td class="bh-dir-name displayname" name='<?= $member->user_prop_displayname() ?>'><a

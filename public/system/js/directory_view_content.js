@@ -44,6 +44,8 @@ nl.sara.beehub.view.content.init = function() {
   $('.bh-dir-group').click(function() { window.location.href=$(this).attr("id");});
   // New folder button
   $('#bh-dir-newfolder').click(nl.sara.beehub.controller.createNewFolder);
+  // Delete button click handler
+  $('#bh-dir-delete').click(nl.sara.beehub.view.content.handle_delete_button_click);
   // All handlers that belong to a row
   nl.sara.beehub.view.content.setRowHandlers();
 }
@@ -84,7 +86,7 @@ nl.sara.beehub.view.content.createRow = function(resource){
   row.push('<td width="10px" data-toggle="tooltip" title="Rename file">');
   row.push('<i class="icon-edit bh-dir-edit" style="cursor: pointer"></i></td>');
   // Checkboxes
-  row.push('<td width="10px"><input type="checkbox" class="bh-dir-checkbox" value="'+resource.displayname+'"></td>');
+  row.push('<td width="10px"><input type="checkbox" class="bh-dir-checkbox" name="'+resource.path+'" value="'+resource.displayname+'"></td>');
   // Name
   if (resource.type==='collection') {
     row.push('<td class="bh-dir-name displayname" name="'+resource.displayname+'"><a href="'+resource.path+'"><b>'+resource.displayname+'/</b></a></td>');
@@ -121,7 +123,7 @@ nl.sara.beehub.view.content.createRow = function(resource){
  * @param {Object} resource Resource object
  */
 nl.sara.beehub.view.content.deleteResource = function(resource){
-  $("tr[id*='"+resource.path+"']").remove();
+  $("tr[id='"+resource.path+"']").remove();
 };
 
 /*
@@ -131,19 +133,19 @@ nl.sara.beehub.view.content.deleteResource = function(resource){
  */
 nl.sara.beehub.view.content.getUnknownResourceValues = function(resource){
   if (resource.displayname === undefined) {
-    resource.displayname = $("tr[id*='"+resource.path+"']").find('.displayname').attr('name');
+    resource.displayname = $("tr[id='"+resource.path+"']").find('.displayname').attr('name');
   }
   if (resource.type === undefined) {
-    resource.type = $("tr[id*='"+resource.path+"']").find('.type').attr('name');
+    resource.type = $("tr[id='"+resource.path+"']").find('.type').attr('name');
   }
   if (resource.owner === undefined) {
-    resource.owner = $("tr[id*='"+resource.path+"']").find('.owner').attr('name');
+    resource.owner = $("tr[id='"+resource.path+"']").find('.owner').attr('name');
   }
   if (resource.contentlength === undefined) {
-    resource.contentlength = $("tr[id*='"+resource.path+"']").find('.contentlength').attr('name');
+    resource.contentlength = $("tr[id='"+resource.path+"']").find('.contentlength').attr('name');
   }
   if (resource.lastmodified === undefined) {
-    resource.lastmodified = $("tr[id*='"+resource.path+"']").find('.lastmodified').attr('name');
+    resource.lastmodified = $("tr[id='"+resource.path+"']").find('.lastmodified').attr('name');
   }
   return resource;
 };
@@ -234,4 +236,18 @@ nl.sara.beehub.view.content.handle_rename_form_change = function(){
   // create resource object
   var resource = new nl.sara.beehub.ClientResource($(this).closest('tr').attr('id'));
   nl.sara.beehub.controller.renameResource(resource, $(this).val(), nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
+};
+
+// Delete handler
+/*
+ * Onclick handler delete button content view
+ */
+nl.sara.beehub.view.content.handle_delete_button_click = function(){
+  var resources=[];
+  $.each($('.bh-dir-checkbox:checked'), function(i, val){
+    var resource = new nl.sara.beehub.ClientResource(val.name);
+    resource.setDisplayName(val.value);
+    resources.push(resource);
+  });
+  nl.sara.beehub.view.dialog.showDeleteDialog(resources);
 };
