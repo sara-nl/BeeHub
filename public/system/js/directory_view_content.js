@@ -46,6 +46,8 @@ nl.sara.beehub.view.content.init = function() {
   $('#bh-dir-newfolder').click(nl.sara.beehub.controller.createNewFolder);
   // Delete button click handler
   $('#bh-dir-delete').click(nl.sara.beehub.view.content.handle_delete_button_click);
+  // Copy button click handler
+  $('#bh-dir-copy').click(nl.sara.beehub.view.content.handle_copy_button_click);
   // All handlers that belong to a row
   nl.sara.beehub.view.content.setRowHandlers();
 }
@@ -124,6 +126,21 @@ nl.sara.beehub.view.content.createRow = function(resource){
  */
 nl.sara.beehub.view.content.deleteResource = function(resource){
   $("tr[id='"+resource.path+"']").remove();
+};
+
+/*
+ * Put all selected resources in an array
+ * 
+ * @return {Array} resources All selected resources in an array
+ */
+nl.sara.beehub.view.content.getSelectedResources = function(){
+  var resources=[];
+  $.each($('.bh-dir-checkbox:checked'), function(i, val){
+    var resource = new nl.sara.beehub.ClientResource(val.name);
+    resource.setDisplayName(val.value);
+    resources.push(resource);
+  });
+  return resources;
 };
 
 /*
@@ -243,11 +260,19 @@ nl.sara.beehub.view.content.handle_rename_form_change = function(){
  * Onclick handler delete button content view
  */
 nl.sara.beehub.view.content.handle_delete_button_click = function(){
-  var resources=[];
-  $.each($('.bh-dir-checkbox:checked'), function(i, val){
-    var resource = new nl.sara.beehub.ClientResource(val.name);
-    resource.setDisplayName(val.value);
-    resources.push(resource);
-  });
-  nl.sara.beehub.view.dialog.showDeleteDialog(resources);
+  var resources = nl.sara.beehub.view.content.getSelectedResources();
+  nl.sara.beehub.view.dialog.showResourcesDialog(resources,"delete");
+};
+
+/*
+ * Onclick handler copy button content view
+ */
+nl.sara.beehub.view.content.handle_copy_button_click = function() {
+  var resources = nl.sara.beehub.view.content.getSelectedResources();
+  // change click listener in tree
+  nl.sara.beehub.view.tree.setTreeCopyMode(resources);
+ 
+  // show tree
+  $(".bh-dir-tree-slide-trigger").trigger('click');
+  // blur on click somewhere else
 };

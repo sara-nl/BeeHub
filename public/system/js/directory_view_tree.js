@@ -76,7 +76,14 @@ nl.sara.beehub.view.tree.init = function() {
       },1,properties);
     }
   });
+  
+  // Tree slide handler
+  $(".bh-dir-tree-slide-trigger").hover(nl.sara.beehub.view.content.handle_tree_slide_click, function(){
+   // No action;
+  });
+  $(".bh-dir-tree-slide-trigger").click(nl.sara.beehub.view.content.handle_tree_slide_click);
 };
+
 //  $("#bh-dir-tree").dynatree({
 //    onActivate: function(node) {
 //        // A DynaTreeNode object is passed to the activation handler
@@ -84,3 +91,32 @@ nl.sara.beehub.view.tree.init = function() {
 //        alert("You activated " + node.data.title);
 //    }
 //  });
+
+/*
+ * On click handler tree slide click
+ * Open or close tree view
+ */
+nl.sara.beehub.view.content.handle_tree_slide_click = function() {
+  $(".bh-dir-tree-slide").toggle("slow");
+  $(this).toggleClass("active");
+  $('.bh-dir-tree-slide-trigger i').toggleClass('icon-chevron-left icon-chevron-right');
+  return false;
+}
+
+/*
+ * Set tree in copy mode
+ *  
+ * @param {Array} Resources Array with resources
+ * 
+ */
+nl.sara.beehub.view.tree.setTreeCopyMode = function(resources){
+  // show dialog with items to copy and target directory
+  $("#bh-dir-tree").dynatree({
+    onActivate: function(node) {
+      // A DynaTreeNode object is passed to the activation handler
+      // Note: we also get this event, if persistence is on, and the page is reloaded.
+      var copyToResource = new nl.sara.beehub.ClientResource(node.data.id);
+      nl.sara.beehub.view.dialog.showResourcesDialog(resources, "copy", copyToResource);
+    }
+  });
+};

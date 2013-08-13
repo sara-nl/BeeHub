@@ -210,28 +210,118 @@ nl.sara.beehub.controller.renameResource = function(resource, fileNameNew, overw
 * @param integer counter
 * 
 */
-nl.sara.beehub.controller.deleteResources = function(resources, counter){
+nl.sara.beehub.controller.actionResources = function(resources, counter, action, destinationResource, overwrite, actionNumber, force){
  var webdav = new nl.sara.webdav.Client();
+
+ var config = {};
+ switch(action)
+ {
+ case "copy":
+   config.action = function(){
+     webdav.copy(resources[counter].path,createCallback(resources, counter, action, destinationResource, overwrite), destinationResource.path + destinationResource.displayname, overwrite);
+   };
+   config.callbackAction = function(){
+     // TODO als dir gelijk aan view pas view aan
+   }
+   break;
+ case "move":
+   break;
+ case "delete":
+   config.action = function(){
+     webdav.remove(resources[counter].path,createCallback(resources, counter));
+   }
+   config.callbackAction = function(){
+     nl.sara.beehub.view.deleteResource(resources[counter]);
+   }
+   break;
+ default:
+   // This should never happen
+ }
  
- function createcallback(resources, counter) {
-   return function(status) {
-     if (resources[counter+1] != undefined) {
+ function createCallback(resources, counter, action, destinationResource, overwrite, actionNumber, force) {
+   return function(status, responseText) {
+     if (resources[counter+1] !== undefined) {
        nl.sara.beehub.controller.deleteResources(resources,counter+1);
      } else {
-       nl.sara.beehub.view.dialog.setDeleteDialogReady();
+       nl.sara.beehub.view.dialog.setDialogReady();
      }
      nl.sara.beehub.view.dialog.scrollTo(counter*35);
      if (status === 403) {
-       nl.sara.beehub.view.dialog.updateResourceDeleteInfo(resources[counter],"Forbidden");
+       nl.sara.beehub.view.dialog.updateResourceInfo(resources[counter],"Forbidden");
        return;
      }
-     if (status == 204) {
-       nl.sara.beehub.view.dialog.updateResourceDeleteInfo(resources[counter],"Deleted");
-       nl.sara.beehub.view.deleteResource(resources[counter]);
+     if (status === 512) {
+       nl.sara.beehub.view.dialog.updateResourceInfo(resources[counter],"Copy to parent resource is not possible.");
+       return;
+     };
+     // Resource exist
+     if (status === 412) {
+       if (force) {
+         var newDestinationResource = new nl.sara.beehub.ClientResource(resources[counter].path);
+         newDestinationResource.setDislayName = resources[counter].displayname+"_"+actionNumber;
+         nl.sara.beehub.controller.actionResources(resources, counter, action, newDestinationResource, nl.sara.webdav.Client.FAIL_ON_OVERWRITE, actionNumber++, true);
+         return;
+       } else {
+         nl.sara.beehub.view.dialog.setAlreadyExist(resources, counter, action, destinationResource);
+         return;
+       }
+     };
+     if ((status === 201) || (status === 204)) {
+       nl.sara.beehub.view.dialog.updateResourceInfo(resources[counter],"Done");
+       config.callbackAction();
      } else {
-       nl.sara.beehub.view.dialog.updateResourceDeleteInfo(resources[counter],"Unknown error");
+       nl.sara.beehub.view.dialog.updateResourceInfo(resources[counter],"Unknown error");
      }
    }
  };
- webdav.remove(resources[counter].path,createcallback(resources, counter));
+ 
+ config.action();
 }
+
+/**
+ * Copy, Move an object from an array and when not finished call this function again
+ * with the next item of the array
+ * 
+ * @param {Object} copyOrMoveConfig Config
+ * 
+ */
+//nl.sara.beehub.controller.copyOrMoveResources = function(resources, copyToResource, overwrite, counter, action){
+//  var webdav = new nl.sara.webdav.Client();
+//  
+//  function createCallback(resources, copyToResource, overwrite, counter, action) {
+//    return function(status) {
+//      if (resources[counter+1] !== undefined) {
+//        nl.sara.beehub.controller.copyOrMoveResources(resources, copyToResource, nl.sara.webdav.Client.FAIL_ON_OVERWRITE, counter+1, "copy");
+//      } else {
+//        nl.sara.beehub.view.dialog.setCopyOrDeleteDialogReady();
+//      }
+//      nl.sara.beehub.view.dialog.scrollTo(counter*35);
+//    };
+//    if (status === 403) {
+//      $("#bh-dir-dialog").find('td[id="bh-dir-action-'+copyOrMoveConfig.resources[copyOrMoveConfig.counter].path+'"]').html("<b>Forbidden</b>");
+//      return;
+//    }
+//
+//    if ((status === 201) || (status === 204)) {
+//      $("#bh-dir-dialog").find('td[id="bh-dir-action-'+copyOrMoveConfig.resources[copyOrMoveConfig.counter].path+'"]').html("<b>Done</b>");
+//    } else if (status === 412) {
+//      var overwriteButton = '<button id="bh-dir-action-overwrite-'+copyOrMoveConfig.resources[copyOrMoveConfig.counter].path+'" name="'+copyOrMoveConfig.resources[copyOrMoveConfig.counter].path+'" class="btn btn-danger">Overwrite</button>'
+//      var renameButton = '<button id="bh-dir-action-rename-'+copyOrMoveConfig.resources[copyOrMoveConfig.counter].path+'" class="btn btn-success">Rename</button>'
+//      var cancelButton = '<button id="bh-dir-action-cancel-'+copyOrMoveConfig.resources[copyOrMoveConfig.counter].path+'" name="'+copyOrMoveConfig.resources[copyOrMoveConfig.counter].path+'" class="btn btn-success">Cancel</button>'
+//
+//      $("#bh-dir-dialog").find('td[id="bh-dir-action-'+copyOrMoveConfig.resources[copyOrMoveConfig.counter].path+'"]').html("Item exist on server!<br/>"+renameButton+" "+overwriteButton+" "+cancelButton);
+//      setActionOverwriteHandler(copyOrMoveConfig);
+//      setActionCancelHandler(copyOrMoveConfig);
+//      setActionRenameHandler(copyOrMoveConfig);
+//    } else {
+//      $("#bh-dir-dialog").find('td[id="bh-dir-action-'+copyOrMoveConfig.resources[copyOrMoveConfig.counter].path+'"]').html("<b>Unknown error</b>");
+//    }
+//  };
+//  
+//  if (actionConfig.action === "delete") { 
+//    webdav.remove(path + actionConfig.resources[actionConfig.counter].path,callback(actionConfig.resources, actionConfig.counter));
+//  } else if (actionConfig.action === "copy") { 
+//    console.log(actionConfig);
+//    webdav.copy(actionConfig.resources[actionConfig.counter].path,createCallback(actionConfig),actionConfig.copyTo.path, actionConfig.overwrite);
+//  }; 
+//}
