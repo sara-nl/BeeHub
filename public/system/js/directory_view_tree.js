@@ -104,20 +104,16 @@ nl.sara.beehub.view.content.handle_tree_slide_click = function() {
 }
 
 /*
- * Set tree in copy mode
+ * Set onActivate
  *  
  * @param {Array} Resources Array with resources
  * 
  */
-nl.sara.beehub.view.tree.setTreeCopyMode = function(resources){
+nl.sara.beehub.view.tree.setOnActivate = function(activateFunction){
   // show dialog with items to copy and target directory
   $("#bh-dir-tree").dynatree({
     onActivate: function(node) {
-      // A DynaTreeNode object is passed to the activation handler
-      // Note: we also get this event, if persistence is on, and the page is reloaded.
-      var destination = {};
-      destination.path = node.data.id;
-      nl.sara.beehub.view.dialog.showResourcesDialog(resources, "copy", destination);
+      activateFunction(node.data.id);
     }
   });
 };

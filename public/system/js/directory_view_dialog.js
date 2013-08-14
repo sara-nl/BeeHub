@@ -65,35 +65,28 @@ nl.sara.beehub.view.dialog.updateResourceInfo = function(resource, info){
 /*
 * Set overwrite, rename and cancel buttons;
 * 
-* @param {Array} resources Resources
-* @param {Integer} counter Position of resource in resources array
-* @param {String} action
-* @param {Object} destination Destination to copy or move to.
+* @param {Object} resource Resource
+* @param {Function} overwriteFunction Overwrite handler
+* @param {Function} renameFunction    Rename handler
+* @param {Function} cancelFunction    Cancel handler.
 */
-nl.sara.beehub.view.dialog.setAlreadyExist = function(resources, counter, action, destination, actionNumber){
+nl.sara.beehub.view.dialog.setAlreadyExist = function(resource, overwriteFunction, renameFunction, cancelFunction){
   var overwriteButton = '<button class="btn btn-danger overwritebutton">Overwrite</button>'
   var renameButton = '<button class="btn btn-success renamebutton">Rename</button>'
   var cancelButton = '<button class="btn btn-success cancelbutton">Cancel</button>'
   
-  $("tr[id='dialog_tr_"+resources[counter].path+"']").find('.info').html("Item exist on server!<br/>"+renameButton+" "+overwriteButton+" "+cancelButton);
-  // Overwrite click handler
-  $("tr[id='dialog_tr_"+resources[counter].path+"']").find('.overwritebutton').click(function(){
-    var newResources = [];
-    newResources.push(resources[counter]);
-    nl.sara.beehub.controller.actionResources(newResources, 0, action, destination, nl.sara.webdav.Client.SILENT_OVERWRITE);
+  $("tr[id='dialog_tr_"+resource.path+"']").find('.info').html("Item exist on server!<br/>"+renameButton+" "+overwriteButton+" "+cancelButton);
+//  // Overwrite click handler
+  $("tr[id='dialog_tr_"+resource.path+"']").find('.overwritebutton').click(function(){
+    overwriteFunction();
   });
   // Cancel click handler
-  $("tr[id='dialog_tr_"+resources[counter].path+"']").find('.cancelbutton').click(function(){
-    nl.sara.beehub.view.dialog.updateResourceInfo(resources[counter], "Canceled");
+  $("tr[id='dialog_tr_"+resource.path+"']").find('.cancelbutton').click(function(){
+    cancelFunction();
   });
-  // Rename click handler
-  $("tr[id='dialog_tr_"+resources[counter].path+"']").find('.renamebutton').click(function(){
-    var newDestination = {};
-    newDestination.path = destination.path;
-    newDestination.name = resources[counter].displayname+"_"+action+"_"+actionNumber;
-    var newResources = [];
-    newResources.push(resources[counter]);
-    nl.sara.beehub.controller.actionResources(newResources, 0, action, newDestination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE, actionNumber++, true);
+//  // Rename click handler
+  $("tr[id='dialog_tr_"+resource.path+"']").find('.renamebutton').click(function(){   
+    renameFunction();
   });
 };
 
@@ -153,17 +146,14 @@ nl.sara.beehub.view.dialog.scrollTo = function(number){
  * @param {Array} resources Array with resources
  * @param {Object} destination Resource Destination resource
  */
-nl.sara.beehub.view.dialog.showResourcesDialog = function(resources, action, destination){
+nl.sara.beehub.view.dialog.showResourcesDialog = function(resources, actionConfig, actionFunction){
   var config = {};
-  switch(action)
+  switch(actionConfig.action)
   {
   case "copy":
-    config.title = "Copy to "+destination.path;
+    config.title = "Copy to "+actionConfig.destinationPath;
     config.buttonLabel = "Copy items...";
     config.buttonText = "Copy";
-    config.action = function(){
-      nl.sara.beehub.controller.actionResources(resources, 0, action, destination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE, 1, false);
-    }
     break;
   case "move":
     config.title = "nog doen";
@@ -174,9 +164,6 @@ nl.sara.beehub.view.dialog.showResourcesDialog = function(resources, action, des
     config.title = "Delete";
     config.buttonLabel = "Deleting...";
     config.buttonText = "Delete";
-    config.action = function(){
-      nl.sara.beehub.controller.actionResources(resources, 0, action);
-    }
     break;
   default:
     // This should never happen
@@ -209,7 +196,7 @@ nl.sara.beehub.view.dialog.showResourcesDialog = function(resources, action, des
       click: function() {
         $('#bh-dir-dialog-button').button({label:config.buttonLabel});
         $('#bh-dir-dialog-button').button("disable");
-          config.action();
+          actionFunction();
       }
     }]
   });

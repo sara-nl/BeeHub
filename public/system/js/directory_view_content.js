@@ -261,7 +261,7 @@ nl.sara.beehub.view.content.handle_rename_form_change = function(){
  */
 nl.sara.beehub.view.content.handle_delete_button_click = function(){
   var resources = nl.sara.beehub.view.content.getSelectedResources();
-  nl.sara.beehub.view.dialog.showResourcesDialog(resources,"delete");
+  nl.sara.beehub.controller.deleteResources(resources);
 };
 
 /*
@@ -269,10 +269,5 @@ nl.sara.beehub.view.content.handle_delete_button_click = function(){
  */
 nl.sara.beehub.view.content.handle_copy_button_click = function() {
   var resources = nl.sara.beehub.view.content.getSelectedResources();
-  // change click listener in tree
-  nl.sara.beehub.view.tree.setTreeCopyMode(resources);
- 
-  // show tree
-  $(".bh-dir-tree-slide-trigger").trigger('click');
-  // blur on click somewhere else
+  nl.sara.beehub.controller.copyResources(resources);
 };

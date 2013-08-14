@@ -72,7 +72,6 @@ if (nl.sara.beehub.view.acl === undefined) {
 //var nl.sara.beehub.view.Resource = function() {}
 //
 
-
 /** 
  * Beehub Client
  * @author Laura Leistikow (laura.leistikow@surfsara.nl)
