@@ -115,8 +115,9 @@ nl.sara.beehub.view.tree.setTreeCopyMode = function(resources){
     onActivate: function(node) {
       // A DynaTreeNode object is passed to the activation handler
       // Note: we also get this event, if persistence is on, and the page is reloaded.
-      var copyToResource = new nl.sara.beehub.ClientResource(node.data.id);
-      nl.sara.beehub.view.dialog.showResourcesDialog(resources, "copy", copyToResource);
+      var destination = {};
+      destination.path = node.data.id;
+      nl.sara.beehub.view.dialog.showResourcesDialog(resources, "copy", destination);
     }
   });
 };

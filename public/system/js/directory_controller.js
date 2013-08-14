@@ -203,33 +203,46 @@ nl.sara.beehub.controller.renameResource = function(resource, fileNameNew, overw
 };
 
 /**
-* Delete an object from an array and when not finished call this function again
+* Copy, move or delete an resource from an array and when not finished call this function again
 * with the next item of the array
 * 
-* @param array deleteArray with resource objects
-* @param integer counter
+* @param {Array}    resources           Array with resources
+* @param {Integer}  counter             Position of array with resources
+* @param {String}   action              Action: copy, move, delete
+* @param {Object}   destination         Destination to copy or move to
+* @param {Object}   overwrite           Way to send webdav request
+* @param {Integer}  renameNumber        Used to rename resources
+* @param {Boolean}  forceRename         Used to rename resources without confirm of user
 * 
 */
-nl.sara.beehub.controller.actionResources = function(resources, counter, action, destinationResource, overwrite, actionNumber, force){
+nl.sara.beehub.controller.actionResources = function(resources, counter, action, destination, overwrite, renameNumber, forceRename){
+ // create webdav client object
  var webdav = new nl.sara.webdav.Client();
-
+ 
+ // create an object with action specific settings
  var config = {};
  switch(action)
  {
+ // copy settings
  case "copy":
    config.action = function(){
-     webdav.copy(resources[counter].path,createCallback(resources, counter, action, destinationResource, overwrite), destinationResource.path + destinationResource.displayname, overwrite);
+     if (destination.name === undefined) {
+       destination.name = resources[counter].displayname;
+     }; 
+     webdav.copy(resources[counter].path,createCallback(resources, counter, action, destination, overwrite, renameNumber, forceRename), destination.path + destination.name, overwrite);
    };
    config.callbackAction = function(){
      // TODO als dir gelijk aan view pas view aan
    }
    break;
+ // move settings 
  case "move":
    break;
+ // delete settings
  case "delete":
    config.action = function(){
-     webdav.remove(resources[counter].path,createCallback(resources, counter));
-   }
+     webdav.remove(resources[counter].path,createCallback(resources, counter, action));
+   };
    config.callbackAction = function(){
      nl.sara.beehub.view.deleteResource(resources[counter]);
    }
@@ -237,35 +250,50 @@ nl.sara.beehub.controller.actionResources = function(resources, counter, action,
  default:
    // This should never happen
  }
- 
- function createCallback(resources, counter, action, destinationResource, overwrite, actionNumber, force) {
-   return function(status, responseText) {
+ /*
+  * Create callback for webdav request.
+  * 
+  * @param All params from parent function to prevent that objects/params will be changed when
+  *        a user clicks a button (rename for example) while the array is not finished yet.
+  *         
+  */
+ function createCallback(resources, counter, action, destination, overwrite, renameNumber, forceRename) {
+   return function(status) {
+     // Next item of the array
      if (resources[counter+1] !== undefined) {
-       nl.sara.beehub.controller.deleteResources(resources,counter+1);
+       destination.name = resources[counter+1].displayname;
+       nl.sara.beehub.controller.actionResources(resources,counter+1, action, destination, overwrite, renameNumber, forceRename);
      } else {
+     // Or ready
        nl.sara.beehub.view.dialog.setDialogReady();
      }
      nl.sara.beehub.view.dialog.scrollTo(counter*35);
+     // Forbidden
      if (status === 403) {
        nl.sara.beehub.view.dialog.updateResourceInfo(resources[counter],"Forbidden");
        return;
      }
+     // TODO same dir also not possible
      if (status === 512) {
        nl.sara.beehub.view.dialog.updateResourceInfo(resources[counter],"Copy to parent resource is not possible.");
        return;
      };
      // Resource exist
      if (status === 412) {
-       if (force) {
-         var newDestinationResource = new nl.sara.beehub.ClientResource(resources[counter].path);
-         newDestinationResource.setDislayName = resources[counter].displayname+"_"+actionNumber;
-         nl.sara.beehub.controller.actionResources(resources, counter, action, newDestinationResource, nl.sara.webdav.Client.FAIL_ON_OVERWRITE, actionNumber++, true);
+       // When filename already exist make new filename and send request again
+       if (forceRename) {
+         var newDestination = {};
+         newDestination.path = destination.path;
+         newDestination.name = resources[counter].displayname+"_"+action+"_"+renameNumber;
+         nl.sara.beehub.controller.actionResources(resources, counter, action, newDestination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE, renameNumber + 1, true);
          return;
+       // or ask user what to do
        } else {
-         nl.sara.beehub.view.dialog.setAlreadyExist(resources, counter, action, destinationResource);
+         nl.sara.beehub.view.dialog.setAlreadyExist(resources, counter, action, destination, renameNumber, forceRename);
          return;
        }
      };
+     // Succeeded
      if ((status === 201) || (status === 204)) {
        nl.sara.beehub.view.dialog.updateResourceInfo(resources[counter],"Done");
        config.callbackAction();
@@ -274,54 +302,5 @@ nl.sara.beehub.controller.actionResources = function(resources, counter, action,
      }
    }
  };
- 
  config.action();
-}
-
-/**
- * Copy, Move an object from an array and when not finished call this function again
- * with the next item of the array
- * 
- * @param {Object} copyOrMoveConfig Config
- * 
- */
-//nl.sara.beehub.controller.copyOrMoveResources = function(resources, copyToResource, overwrite, counter, action){
-//  var webdav = new nl.sara.webdav.Client();
-//  
-//  function createCallback(resources, copyToResource, overwrite, counter, action) {
-//    return function(status) {
-//      if (resources[counter+1] !== undefined) {
-//        nl.sara.beehub.controller.copyOrMoveResources(resources, copyToResource, nl.sara.webdav.Client.FAIL_ON_OVERWRITE, counter+1, "copy");
-//      } else {
-//        nl.sara.beehub.view.dialog.setCopyOrDeleteDialogReady();
-//      }
-//      nl.sara.beehub.view.dialog.scrollTo(counter*35);
-//    };
-//    if (status === 403) {
-//      $("#bh-dir-dialog").find('td[id="bh-dir-action-'+copyOrMoveConfig.resources[copyOrMoveConfig.counter].path+'"]').html("<b>Forbidden</b>");
-//      return;
-//    }
-//
-//    if ((status === 201) || (status === 204)) {
-//      $("#bh-dir-dialog").find('td[id="bh-dir-action-'+copyOrMoveConfig.resources[copyOrMoveConfig.counter].path+'"]').html("<b>Done</b>");
-//    } else if (status === 412) {
-//      var overwriteButton = '<button id="bh-dir-action-overwrite-'+copyOrMoveConfig.resources[copyOrMoveConfig.counter].path+'" name="'+copyOrMoveConfig.resources[copyOrMoveConfig.counter].path+'" class="btn btn-danger">Overwrite</button>'
-//      var renameButton = '<button id="bh-dir-action-rename-'+copyOrMoveConfig.resources[copyOrMoveConfig.counter].path+'" class="btn btn-success">Rename</button>'
-//      var cancelButton = '<button id="bh-dir-action-cancel-'+copyOrMoveConfig.resources[copyOrMoveConfig.counter].path+'" name="'+copyOrMoveConfig.resources[copyOrMoveConfig.counter].path+'" class="btn btn-success">Cancel</button>'
-//
-//      $("#bh-dir-dialog").find('td[id="bh-dir-action-'+copyOrMoveConfig.resources[copyOrMoveConfig.counter].path+'"]').html("Item exist on server!<br/>"+renameButton+" "+overwriteButton+" "+cancelButton);
-//      setActionOverwriteHandler(copyOrMoveConfig);
-//      setActionCancelHandler(copyOrMoveConfig);
-//      setActionRenameHandler(copyOrMoveConfig);
-//    } else {
-//      $("#bh-dir-dialog").find('td[id="bh-dir-action-'+copyOrMoveConfig.resources[copyOrMoveConfig.counter].path+'"]').html("<b>Unknown error</b>");
-//    }
-//  };
-//  
-//  if (actionConfig.action === "delete") { 
-//    webdav.remove(path + actionConfig.resources[actionConfig.counter].path,callback(actionConfig.resources, actionConfig.counter));
-//  } else if (actionConfig.action === "copy") { 
-//    console.log(actionConfig);
-//    webdav.copy(actionConfig.resources[actionConfig.counter].path,createCallback(actionConfig),actionConfig.copyTo.path, actionConfig.overwrite);
-//  }; 
-//}
+};

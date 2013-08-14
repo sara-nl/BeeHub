@@ -68,9 +68,9 @@ nl.sara.beehub.view.dialog.updateResourceInfo = function(resource, info){
 * @param {Array} resources Resources
 * @param {Integer} counter Position of resource in resources array
 * @param {String} action
-* @param {Resource} destinationResource Destination to copy or move to.
+* @param {Object} destination Destination to copy or move to.
 */
-nl.sara.beehub.view.dialog.setAlreadyExist = function(resources, counter, action, destinationResource, actionNumber){
+nl.sara.beehub.view.dialog.setAlreadyExist = function(resources, counter, action, destination, actionNumber){
   var overwriteButton = '<button class="btn btn-danger overwritebutton">Overwrite</button>'
   var renameButton = '<button class="btn btn-success renamebutton">Rename</button>'
   var cancelButton = '<button class="btn btn-success cancelbutton">Cancel</button>'
@@ -78,7 +78,9 @@ nl.sara.beehub.view.dialog.setAlreadyExist = function(resources, counter, action
   $("tr[id='dialog_tr_"+resources[counter].path+"']").find('.info').html("Item exist on server!<br/>"+renameButton+" "+overwriteButton+" "+cancelButton);
   // Overwrite click handler
   $("tr[id='dialog_tr_"+resources[counter].path+"']").find('.overwritebutton').click(function(){
-    nl.sara.beehub.controller.actionResources(resources, counter, action, destinationResource, nl.sara.webdav.Client.SILENT_OVERWRITE);
+    var newResources = [];
+    newResources.push(resources[counter]);
+    nl.sara.beehub.controller.actionResources(newResources, 0, action, destination, nl.sara.webdav.Client.SILENT_OVERWRITE);
   });
   // Cancel click handler
   $("tr[id='dialog_tr_"+resources[counter].path+"']").find('.cancelbutton').click(function(){
@@ -86,9 +88,12 @@ nl.sara.beehub.view.dialog.setAlreadyExist = function(resources, counter, action
   });
   // Rename click handler
   $("tr[id='dialog_tr_"+resources[counter].path+"']").find('.renamebutton').click(function(){
-    var newDestinationResource = new nl.sara.beehub.ClientResource(resources[counter].path);
-    newDestinationResource.setDislayName = resources[counter].displayname+"_"+actionNumber;
-    nl.sara.beehub.controller.actionResources(resources, counter, action, newDestinationResource, nl.sara.webdav.Client.FAIL_ON_OVERWRITE, actionNumber++, true);
+    var newDestination = {};
+    newDestination.path = destination.path;
+    newDestination.name = resources[counter].displayname+"_"+action+"_"+actionNumber;
+    var newResources = [];
+    newResources.push(resources[counter]);
+    nl.sara.beehub.controller.actionResources(newResources, 0, action, newDestination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE, actionNumber++, true);
   });
 };
 
@@ -148,16 +153,16 @@ nl.sara.beehub.view.dialog.scrollTo = function(number){
  * @param {Array} resources Array with resources
  * @param {Object} destination Resource Destination resource
  */
-nl.sara.beehub.view.dialog.showResourcesDialog = function(resources, action, destinationResource){
+nl.sara.beehub.view.dialog.showResourcesDialog = function(resources, action, destination){
   var config = {};
   switch(action)
   {
   case "copy":
-    config.title = "Copy to "+destinationResource.path;
+    config.title = "Copy to "+destination.path;
     config.buttonLabel = "Copy items...";
     config.buttonText = "Copy";
     config.action = function(){
-      nl.sara.beehub.controller.actionResources(resources, 0, action, destinationResource, nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
+      nl.sara.beehub.controller.actionResources(resources, 0, action, destination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE, 1, false);
     }
     break;
   case "move":
@@ -170,7 +175,7 @@ nl.sara.beehub.view.dialog.showResourcesDialog = function(resources, action, des
     config.buttonLabel = "Deleting...";
     config.buttonText = "Delete";
     config.action = function(){
-      nl.sara.beehub.controller.actionResources(resources,0, action);
+      nl.sara.beehub.controller.actionResources(resources, 0, action);
     }
     break;
   default:
