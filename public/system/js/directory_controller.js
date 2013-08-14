@@ -245,6 +245,135 @@ nl.sara.beehub.controller.copyResources = function(resources){
   // blur on click somewhere else
 };
 
+/*
+ * Create callback for webdav request.
+ * 
+ * @param {Object} actionConfig Configuration settings
+ *         
+ */
+nl.sara.beehub.controller.createActionCallback = function(resources, actionConfig){  
+  var config = {}
+  switch(actionConfig.action)
+  {
+  //copy settings
+  case "copy":
+    config.action = function(){
+    };
+    break;
+  // move settings 
+  case "move":
+    break;
+  // delete settings
+  case "delete":
+    config.action = function(){
+      nl.sara.beehub.view.deleteResource(resources[actionConfig.counter]);
+    };
+    break;
+  default:
+    // This should never happen
+  }
+
+  function resourceExist(){
+    // When filename already exist make new filename and send request again
+    if (actionConfig.forceRename) {
+      var newResources = [resources[actionConfig.counter]];
+      var newActionConfig = {};
+      newActionConfig.counter = 0;
+      newActionConfig.action = actionConfig.action;
+      newActionConfig.destinationPath = actionConfig.destinationPath;
+      newActionConfig.destinationName = resources[actionConfig.counter].displayname+"_"+actionConfig.action+"_"+actionConfig.renameNumber;
+      newActionConfig.overwrite = nl.sara.webdav.Client.FAIL_ON_OVERWRITE;
+      newActionConfig.renameNumber = actionConfig.renameNumber + 1;
+      newActionConfig.forceRename = true;
+      nl.sara.beehub.controller.actionResources(newResources, newActionConfig);
+    // or ask user what to do
+    } else {
+      function overwrite(overwriteResources, overwriteActionConfig){
+        return function(){
+          nl.sara.beehub.controller.actionResources(overwriteResources, overwriteActionConfig);
+        };
+      };
+      
+      function rename(renameResources, renameActionConfig){
+        return function() {
+          nl.sara.beehub.controller.actionResources(renameResources, renameActionConfig);
+        };
+      };
+      
+      function cancel(cancelResources) {
+        return function() {
+          nl.sara.beehub.view.dialog.updateResourceInfo(cancelResource, "Canceled");
+        }
+      };
+      
+      var overwriteResources = [resources[actionConfig.counter]];
+      var overwriteActionConfig = {};
+      overwriteActionConfig.counter = 0;
+      overwriteActionConfig.action = actionConfig.action;
+      overwriteActionConfig.destinationPath = actionConfig.destinationPath;
+      overwriteActionConfig.destinationName = actionConfig.destinationName;
+      overwriteActionConfig.overwrite = nl.sara.webdav.Client.SILENT_OVERWRITE;
+      overwriteActionConfig.renameNumber = actionConfig.renameNumber;
+      overwriteActionConfig.forceRename = false;
+      
+      var renameResources = [resources[actionConfig.counter]];
+      var renameActionConfig = {};
+      renameActionConfig.counter = 0;
+      renameActionConfig.action = actionConfig.action;
+      renameActionConfig.destinationPath = actionConfig.destinationPath;
+      renameActionConfig.destinationName = resources[actionConfig.counter].displayname+"_"+actionConfig.action+"_"+actionConfig.renameNumber;
+      renameActionConfig.overwrite = nl.sara.webdav.Client.FAIL_ON_OVERWRITE;
+      renameActionConfig.renameNumber = actionConfig.renameNumber+1;
+      renameActionConfig.forceRename = true;
+      
+      var cancelResource = resources[actionConfig.counter];
+ 
+      nl.sara.beehub.view.dialog.setAlreadyExist(resources[actionConfig.counter], overwrite(overwriteResources, overwriteActionConfig), rename(renameResources, renameActionConfig), cancel(cancelResource));
+    }
+  };
+  
+  return function(status) {
+    switch(status)
+    {
+    //Succeeded
+    case 201:
+      nl.sara.beehub.view.dialog.updateResourceInfo(resources[actionConfig.counter],"Done");
+      config.action();
+      break;
+    case 204:
+      nl.sara.beehub.view.dialog.updateResourceInfo(resources[actionConfig.counter],"Done");
+      config.action();
+      break;
+    // Forbidden
+    case 403:
+      nl.sara.beehub.view.dialog.updateResourceInfo(resources[actionConfig.counter],"Forbidden");
+      break;
+    case 512:
+      nl.sara.beehub.view.dialog.updateResourceInfo(resources[actionConfig.counter],"Copy to parent resource is not possible.");
+      break;
+    // Already exist
+    case 412:
+      resourceExist();
+      break;
+    default:
+      nl.sara.beehub.view.dialog.updateResourceInfo(resources[actionConfig.counter],"Unknown error");
+    }
+  
+    // Next item of the array
+    if (resources[actionConfig.counter+1] !== undefined) {
+      if ((actionConfig.action === "copy") || (actionConfig.action === "move")){
+        actionConfig.destinationName = resources[actionConfig.counter+1].displayname;
+      }
+      actionConfig.counter = actionConfig.counter + 1;
+      nl.sara.beehub.controller.actionResources(resources, actionConfig);
+    } else {
+    // Or ready
+      nl.sara.beehub.view.dialog.setDialogReady();
+    }
+    nl.sara.beehub.view.dialog.scrollTo(actionConfig.counter*35);
+  }
+};
+
 /**
 * Copy, move or delete an resource from an array and when not finished call this function again
 * with the next item of the array
@@ -274,11 +403,8 @@ nl.sara.beehub.controller.actionResources = function(resources, actionConfig){
      if (actionConfig.destinationName === undefined) {
        actionConfig.destinationName = resources[actionConfig.counter].displayname;
      }; 
-     webdav.copy(resources[actionConfig.counter].path,createCallback(actionConfig), actionConfig.destinationPath + actionConfig.destinationName, actionConfig.overwrite);
+     webdav.copy(resources[actionConfig.counter].path,nl.sara.beehub.controller.createActionCallback(resources, actionConfig), actionConfig.destinationPath + actionConfig.destinationName, actionConfig.overwrite);
    };
-   config.callbackAction = function(){
-     // TODO als dir gelijk aan view pas view aan
-   }
    break;
  // move settings 
  case "move":
@@ -286,120 +412,11 @@ nl.sara.beehub.controller.actionResources = function(resources, actionConfig){
  // delete settings
  case "delete":
    config.action = function(){
-     webdav.remove(resources[actionConfig.counter].path,createCallback(actionConfig));
+     webdav.remove(resources[actionConfig.counter].path,nl.sara.beehub.controller.createActionCallback(resources,actionConfig));
    };
-   config.callbackAction = function(){
-     nl.sara.beehub.view.deleteResource(resources[actionConfig.counter]);
-   }
    break;
  default:
    // This should never happen
  }
- /*
-  * Create callback for webdav request.
-  * 
-  * @param All params from parent function to prevent that objects/params will be changed when
-  *        a user clicks a button (rename for example) while the array is not finished yet.
-  *         
-  */
- function createCallback(actionConfig) {
-   function resourceExist(){
-     // When filename already exist make new filename and send request again
-     if (actionConfig.forceRename) {
-       var newResources = [resources[actionConfig.counter]];
-       var newActionConfig = {};
-       newActionConfig.counter = 0;
-       newActionConfig.action = actionConfig.action;
-       newActionConfig.destinationPath = actionConfig.destinationPath;
-       newActionConfig.destinationName = resources[actionConfig.counter].displayname+"_"+actionConfig.action+"_"+actionConfig.renameNumber;
-       newActionConfig.overwrite = nl.sara.webdav.Client.FAIL_ON_OVERWRITE;
-       newActionConfig.renameNumber = actionConfig.renameNumber + 1;
-       newActionConfig.forceRename = true;
-       nl.sara.beehub.controller.actionResources(newResources, newActionConfig);
-     // or ask user what to do
-     } else {
-       function overwrite(overwriteResources, overwriteActionConfig){
-         return function(){
-           nl.sara.beehub.controller.actionResources(overwriteResources, overwriteActionConfig);
-         };
-       };
-       
-       function rename(renameResources, renameActionConfig){
-         return function() {
-           nl.sara.beehub.controller.actionResources(renameResources, renameActionConfig);
-         };
-       };
-       
-       function cancel(cancelResources) {
-         return function() {
-           nl.sara.beehub.view.dialog.updateResourceInfo(cancelResource, "Canceled");
-         }
-       };
-       
-       var overwriteResources = [resources[actionConfig.counter]];
-       var overwriteActionConfig = {};
-       overwriteActionConfig.counter = 0;
-       overwriteActionConfig.action = actionConfig.action;
-       overwriteActionConfig.destinationPath = actionConfig.destinationPath;
-       overwriteActionConfig.destinationName = actionConfig.destinationName;
-       overwriteActionConfig.overwrite = nl.sara.webdav.Client.SILENT_OVERWRITE;
-       overwriteActionConfig.renameNumber = actionConfig.renameNumber;
-       overwriteActionConfig.forceRename = false;
-       
-       var renameResources = [resources[actionConfig.counter]];
-       var renameActionConfig = {};
-       renameActionConfig.counter = 0;
-       renameActionConfig.action = actionConfig.action;
-       renameActionConfig.destinationPath = actionConfig.destinationPath;
-       renameActionConfig.destinationName = resources[actionConfig.counter].displayname+"_"+actionConfig.action+"_"+actionConfig.renameNumber;
-       renameActionConfig.overwrite = nl.sara.webdav.Client.FAIL_ON_OVERWRITE;
-       renameActionConfig.renameNumber = actionConfig.renameNumber+1;
-       renameActionConfig.forceRename = true;
-       
-       var cancelResource = resources[actionConfig.counter];
-  
-       nl.sara.beehub.view.dialog.setAlreadyExist(resources[actionConfig.counter], overwrite(overwriteResources, overwriteActionConfig), rename(renameResources, renameActionConfig), cancel(cancelResource));
-     }
-   };
-   
-   return function(status) {
-     switch(status)
-     {
-     //Succeeded
-     case 201:
-       nl.sara.beehub.view.dialog.updateResourceInfo(resources[actionConfig.counter],"Done");
-       break;
-     case 204:
-       nl.sara.beehub.view.dialog.updateResourceInfo(resources[actionConfig.counter],"Done");
-       break;
-     // Forbidden
-     case 403:
-       nl.sara.beehub.view.dialog.updateResourceInfo(resources[actionConfig.counter],"Forbidden");
-       break;
-     case 512:
-       nl.sara.beehub.view.dialog.updateResourceInfo(resources[actionConfig.counter],"Copy to parent resource is not possible.");
-       break;
-     // Already exist
-     case 412:
-       resourceExist();
-       break;
-     default:
-       nl.sara.beehub.view.dialog.updateResourceInfo(resources[actionConfig.counter],"Unknown error");
-     }
-   
-     // Next item of the array
-     if (resources[actionConfig.counter+1] !== undefined) {
-       if ((actionConfig.action === "copy") || (actionConfig.action === "move")){
-         actionConfig.destinationName = resources[actionConfig.counter+1].displayname;
-       }
-       actionConfig.counter = actionConfig.counter + 1;
-       nl.sara.beehub.controller.actionResources(resources, actionConfig);
-     } else {
-     // Or ready
-       nl.sara.beehub.view.dialog.setDialogReady();
-     }
-     nl.sara.beehub.view.dialog.scrollTo(actionConfig.counter*35);
-   }
- };
  config.action();
 };
