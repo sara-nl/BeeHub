@@ -53,6 +53,16 @@ nl.sara.beehub.view.content.init = function() {
 }
 
 /*
+ * Clears selections
+ */
+nl.sara.beehub.view.content.clearView = function(){
+  // uncheck checkboxes
+  $('.bh-dir-checkboxgroup').prop('checked',false);
+  $('.bh-dir-checkbox').prop('checked',false);
+  nl.sara.beehub.view.content.disable_action_buttons();
+};
+
+/*
 * Set all handlers that belong to a row.
 * 
 */

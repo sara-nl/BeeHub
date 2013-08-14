@@ -43,13 +43,14 @@ nl.sara.beehub.view.dialog.showError = function(error) {
  * Show dialog with ready buttons
  * 
  *  */
-nl.sara.beehub.view.dialog.setDialogReady = function(){
+nl.sara.beehub.view.dialog.setDialogReady = function(actionFunction){
   $('#bh-dir-dialog-button').button({label:"Ready"});
   $('#bh-dir-dialog-button').button("enable");
   $('#bh-dir-dialog-button').removeClass("btn-danger");
   $('#bh-dir-cancel-dialog-button').hide();
   $('#bh-dir-dialog-button').unbind('click').click(function(){
     $("#bh-dir-dialog").dialog("close");
+    actionFunction();
   })
 };
 

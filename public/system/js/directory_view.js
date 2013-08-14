@@ -30,6 +30,16 @@ nl.sara.beehub.view.init = function() {
 }
 
 /*
+ * Clear all views
+ */
+nl.sara.beehub.view.clearAllViews = function(){
+  // Content
+  nl.sara.beehub.view.content.clearView();
+  // Tree
+  nl.sara.beehub.view.tree.clearView();
+}; 
+
+/*
  * Returns displayname from object
  * 
  * @param String {name} object

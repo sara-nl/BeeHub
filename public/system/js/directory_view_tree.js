@@ -93,6 +93,21 @@ nl.sara.beehub.view.tree.init = function() {
 //  });
 
 /*
+ * Close tree
+ */
+nl.sara.beehub.view.tree.clearView = function(){
+  // uncheck checkboxes
+  $(".bh-dir-tree-slide").hide('slow');
+};
+
+/*
+ * Show tree
+ */
+nl.sara.beehub.view.tree.showTree = function(){
+  $(".bh-dir-tree-slide").show('slow');
+};
+
+/*
  * On click handler tree slide click
  * Open or close tree view
  */

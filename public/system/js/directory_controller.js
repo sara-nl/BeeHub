@@ -237,12 +237,9 @@ nl.sara.beehub.controller.copyResources = function(resources){
       nl.sara.beehub.controller.actionResources(resources, actionConfig);
     });
   });
-//  // change click listener in tree
-//  nl.sara.beehub.view.tree.setTreeCopyMode(resources);
   
   // show tree
-  $(".bh-dir-tree-slide-trigger").trigger('click');
-  // blur on click somewhere else
+  nl.sara.beehub.view.tree.showTree();
 };
 
 /*
@@ -340,6 +337,7 @@ nl.sara.beehub.controller.createActionCallback = function(resources, actionConfi
       nl.sara.beehub.view.dialog.updateResourceInfo(resources[actionConfig.counter],"Done");
       config.action();
       break;
+    // Succeeded
     case 204:
       nl.sara.beehub.view.dialog.updateResourceInfo(resources[actionConfig.counter],"Done");
       config.action();
@@ -368,7 +366,9 @@ nl.sara.beehub.controller.createActionCallback = function(resources, actionConfi
       nl.sara.beehub.controller.actionResources(resources, actionConfig);
     } else {
     // Or ready
-      nl.sara.beehub.view.dialog.setDialogReady();
+      nl.sara.beehub.view.dialog.setDialogReady(function(){
+         nl.sara.beehub.view.clearAllViews(); 
+      });
     }
     nl.sara.beehub.view.dialog.scrollTo(actionConfig.counter*35);
   }
