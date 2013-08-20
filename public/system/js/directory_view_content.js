@@ -42,12 +42,18 @@ nl.sara.beehub.view.content.init = function() {
   $('.bh-dir-gohome').click(function() { window.location.href=$(this).attr("id");});
   // Go up one directory button
   $('.bh-dir-group').click(function() { window.location.href=$(this).attr("id");});
+  // Upload button
+  $('#bh-dir-upload').click(nl.sara.beehub.view.content.handle_upload_button_click);
+  // When upload files are choosen
+  $('#bh-dir-upload-hidden').change(nl.sara.beehub.view.content.handle_upload_change);
   // New folder button
   $('#bh-dir-newfolder').click(nl.sara.beehub.controller.createNewFolder);
   // Delete button click handler
   $('#bh-dir-delete').click(nl.sara.beehub.view.content.handle_delete_button_click);
   // Copy button click handler
   $('#bh-dir-copy').click(nl.sara.beehub.view.content.handle_copy_button_click);
+  // Move button click handler
+  $('#bh-dir-move').click(nl.sara.beehub.view.content.handle_move_button_click);
   // All handlers that belong to a row
   nl.sara.beehub.view.content.setRowHandlers();
 }
@@ -255,7 +261,8 @@ nl.sara.beehub.view.content.handle_edit_icon_click = function(){
   // Show form
   $(this).closest("tr").find(".bh-dir-rename-td").show();
   $(this).closest("tr").find(".bh-dir-rename-td").find(':input').focus();
-};
+}; 
+
 /*
  * Onchange handler rename form in content view
  */
@@ -265,7 +272,22 @@ nl.sara.beehub.view.content.handle_rename_form_change = function(){
   nl.sara.beehub.controller.renameResource(resource, $(this).val(), nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
 };
 
-// Delete handler
+/*
+ * Onclick handler upload button content view
+ */
+nl.sara.beehub.view.content.handle_upload_button_click = function() {
+  // show local files and directories
+  $('#bh-dir-upload-hidden').click();
+};
+
+/*
+ * Handler upload files (triggered when files to upload are selected)
+ */
+nl.sara.beehub.view.content.handle_upload_change = function() {
+  var files = $('#bh-dir-upload-hidden')[0].files;
+  nl.sara.beehub.controller.uploadResources(files);
+};
+
 /*
  * Onclick handler delete button content view
  */
@@ -279,5 +301,13 @@ nl.sara.beehub.view.content.handle_delete_button_click = function(){
  */
 nl.sara.beehub.view.content.handle_copy_button_click = function() {
   var resources = nl.sara.beehub.view.content.getSelectedResources();
-  nl.sara.beehub.controller.copyResources(resources);
+  nl.sara.beehub.controller.copyOrMoveResources(resources, "copy");
+};
+
+/*
+ * Onclick handler move button content view
+ */
+nl.sara.beehub.view.content.handle_move_button_click = function() {
+  var resources = nl.sara.beehub.view.content.getSelectedResources();
+  nl.sara.beehub.controller.copyOrMoveResources(resources, "move");
 };

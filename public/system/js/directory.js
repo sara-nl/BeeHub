@@ -70,7 +70,7 @@ if (nl.sara.beehub.view.acl === undefined) {
 //  throw new nl.sara.webdav.Exception('Namespace nl.sara.beehub.view.Resource already taken, could not load client.', nl.sara.webdav.Exception.NAMESPACE_TAKEN);
 //}
 //var nl.sara.beehub.view.Resource = function() {}
-//
+
 
 /** 
  * Beehub Client
@@ -81,230 +81,230 @@ if (nl.sara.beehub.view.acl === undefined) {
 	// conflict bootstrap and jquery
 	var btn = $.fn.button.noConflict() // reverts $.fn.button to jqueryui btn
 	$.fn.btn = btn // assigns bootstrap button functionality to $.fn.btn
-		
-	// UPLOAD
-	/**
-	 * Upload file to server
-	 * 
-	 * @param string fileName
-	 * @param file file
-	 * @param function callback
-	 * 
-	 */
-	var uploadToServer = function(fileName, file, callback){
-		var path = location.href;
-		// add slash to the end of path
-		if (!path.match(/\/$/)) {
-			path=path+'/'; 
-		} 
-		// TODO eerst leeg bestand sturen om te controleren of het wel mag
-		var headers = {
-			'Content-Type': 'application/octet-stream'
-		};
-		
-		// closure for variable file
-		function callback2(file) {
-	        return function(status) {
-				// Forbidden
-				if (status === 403) {
-					$("#bh-dir-dialog").find('td[id="bh-dir-'+file.name+'"]').html("<div class='progress progress-danger progress-striped'><div class='bar' style='width: 100%;'>Forbidden</div></div>");
-				//succeeded
-				} else if (status === 201 || status === 204) {
-					$("#bh-dir-dialog").find('td[id="bh-dir-'+file.name+'"]').html("<div class='progress progress-success progress-striped'><div class='bar' style='width: 100%;'>100%</div></div>");
-				// Unknown error
-				} else {
-					$("#bh-dir-dialog").find('td[id="bh-dir-'+file.name+'"]').html("<div class='progress progress-danger progress-striped'><div class='bar' style='width: 100%;'>Unknown error</div></div>");
-				};
-				if (callback !== null) {
-					callback();
-				};
-	        }
-		}
-		var ajax = nl.sara.webdav.Client.getAjax( 
-			"PUT",
-	        path + fileName,
-            callback2(file),
-	        headers 
-	    );
-		 
-	    if (ajax.upload) {
-	    	 // progress bar
-	    	 ajax.upload.addEventListener("progress", function(event) {
-	    		 var progress = parseInt(event.loaded / event.total * 100);
-	    		 $("#bh-dir-dialog").find('td[id="bh-dir-'+file.name+'"]').html("<div class='progress progress-success progress-striped'><div class='bar' style='width: "+progress+"%;'>"+progress+"%</div></div>");
-
-	    	 
-	    	 }, false);
-	    } else {
-	    	$("#bh-dir-dialog").find('td[id="bh-dir-'+file.name+'"]').html('Bezig... (ik kan geen voortgang laten zien in deze browser)');
-	    }
-		ajax.send(file);  
-	};
-	
-	/**
-	 * Overwrite handler
-	 * 
-	 * @param string fileName
-	 * @param object fileHash
-	 * 
-	 */
-	function setOverwriteHandler(fileName, filesHash){
-		$("#bh-dir-dialog").find('button[id="bh-dir-upload-overwrite-'+fileName+'"]').click(function(){
-			uploadToServer(fileName, filesHash[fileName], null );
-		})
-	};
-	
-	/**
-	 * Cancel handler
-	 * 
-	 * @param string fileName
-	 * 
-	 */
-	function setCancelHandler(fileName) {
-		$("#bh-dir-dialog").find('button[id="bh-dir-upload-cancel-'+fileName+'"]').click(function(){
-			$("#bh-dir-dialog").find('td[id="bh-dir-'+fileName+'"]').html("<div class='progress progress-danger progress-striped'><div class='bar' style='width: 100%;'>Canceled</div></div>");
-		})
-	}
-	
-	/**
-	 * Rename handler
-	 * 
-	 * @param string fileName
-	 * @param string fileNameOrg
-	 * @param object filesHash
-	 */
-	function setRenameHandler(fileName, fileNameOrg, filesHash){
-		$("#bh-dir-dialog").find('button[id="bh-dir-upload-rename-'+fileName+'"]').click(function(){
-			// search fileName td and make input field
-			var fileNameOrg= $("#bh-dir-dialog").find('td[id="bh-dir-'+fileName+'"]').prev().html();
-			var buttonsOrg = $("#bh-dir-dialog").find('td[id="bh-dir-'+fileName+'"]').html();
-			$("#bh-dir-dialog").find('td[id="bh-dir-'+fileName+'"]').prev().html("<input id='bh-dir-upload-rename-input-"+fileName+"' value='"+fileName+"'></input>");
-			// change buttons - cancel and upload
-			var renameUploadButton = '<button id="bh-dir-upload-rename-upload-'+fileNameOrg+'" name="'+fileNameOrg+'" class="btn btn-success">Upload</button>'
-			var renameCancelButton = '<button id="bh-dir-upload-rename-cancel-'+fileNameOrg+'" class="btn btn-danger">Cancel</button>'
-			$("#bh-dir-dialog").find('td[id="bh-dir-'+fileName+'"]').html(renameUploadButton+" "+renameCancelButton);
-			// handler cancel rename
-			$("#bh-dir-dialog").find('button[id="bh-dir-upload-rename-cancel-'+fileName+'"]').click(function(){
-				$("#bh-dir-dialog").find('td[id="bh-dir-'+fileNameOrg+'"]').html(buttonsOrg);
-				$("#bh-dir-dialog").find('td[id="bh-dir-'+fileNameOrg+'"]').prev().html(fileNameOrg);
-				setOverwriteHandler(fileName, filesHash);
-				setCancelHandler(fileName);
-				setRenameHandler(fileName, fileNameOrg, filesHash);
-			})
-			// add handler upload rename
-			$("#bh-dir-dialog").find('button[id="bh-dir-upload-rename-upload-'+fileName+'"]').click(function(){
-				var newName = $("#bh-dir-dialog").find('input[id="bh-dir-upload-rename-input-'+fileName+'"]').val();
-				if (newName !== fileName) {
-					$("#bh-dir-dialog").find('td[id="bh-dir-'+fileNameOrg+'"]').prev().html(fileName+" <br/> <b>renamed to</b> <br/> "+newName);
-				};
-				checkFileName(newName, filesHash[fileName], null, filesHash);
-			})
-		})
-	};
-	
-	/**
-	 * Check file name 
-	 * 
-	 * Checks if the files already exists on the server. If not start upload, otherwise
-	 * add buttons
-	 * 
-	 * @param string fileName
-	 * @param file file
-	 * @param function callback
-	 * @param object filesHash
-	 * 
-	 */
-	function checkFileName(fileName, file, callback, filesHash){
-		var webdav = new nl.sara.webdav.Client();
-		
-		// closure for variables fileName, file, callback  
-		function callback2(fileName,file,callback){
-			return function(status, body, headers){
-				// File does nog exist
-				if (status === 404)  {
-					uploadToServer( fileName, file, callback);
-					return;
-				};
-				// File exist
-				if (status === 200) {
-					var overwriteButton = '<button id="bh-dir-upload-overwrite-'+fileName+'" name="'+fileName+'" class="btn btn-danger">Overwrite</button>'
-					var renameButton = '<button id="bh-dir-upload-rename-'+fileName+'" class="btn btn-success">Rename</button>'
-					var cancelButton = '<button id="bh-dir-upload-cancel-'+fileName+'" name="'+fileName+'" class="btn btn-success">Cancel</button>'
-					$("#bh-dir-dialog").find('td[id="bh-dir-'+fileName+'"]').html("File exist on server!<br/>"+renameButton+" "+overwriteButton+" "+cancelButton);
-					setOverwriteHandler(fileName, filesHash);
-					setCancelHandler(fileName);
-					setRenameHandler(fileName, file.name, filesHash);
-					if (callback !== null) {
-						callback();
-					}
-				} 
-			}
-		}
-		webdav.head(path + fileName, callback2(fileName,file,callback) ,"");
-	};
-	
-	/**
-	 * Upload handler
-	 * 
-	 */
-    function handleUpload(files, filesHash) {
-        counter++;
-        if ( counter < files.length ) {
-        	$("#bh-dir-dialog").scrollTop(counter*50);
-        	checkFileName( files[counter].name, files[counter], function(){handleUpload(files, filesHash)}, filesHash );
-        } else { 
-        	$('#bh-dir-close-upload-button').button("enable");
-        	// Samenvatting upload
-        }
-      } // End of handleUpload()
-    
-    
-	// Upload handlers
-	$('#bh-dir-upload').click(function() {
-		// show local files and directories
-		$('#bh-dir-upload-hidden').click();
-	});
-	
-	// Upload dialog
-	var counter;
-	$('#bh-dir-upload-hidden').change(function(){
-		$("#bh-dir-dialog").html("");
-		var upload_files = new Object();
-		var files = $('#bh-dir-upload-hidden')[0].files;
-		var filesHash = {};
-		for (var i = 0; i < files.length; i++) {
-			filesHash[files[i].name] = files[i];
-		};
-		var appendString=''
-	 	appendString = appendString + '<table class="table"><tbody>';
-		for (var i = 0; i < files.length; i++) {
-			appendString = appendString + '<tr><td>'+files[i].name+'</td><td width="60%" id="bh-dir-'+files[i].name+'"></td></tr>'
-		};	
-		appendString = appendString +'</tbody></table>';
-		$("#bh-dir-dialog").append(appendString);
-
-		$("#bh-dir-dialog").dialog({
-	    	modal: true,
-	    	maxHeight: 400,
-	    	title: " Upload",
-	    	closeOnEscape: false,
-	    	dialogClass: "no-close",
-	    	width: 600,
-	    	buttons: [{
-				text: "Ready",
-				id: 'bh-dir-close-upload-button',
-		    	disabled: true,
-				click: function() {
-					window.location.reload();
-				}
-			}]
-	    });
-		// Start upload
-		counter = -1;
-		handleUpload(files, filesHash);
-	});
-	// END UPLOAD
-
+//		
+//	// UPLOAD
+//	/**
+//	 * Upload file to server
+//	 * 
+//	 * @param string fileName
+//	 * @param file file
+//	 * @param function callback
+//	 * 
+//	 */
+//	var uploadToServer = function(fileName, file, callback){
+//		var path = location.href;
+//		// add slash to the end of path
+//		if (!path.match(/\/$/)) {
+//			path=path+'/'; 
+//		} 
+//		// TODO eerst leeg bestand sturen om te controleren of het wel mag
+//		var headers = {
+//			'Content-Type': 'application/octet-stream'
+//		};
+//		
+//		// closure for variable file
+//		function callback2(file) {
+//	        return function(status) {
+//				// Forbidden
+//				if (status === 403) {
+//					$("#bh-dir-dialog").find('td[id="bh-dir-'+file.name+'"]').html("<div class='progress progress-danger progress-striped'><div class='bar' style='width: 100%;'>Forbidden</div></div>");
+//				//succeeded
+//				} else if (status === 201 || status === 204) {
+//					$("#bh-dir-dialog").find('td[id="bh-dir-'+file.name+'"]').html("<div class='progress progress-success progress-striped'><div class='bar' style='width: 100%;'>100%</div></div>");
+//				// Unknown error
+//				} else {
+//					$("#bh-dir-dialog").find('td[id="bh-dir-'+file.name+'"]').html("<div class='progress progress-danger progress-striped'><div class='bar' style='width: 100%;'>Unknown error</div></div>");
+//				};
+//				if (callback !== null) {
+//					callback();
+//				};
+//	        }
+//		}
+//		var ajax = nl.sara.webdav.Client.getAjax( 
+//			"PUT",
+//	        path + fileName,
+//            callback2(file),
+//	        headers 
+//	    );
+//		 
+//	    if (ajax.upload) {
+//	    	 // progress bar
+//	    	 ajax.upload.addEventListener("progress", function(event) {
+//	    		 var progress = parseInt(event.loaded / event.total * 100);
+//	    		 $("#bh-dir-dialog").find('td[id="bh-dir-'+file.name+'"]').html("<div class='progress progress-success progress-striped'><div class='bar' style='width: "+progress+"%;'>"+progress+"%</div></div>");
+//
+//	    	 
+//	    	 }, false);
+//	    } else {
+//	    	$("#bh-dir-dialog").find('td[id="bh-dir-'+file.name+'"]').html('Bezig... (ik kan geen voortgang laten zien in deze browser)');
+//	    }
+//		ajax.send(file);  
+//	};
+//	
+//	/**
+//	 * Overwrite handler
+//	 * 
+//	 * @param string fileName
+//	 * @param object fileHash
+//	 * 
+//	 */
+//	function setOverwriteHandler(fileName, filesHash){
+//		$("#bh-dir-dialog").find('button[id="bh-dir-upload-overwrite-'+fileName+'"]').click(function(){
+//			uploadToServer(fileName, filesHash[fileName], null );
+//		})
+//	};
+//	
+//	/**
+//	 * Cancel handler
+//	 * 
+//	 * @param string fileName
+//	 * 
+//	 */
+//	function setCancelHandler(fileName) {
+//		$("#bh-dir-dialog").find('button[id="bh-dir-upload-cancel-'+fileName+'"]').click(function(){
+//			$("#bh-dir-dialog").find('td[id="bh-dir-'+fileName+'"]').html("<div class='progress progress-danger progress-striped'><div class='bar' style='width: 100%;'>Canceled</div></div>");
+//		})
+//	}
+//	
+//	/**
+//	 * Rename handler
+//	 * 
+//	 * @param string fileName
+//	 * @param string fileNameOrg
+//	 * @param object filesHash
+//	 */
+//	function setRenameHandler(fileName, fileNameOrg, filesHash){
+//		$("#bh-dir-dialog").find('button[id="bh-dir-upload-rename-'+fileName+'"]').click(function(){
+//			// search fileName td and make input field
+//			var fileNameOrg= $("#bh-dir-dialog").find('td[id="bh-dir-'+fileName+'"]').prev().html();
+//			var buttonsOrg = $("#bh-dir-dialog").find('td[id="bh-dir-'+fileName+'"]').html();
+//			$("#bh-dir-dialog").find('td[id="bh-dir-'+fileName+'"]').prev().html("<input id='bh-dir-upload-rename-input-"+fileName+"' value='"+fileName+"'></input>");
+//			// change buttons - cancel and upload
+//			var renameUploadButton = '<button id="bh-dir-upload-rename-upload-'+fileNameOrg+'" name="'+fileNameOrg+'" class="btn btn-success">Upload</button>'
+//			var renameCancelButton = '<button id="bh-dir-upload-rename-cancel-'+fileNameOrg+'" class="btn btn-danger">Cancel</button>'
+//			$("#bh-dir-dialog").find('td[id="bh-dir-'+fileName+'"]').html(renameUploadButton+" "+renameCancelButton);
+//			// handler cancel rename
+//			$("#bh-dir-dialog").find('button[id="bh-dir-upload-rename-cancel-'+fileName+'"]').click(function(){
+//				$("#bh-dir-dialog").find('td[id="bh-dir-'+fileNameOrg+'"]').html(buttonsOrg);
+//				$("#bh-dir-dialog").find('td[id="bh-dir-'+fileNameOrg+'"]').prev().html(fileNameOrg);
+//				setOverwriteHandler(fileName, filesHash);
+//				setCancelHandler(fileName);
+//				setRenameHandler(fileName, fileNameOrg, filesHash);
+//			})
+//			// add handler upload rename
+//			$("#bh-dir-dialog").find('button[id="bh-dir-upload-rename-upload-'+fileName+'"]').click(function(){
+//				var newName = $("#bh-dir-dialog").find('input[id="bh-dir-upload-rename-input-'+fileName+'"]').val();
+//				if (newName !== fileName) {
+//					$("#bh-dir-dialog").find('td[id="bh-dir-'+fileNameOrg+'"]').prev().html(fileName+" <br/> <b>renamed to</b> <br/> "+newName);
+//				};
+//				checkFileName(newName, filesHash[fileName], null, filesHash);
+//			})
+//		})
+//	};
+//	
+//	/**
+//	 * Check file name 
+//	 * 
+//	 * Checks if the files already exists on the server. If not start upload, otherwise
+//	 * add buttons
+//	 * 
+//	 * @param string fileName
+//	 * @param file file
+//	 * @param function callback
+//	 * @param object filesHash
+//	 * 
+//	 */
+//	function checkFileName(fileName, file, callback, filesHash){
+//		var webdav = new nl.sara.webdav.Client();
+//		
+//		// closure for variables fileName, file, callback  
+//		function callback2(fileName,file,callback){
+//			return function(status, body, headers){
+//				// File does nog exist
+//				if (status === 404)  {
+//					uploadToServer( fileName, file, callback);
+//					return;
+//				};
+//				// File exist
+//				if (status === 200) {
+//					var overwriteButton = '<button id="bh-dir-upload-overwrite-'+fileName+'" name="'+fileName+'" class="btn btn-danger">Overwrite</button>'
+//					var renameButton = '<button id="bh-dir-upload-rename-'+fileName+'" class="btn btn-success">Rename</button>'
+//					var cancelButton = '<button id="bh-dir-upload-cancel-'+fileName+'" name="'+fileName+'" class="btn btn-success">Cancel</button>'
+//					$("#bh-dir-dialog").find('td[id="bh-dir-'+fileName+'"]').html("File exist on server!<br/>"+renameButton+" "+overwriteButton+" "+cancelButton);
+//					setOverwriteHandler(fileName, filesHash);
+//					setCancelHandler(fileName);
+//					setRenameHandler(fileName, file.name, filesHash);
+//					if (callback !== null) {
+//						callback();
+//					}
+//				} 
+//			}
+//		}
+//		webdav.head(path + fileName, callback2(fileName,file,callback) ,"");
+//	};
+//	
+//	/**
+//	 * Upload handler
+//	 * 
+//	 */
+//    function handleUpload(files, filesHash) {
+//        counter++;
+//        if ( counter < files.length ) {
+//        	$("#bh-dir-dialog").scrollTop(counter*50);
+//        	checkFileName( files[counter].name, files[counter], function(){handleUpload(files, filesHash)}, filesHash );
+//        } else { 
+//        	$('#bh-dir-close-upload-button').button("enable");
+//        	// Samenvatting upload
+//        }
+//      } // End of handleUpload()
+//    
+//    
+//	// Upload handlers
+//	$('#bh-dir-upload').click(function() {
+//		// show local files and directories
+//		$('#bh-dir-upload-hidden').click();
+//	});
+//	
+//	// Upload dialog
+//	var counter;
+//	$('#bh-dir-upload-hidden').change(function(){
+//		$("#bh-dir-dialog").html("");
+//		var upload_files = new Object();
+//		var files = $('#bh-dir-upload-hidden')[0].files;
+//		var filesHash = {};
+//		for (var i = 0; i < files.length; i++) {
+//			filesHash[files[i].name] = files[i];
+//		};
+//		var appendString=''
+//	 	appendString = appendString + '<table class="table"><tbody>';
+//		for (var i = 0; i < files.length; i++) {
+//			appendString = appendString + '<tr><td>'+files[i].name+'</td><td width="60%" id="bh-dir-'+files[i].name+'"></td></tr>'
+//		};	
+//		appendString = appendString +'</tbody></table>';
+//		$("#bh-dir-dialog").append(appendString);
+//
+//		$("#bh-dir-dialog").dialog({
+//	    	modal: true,
+//	    	maxHeight: 400,
+//	    	title: " Upload",
+//	    	closeOnEscape: false,
+//	    	dialogClass: "no-close",
+//	    	width: 600,
+//	    	buttons: [{
+//				text: "Ready",
+//				id: 'bh-dir-close-upload-button',
+//		    	disabled: true,
+//				click: function() {
+//					window.location.reload();
+//				}
+//			}]
+//	    });
+//		// Start upload
+//		counter = -1;
+//		handleUpload(files, filesHash);
+//	});
+//	// END UPLOAD
+//
 
 
 	 // DELETE, COPY, MOVE selected items

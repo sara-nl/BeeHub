@@ -131,4 +131,5 @@ nl.sara.beehub.view.tree.setOnActivate = function(activateFunction){
       activateFunction(node.data.id);
     }
   });
+  $("#bh-dir-tree").dynatree("getTree").reload();
 };

@@ -55,6 +55,16 @@ nl.sara.beehub.view.dialog.setDialogReady = function(actionFunction){
 };
 
 /*
+* Show progress bar
+* 
+* @param {Resource} resource Resource to show progress from
+* @param {Integer} progress Progress of action
+*/
+nl.sara.beehub.view.dialog.showProgressBar = function(resource, progress){
+  $("tr[id='dialog_tr_"+resource.path+"']").find('.info').html("<div class='progress progress-success progress-striped'><div class='bar' style='width: "+progress+"%;'>"+progress+"%</div></div>");
+};
+
+/*
 * Update info column in delete dialog
 * 
 * @param {Resource} resource Resource to update
@@ -157,14 +167,19 @@ nl.sara.beehub.view.dialog.showResourcesDialog = function(resources, actionConfi
     config.buttonText = "Copy";
     break;
   case "move":
-    config.title = "nog doen";
-    config.buttonLabel = "Nog doen...";
-    config.buttonText = "Copy";
+    config.title = "Move to "+actionConfig.destinationPath;
+    config.buttonLabel = "Moving items...";
+    config.buttonText = "Move";
     break;
   case "delete":
     config.title = "Delete";
     config.buttonLabel = "Deleting...";
     config.buttonText = "Delete";
+    break;
+  case "upload":
+    config.title = "Upload";
+    config.buttonLabel = "Uploading...";
+    config.buttonText = "Upload";
     break;
   default:
     // This should never happen
@@ -197,7 +212,7 @@ nl.sara.beehub.view.dialog.showResourcesDialog = function(resources, actionConfi
       click: function() {
         $('#bh-dir-dialog-button').button({label:config.buttonLabel});
         $('#bh-dir-dialog-button').button("disable");
-          actionFunction();
+        actionFunction();
       }
     }]
   });
