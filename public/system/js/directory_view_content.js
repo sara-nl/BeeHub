@@ -285,7 +285,8 @@ nl.sara.beehub.view.content.handle_upload_button_click = function() {
  */
 nl.sara.beehub.view.content.handle_upload_change = function() {
   var files = $('#bh-dir-upload-hidden')[0].files;
-  nl.sara.beehub.controller.uploadResources(files);
+//  nl.sara.beehub.controller.uploadResources(files);
+  nl.sara.beehub.controller.initAction(files,"upload");
 };
 
 /*
@@ -293,7 +294,9 @@ nl.sara.beehub.view.content.handle_upload_change = function() {
  */
 nl.sara.beehub.view.content.handle_delete_button_click = function(){
   var resources = nl.sara.beehub.view.content.getSelectedResources();
-  nl.sara.beehub.controller.deleteResources(resources);
+//  nl.sara.beehub.controller.deleteResources(resources);
+  nl.sara.beehub.controller.initAction(resources,"delete");
+
 };
 
 /*
@@ -301,7 +304,8 @@ nl.sara.beehub.view.content.handle_delete_button_click = function(){
  */
 nl.sara.beehub.view.content.handle_copy_button_click = function() {
   var resources = nl.sara.beehub.view.content.getSelectedResources();
-  nl.sara.beehub.controller.copyOrMoveResources(resources, "copy");
+//  nl.sara.beehub.controller.copyOrMoveResources(resources, "copy");
+  nl.sara.beehub.controller.initAction(resources, "copy");
 };
 
 /*
@@ -309,5 +313,7 @@ nl.sara.beehub.view.content.handle_copy_button_click = function() {
  */
 nl.sara.beehub.view.content.handle_move_button_click = function() {
   var resources = nl.sara.beehub.view.content.getSelectedResources();
-  nl.sara.beehub.controller.copyOrMoveResources(resources, "move");
+//  nl.sara.beehub.controller.copyOrMoveResources(resources, "move");
+  nl.sara.beehub.controller.initAction(resources, "move");
+
 };

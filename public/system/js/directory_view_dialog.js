@@ -16,6 +16,12 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with beehub.  If not, see <http://www.gnu.org/licenses/>.
  */
+/*
+ * Clears selections
+ */
+nl.sara.beehub.view.dialog.clearView = function(){
+  $('#bh-dir-dialog').dialog("close");
+};
 
 /*
  * Show dialog with error
@@ -87,6 +93,7 @@ nl.sara.beehub.view.dialog.setAlreadyExist = function(resource, overwriteFunctio
   var cancelButton = '<button class="btn btn-success cancelbutton">Cancel</button>'
   
   $("tr[id='dialog_tr_"+resource.path+"']").find('.info').html("Item exist on server!<br/>"+renameButton+" "+overwriteButton+" "+cancelButton);
+  
 //  // Overwrite click handler
   $("tr[id='dialog_tr_"+resource.path+"']").find('.overwritebutton').click(function(){
     overwriteFunction();
@@ -157,17 +164,17 @@ nl.sara.beehub.view.dialog.scrollTo = function(number){
  * @param {Array} resources Array with resources
  * @param {Object} destination Resource Destination resource
  */
-nl.sara.beehub.view.dialog.showResourcesDialog = function(resources, actionConfig, actionFunction){
+nl.sara.beehub.view.dialog.showResourcesDialog = function(actionFunction){
   var config = {};
-  switch(actionConfig.action)
+  switch(nl.sara.beehub.controller.actionAction)
   {
   case "copy":
-    config.title = "Copy to "+actionConfig.destinationPath;
+    config.title = "Copy to "+nl.sara.beehub.actionDestionation;
     config.buttonLabel = "Copy items...";
     config.buttonText = "Copy";
     break;
   case "move":
-    config.title = "Move to "+actionConfig.destinationPath;
+    config.title = "Move to "+nl.sara.beehub.actionDestination;
     config.buttonLabel = "Moving items...";
     config.buttonText = "Move";
     break;
@@ -187,8 +194,8 @@ nl.sara.beehub.view.dialog.showResourcesDialog = function(resources, actionConfi
   $("#bh-dir-dialog").html("");
   var appendString='';
   appendString = appendString + '<table class="table"><tbody>';
-  $.each(resources, function(i, resource){
-    appendString = appendString + '<tr id="dialog_tr_'+resource.path+'"><td>'+resource.displayname+'</td><td width="60%" class="info"></td></tr>'
+  $.each(nl.sara.beehub.controller.actionItems, function(i, item){
+     appendString = appendString + '<tr id="dialog_tr_'+item.path+'"><td>'+item.displayname+'</td><td width="60%" class="info"></td></tr>'
   });
   appendString = appendString +'</tbody></table>';
   $("#bh-dir-dialog").append(appendString);
@@ -205,6 +212,7 @@ nl.sara.beehub.view.dialog.showResourcesDialog = function(resources, actionConfi
       click: function() {
        $(this).dialog("close");
        $(".bh-dir-tree-slide-trigger").trigger('click');
+       nl.sara.beehub.controller.clearAllViews();
       }
     }, {
       text: config.buttonText,

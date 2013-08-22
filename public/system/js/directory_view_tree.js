@@ -84,20 +84,22 @@ nl.sara.beehub.view.tree.init = function() {
   $(".bh-dir-tree-slide-trigger").click(nl.sara.beehub.view.content.handle_tree_slide_click);
 };
 
-//  $("#bh-dir-tree").dynatree({
-//    onActivate: function(node) {
-//        // A DynaTreeNode object is passed to the activation handler
-//        // Note: we also get this event, if persistence is on, and the page is reloaded.
-//        alert("You activated " + node.data.title);
-//    }
-//  });
+/*
+ * Close tree
+ */
+nl.sara.beehub.view.tree.closeTree = function(){
+  // uncheck checkboxes
+  $(".bh-dir-tree-slide").hide('slow');
+};
 
 /*
  * Close tree
  */
 nl.sara.beehub.view.tree.clearView = function(){
-  // uncheck checkboxes
-  $(".bh-dir-tree-slide").hide('slow');
+  // remove onactivate
+  nl.sara.beehub.view.tree.setOnActivate();
+  // close tree
+  nl.sara.beehub.view.tree.closeTree();
 };
 
 /*
@@ -128,7 +130,9 @@ nl.sara.beehub.view.tree.setOnActivate = function(activateFunction){
   // show dialog with items to copy and target directory
   $("#bh-dir-tree").dynatree({
     onActivate: function(node) {
-      activateFunction(node.data.id);
+      if (activateFunction !== undefined) {
+        activateFunction(node.data.id);
+      }
     }
   });
   $("#bh-dir-tree").dynatree("getTree").reload();

@@ -37,6 +37,8 @@ nl.sara.beehub.view.clearAllViews = function(){
   nl.sara.beehub.view.content.clearView();
   // Tree
   nl.sara.beehub.view.tree.clearView();
+  // Dialog
+  nl.sara.beehub.view.dialog.clearView();
 }; 
 
 /*
