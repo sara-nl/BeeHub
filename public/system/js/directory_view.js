@@ -27,6 +27,7 @@ nl.sara.beehub.view.groupspath = '/system/groups/';
 nl.sara.beehub.view.init = function() {
   nl.sara.beehub.view.content.init();
   nl.sara.beehub.view.tree.init();
+  nl.sara.beehub.view.acl.init();
 }
 
 /*

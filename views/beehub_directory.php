@@ -129,27 +129,30 @@ $testtree = createTree2(DAV::slashify(dirname($this->path)));
 <div id="bh-dir-dialog" hidden='true'></div>
 
 <!-- Tree slide out -->
-<div id="bh-dir-tree" class="bh-dir-tree-slide">
-  <ul>
-    <?php
-    $registry = BeeHub_Registry::inst();
-    foreach ($this as $inode) :
-      $member = $registry->resource($this->path . $inode);
-      if (DAV::unslashify($member->path) === '/system') {
-        continue;
-      }
-      if (substr($member->path, -1) === '/'):
-        ?>
-        <li id="<?= $member->user_prop_displayname() ?>" class="folder"><?= $member->user_prop_displayname() ?>
-          <ul>
-            <li></li>
-          </ul> <?php
-        endif;
-        $registry->forget($this->path . $inode);
-      endforeach;
-      ?>
-
-  </ul>
+<div class="bh-dir-tree-slide">
+	<h5 id="bh-dir-tree-header"><center>Browse</center></h5>
+	<div id="bh-dir-tree">
+	  <ul>
+	    <?php
+	    $registry = BeeHub_Registry::inst();
+	    foreach ($this as $inode) :
+	      $member = $registry->resource($this->path . $inode);
+	      if (DAV::unslashify($member->path) === '/system') {
+	        continue;
+	      }
+	      if (substr($member->path, -1) === '/'):
+	        ?>
+	        <li id="<?= $member->user_prop_displayname() ?>" class="folder"><?= $member->user_prop_displayname() ?>
+	          <ul>
+	            <li></li>
+	          </ul> <?php
+	        endif;
+	        $registry->forget($this->path . $inode);
+	      endforeach;
+	      ?>
+	
+	  </ul>
+	</div>
 </div>
 
 <a class="bh-dir-tree-slide-trigger" href="#"><i
@@ -175,7 +178,8 @@ $testtree = createTree2(DAV::slashify(dirname($this->path)));
           <th>Type</th>
           <th>Modified</th>
           <th>Owner</th>
-          <th width="10px"></th>
+          <!-- share file, not yet implemented -->
+          <!--  <th width="10px"></th> -->
         </tr>
       </thead>
       <tbody>
@@ -239,10 +243,12 @@ $testtree = createTree2(DAV::slashify(dirname($this->path)));
             </td>
             <td class="owner" name='<?= $owner->path ?>'><?= $owner->user_prop_displayname() ?></td>
             <?php if (substr($member->path, -1) !== '/'): ?>
-              <td width="10px" data-toggle="tooltip"
-                  title="Email read-only share link"><i class="icon-share"></i></td>
-                <?php else : ?>
-              <td></td>
+            	<!-- share file, not yet implemented -->         
+							<!--  <td width="10px" data-toggle="tooltip" -->
+							<!--      title="Email read-only share link"><i class="icon-share"></i></td> -->
+            <?php else : ?>
+	            <!-- share file, not yet implemented -->         
+							<!-- <td></td> -->
             <?php endif; ?>
           </tr>
           <?php
@@ -302,6 +308,7 @@ $footer = '
  		<script type="text/javascript" src="/system/js/directory_view_content.js"></script>
  		<script type="text/javascript" src="/system/js/directory_view_tree.js"></script>
  		<script type="text/javascript" src="/system/js/directory_view_dialog.js"></script>
+ 		<script type="text/javascript" src="/system/js/directory_view_acl.js"></script>
  		<script type="text/javascript" src="/system/js/directory_resource.js"></script>
  		<script type="text/javascript" src="/system/js/directory_controller.js"></script>
  	  <link href="/system/js/plugins/dynatree/src/skin/ui.dynatree.css" rel="stylesheet" type="text/css" />

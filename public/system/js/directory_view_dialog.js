@@ -165,16 +165,16 @@ nl.sara.beehub.view.dialog.scrollTo = function(number){
  * @param {Object} destination Resource Destination resource
  */
 nl.sara.beehub.view.dialog.showResourcesDialog = function(actionFunction){
-  var config = {};
+  var config = {}; 
   switch(nl.sara.beehub.controller.actionAction)
   {
-  case "copy":
-    config.title = "Copy to "+nl.sara.beehub.actionDestionation;
+  case "copy": 
+    config.title = "Copy to "+nl.sara.beehub.controller.actionDestination;
     config.buttonLabel = "Copy items...";
     config.buttonText = "Copy";
     break;
   case "move":
-    config.title = "Move to "+nl.sara.beehub.actionDestination;
+    config.title = "Move to "+nl.sara.beehub.controller.actionDestination;
     config.buttonLabel = "Moving items...";
     config.buttonText = "Move";
     break;
@@ -194,7 +194,7 @@ nl.sara.beehub.view.dialog.showResourcesDialog = function(actionFunction){
   $("#bh-dir-dialog").html("");
   var appendString='';
   appendString = appendString + '<table class="table"><tbody>';
-  $.each(nl.sara.beehub.controller.actionItems, function(i, item){
+  $.each(nl.sara.beehub.controller.actionResources, function(i, item){
      appendString = appendString + '<tr id="dialog_tr_'+item.path+'"><td>'+item.displayname+'</td><td width="60%" class="info"></td></tr>'
   });
   appendString = appendString +'</tbody></table>';

@@ -22,9 +22,8 @@ nl.sara.beehub.view.tree.init = function() {
   $("#bh-dir-tree").dynatree({
     onActivate: function(node) {
       // A DynaTreeNode object is passed to the activation handler
-      // Note: we also get this event, if persistence is on, and the page is reloaded.
-//      alert("You activated " + node.data.title);
-//      window.location.reload();
+      nl.sara.beehub.view.tree.closeTree();
+      window.location.href = node.data.id;
     },
     persist: false,
     children: treecontents,
@@ -89,7 +88,7 @@ nl.sara.beehub.view.tree.init = function() {
  */
 nl.sara.beehub.view.tree.closeTree = function(){
   // uncheck checkboxes
-  $(".bh-dir-tree-slide").hide('slow');
+  $(".bh-dir-tree-slide").hide();
 };
 
 /*
@@ -97,7 +96,11 @@ nl.sara.beehub.view.tree.closeTree = function(){
  */
 nl.sara.beehub.view.tree.clearView = function(){
   // remove onactivate
-  nl.sara.beehub.view.tree.setOnActivate();
+  nl.sara.beehub.view.tree.setOnActivate("Browse", function(node){
+    // Close tree otherwise a load error is shown
+    nl.sara.beehub.view.tree.closeTree();
+    window.location.href = node;
+  });
   // close tree
   nl.sara.beehub.view.tree.closeTree();
 };
@@ -126,7 +129,8 @@ nl.sara.beehub.view.content.handle_tree_slide_click = function() {
  * @param {Array} Resources Array with resources
  * 
  */
-nl.sara.beehub.view.tree.setOnActivate = function(activateFunction){
+nl.sara.beehub.view.tree.setOnActivate = function(header, activateFunction){
+  $("#bh-dir-tree-header").html('<center>'+header+'</center>');
   // show dialog with items to copy and target directory
   $("#bh-dir-tree").dynatree({
     onActivate: function(node) {

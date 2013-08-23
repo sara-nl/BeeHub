@@ -129,8 +129,8 @@ nl.sara.beehub.view.content.createRow = function(resource){
   row.push('<td class="lastmodified" name="'+resource.lastmodified+'">'+resource.lastmodified+'</td>');
   // Owner
   row.push('<td class="owner" name="'+resource.owner+'">'+nl.sara.beehub.view.getDisplayName(resource.owner)+'</td>');
-  // Share link
-  row.push('<td></td>');
+  // Share link, not implemented yet
+//  row.push('<td></td>');
   row.push('</tr>');
   return row.join("");
 };
