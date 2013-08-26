@@ -87,8 +87,8 @@ nl.sara.beehub.view.tree.init = function() {
  * Close tree
  */
 nl.sara.beehub.view.tree.closeTree = function(){
-  // uncheck checkboxes
   $(".bh-dir-tree-slide").hide();
+  $(".bh-dir-tree-header").hide();
 };
 
 /*
@@ -109,7 +109,8 @@ nl.sara.beehub.view.tree.clearView = function(){
  * Show tree
  */
 nl.sara.beehub.view.tree.showTree = function(){
-  $(".bh-dir-tree-slide").show('slow');
+  $(".bh-dir-tree-slide").slideDown('slow');
+  $(".bh-dir-tree-header").slideDown('slow');
 };
 
 /*
@@ -117,7 +118,8 @@ nl.sara.beehub.view.tree.showTree = function(){
  * Open or close tree view
  */
 nl.sara.beehub.view.content.handle_tree_slide_click = function() {
-  $(".bh-dir-tree-slide").toggle("slow");
+  $(".bh-dir-tree-slide").slideToggle("slow");
+  $(".bh-dir-tree-header").slideToggle("slow");
   $(this).toggleClass("active");
   $('.bh-dir-tree-slide-trigger i').toggleClass('icon-chevron-left icon-chevron-right');
   return false;
@@ -130,7 +132,7 @@ nl.sara.beehub.view.content.handle_tree_slide_click = function() {
  * 
  */
 nl.sara.beehub.view.tree.setOnActivate = function(header, activateFunction){
-  $("#bh-dir-tree-header").html('<center>'+header+'</center>');
+  $(".bh-dir-tree-header").html('<center>'+header+'</center>');
   // show dialog with items to copy and target directory
   $("#bh-dir-tree").dynatree({
     onActivate: function(node) {
@@ -140,4 +142,7 @@ nl.sara.beehub.view.tree.setOnActivate = function(header, activateFunction){
     }
   });
   $("#bh-dir-tree").dynatree("getTree").reload();
+  console.log("focus");
+  $("#bh-dir-tree-header").trigger('focus');
+
 };

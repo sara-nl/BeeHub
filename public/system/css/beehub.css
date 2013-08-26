@@ -99,10 +99,16 @@
 /* Tree settings */
 .bh-dir-tree-slide {
   position: fixed ;
-  top: 152px;
+  top: 187px;
   bottom: 50px !important;
   right: 0;
   display: none;
+  z-index: 100; 
+}
+.bh-dir-tree-header {
+  position: fixed ;
+  top: 155px;
+  right: 20px;
   z-index: 100; 
 }
 a.bh-dir-tree-slide-trigger{

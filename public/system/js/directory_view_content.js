@@ -126,7 +126,15 @@ nl.sara.beehub.view.content.createRow = function(resource){
 
   }
   // Last Modified
-  row.push('<td class="lastmodified" name="'+resource.lastmodified+'">'+resource.lastmodified+'</td>');
+  var date = new Date(resource.lastmodified);
+  // Make same show string as shown with php
+  var day = date.getDate();
+  var month = date.getMonth()+1;
+  var year = date.getFullYear();
+  var hours = date.getHours();
+  var minutes = date.getMinutes();
+  var dateString = (day+"-"+month+"-"+year+" "+hours+":"+minutes);
+  row.push('<td class="lastmodified" name="'+resource.lastmodified+'">'+dateString+'</td>');
   // Owner
   row.push('<td class="owner" name="'+resource.owner+'">'+nl.sara.beehub.view.getDisplayName(resource.owner)+'</td>');
   // Share link, not implemented yet

@@ -129,31 +129,30 @@ $testtree = createTree2(DAV::slashify(dirname($this->path)));
 <div id="bh-dir-dialog" hidden='true'></div>
 
 <!-- Tree slide out -->
-<div class="bh-dir-tree-slide">
-	<h5 id="bh-dir-tree-header"><center>Browse</center></h5>
-	<div id="bh-dir-tree">
-	  <ul>
-	    <?php
-	    $registry = BeeHub_Registry::inst();
-	    foreach ($this as $inode) :
-	      $member = $registry->resource($this->path . $inode);
-	      if (DAV::unslashify($member->path) === '/system') {
-	        continue;
-	      }
-	      if (substr($member->path, -1) === '/'):
-	        ?>
-	        <li id="<?= $member->user_prop_displayname() ?>" class="folder"><?= $member->user_prop_displayname() ?>
-	          <ul>
-	            <li></li>
-	          </ul> <?php
-	        endif;
-	        $registry->forget($this->path . $inode);
-	      endforeach;
-	      ?>
-	
-	  </ul>
-	</div>
+<div id="bh-dir-tree" class="bh-dir-tree-slide">
+  <ul>
+    <?php
+    $registry = BeeHub_Registry::inst();
+    foreach ($this as $inode) :
+      $member = $registry->resource($this->path . $inode);
+      if (DAV::unslashify($member->path) === '/system') {
+        continue;
+      }
+      if (substr($member->path, -1) === '/'):
+        ?>
+        <li id="<?= $member->user_prop_displayname() ?>" class="folder"><?= $member->user_prop_displayname() ?>
+          <ul>
+            <li></li>
+          </ul> <?php
+        endif;
+        $registry->forget($this->path . $inode);
+      endforeach;
+      ?>
+
+  </ul>
 </div>
+
+<h5 class="bh-dir-tree-header" hidden=true><center>Browse</center></h5>
 
 <a class="bh-dir-tree-slide-trigger" href="#"><i
     class="icon-chevron-left"></i> </a>
@@ -195,8 +194,10 @@ $testtree = createTree2(DAV::slashify(dirname($this->path)));
           );
           ?>
           <tr id='<?= DAV::unslashify($member->path) ?>'>
+<!--             Rename icon -->
             <td width="10px" data-toggle="tooltip" title="Rename file"><i
                 class="icon-edit bh-dir-edit" style="cursor: pointer"></i></td>
+<!--             Select checkbox -->
             <td width="10px"><input type="checkbox" class="bh-dir-checkbox" name='<?= DAV::unslashify($member->path)?>'
                                     value='<?= $member->user_prop_displayname() ?>'></td>
               <?php if (substr($member->path, -1) === '/'): ?>
@@ -231,15 +232,17 @@ $testtree = createTree2(DAV::slashify(dirname($this->path)));
                 $showsize = '';
               }
               ?>
+<!--             Size -->
             <td class="contentlength" name='<?= $member->user_prop_getcontentlength()?>'><?= $showsize ?></td>
             <?php if (substr($member->path, -1) === '/'): ?>
               <td class="type" name='collection'><i name=<?= DAV::unslashify($member->path) ?>
                      class="icon-folder-close bh-dir-openselected"
-                     style="cursor: pointer">></i></td>
+                     style="cursor: pointer">></i></td> 
               <?php else : ?>
               <td class="type" name='<?= $member->user_prop_getcontenttype() ?>'><?= $member->user_prop_getcontenttype() ?></td>
-            <?php endif; ?>
-            <td class="lastmodified" name='<?= $member->user_prop_getlastmodified() ?>'><?= date('Y-m-d H:i:s', $member->user_prop_getlastmodified()) ?>
+            <?php endif; ?> 
+<!--             Date, has to be the same as shown with javascript -->
+            <td class="lastmodified" name='<?= $member->user_prop_getlastmodified() ?>'><?= date('j-n-Y h:m', $member->user_prop_getlastmodified()) ?>
             </td>
             <td class="owner" name='<?= $owner->path ?>'><?= $owner->user_prop_displayname() ?></td>
             <?php if (substr($member->path, -1) !== '/'): ?>
