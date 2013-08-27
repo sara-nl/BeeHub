@@ -444,6 +444,7 @@ nl.sara.beehub.controller.createActionCallback = function(resource, renameCounte
  */
 nl.sara.beehub.controller.createUploadHeadCallback = function(resource, renameCounter){
   return function(status) {  
+    var webdav = new nl.sara.webdav.Client();
     switch(status)
     {
     // File exists
@@ -451,9 +452,9 @@ nl.sara.beehub.controller.createUploadHeadCallback = function(resource, renameCo
       if (0 === renameCounter){
         nl.sara.beehub.controller.setAlreadyExist(resource);
       } else {
-        var resourcePath = resource.path+"_"+renameCounter;
         renameCounter = renameCounter + 1;
-        webdav.head(resourcePath, nl.sara.beehub.controller.createUploadHeadCallback(resource, renameCounter));
+        destination = resource.path+"_"+renameCounter;
+        webdav.head(destination, nl.sara.beehub.controller.createUploadHeadCallback(resource, renameCounter));
       };
       if (0 === renameCounter) {
         // Start next
@@ -462,14 +463,13 @@ nl.sara.beehub.controller.createUploadHeadCallback = function(resource, renameCo
       break;
     // File does not exist
     case 404:
-      var webdav = new nl.sara.webdav.Client();
-      // Put empty file
       if (0 === renameCounter) {
         var destination = resource.path;
       } else {
         var destination = resource.path+"_"+renameCounter;
       }
-      webdav.put(resource.path, nl.sara.beehub.controller.createUploadEmptyFileCallback(resource, destination, renameCounter),"");
+      // Put empty file
+      webdav.put(destination, nl.sara.beehub.controller.createUploadEmptyFileCallback(resource, destination, renameCounter, false),"");
       break;
     default:
       if (0 === renameCounter) {
@@ -485,12 +485,13 @@ nl.sara.beehub.controller.createUploadHeadCallback = function(resource, renameCo
  * is allowed
  * 
  */
-nl.sara.beehub.controller.createUploadEmptyFileCallback = function(resource, destination, renameCounter) {
-  return function(status) {  
+nl.sara.beehub.controller.createUploadEmptyFileCallback = function(resource, destination, renameCounter, overwrite) {
+  return function(status, responseText) {  
     switch(status)
     {
     // Ok
     case 201:
+    case 204:
       // Upload file, this will overwrite the empty file
         var headers = {
           'Content-Type': 'application/octet-stream'
@@ -500,7 +501,7 @@ nl.sara.beehub.controller.createUploadEmptyFileCallback = function(resource, des
         var ajax = nl.sara.webdav.Client.getAjax( 
         "PUT",
             destination,
-            nl.sara.beehub.controller.createUploadCallback(resource, destination, renameCounter),
+            nl.sara.beehub.controller.createUploadCallback(resource, destination, renameCounter, overwrite),
             headers 
         );
         
@@ -513,6 +514,8 @@ nl.sara.beehub.controller.createUploadEmptyFileCallback = function(resource, des
         } else {
           nl.sara.beehub.view.dialog.updateResourceInfo(resource,'Uploading...');
         };
+        console.log(destination);
+        console.log(nl.sara.beehub.controller.actionFiles[resource.path]);
         ajax.send(nl.sara.beehub.controller.actionFiles[resource.path]);  
       break;
     // Forbidden
@@ -520,7 +523,7 @@ nl.sara.beehub.controller.createUploadEmptyFileCallback = function(resource, des
       nl.sara.beehub.view.dialog.updateResourceInfo(resource,"Forbidden");
       break;
     default:
-      nl.sara.beehub.view.dialog.updateResourceInfo(resource,"Unknown error");
+      nl.sara.beehub.view.dialog.updateResourceInfo(resource,responseText);
       // Start next action
       if (0 === renameCounter) {
         nl.sara.beehub.controller.startNextAction();
@@ -533,18 +536,22 @@ nl.sara.beehub.controller.createUploadEmptyFileCallback = function(resource, des
  * Return callback function upload
  * 
  */
-nl.sara.beehub.controller.createUploadCallback = function(resource, destination, renameCounter){
-  return function(status) {
+nl.sara.beehub.controller.createUploadCallback = function(resource, destination, renameCounter, overwrite){
+  return function(status, responseText) {
     switch(status)
     {
       // Ok
+      case 201:
       case 204:
         // Upload file, this will overwrite the empty file
         nl.sara.beehub.view.dialog.showProgressBar(resource,100);
+        if (overwrite) {
+          nl.sara.beehub.view.deleteResource(resource);
+        };
         nl.sara.beehub.controller.getResourcePropsFromServer(destination, nl.sara.beehub.view.addResource);
         break;
       default:
-        nl.sara.beehub.view.dialog.updateResourceInfo(resource,"Unknown error");
+        nl.sara.beehub.view.dialog.updateResourceInfo(resource,responseText);
       // Delete empty file
         var webdav = new nl.sara.webdav.Client();
         webdav.remove(destination);
@@ -591,12 +598,12 @@ nl.sara.beehub.controller.setAlreadyExist = function(resource){
       break;
     case "upload":
       var overwrite = function() {
-        webdav.put(resource.path, nl.sara.beehub.controller.createUploadEmptyFileCallback(resource, resource.path, 1), "");
+        webdav.put(resource.path, nl.sara.beehub.controller.createUploadEmptyFileCallback(resource, resource.path, 1, true), "");
       };
       
       var rename = function() {
         var resourcePath = resource.path+"_1";
-        webdav.head(resourcePath, nl.sara.beehub.controller.createUploadHeadCallback(resource, resourcePath, 1) ,"");
+        webdav.head(resourcePath, nl.sara.beehub.controller.createUploadHeadCallback(resource, 1) ,"");
       };
       break;
     default:
