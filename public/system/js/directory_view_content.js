@@ -23,11 +23,45 @@
  */
 nl.sara.beehub.view.content.init = function() {
 //CONTENTVIEW
+  // This is needed to sort the size table on the right way
+  $.tablesorter.addParser({
+    id: 'filesize', 
+    is: function(s) { 
+     return s.match(new RegExp( /[0-9]+(\.[0-9]+)?\ (KB|B|GB|MB|TB)/ ));
+    }, 
+    format: function(s) {
+      // If not a dir
+      if (s !== "") {
+        var suf = s.match(new RegExp( /(KB|B|GB|MB|TB)$/ ))[1];
+        var num = parseFloat(s.match( new RegExp( /^[0-9]+(\.[0-9]+)?/ ))[0]);
+      } else {
+        var suf = "DIR";
+      }
+      switch(suf) {
+        case 'DIR':
+          return 0;
+        case 'B':
+          return num;
+        case 'KB':
+          return num * 1024;
+        case 'MB':
+          return num * 1024 * 1024;
+        case 'GB':
+          return num * 1024 * 1024 * 1024;
+        case 'TB':
+          return num * 1024 * 1024 * 1024 * 1024;
+        }
+    }, 
+    type: 'numeric' 
+  }); 
+
 //make table sortable with tablesorter plugin
   $("#bh-dir-content-table").tablesorter({
+//    sortList: [[2,0]],
     headers: { 
       0 : { sorter: false },
       1 : { sorter: false },
+      4 : { sorter: 'filesize'},
       8: { sorter:false }
     },
     widthFixed: false,
@@ -120,13 +154,13 @@ nl.sara.beehub.view.content.createRow = function(resource){
     row.push('<td class="type" name="'+resource.type+'"><i name="'+resource.path+'" class="icon-folder-close bh-dir-openselected" style="cursor: pointer">></i></td>');
   } else {
     // Size
-    row.push('<td class="contentlength" name="'+resource.contentlength+'"></td>>'+nl.sara.beehub.view.getSize(resource)+'</td>');
+    row.push('<td class="contentlength" name="'+resource.contentlength+'">'+nl.sara.beehub.view.bytesToSize(resource.contentlength, 0)+'</td>');
     //Type
     row.push('<td class="type" name="'+resource.type+'">'+resource.type+'</td>');
 
   }
   // Last Modified
-  var date = new Date(resource.lastmodified);
+  var date = new Date(resource.lastmodified); 
   // Make same show string as shown with php
   var day = date.getDate();
   var month = date.getMonth()+1;
@@ -210,8 +244,10 @@ nl.sara.beehub.view.content.updateResource = function(resourceOrg, resourceNew){
  */
 nl.sara.beehub.view.content.addResource = function(resource){
   var row = nl.sara.beehub.view.content.createRow(resource);
-  $("#bh-dir-content-table tbody").append(row);
-  $("#bh-dir-content-table tbody").trigger("update");
+  $("#bh-dir-content-table").append(row);
+  $("#bh-dir-content-table").trigger("update");
+  // Sort again
+  $("#bh-dir-content-table").trigger("sorton", [$("#bh-dir-content-table")[0].config.sortList]);
   // Set handlers again
   nl.sara.beehub.view.content.setRowHandlers();
 };
@@ -268,6 +304,12 @@ nl.sara.beehub.view.content.handle_edit_icon_click = function(){
   $(this).closest("tr").find(".bh-dir-name").hide();
   // Show form
   $(this).closest("tr").find(".bh-dir-rename-td").show();
+  
+  // When giving the input field the value of the field again it will
+  // be empty after cancel a overwrite. Bug???
+  var name = $(this).closest("tr").find(".bh-dir-rename-td").find(':input').attr('name');
+  $(this).closest("tr").find(".bh-dir-rename-td").find(':input').val(name);
+  
   $(this).closest("tr").find(".bh-dir-rename-td").find(':input').focus();
 }; 
 
@@ -293,7 +335,6 @@ nl.sara.beehub.view.content.handle_upload_button_click = function() {
  */
 nl.sara.beehub.view.content.handle_upload_change = function() {
   var files = $('#bh-dir-upload-hidden')[0].files;
-//  nl.sara.beehub.controller.uploadResources(files);
   nl.sara.beehub.controller.initAction(files,"upload");
 };
 
@@ -302,7 +343,6 @@ nl.sara.beehub.view.content.handle_upload_change = function() {
  */
 nl.sara.beehub.view.content.handle_delete_button_click = function(){
   var resources = nl.sara.beehub.view.content.getSelectedResources();
-//  nl.sara.beehub.controller.deleteResources(resources);
   nl.sara.beehub.controller.initAction(resources,"delete");
 
 };
@@ -312,7 +352,6 @@ nl.sara.beehub.view.content.handle_delete_button_click = function(){
  */
 nl.sara.beehub.view.content.handle_copy_button_click = function() {
   var resources = nl.sara.beehub.view.content.getSelectedResources();
-//  nl.sara.beehub.controller.copyOrMoveResources(resources, "copy");
   nl.sara.beehub.controller.initAction(resources, "copy");
 };
 
@@ -321,7 +360,6 @@ nl.sara.beehub.view.content.handle_copy_button_click = function() {
  */
 nl.sara.beehub.view.content.handle_move_button_click = function() {
   var resources = nl.sara.beehub.view.content.getSelectedResources();
-//  nl.sara.beehub.controller.copyOrMoveResources(resources, "move");
   nl.sara.beehub.controller.initAction(resources, "move");
 
 };

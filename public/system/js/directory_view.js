@@ -63,27 +63,52 @@ nl.sara.beehub.view.getDisplayName = function(name){
   };
 }
 
-/*
- * Returns size from resource
- * 
- * @param Resource {resource} object
- * 
- * @return Integer size
+/**
+ * Convert number of bytes into human readable format
+ *
+ * @param integer bytes     Number of bytes to convert
+ * @param integer precision Number of digits after the decimal separator
+ * @return string
  */
-nl.sara.beehub.view.getSize = function(resource){
-  // Nog niet getest
-  // Calculate size
+nl.sara.beehub.view.bytesToSize = function(bytes, precision)
+{  
+    var kilobyte = 1024;
+    var megabyte = kilobyte * 1024;
+    var gigabyte = megabyte * 1024;
+    var terabyte = gigabyte * 1024;
+   
+    if ((bytes >= 0) && (bytes < kilobyte)) {
+        return bytes + ' B';
+ 
+    } else if ((bytes >= kilobyte) && (bytes < megabyte)) {
+        return (bytes / kilobyte).toFixed(precision) + ' KB';
+ 
+    } else if ((bytes >= megabyte) && (bytes < gigabyte)) {
+        return (bytes / megabyte).toFixed(precision) + ' MB';
+ 
+    } else if ((bytes >= gigabyte) && (bytes < terabyte)) {
+        return (bytes / gigabyte).toFixed(precision) + ' GB';
+ 
+    } else if (bytes >= terabyte) {
+        return (bytes / terabyte).toFixed(precision) + ' TB';
+ 
+    } else {
+        return bytes + ' B';
+    }
+}
+//
+//nl.sara.beehub.view.getSize = function(resource){
+//   // Calculate size
 //  if (resource.contentlength !== ""){
 //   var size = resource.contentlength;
 //   if (size !== '' && size != 0) {
 //     var unit = null;
-//     units = array('B', 'KB', 'MB', 'GB', 'TB');
-//     for (var i = 0, c = count(units); i < c; i++) {
+//     units = ['B', 'KB', 'MB', 'GB', 'TB'];
+//     $.each(units,function(i,value) {
 //       if (size > 1024) {
 //         size = size / 1024;
 //       } else {
 //         unit = units[i];
-//         break;
 //       }
 //     }
 //     showsize = round(size, 0) + ' ' + unit;
@@ -94,8 +119,8 @@ nl.sara.beehub.view.getSize = function(resource){
 //  } else {
 //   size = contentlength;
 //  }
-  return resource.contentlength;
-}
+//  return size;
+//}
 
 /*
  * Add resource to all views

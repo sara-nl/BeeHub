@@ -43,15 +43,18 @@ nl.sara.beehub.controller.clearAllViews = function(){
 nl.sara.beehub.controller.extractPropsFromPropfindRequest = function(data){
   var path = data.getResponseNames()[0];
   var resource = new nl.sara.beehub.ClientResource(path);
-  // Get resourcetype
+  // Get type
   if (data.getResponse(path).getProperty('DAV:','resourcetype') !== undefined) {
     var resourcetypeProp = data.getResponse(path).getProperty('DAV:','resourcetype');
-    if ((resourcetypeProp.xmlvalue.length == 1)
-        &&(resourcetypeProp.xmlvalue.item(0).namespaceURI=='DAV:')) 
-    { 
-      resource.setType(nl.sara.webdav.Ie.getLocalName(resourcetypeProp.xmlvalue.item(0)));
-    } 
-  };
+    var getcontenttypeProp = data.getResponse(path).getProperty('DAV:','getcontenttype');
+    if ((resourcetypeProp.xmlvalue.length === 1) &&(resourcetypeProp.xmlvalue.item(0).namespaceURI==='DAV:')){
+        resource.setType(nl.sara.webdav.Ie.getLocalName(resourcetypeProp.xmlvalue.item(0)));
+    } else {
+      if ((getcontenttypeProp.xmlvalue.length === 1) && (getcontenttypeProp.namespace ==='DAV:')){
+        resource.setType(getcontenttypeProp.getParsedValue());
+      }
+    }
+  } 
   if (data.getResponse(path).getProperty('DAV:','displayname') !== undefined) {
     var displaynameProp = data.getResponse(path).getProperty('DAV:','displayname');
     if ((displaynameProp.xmlvalue.length == 1)
@@ -109,6 +112,10 @@ nl.sara.beehub.controller.getResourcePropsFromServer = function(resourcepath, ca
   resourcetypeProp.tagname = 'resourcetype';
   resourcetypeProp.namespace='DAV:';
   
+  var getcontenttypeProp = new nl.sara.webdav.Property();
+  getcontenttypeProp.tagname = 'getcontenttype';
+  getcontenttypeProp.namespace='DAV:';
+  
   var displaynameProp = new nl.sara.webdav.Property();
   displaynameProp.tagname = 'displayname';
   displaynameProp.namespace='DAV:';
@@ -125,7 +132,7 @@ nl.sara.beehub.controller.getResourcePropsFromServer = function(resourcepath, ca
   getcontentlengthProp.tagname = 'getcontentlength';
   getcontentlengthProp.namespace='DAV:';
   
-  var properties = [resourcetypeProp, displaynameProp, ownerProp, getlastmodifiedProp, getcontentlengthProp];
+  var properties = [resourcetypeProp, getcontenttypeProp, displaynameProp, ownerProp, getlastmodifiedProp, getcontentlengthProp];
   
   function createCallback(){
     return function(status, data) {
@@ -177,39 +184,67 @@ nl.sara.beehub.controller.createNewFolder = function(){
 }  
 
 /**
- * Rename an object
+ * Rename an object.
  * 
- * @param string fileNameOrg
- * @param string fileNameNew
+ * @param Object  resource      Resource to rename
+ * @param String  fileNameNew   New resource name
+ * @param Integer overwriteMode Fail on overwrite or overwrite
  * 
  */
 nl.sara.beehub.controller.renameResource = function(resource, fileNameNew, overwriteMode){
   var webdav = new nl.sara.webdav.Client();
-  
-  function createCallback(resource, fileNameNew) {
-    return function(status) {
-      if (status === 412) {
-        nl.sara.beehub.view.dialog.showOverwriteDialog(resource, fileNameNew);
-      } 
-      if (status === 201 || status === 204) {
-        resource = nl.sara.beehub.view.content.getUnknownResourceValues(resource);
-
-        var newPath = resource.path.replace(/[^\/]*$/,fileNameNew);
-        
-        var resourceNew = new nl.sara.beehub.ClientResource(newPath);
-        resourceNew.setDisplayName(fileNameNew);
-        resourceNew.setType(resource.type);
-        resourceNew.setContentLength(resource.contentlength);
-        resourceNew.setLastModified(resource.lastmodified);
-        resourceNew.setOwner(resource.owner);
-        nl.sara.beehub.view.updateResource(resource, resourceNew);
-      }
-    }
-  };
-   
-  webdav.move(resource.path,createCallback(resource, fileNameNew), nl.sara.beehub.controller.path +fileNameNew,  overwriteMode);
+  webdav.move(resource.path, nl.sara.beehub.controller.createRenameCallback(resource, fileNameNew, overwriteMode), nl.sara.beehub.controller.path +fileNameNew,  overwriteMode);
 };
 
+/**
+ * Rename callback.
+ * 
+ * Shows overwrite dialog when resource already exist. When rename is successfull,
+ * update view.
+ * 
+ * @param Object  resource      Resource to rename
+ * @param String  fileNameNew   New resource name
+ * @param Integer overwriteMode Fail on overwrite or overwrite
+ * 
+ */
+nl.sara.beehub.controller.createRenameCallback = function(resource, fileNameNew, overwriteMode) {
+  return function(status) {
+    // Resource already exist
+    if (status === 412) {
+      // show overwrite dialog
+      nl.sara.beehub.view.dialog.showOverwriteDialog(resource, fileNameNew, function(){
+        nl.sara.beehub.controller.renameResource(resource, fileNameNew,  nl.sara.webdav.Client.SILENT_OVERWRITE);
+      });
+    } 
+    if (status === 201 || status === 204) {
+      // get unknown values of original
+      resource = nl.sara.beehub.view.content.getUnknownResourceValues(resource); 
+      // new path
+      var newPath = nl.sara.beehub.controller.path+fileNameNew;
+      // new resource
+      var resourceNew = new nl.sara.beehub.ClientResource(newPath);
+      resourceNew.setDisplayName(fileNameNew);
+      resourceNew.setType(resource.type);
+      resourceNew.setContentLength(resource.contentlength);
+      resourceNew.setLastModified(resource.lastmodified);
+      resourceNew.setOwner(resource.owner);
+      
+      // 
+      if (overwriteMode !== nl.sara.webdav.Client.SILENT_OVERWRITE) {
+        nl.sara.beehub.view.updateResource(resource, resourceNew);
+      } else {
+        // create resource that is overwritten
+        var resourceOldOverwrite = new nl.sara.beehub.ClientResource(newPath);
+        // delete orignal
+        nl.sara.beehub.view.deleteResource(resource);
+        // update the overwritten resource
+        nl.sara.beehub.view.updateResource(resourceOldOverwrite, resourceNew);
+        nl.sara.beehub.view.dialog.closeDialog();
+      }
+    }
+  }
+}
+ 
 /*
  * Initialize action Copy, Move, Upload or Delete
  * 
@@ -432,7 +467,7 @@ nl.sara.beehub.controller.createUploadHeadCallback = function(resource, renameCo
       if (0 === renameCounter) {
         var destination = resource.path;
       } else {
-        var destination = reource.path+"_"+renameCounter;
+        var destination = resource.path+"_"+renameCounter;
       }
       webdav.put(resource.path, nl.sara.beehub.controller.createUploadEmptyFileCallback(resource, destination, renameCounter),"");
       break;

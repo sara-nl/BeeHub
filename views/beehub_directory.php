@@ -242,7 +242,7 @@ $testtree = createTree2(DAV::slashify(dirname($this->path)));
               <td class="type" name='<?= $member->user_prop_getcontenttype() ?>'><?= $member->user_prop_getcontenttype() ?></td>
             <?php endif; ?> 
 <!--             Date, has to be the same as shown with javascript -->
-            <td class="lastmodified" name='<?= $member->user_prop_getlastmodified() ?>'><?= date('j-n-Y h:m', $member->user_prop_getlastmodified()) ?>
+            <td class="lastmodified" name='<?= date('r',$member->user_prop_getlastmodified()) ?>'><?= date('j-n-Y G:i', $member->user_prop_getlastmodified()) ?>
             </td>
             <td class="owner" name='<?= $owner->path ?>'><?= $owner->user_prop_displayname() ?></td>
             <?php if (substr($member->path, -1) !== '/'): ?>

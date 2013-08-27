@@ -233,7 +233,7 @@ nl.sara.beehub.view.dialog.showResourcesDialog = function(actionFunction){
  * @param {String} fileNew filename of the original file name
  * @param {Object} element DOM element from the 
  */
-nl.sara.beehub.view.dialog.showOverwriteDialog = function(resource, fileNew) {
+nl.sara.beehub.view.dialog.showOverwriteDialog = function(resource, fileNew, overwriteFunction) {
   var overwriteButton='<button id="bh-dir-rename-overwrite-button" class="btn btn-danger">Overwrite</button>'
   var cancelButton='<button id="bh-dir-rename-cancel-button" class="btn btn-success">Cancel</button>'
   $("#bh-dir-dialog").html('<h5><b><i>'+fileNew+'</b></i> already exist in the current directory!</h5><br><center>'+overwriteButton+' '+cancelButton)+'</center>';
@@ -241,11 +241,13 @@ nl.sara.beehub.view.dialog.showOverwriteDialog = function(resource, fileNew) {
        modal: true,
        title: "Warning"
         });
-  $("#bh-dir-rename-overwrite-button").click(function(){
-    nl.sara.beehub.controller.renameResource(resource, fileNew, nl.sara.webdav.Client.SILENT_OVERWRITE);
-  })
+  $("#bh-dir-rename-overwrite-button").click(overwriteFunction);
   $("#bh-dir-rename-cancel-button").click(function(){
     $("tr[id='"+resource.path+"']").find(".bh-dir-rename-td").find(':input').val(resource.displayname);
     $("#bh-dir-dialog").dialog("close");
   })
+};
+
+nl.sara.beehub.view.dialog.closeDialog = function() {
+  $("#bh-dir-dialog").dialog("close");
 };

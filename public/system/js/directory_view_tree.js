@@ -142,7 +142,6 @@ nl.sara.beehub.view.tree.setOnActivate = function(header, activateFunction){
     }
   });
   $("#bh-dir-tree").dynatree("getTree").reload();
-  console.log("focus");
   $("#bh-dir-tree-header").trigger('focus');
 
 };
