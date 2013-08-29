@@ -63,11 +63,13 @@ nl.sara.beehub.view.getDisplayName = function(name){
   if (name === undefined) {
     return "";
   };
-  if (name.contains(nl.sara.beehub.view.userspath)) {
+  if (name.indexOf(nl.sara.beehub.view.userspath) != -1){
+//  if (name.contains(nl.sara.beehub.view.userspath)) {
     var displayName = nl.sara.beehub.principals.users[name.replace(nl.sara.beehub.view.userspath,'')];
     return displayName;
   };
-  if (name.contains(nl.sara.beehub.view.groupspath)) {
+  if (name.indexOf(nl.sara.beehub.view.groupsspath) != -1){
+//  if (name.contains(nl.sara.beehub.view.groupspath)) {
     var displayName = nl.sara.beehub.principals.groups[name.replace(nl.sara.beehub.view.groupspath,'')];
     return displayName;
   };

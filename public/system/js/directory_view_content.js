@@ -166,7 +166,7 @@ nl.sara.beehub.view.content.createRow = function(resource){
   var month = date.getMonth()+1;
   var year = date.getFullYear();
   var hours = date.getHours();
-  var minutes = date.getMinutes();
+  var minutes = date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes();
   var dateString = (day+"-"+month+"-"+year+" "+hours+":"+minutes);
   row.push('<td class="lastmodified" name="'+resource.lastmodified+'">'+dateString+'</td>');
   // Owner
@@ -277,7 +277,9 @@ nl.sara.beehub.view.content.disable_action_buttons = function() {
 nl.sara.beehub.view.content.handle_checkall_checkbox_click = function() {
   if ($(this)[0].checked) {
     $('.bh-dir-checkbox').prop('checked',true);
-    nl.sara.beehub.view.content.enable_action_buttons();
+    if ($('.bh-dir-checkbox:checked').length > 0) {
+      nl.sara.beehub.view.content.enable_action_buttons();
+    };
   } else {
     $('.bh-dir-checkbox').prop('checked',false);
     nl.sara.beehub.view.content.disable_action_buttons();

@@ -28,8 +28,15 @@
   background-color: white !important;
 } 
 /* Do not show close button on dialog */
-.no-close .ui-dialog-titlebar-close {
+.custom-dialog .ui-dialog-titlebar-close {
   display: none !important;
+}
+
+/* Prevent scroll dialog
+.custom-dialog {
+	position: fixed;
+  top: 50px;
+  left: 50px;
 }
 
 /* Make space for tree slide out */

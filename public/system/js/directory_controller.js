@@ -162,6 +162,7 @@ nl.sara.beehub.controller.createNewFolder = function(){
   function createCallback() {
     return function(status, path) {
       if (status === 201) {
+        nl.sara.beehub.view.tree.reload();
         nl.sara.beehub.controller.getResourcePropsFromServer(path, nl.sara.beehub.view.addResource);
         return;
       };
@@ -414,6 +415,7 @@ nl.sara.beehub.controller.createActionCallback = function(resource, renameCounte
     //Succeeded
     case 201: 
     case 204:
+      nl.sara.beehub.view.tree.reload();
       // Update dialog info
       nl.sara.beehub.view.dialog.updateResourceInfo(resource,"Done");
       nl.sara.beehub.controller.updateActionView(resource, renameCounter);
@@ -535,8 +537,6 @@ nl.sara.beehub.controller.createUploadEmptyFileCallback = function(resource, des
         } else {
           nl.sara.beehub.view.dialog.updateResourceInfo(resource,'Uploading...');
         };
-        console.log(destination);
-        console.log(nl.sara.beehub.controller.actionFiles[resource.path]);
         ajax.send(nl.sara.beehub.controller.actionFiles[resource.path]);  
       break;
     // Forbidden

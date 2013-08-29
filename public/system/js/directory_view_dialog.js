@@ -35,7 +35,7 @@ nl.sara.beehub.view.dialog.showError = function(error) {
     maxHeight: 400,
     title: " Error!",
     closeOnEscape: false,
-    dialogClass: "no-close",
+    dialogClass: "custom_dialog",
     buttons: [{
       text: "Ok",
       click: function() {
@@ -204,7 +204,7 @@ nl.sara.beehub.view.dialog.showResourcesDialog = function(actionFunction){
     maxHeight: 400,
     title: config.title,
     closeOnEscape: false,
-    dialogClass: "no-close",
+    dialogClass: "custom-dialog",
     minWidth: 460,
     buttons: [{
       text: "Cancel",

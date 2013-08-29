@@ -159,6 +159,7 @@ nl.sara.beehub.view.tree.clearView = function(){
     window.location.href = node;
   });
   // close tree
+  nl.sara.beehub.view.tree.slideTrigger('left');
   nl.sara.beehub.view.tree.closeTree();
 };
 
@@ -183,6 +184,14 @@ nl.sara.beehub.view.content.handle_tree_slide_click = function() {
 }
 
 /*
+ * Reload tree 
+ * 
+ */
+nl.sara.beehub.view.tree.reload = function(){
+  $("#bh-dir-tree").dynatree("getTree").reload();
+}
+
+/*
  * Set onActivate
  *  
  * @param {Array} Resources Array with resources
@@ -198,7 +207,5 @@ nl.sara.beehub.view.tree.setOnActivate = function(header, activateFunction){
       }
     }
   });
-  $("#bh-dir-tree").dynatree("getTree").reload();
-  $("#bh-dir-tree-header").trigger('focus');
-
+  nl.sara.beehub.view.tree.reload();
 };
