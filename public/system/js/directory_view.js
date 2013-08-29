@@ -43,6 +43,16 @@ nl.sara.beehub.view.clearAllViews = function(){
 }; 
 
 /*
+ * Mask view 
+ */
+nl.sara.beehub.view.maskView = function(mask){
+  if (mask) { 
+    $("#bh-dir-all").show();
+  } else {
+    $("#bh-dir-all").hide();
+  }  
+}
+/*
  * Returns displayname from object
  * 
  * @param String {name} object

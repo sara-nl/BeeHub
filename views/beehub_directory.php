@@ -152,7 +152,14 @@ $testtree = createTree2(DAV::slashify(dirname($this->path)));
   </ul>
 </div>
 
-<h5 class="bh-dir-tree-header" hidden=true><center>Browse</center></h5>
+<div id="bh-dir-tree-header">
+	<table>
+		<tr>
+			<td id="bh-dir-tree-cancel" hidden=true><i class="icon-remove" style="cursor: pointer"></i></td>
+			<td class="bh-dir-tree-header" hidden=true>Browse</td>
+		</tr>
+	</table>
+</div>
 
 <a class="bh-dir-tree-slide-trigger" href="#"><i
     class="icon-chevron-left"></i> </a>
@@ -283,6 +290,8 @@ $testtree = createTree2(DAV::slashify(dirname($this->path)));
 
 </div>
 <!-- End tab div -->
+<!-- Mask input -->
+<div id="bh-dir-all" hidden=true></div>
 
 <?php
 $footer = '

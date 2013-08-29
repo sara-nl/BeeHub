@@ -84,6 +84,63 @@ nl.sara.beehub.view.tree.init = function() {
 };
 
 /*
+ * Action slide trigger
+ * 
+ * @param String show Hide, show or icon left
+ */
+nl.sara.beehub.view.tree.slideTrigger = function(action){
+  switch(action)
+  {
+  case "show":
+    $(".bh-dir-tree-slide-trigger").show();
+    break;
+  case "hide":
+    $(".bh-dir-tree-slide-trigger").hide();
+    break;
+  case "left":
+    $('.bh-dir-tree-slide-trigger i').removeClass('icon-chevron-right');
+    $('.bh-dir-tree-slide-trigger i').addClass('icon-chevron-left');
+    break;
+  default:
+    // This should never happen
+  }
+}
+
+/*
+ * Overrule mask
+ * 
+ * @param Boolean nomask true or false
+ * 
+ */
+nl.sara.beehub.view.tree.noMask = function(nomask){
+  if (nomask) {
+    $("#bh-dir-tree-header").css('z-index', 1000);
+    $("#bh-dir-tree").addClass('bh-dir-nomask');
+  } else {
+    $(".bh-dir-tree-header").removeClass('bh-dir-nomask');
+    $("#bh-dir-tree").removeClass('bh-dir-nomask');
+  }
+}
+
+/*
+ * Show or hide cancel button and set click handler
+ */
+nl.sara.beehub.view.tree.cancelButton = function(action){
+  if (action === 'show') {
+    $('#bh-dir-tree-cancel').click(function(){
+      nl.sara.beehub.controller.setCopyMoveView(false);
+      nl.sara.beehub.view.tree.clearView();
+    }); 
+    $('#bh-dir-tree-cancel').show();
+    return;
+  };
+  if (action === 'hide') {
+    $('#bh-dir-tree-cancel').hide();
+    return;
+  }
+}
+
+/*
  * Close tree
  */
 nl.sara.beehub.view.tree.closeTree = function(){
@@ -110,7 +167,7 @@ nl.sara.beehub.view.tree.clearView = function(){
  */
 nl.sara.beehub.view.tree.showTree = function(){
   $(".bh-dir-tree-slide").slideDown('slow');
-  $(".bh-dir-tree-header").slideDown('slow');
+  $(".bh-dir-tree-header").show();
 };
 
 /*
@@ -119,7 +176,7 @@ nl.sara.beehub.view.tree.showTree = function(){
  */
 nl.sara.beehub.view.content.handle_tree_slide_click = function() {
   $(".bh-dir-tree-slide").slideToggle("slow");
-  $(".bh-dir-tree-header").slideToggle("slow");
+  $(".bh-dir-tree-header").toggle();
   $(this).toggleClass("active");
   $('.bh-dir-tree-slide-trigger i').toggleClass('icon-chevron-left icon-chevron-right');
   return false;
@@ -132,7 +189,7 @@ nl.sara.beehub.view.content.handle_tree_slide_click = function() {
  * 
  */
 nl.sara.beehub.view.tree.setOnActivate = function(header, activateFunction){
-  $(".bh-dir-tree-header").html('<center>'+header+'</center>');
+  $(".bh-dir-tree-header").html(header);
   // show dialog with items to copy and target directory
   $("#bh-dir-tree").dynatree({
     onActivate: function(node) {

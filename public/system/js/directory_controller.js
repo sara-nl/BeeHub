@@ -269,9 +269,12 @@ nl.sara.beehub.controller.initAction = function(items, action){
   };
 
   if (action === "copy" || action === "move") {
+    nl.sara.beehub.controller.setCopyMoveView(true);
     // Change select node handler in tree to get destination
     nl.sara.beehub.view.tree.setOnActivate("Select "+action+" destination", function(path){
       nl.sara.beehub.controller.actionDestination = path;
+      nl.sara.beehub.controller.setCopyMoveView(false);
+      nl.sara.beehub.view.tree.clearView();
       nl.sara.beehub.view.dialog.showResourcesDialog(function() {
         nl.sara.beehub.controller.startAction();
       });
@@ -284,6 +287,24 @@ nl.sara.beehub.controller.initAction = function(items, action){
     });
   };
 };
+
+/*
+ * Make view copy or move ready
+ */
+nl.sara.beehub.controller.setCopyMoveView = function(view){
+  if (view) {
+    nl.sara.beehub.view.tree.cancelButton('show');
+    nl.sara.beehub.view.maskView(true);
+    nl.sara.beehub.view.tree.noMask(true);
+    nl.sara.beehub.view.tree.slideTrigger('left'); 
+    nl.sara.beehub.view.tree.slideTrigger('hide'); 
+  } else {
+    nl.sara.beehub.view.tree.cancelButton('hide');
+    nl.sara.beehub.view.maskView(false);
+    nl.sara.beehub.view.tree.noMask(false);
+    nl.sara.beehub.view.tree.slideTrigger('show');
+  }
+}
 
 /*
  * Start action Copy, Move, Upload or Delete

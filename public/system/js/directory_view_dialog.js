@@ -205,7 +205,7 @@ nl.sara.beehub.view.dialog.showResourcesDialog = function(actionFunction){
     title: config.title,
     closeOnEscape: false,
     dialogClass: "no-close",
-    minWidth: 450,
+    minWidth: 460,
     buttons: [{
       text: "Cancel",
       id: 'bh-dir-cancel-dialog-button',
