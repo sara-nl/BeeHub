@@ -125,6 +125,15 @@ nl.sara.beehub.view.content.setRowHandlers = function(){
 };
 
 /*
+ * Trigger rename click on resource
+ * 
+ * @param Object resource Resource to trigger rename click
+ */
+nl.sara.beehub.view.content.triggerRenameClick = function(resource){
+  $("tr[id='"+resource.path+"']").find('.bh-dir-edit').trigger('click');
+}
+
+/*
  * Create contentview row from resource object
  * 
  * @param Object {resource} Resource object

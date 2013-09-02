@@ -32,7 +32,7 @@
   display: none !important;
 }
 
-/* Prevent scroll dialog
+/* Prevent scroll dialog */
 .custom-dialog {
 	position: fixed;
   top: 50px;

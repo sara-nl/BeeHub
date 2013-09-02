@@ -33,6 +33,7 @@ nl.sara.beehub.view.dialog.showError = function(error) {
   $('#bh-dir-dialog').dialog({
     modal: true,
     maxHeight: 400,
+    resizable: false,
     title: " Error!",
     closeOnEscape: false,
     dialogClass: "custom_dialog",
@@ -205,7 +206,8 @@ nl.sara.beehub.view.dialog.showResourcesDialog = function(actionFunction){
     title: config.title,
     closeOnEscape: false,
     dialogClass: "custom-dialog",
-    minWidth: 460,
+    resizable: false,
+    width: 460,
     buttons: [{
       text: "Cancel",
       id: 'bh-dir-cancel-dialog-button',
