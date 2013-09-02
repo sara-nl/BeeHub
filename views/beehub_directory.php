@@ -46,24 +46,26 @@ $testtree = createTree2(DAV::slashify(dirname($this->path)));
 <div class="bh-dir-fixed-header">
   <h4>
     <?php
+    // first and last of $crumb are empty
     $crumb = explode("/", $this->path);
     print "<ul class='breadcrumb bh-dir-breadcrumb '>";
     print "<li><a href='/'>BeeHub root</a><span class='divider'>&raquo;</span></li>";
-    $last = count($crumb) - 2;
-    $i = 0;
+    $count = count($crumb);
+    $start = 1;
+    if ($count > 4) {
+			print "<li><span class='divider'>.. /</span></li>";
+			$start = $count - 3;
+		};
+    $last = $count - 2;
     $newpath = '';
-    foreach ($crumb as $value) {
-      $value = urldecode($value);
-      // first and last value are empty
-      if ($value !== '') {
-        $newpath .= '/' . $value;
-        if ($i === $last) {
-          print "<li class='active'>$value</li>";
-        } else {
-          print "<li><a href='" . $newpath . "'>$value</a><span class='divider'>/</span></li>";
-        }
+    for ($x=$start; $x<=$count-2; $x++) {
+      $value = urldecode($crumb[$x]);
+      $newpath .= '/' . $value;
+      if ($x === $last) {
+        print "<li class='active'>$value</li>";
+      } else {
+        print "<li><a href='" . $newpath . "'>$value</a><span class='divider'>/</span></li>";
       }
-      $i++;
     }
     print "</ul>";
     ?>
@@ -174,9 +176,9 @@ $testtree = createTree2(DAV::slashify(dirname($this->path)));
     <table id="bh-dir-content-table" class="table table-striped">
       <thead class="bh-dir-table-header">
         <tr>
-          <th width="10px"></th>
           <th width="10px"><input type="checkbox"
                                   class="bh-dir-checkboxgroup"></th>
+          <th width="10px"></th>
           <th>Name</th>
           <!-- 			Hidden rename column -->
           <th hidden='true'></th>
@@ -201,12 +203,12 @@ $testtree = createTree2(DAV::slashify(dirname($this->path)));
           );
           ?>
           <tr id='<?= DAV::unslashify($member->path) ?>'>
-<!--             Rename icon -->
-            <td width="10px" data-toggle="tooltip" title="Rename file"><i
-                class="icon-edit bh-dir-edit" style="cursor: pointer"></i></td>
 <!--             Select checkbox -->
             <td width="10px"><input type="checkbox" class="bh-dir-checkbox" name='<?= DAV::unslashify($member->path)?>'
                                     value='<?= $member->user_prop_displayname() ?>'></td>
+<!--             Rename icon -->
+            <td width="10px" data-toggle="tooltip" title="Rename"><i
+                class="icon-edit bh-dir-edit" style="cursor: pointer"></i></td>
               <?php if (substr($member->path, -1) === '/'): ?>
               <td class="bh-dir-name displayname" name='<?= $member->user_prop_displayname() ?>'><a
                   href='<?= DAV::unslashify($member->path) ?>'><b><?= $member->user_prop_displayname() ?>/</b>
@@ -234,7 +236,7 @@ $testtree = createTree2(DAV::slashify(dirname($this->path)));
                     break;
                   }
                 }
-                $showsize = round($size, 0) . ' ' . $unit;
+                $showsize = round($size, 2) . ' ' . $unit;
               } else {
                 $showsize = '';
               }

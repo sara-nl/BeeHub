@@ -143,11 +143,11 @@ nl.sara.beehub.view.content.triggerRenameClick = function(resource){
 nl.sara.beehub.view.content.createRow = function(resource){
   var row = [];
   row.push('<tr id="'+resource.path+'">');
-  // Edit column
-  row.push('<td width="10px" data-toggle="tooltip" title="Rename file">');
-  row.push('<i class="icon-edit bh-dir-edit" style="cursor: pointer"></i></td>');
   // Checkboxes
   row.push('<td width="10px"><input type="checkbox" class="bh-dir-checkbox" name="'+resource.path+'" value="'+resource.displayname+'"></td>');
+  // Edit column
+  row.push('<td width="10px" data-toggle="tooltip" title="Rename">');
+  row.push('<i class="icon-edit bh-dir-edit" style="cursor: pointer"></i></td>');
   // Name
   if (resource.type==='collection') {
     row.push('<td class="bh-dir-name displayname" name="'+resource.displayname+'"><a href="'+resource.path+'"><b>'+resource.displayname+'/</b></a></td>');
@@ -163,7 +163,7 @@ nl.sara.beehub.view.content.createRow = function(resource){
     row.push('<td class="type" name="'+resource.type+'"><i name="'+resource.path+'" class="icon-folder-close bh-dir-openselected" style="cursor: pointer">></i></td>');
   } else {
     // Size
-    row.push('<td class="contentlength" name="'+resource.contentlength+'">'+nl.sara.beehub.view.bytesToSize(resource.contentlength, 0)+'</td>');
+    row.push('<td class="contentlength" name="'+resource.contentlength+'">'+nl.sara.beehub.view.bytesToSize(resource.contentlength, 1)+'</td>');
     //Type
     row.push('<td class="type" name="'+resource.type+'">'+resource.type+'</td>');
 
