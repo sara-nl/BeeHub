@@ -58,14 +58,16 @@ $testtree = createTree2(DAV::slashify(dirname($this->path)));
 		};
     $last = $count - 2;
     $newpath = '';
-    for ($x=$start; $x<=$count-2; $x++) {
+    for ($x=1; $x<=$count-2; $x++) {
       $value = urldecode($crumb[$x]);
       $newpath .= '/' . $value;
-      if ($x === $last) {
-        print "<li class='active'>$value</li>";
-      } else {
-        print "<li><a href='" . $newpath . "'>$value</a><span class='divider'>/</span></li>";
-      }
+      if ($x >= $start) {
+	      if ($x === $last) {
+	        print "<li class='active'>$value</li>";
+	      } else {
+	        print "<li><a href='" . $newpath . "'>$value</a><span class='divider'>/</span></li>";
+	      }
+	    }
     }
     print "</ul>";
     ?>
