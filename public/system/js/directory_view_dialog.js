@@ -16,10 +16,18 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with beehub.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+/** 
+ * Beehub Client dialogs
+ * 
+ * @author Laura Leistikow (laura.leistikow@surfsara.nl)
+ */
+
 /*
- * Clears selections
+ * Clear dialog
  */
 nl.sara.beehub.view.dialog.clearView = function(){
+  // Close dialog
   $('#bh-dir-dialog').dialog("close");
 };
 
@@ -49,7 +57,9 @@ nl.sara.beehub.view.dialog.showError = function(error) {
 /*
  * Show dialog with ready buttons
  * 
- *  */
+ * @param function actionFunction Function to call when ready is clicked
+ * 
+ */
 nl.sara.beehub.view.dialog.setDialogReady = function(actionFunction){
   $('#bh-dir-dialog-button').button({label:"Ready"});
   $('#bh-dir-dialog-button').button("enable");
@@ -64,17 +74,18 @@ nl.sara.beehub.view.dialog.setDialogReady = function(actionFunction){
 /*
 * Show progress bar
 * 
-* @param {Resource} resource Resource to show progress from
-* @param {Integer} progress Progress of action
+* @param Resource resource Resource to show progress from
+* @param Integer  progress Progress of action
 */
 nl.sara.beehub.view.dialog.showProgressBar = function(resource, progress){
   $("tr[id='dialog_tr_"+resource.path+"']").find('.info').html("<div class='progress progress-success progress-striped'><div class='bar' style='width: "+progress+"%;'>"+progress+"%</div></div>");
 };
 
 /*
-* Update info column in delete dialog
+* Update info column in dialog
 * 
-* @param {Resource} resource Resource to update
+* @param Resource resource Resource to update
+* @param String   info     Information for dialog
 */
 nl.sara.beehub.view.dialog.updateResourceInfo = function(resource, info){
   $("tr[id='dialog_tr_"+resource.path+"']").find('.info').html("<b>"+info+"</b>");
@@ -95,64 +106,26 @@ nl.sara.beehub.view.dialog.setAlreadyExist = function(resource, overwriteFunctio
   
   $("tr[id='dialog_tr_"+resource.path+"']").find('.info').html("Item exist on server!<br/>"+renameButton+" "+overwriteButton+" "+cancelButton);
   
-//  // Overwrite click handler
+  // Overwrite click handler
   $("tr[id='dialog_tr_"+resource.path+"']").find('.overwritebutton').click(function(){
     overwriteFunction();
   });
+  
   // Cancel click handler
   $("tr[id='dialog_tr_"+resource.path+"']").find('.cancelbutton').click(function(){
     cancelFunction();
   });
-//  // Rename click handler
+  
+  // Rename click handler
   $("tr[id='dialog_tr_"+resource.path+"']").find('.renamebutton').click(function(){   
     renameFunction();
   });
 };
 
-//
-///**
-// * Rename Copy/Move/Delete handler
-// * 
-// * @param string fileName
-// * @param string fileNameOrg
-// * @param object filesHash
-// */
-//function setActionRenameHandler(actionConfig){
-//  var fileName = actionConfig.contents[actionConfig.counter].value;
-//  $("#bh-dir-dialog").find('button[id="bh-dir-upload-rename-'+fileName+'"]').click(function(){
-//    // search fileName td and make input field
-//    var fileNameOrg= $("#bh-dir-dialog").find('td[id="bh-dir-'+fileName+'"]').prev().html();
-//    actionConfig.filenameOrg = fileNameOrg;
-//    var buttonsOrg = $("#bh-dir-dialog").find('td[id="bh-dir-'+fileName+'"]').html();
-//    $("#bh-dir-dialog").find('td[id="bh-dir-'+fileName+'"]').prev().html("<input id='bh-dir-upload-rename-input-"+fileName+"' value='"+fileName+"'></input>");
-//    // change buttons - cancel and upload
-//    var renameUploadButton = '<button id="bh-dir-upload-rename-upload-'+fileNameOrg+'" name="'+fileNameOrg+'" class="btn btn-success">Upload</button>'
-//    var renameCancelButton = '<button id="bh-dir-upload-rename-cancel-'+fileNameOrg+'" class="btn btn-danger">Cancel</button>'
-//    $("#bh-dir-dialog").find('td[id="bh-dir-'+fileName+'"]').html(renameUploadButton+" "+renameCancelButton);
-//    // handler cancel rename
-//    $("#bh-dir-dialog").find('button[id="bh-dir-upload-rename-cancel-'+fileName+'"]').click(function(){
-//      $("#bh-dir-dialog").find('td[id="bh-dir-'+fileNameOrg+'"]').html(buttonsOrg);
-//      $("#bh-dir-dialog").find('td[id="bh-dir-'+fileNameOrg+'"]').prev().html(fileNameOrg);
-//      setActionOverwriteHandler(actionConfig);
-//      setActionCancelHandler(actionConfig);
-//      setActionRenameHandler(actionConfig);
-//    })
-//    // add handler upload rename
-//    $("#bh-dir-dialog").find('button[id="bh-dir-upload-rename-upload-'+fileName+'"]').click(function(){
-//      var newName = $("#bh-dir-dialog").find('input[id="bh-dir-upload-rename-input-'+fileName+'"]').val();
-//      if (newName !== fileName) {
-//        $("#bh-dir-dialog").find('td[id="bh-dir-'+fileNameOrg+'"]').prev().html(fileName+" <br/> <b>renamed to</b> <br/> "+newName);
-//      };
-//      checkFileName(newName, filesHash[fileName], null, filesHash);
-//    })
-//  })
-//};
-
-
 /*
-* scroll to position in dialog
+* Scroll to position in dialog
 * 
-* @param {Integer} number Position to scroll to
+* @param Integer number Position to scroll to
 */
 nl.sara.beehub.view.dialog.scrollTo = function(number){
   $("#bh-dir-dialog").scrollTop(number);
@@ -162,11 +135,11 @@ nl.sara.beehub.view.dialog.scrollTo = function(number){
 /*
  * Show dialog with resources to copy, move, upload or delete
  * 
- * @param {Array} resources Array with resources
- * @param {Object} destination Resource Destination resource
+ * @param function actionFunction Action handler
  */
 nl.sara.beehub.view.dialog.showResourcesDialog = function(actionFunction){
   var config = {}; 
+  // Set text and labels
   switch(nl.sara.beehub.controller.actionAction)
   {
   case "copy": 
@@ -192,6 +165,8 @@ nl.sara.beehub.view.dialog.showResourcesDialog = function(actionFunction){
   default:
     // This should never happen
   }
+  
+  // Put all resources in dialog
   $("#bh-dir-dialog").html("");
   var appendString='';
   appendString = appendString + '<table class="table"><tbody>';
@@ -200,6 +175,8 @@ nl.sara.beehub.view.dialog.showResourcesDialog = function(actionFunction){
   });
   appendString = appendString +'</tbody></table>';
   $("#bh-dir-dialog").append(appendString);
+  
+  // Show dialog
   $("#bh-dir-dialog").dialog({
     modal: true,
     maxHeight: 400,
@@ -212,9 +189,8 @@ nl.sara.beehub.view.dialog.showResourcesDialog = function(actionFunction){
       text: "Cancel",
       id: 'bh-dir-cancel-dialog-button',
       click: function() {
-       $(this).dialog("close");
-       $(".bh-dir-tree-slide-trigger").trigger('click');
-       nl.sara.beehub.controller.clearAllViews();
+        $(this).dialog("close");
+        nl.sara.beehub.controller.clearAllViews();
       }
     }, {
       text: config.buttonText,
@@ -230,10 +206,11 @@ nl.sara.beehub.view.dialog.showResourcesDialog = function(actionFunction){
 };
 
 /*
- * Show dialog with overwrite buttons
+ * Show overwrite buttons in dialog
  * 
- * @param {String} fileNew filename of the original file name
- * @param {Object} element DOM element from the 
+ * @param Object    resource            Resource to update
+ * @param String    fileNew             filename of the original file name
+ * @param Function  overwriteFunction   Overwrite handler 
  */
 nl.sara.beehub.view.dialog.showOverwriteDialog = function(resource, fileNew, overwriteFunction) {
   var overwriteButton='<button id="bh-dir-rename-overwrite-button" class="btn btn-danger">Overwrite</button>'
@@ -250,6 +227,10 @@ nl.sara.beehub.view.dialog.showOverwriteDialog = function(resource, fileNew, ove
   })
 };
 
+/*
+ * Close the dialog
+ * 
+ */
 nl.sara.beehub.view.dialog.closeDialog = function() {
   $("#bh-dir-dialog").dialog("close");
 };

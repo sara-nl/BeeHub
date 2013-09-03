@@ -17,65 +17,34 @@
  * along with beehub.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/**
+ * Beehub Client Tree
+ * 
+ * Directory tree
+ * 
+ * @author Laura Leistikow (laura.leistikow@surfsara.nl)
+ */
+
+/*
+ * Init tree
+ */
 nl.sara.beehub.view.tree.init = function() {
   // Directory tree in tree panel
   $("#bh-dir-tree").dynatree({
     onActivate: function(node) {
-      // A DynaTreeNode object is passed to the activation handler
+      // First close tree to prevent you see a load error in the treeview
       nl.sara.beehub.view.tree.closeTree();
+      // Load node
       window.location.href = node.data.id;
     },
     persist: false,
+    // from beehub_directory.php
     children: treecontents,
+    // collapse
     onLazyRead: function(node){
-      var client = new nl.sara.webdav.Client();
-      var resourcetypeProp = new nl.sara.webdav.Property();
-      resourcetypeProp.tagname = 'resourcetype';
-      resourcetypeProp.namespace='DAV:';
-      var properties = [resourcetypeProp];
-      client.propfind(node.data.id, function(status, data) {
-        // Callback
-        if (status != 207) {
-          // Server returned an error condition: set node status accordingly
-          node.setLazyNodeStatus(DTNodeStatus_Error, {
-            tooltip: data.faultDetails,
-            info: data.faultString
-          });
-        };
-        var res = [];
-        $.each(data.getResponseNames(), function(pathindex){
-          var path = data.getResponseNames()[pathindex];
-          
-          if (node.data.id !== path) {
-            if (data.getResponse(path).getProperty('DAV:','resourcetype') !== undefined) {
-              var resourcetypeProp = data.getResponse(path).getProperty('DAV:','resourcetype');
-              if ((resourcetypeProp.xmlvalue.length == 1)
-                  &&(nl.sara.webdav.Ie.getLocalName(resourcetypeProp.xmlvalue.item(0))=='collection')
-                  &&(resourcetypeProp.xmlvalue.item(0).namespaceURI=='DAV:')) 
-              {
-                var name = path;
-                while (name.substring(name.length-1) == '/') {
-                  name = name.substr(0, name.length-1);
-                }
-                name = decodeURIComponent(name.substr(name.lastIndexOf('/')+1));
-                res.push({
-                  'title': name,
-                  'id' : path,
-                  'isFolder': 'true',
-                  'isLazy' : 'true'
-                });
-              }
-            }
-          };
-        });
-        // PWS status OK
-        node.setLazyNodeStatus(DTNodeStatus_Ok);
-        node.addChild(res);
-        // end callback
-      },1,properties);
+      nl.sara.beehub.controller.getTreeNode(node.data.id, nl.sara.beehub.view.tree.getTreeNodeCallback(node));
     }
   });
-  
   // Tree slide handler
   $(".bh-dir-tree-slide-trigger").hover(nl.sara.beehub.view.content.handle_tree_slide_click, function(){
    // No action;
@@ -84,9 +53,59 @@ nl.sara.beehub.view.tree.init = function() {
 };
 
 /*
+ * Return callback function for getTreeNode
+ * 
+ * @param Object  node  Node from tree
+ * 
+ */
+nl.sara.beehub.view.tree.getTreeNodeCallback = function(node){
+  return function(status, data) {
+    // Callback
+    if (status != 207) {
+      // Server returned an error condition: set node status accordingly
+      node.setLazyNodeStatus(DTNodeStatus_Error, {
+        tooltip: data.faultDetails,
+        info: data.faultString
+      });
+    };
+    var res = [];
+    $.each(data.getResponseNames(), function(pathindex){
+      var path = data.getResponseNames()[pathindex];
+      
+      // put response in array
+      if (node.data.id !== path) {
+        if (data.getResponse(path).getProperty('DAV:','resourcetype') !== undefined) {
+          var resourcetypeProp = data.getResponse(path).getProperty('DAV:','resourcetype');
+          if ((resourcetypeProp.xmlvalue.length == 1)
+              &&(nl.sara.webdav.Ie.getLocalName(resourcetypeProp.xmlvalue.item(0))=='collection')
+              &&(resourcetypeProp.xmlvalue.item(0).namespaceURI=='DAV:')) 
+          {
+            var name = path;
+            while (name.substring(name.length-1) == '/') {
+              name = name.substr(0, name.length-1);
+            }
+            name = decodeURIComponent(name.substr(name.lastIndexOf('/')+1));
+            res.push({
+              'title': name,
+              'id' : path,
+              'isFolder': 'true',
+              'isLazy' : 'true'
+            });
+          }
+        }
+      };
+    });
+    // PWS status OK
+    node.setLazyNodeStatus(DTNodeStatus_Ok);
+    node.addChild(res);
+    // end callback
+  }
+}
+
+/*
  * Action slide trigger
  * 
- * @param String show Hide, show or icon left
+ * @param String action hide, show or icon left
  */
 nl.sara.beehub.view.tree.slideTrigger = function(action){
   switch(action)
@@ -107,14 +126,14 @@ nl.sara.beehub.view.tree.slideTrigger = function(action){
 }
 
 /*
- * Overrule mask
+ * Overrule mask, show only tree view
  * 
  * @param Boolean nomask true or false
  * 
  */
 nl.sara.beehub.view.tree.noMask = function(nomask){
   if (nomask) {
-    $("#bh-dir-tree-header").css('z-index', 1000);
+    $("#bh-dir-tree-header").addClass('bh-dir-nomask');
     $("#bh-dir-tree").addClass('bh-dir-nomask');
   } else {
     $(".bh-dir-tree-header").removeClass('bh-dir-nomask');
@@ -149,10 +168,18 @@ nl.sara.beehub.view.tree.closeTree = function(){
 };
 
 /*
- * Close tree
+ * Show tree
+ */
+nl.sara.beehub.view.tree.showTree = function(){
+  $(".bh-dir-tree-slide").slideDown('slow');
+  $(".bh-dir-tree-header").show();
+};
+
+/*
+ * Clear tree view
  */
 nl.sara.beehub.view.tree.clearView = function(){
-  // remove onactivate
+  // original onactivate
   nl.sara.beehub.view.tree.setOnActivate("Browse", function(node){
     // Close tree otherwise a load error is shown
     nl.sara.beehub.view.tree.closeTree();
@@ -161,14 +188,6 @@ nl.sara.beehub.view.tree.clearView = function(){
   // close tree
   nl.sara.beehub.view.tree.slideTrigger('left');
   nl.sara.beehub.view.tree.closeTree();
-};
-
-/*
- * Show tree
- */
-nl.sara.beehub.view.tree.showTree = function(){
-  $(".bh-dir-tree-slide").slideDown('slow');
-  $(".bh-dir-tree-header").show();
 };
 
 /*
@@ -194,12 +213,12 @@ nl.sara.beehub.view.tree.reload = function(){
 /*
  * Set onActivate
  *  
- * @param {Array} Resources Array with resources
+ * @param String    header              Header to show
+ * @param Function  activationFunction  Activate function
  * 
  */
 nl.sara.beehub.view.tree.setOnActivate = function(header, activateFunction){
   $(".bh-dir-tree-header").html(header);
-  // show dialog with items to copy and target directory
   $("#bh-dir-tree").dynatree({
     onActivate: function(node) {
       if (activateFunction !== undefined) {

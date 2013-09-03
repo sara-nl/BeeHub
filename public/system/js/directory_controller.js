@@ -225,6 +225,21 @@ nl.sara.beehub.controller.getResourcePropsFromServer = function(resourcepath, ca
   webdav.propfind(resourcepath, createCallback() ,1,properties);
 };
 
+/*
+ * Get tree node from server
+ * 
+ * @param String    path      Tree path
+ * @param Function  callback  Callback function
+ */
+nl.sara.beehub.controller.getTreeNode = function(path, callback){
+  var client = new nl.sara.webdav.Client();
+  var resourcetypeProp = new nl.sara.webdav.Property();
+  resourcetypeProp.tagname = 'resourcetype';
+  resourcetypeProp.namespace='DAV:';
+  var properties = [resourcetypeProp];
+  client.propfind(path, callback ,1,properties);
+};
+
 // CREATE NEW FOLDER
 /*
  * Create new folder. When new foldername already exist add counter to the name
