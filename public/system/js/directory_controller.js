@@ -42,6 +42,62 @@ nl.sara.beehub.controller.clearAllViews = function(){
 }
 
 /*
+ * Returns displayname from object
+ * 
+ * @param String {name} object
+ * 
+ * @return String Displayname
+ */
+nl.sara.beehub.controller.getDisplayName = function(name){
+  if (name === undefined) {
+    return "";
+  };
+  if (name.indexOf(nl.sara.beehub.users_path) != -1){
+    var displayName = nl.sara.beehub.principals.users[name.replace(nl.sara.beehub.users_path,'')];
+    return displayName;
+  };
+  if (name.indexOf(nl.sara.beehub.groups_path) != -1){
+    var displayName = nl.sara.beehub.principals.groups[name.replace(nl.sara.beehub.groups_path,'')];
+    return displayName;
+  };
+};
+
+
+/**
+ * Convert number of bytes into human readable format
+ *
+ * @param integer bytes     Number of bytes to convert
+ * @param integer precision Number of digits after the decimal separator
+ * @return string
+ */
+nl.sara.beehub.controller.bytesToSize = function(bytes, precision)
+{  
+    var kilobyte = 1024;
+    var megabyte = kilobyte * 1024;
+    var gigabyte = megabyte * 1024;
+    var terabyte = gigabyte * 1024;
+   
+    if ((bytes >= 0) && (bytes < kilobyte)) {
+        return bytes + ' B';
+ 
+    } else if ((bytes >= kilobyte) && (bytes < megabyte)) {
+        return (bytes / kilobyte).toFixed(precision) + ' KB';
+ 
+    } else if ((bytes >= megabyte) && (bytes < gigabyte)) {
+        return (bytes / megabyte).toFixed(precision) + ' MB';
+ 
+    } else if ((bytes >= gigabyte) && (bytes < terabyte)) {
+        return (bytes / gigabyte).toFixed(precision) + ' GB';
+ 
+    } else if (bytes >= terabyte) {
+        return (bytes / terabyte).toFixed(precision) + ' TB';
+ 
+    } else {
+        return bytes + ' B';
+    }
+};
+
+/*
  * Extract properties from webdav library response to resource object
  * 
  * @param Object {data}     Webdav propfind response

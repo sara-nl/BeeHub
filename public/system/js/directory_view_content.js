@@ -17,12 +17,18 @@
  * along with beehub.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+/** 
+ * Beehub Client Content
+ * 
+ * Content contains: resource handle buttons, table with resources
+ * 
+ * @author Laura Leistikow (laura.leistikow@surfsara.nl)
+ */
 /*
- * Initialize content views
+ * Initialize content view
  * 
  */
 nl.sara.beehub.view.content.init = function() {
-//CONTENTVIEW
   // This is needed to sort the size table on the right way
   $.tablesorter.addParser({
     id: 'filesize', 
@@ -57,7 +63,7 @@ nl.sara.beehub.view.content.init = function() {
 
 //make table sortable with tablesorter plugin
   $("#bh-dir-content-table").tablesorter({
-//    sortList: [[2,0]],
+    // which columns are sortable
     headers: { 
       0 : { sorter: false },
       1 : { sorter: false },
@@ -65,6 +71,7 @@ nl.sara.beehub.view.content.init = function() {
       8: { sorter:false }
     },
     widthFixed: false,
+    // Fixed header on top of the table
     widgets : ['stickyHeaders'],
     widgetOptions : {
       // apply sticky header top below the top of the browser window
@@ -72,33 +79,43 @@ nl.sara.beehub.view.content.init = function() {
     }
   });
  
+  // Add listeners
   // Go to users homedirectory handler
   $('.bh-dir-gohome').click(function() { window.location.href=$(this).attr("id");});
+  
   // Go up one directory button
   $('.bh-dir-group').click(function() { window.location.href=$(this).attr("id");});
+  
   // Upload button
   $('#bh-dir-upload').click(nl.sara.beehub.view.content.handle_upload_button_click);
+  
   // When upload files are choosen
   $('#bh-dir-upload-hidden').change(nl.sara.beehub.view.content.handle_upload_change);
+  
   // New folder button
   $('#bh-dir-newfolder').click(nl.sara.beehub.controller.createNewFolder);
+  
   // Delete button click handler
   $('#bh-dir-delete').click(nl.sara.beehub.view.content.handle_delete_button_click);
+  
   // Copy button click handler
   $('#bh-dir-copy').click(nl.sara.beehub.view.content.handle_copy_button_click);
+  
   // Move button click handler
   $('#bh-dir-move').click(nl.sara.beehub.view.content.handle_move_button_click);
+  
   // All handlers that belong to a row
   nl.sara.beehub.view.content.setRowHandlers();
 }
 
 /*
- * Clears selections
+ * Clear view
  */
 nl.sara.beehub.view.content.clearView = function(){
   // uncheck checkboxes
   $('.bh-dir-checkboxgroup').prop('checked',false);
   $('.bh-dir-checkbox').prop('checked',false);
+  // disable buttons
   nl.sara.beehub.view.content.disable_action_buttons();
 };
 
@@ -109,14 +126,19 @@ nl.sara.beehub.view.content.clearView = function(){
 nl.sara.beehub.view.content.setRowHandlers = function(){
   // Checkbox select all handler: select or deselect all checkboxes
   $('.bh-dir-checkboxgroup').click(nl.sara.beehub.view.content.handle_checkall_checkbox_click);
+  
   // Checkbox handler: select or deselect checkbox
   $('.bh-dir-checkbox').click(nl.sara.beehub.view.content.handle_checkbox_click);
+  
   // Open selected handler: this can be a file or a directory
   $('.bh-dir-openselected').click(function() {window.location.href=$(this).attr('name');});
+  
   // Edit icon
   $('.bh-dir-edit').click(nl.sara.beehub.view.content.handle_edit_icon_click);
+  
   // Rename handler
   $('.bh-dir-rename-form').change(nl.sara.beehub.view.content.handle_rename_form_change);
+  
   // Blur: erase rename form field
   $('.bh-dir-rename-form').blur(function(){
     $(this).closest("tr").find(".bh-dir-name").show();
@@ -136,18 +158,22 @@ nl.sara.beehub.view.content.triggerRenameClick = function(resource){
 /*
  * Create contentview row from resource object
  * 
- * @param Object {resource} Resource object
+ * @param Object resource Resource object
  * 
- * @return Array {row}
+ * @return String Row string 
  */
 nl.sara.beehub.view.content.createRow = function(resource){
   var row = [];
+  
   row.push('<tr id="'+resource.path+'">');
+  
   // Checkboxes
   row.push('<td width="10px"><input type="checkbox" class="bh-dir-checkbox" name="'+resource.path+'" value="'+resource.displayname+'"></td>');
+  
   // Edit column
   row.push('<td width="10px" data-toggle="tooltip" title="Rename">');
   row.push('<i class="icon-edit bh-dir-edit" style="cursor: pointer"></i></td>');
+  
   // Name
   if (resource.type==='collection') {
     row.push('<td class="bh-dir-name displayname" name="'+resource.displayname+'"><a href="'+resource.path+'"><b>'+resource.displayname+'/</b></a></td>');
@@ -163,7 +189,7 @@ nl.sara.beehub.view.content.createRow = function(resource){
     row.push('<td class="type" name="'+resource.type+'"><i name="'+resource.path+'" class="icon-folder-close bh-dir-openselected" style="cursor: pointer">></i></td>');
   } else {
     // Size
-    row.push('<td class="contentlength" name="'+resource.contentlength+'">'+nl.sara.beehub.view.bytesToSize(resource.contentlength, 1)+'</td>');
+    row.push('<td class="contentlength" name="'+resource.contentlength+'">'+nl.sara.beehub.controller.bytesToSize(resource.contentlength, 1)+'</td>');
     //Type
     row.push('<td class="type" name="'+resource.type+'">'+resource.type+'</td>');
 
@@ -177,28 +203,24 @@ nl.sara.beehub.view.content.createRow = function(resource){
   var hours = date.getHours();
   var minutes = date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes();
   var dateString = (day+"-"+month+"-"+year+" "+hours+":"+minutes);
+  
   row.push('<td class="lastmodified" name="'+resource.lastmodified+'">'+dateString+'</td>');
+  
   // Owner
-  row.push('<td class="owner" name="'+resource.owner+'">'+nl.sara.beehub.view.getDisplayName(resource.owner)+'</td>');
-  // Share link, not implemented yet
+  row.push('<td class="owner" name="'+resource.owner+'">'+nl.sara.beehub.controller.getDisplayName(resource.owner)+'</td>');
+  
+  // TODO Share link, not implemented yet
 //  row.push('<td></td>');
+  
   row.push('</tr>');
   return row.join("");
 };
 
-/*
- * Delete resource from content view
- * 
- * @param {Object} resource Resource object
- */
-nl.sara.beehub.view.content.deleteResource = function(resource){
-  $("tr[id='"+resource.path+"']").remove();
-};
 
 /*
  * Put all selected resources in an array
  * 
- * @return {Array} resources All selected resources in an array
+ * @return Array resources All selected resources in an array
  */
 nl.sara.beehub.view.content.getSelectedResources = function(){
   var resources=[];
@@ -211,39 +233,37 @@ nl.sara.beehub.view.content.getSelectedResources = function(){
 };
 
 /*
- * Get unknown values of resource
+ * Get unknown values of resource in table
  * 
- * @param {Object} resource Resource object
+ * @param Object resource Resource object
  */
 nl.sara.beehub.view.content.getUnknownResourceValues = function(resource){
+  // Displayname
   if (resource.displayname === undefined) {
     resource.displayname = $("tr[id='"+resource.path+"']").find('.displayname').attr('name');
   }
+  
+  // Type
   if (resource.type === undefined) {
     resource.type = $("tr[id='"+resource.path+"']").find('.type').attr('name');
   }
+  
+  // Owner
   if (resource.owner === undefined) {
     resource.owner = $("tr[id='"+resource.path+"']").find('.owner').attr('name');
   }
+  
+  // Contentlenght
   if (resource.contentlength === undefined) {
     resource.contentlength = $("tr[id='"+resource.path+"']").find('.contentlength').attr('name');
   }
+  
+  // Last modiefied
   if (resource.lastmodified === undefined) {
     resource.lastmodified = $("tr[id='"+resource.path+"']").find('.lastmodified').attr('name');
   }
+  
   return resource;
-};
-
-/*
- * Update resource from content view
- * 
- * @param {Object} resource Resource object
- */
-nl.sara.beehub.view.content.updateResource = function(resourceOrg, resourceNew){
-  // delete current row
-  nl.sara.beehub.view.content.deleteResource(resourceOrg);
-  // add new row
-  nl.sara.beehub.view.content.addResource(resourceNew);
 };
 
 /*
@@ -260,6 +280,29 @@ nl.sara.beehub.view.content.addResource = function(resource){
   // Set handlers again
   nl.sara.beehub.view.content.setRowHandlers();
 };
+
+/*
+ * Delete resource from content view
+ * 
+ * @param {Object} resource Resource object
+ */
+nl.sara.beehub.view.content.deleteResource = function(resource){
+  $("tr[id='"+resource.path+"']").remove();
+};
+
+/*
+ * Update resource from content view
+ * 
+ * @param {Object} resourceOrg Original resource object
+ * @param {Object} resourceOrg New resource object
+ */
+nl.sara.beehub.view.content.updateResource = function(resourceOrg, resourceNew){
+  // delete current row
+  nl.sara.beehub.view.content.deleteResource(resourceOrg);
+  // add new row
+  nl.sara.beehub.view.content.addResource(resourceNew);
+};
+
 
 /*
  * Enable copy, move, delete buttons
@@ -284,11 +327,13 @@ nl.sara.beehub.view.content.disable_action_buttons = function() {
  * Check or uncheck all checkboxes in content view
  */
 nl.sara.beehub.view.content.handle_checkall_checkbox_click = function() {
+  // When selected, check all
   if ($(this)[0].checked) {
     $('.bh-dir-checkbox').prop('checked',true);
     if ($('.bh-dir-checkbox:checked').length > 0) {
       nl.sara.beehub.view.content.enable_action_buttons();
     };
+  // Else uncheck all
   } else {
     $('.bh-dir-checkbox').prop('checked',false);
     nl.sara.beehub.view.content.disable_action_buttons();
@@ -300,8 +345,10 @@ nl.sara.beehub.view.content.handle_checkall_checkbox_click = function() {
  * Enable or disable buttons
  */
 nl.sara.beehub.view.content.handle_checkbox_click = function() {
+  // When more then one resource is selected, enable buttons
   if ($('.bh-dir-checkbox:checked').length > 0) {
     nl.sara.beehub.view.content.enable_action_buttons();
+  // else disable buttons
   } else {
     nl.sara.beehub.view.content.disable_action_buttons();
   }
@@ -311,6 +358,7 @@ nl.sara.beehub.view.content.handle_checkbox_click = function() {
  * Onclick handler edit icon in content view
  */
 nl.sara.beehub.view.content.handle_edit_icon_click = function(){
+  // TODO - instead show and hide, replace to prevent table colums move
   // Search nearest name field and hide
   $(this).closest("tr").find(".bh-dir-name").hide();
   // Show form
@@ -321,6 +369,7 @@ nl.sara.beehub.view.content.handle_edit_icon_click = function(){
   var name = $(this).closest("tr").find(".bh-dir-rename-td").find(':input').attr('name');
   $(this).closest("tr").find(".bh-dir-rename-td").find(':input').val(name);
   
+  // Focus mouse
   $(this).closest("tr").find(".bh-dir-rename-td").find(':input').focus();
 }; 
 
@@ -330,6 +379,7 @@ nl.sara.beehub.view.content.handle_edit_icon_click = function(){
 nl.sara.beehub.view.content.handle_rename_form_change = function(){
   // create resource object
   var resource = new nl.sara.beehub.ClientResource($(this).closest('tr').attr('id'));
+  // start rename
   nl.sara.beehub.controller.renameResource(resource, $(this).val(), nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
 };
 
@@ -346,6 +396,7 @@ nl.sara.beehub.view.content.handle_upload_button_click = function() {
  */
 nl.sara.beehub.view.content.handle_upload_change = function() {
   var files = $('#bh-dir-upload-hidden')[0].files;
+  // init and start action "upload"
   nl.sara.beehub.controller.initAction(files,"upload");
 };
 
@@ -354,6 +405,7 @@ nl.sara.beehub.view.content.handle_upload_change = function() {
  */
 nl.sara.beehub.view.content.handle_delete_button_click = function(){
   var resources = nl.sara.beehub.view.content.getSelectedResources();
+  // init and start action "delete"
   nl.sara.beehub.controller.initAction(resources,"delete");
 
 };
@@ -363,6 +415,7 @@ nl.sara.beehub.view.content.handle_delete_button_click = function(){
  */
 nl.sara.beehub.view.content.handle_copy_button_click = function() {
   var resources = nl.sara.beehub.view.content.getSelectedResources();
+  // init and start action "copy"
   nl.sara.beehub.controller.initAction(resources, "copy");
 };
 
@@ -371,6 +424,7 @@ nl.sara.beehub.view.content.handle_copy_button_click = function() {
  */
 nl.sara.beehub.view.content.handle_move_button_click = function() {
   var resources = nl.sara.beehub.view.content.getSelectedResources();
+  // init and start action "move"
   nl.sara.beehub.controller.initAction(resources, "move");
 
 };

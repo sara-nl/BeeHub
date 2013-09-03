@@ -17,15 +17,13 @@
  * along with beehub.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// If nl.sara.webdav.ClientResource is already defined, we have a namespace clash!
-if (nl.sara.beehub.ClientResource !== undefined) {
-  throw new nl.sara.webdav.Exception('Namespace nl.sara.webdav.ClientResource already taken, could not load JavaScript library for WebDAV connectivity.', nl.sara.webdav.Exception.NAMESPACE_TAKEN);
-}
-
 /**
  * @class Webdav Resource
  *
  * @param  {String}   path            The path of the resource
+ * 
+ * @author Laura Leistikow (laura.leistikow@surfsara.nl)
+ * 
  */
 nl.sara.beehub.ClientResource = function(path) {
   this.path = path;

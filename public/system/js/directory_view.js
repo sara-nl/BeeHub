@@ -17,9 +17,14 @@
  * along with beehub.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-// TODO vast ergens uit te lezen
-nl.sara.beehub.view.userspath = '/system/users/';
-nl.sara.beehub.view.groupspath = '/system/groups/';
+/** 
+ * Beehub Client View
+ * 
+ * All views
+ * 
+ * @author Laura Leistikow (laura.leistikow@surfsara.nl)
+ */
+
 /*
  * Initialize all views
  * 
@@ -32,6 +37,7 @@ nl.sara.beehub.view.init = function() {
 
 /*
  * Clear all views
+ * 
  */
 nl.sara.beehub.view.clearAllViews = function(){
   // Content
@@ -43,7 +49,9 @@ nl.sara.beehub.view.clearAllViews = function(){
 }; 
 
 /*
- * Mask view 
+ * Mask view, disable input
+ * 
+ * @param Boolean mask true or false
  */
 nl.sara.beehub.view.maskView = function(mask){
   if (mask) { 
@@ -52,87 +60,6 @@ nl.sara.beehub.view.maskView = function(mask){
     $("#bh-dir-all").hide();
   }  
 }
-/*
- * Returns displayname from object
- * 
- * @param String {name} object
- * 
- * @return String Displayname
- */
-nl.sara.beehub.view.getDisplayName = function(name){
-  if (name === undefined) {
-    return "";
-  };
-  if (name.indexOf(nl.sara.beehub.view.userspath) != -1){
-//  if (name.contains(nl.sara.beehub.view.userspath)) {
-    var displayName = nl.sara.beehub.principals.users[name.replace(nl.sara.beehub.view.userspath,'')];
-    return displayName;
-  };
-  if (name.indexOf(nl.sara.beehub.view.groupsspath) != -1){
-//  if (name.contains(nl.sara.beehub.view.groupspath)) {
-    var displayName = nl.sara.beehub.principals.groups[name.replace(nl.sara.beehub.view.groupspath,'')];
-    return displayName;
-  };
-}
-
-/**
- * Convert number of bytes into human readable format
- *
- * @param integer bytes     Number of bytes to convert
- * @param integer precision Number of digits after the decimal separator
- * @return string
- */
-nl.sara.beehub.view.bytesToSize = function(bytes, precision)
-{  
-    var kilobyte = 1024;
-    var megabyte = kilobyte * 1024;
-    var gigabyte = megabyte * 1024;
-    var terabyte = gigabyte * 1024;
-   
-    if ((bytes >= 0) && (bytes < kilobyte)) {
-        return bytes + ' B';
- 
-    } else if ((bytes >= kilobyte) && (bytes < megabyte)) {
-        return (bytes / kilobyte).toFixed(precision) + ' KB';
- 
-    } else if ((bytes >= megabyte) && (bytes < gigabyte)) {
-        return (bytes / megabyte).toFixed(precision) + ' MB';
- 
-    } else if ((bytes >= gigabyte) && (bytes < terabyte)) {
-        return (bytes / gigabyte).toFixed(precision) + ' GB';
- 
-    } else if (bytes >= terabyte) {
-        return (bytes / terabyte).toFixed(precision) + ' TB';
- 
-    } else {
-        return bytes + ' B';
-    }
-}
-//
-//nl.sara.beehub.view.getSize = function(resource){
-//   // Calculate size
-//  if (resource.contentlength !== ""){
-//   var size = resource.contentlength;
-//   if (size !== '' && size != 0) {
-//     var unit = null;
-//     units = ['B', 'KB', 'MB', 'GB', 'TB'];
-//     $.each(units,function(i,value) {
-//       if (size > 1024) {
-//         size = size / 1024;
-//       } else {
-//         unit = units[i];
-//       }
-//     }
-//     showsize = round(size, 0) + ' ' + unit;
-//   } else {
-//     showsize = '';
-//   }
-//   size = size;
-//  } else {
-//   size = contentlength;
-//  }
-//  return size;
-//}
 
 /*
  * Add resource to all views
