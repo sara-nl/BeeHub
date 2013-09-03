@@ -36,28 +36,28 @@ if (nl.sara.beehub === undefined) {
   /** @namespace The entire client is in this namespace. */
   nl.sara.beehub = {};
 }
+if (nl.sara.beehub.controller === undefined) {
+  /** @namespace Controller of all classes */
+  nl.sara.beehub.controller = {};
+}
 if (nl.sara.beehub.view === undefined) {
   /** @namespace Holds all the view classes */
   nl.sara.beehub.view = {};
 }
 if (nl.sara.beehub.view.content === undefined) {
-  /** @namespace Holds all the view classes */
+  /** @namespace Content view */
   nl.sara.beehub.view.content = {};
 }
 if (nl.sara.beehub.view.tree === undefined) {
-  /** @namespace Holds all the view classes */
+  /** @namespace Tree view */
   nl.sara.beehub.view.tree = {};
 }
-if (nl.sara.beehub.controller === undefined) {
-  /** @namespace Holds all the view classes */
-  nl.sara.beehub.controller = {};
-}
 if (nl.sara.beehub.view.dialog === undefined) {
-  /** @namespace Holds all the view classes */
+  /** @namespace Dialog view */
   nl.sara.beehub.view.dialog = {};
 }
 if (nl.sara.beehub.view.acl === undefined) {
-  /** @namespace Holds all the view classes */
+  /** @namespace Acl view */
   nl.sara.beehub.view.acl = {};
 }
 
@@ -68,5 +68,6 @@ $(function() {
 	var btn = $.fn.button.noConflict() // reverts $.fn.button to jqueryui btn
 	$.fn.btn = btn // assigns bootstrap button functionality to $.fn.btn
 	
+	// Init all views
 	nl.sara.beehub.view.init();
 });
