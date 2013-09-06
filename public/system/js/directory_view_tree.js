@@ -143,6 +143,8 @@ nl.sara.beehub.view.tree.noMask = function(nomask){
 
 /*
  * Show or hide cancel button and set click handler
+ * 
+ * @param String action show or hide
  */
 nl.sara.beehub.view.tree.cancelButton = function(action){
   if (action === 'show') {

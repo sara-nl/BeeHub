@@ -84,7 +84,7 @@ nl.sara.beehub.view.content.init = function() {
   $('.bh-dir-gohome').click(function() { window.location.href=$(this).attr("id");});
   
   // Go up one directory button
-  $('.bh-dir-group').click(function() { window.location.href=$(this).attr("id");});
+  $('.bh-dir-up').click(function() { window.location.href=$(this).attr("id");});
   
   // Upload button
   $('#bh-dir-upload').click(nl.sara.beehub.view.content.handle_upload_button_click);
@@ -167,7 +167,7 @@ nl.sara.beehub.view.content.createRow = function(resource){
   
   row.push('<tr id="'+resource.path+'">');
   
-  // Checkboxes
+  // Checkbox
   row.push('<td width="10px"><input type="checkbox" class="bh-dir-checkbox" name="'+resource.path+'" value="'+resource.displayname+'"></td>');
   
   // Edit column

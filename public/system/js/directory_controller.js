@@ -373,7 +373,7 @@ nl.sara.beehub.controller.initAction = function(items, action){
   nl.sara.beehub.controller.actionCounter = 0;
   // actionAction, the action copy, move, upload or delete
   nl.sara.beehub.controller.actionAction = action;
-  // summary, used to summary the action and to decide what in the callbacks
+  // summary, used to summary the action and to decide what to do in the callbacks
   nl.sara.beehub.controller.summary = {
       error:      0,
       exist:      0,
@@ -419,7 +419,7 @@ nl.sara.beehub.controller.initAction = function(items, action){
     // show tree
     nl.sara.beehub.view.tree.showTree();
   } else {
-    // show dialof with all resources
+    // show dialog with all resources
     nl.sara.beehub.view.dialog.showResourcesDialog(function() {
       // Start action when ready is clicked
       nl.sara.beehub.controller.startAction();

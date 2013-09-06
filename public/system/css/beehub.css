@@ -26,7 +26,8 @@
 /* Background color path */
 .breadcrumb {
   background-color: white !important;
-} 
+}
+
 /* Do not show close button on dialog */
 .custom-dialog .ui-dialog-titlebar-close {
   display: none !important;
@@ -39,19 +40,18 @@
   left: 50px;
 }
 
-/* Make space for tree slide out */
+/* Position content table */
 #bh-dir-content-table {
-/* 	width: 99%;
- */	top: 185px;
+	top: 185px;
 }
 
-/* Align with tabs */
+/* Align path with tabs */
 .bh-dir-breadcrumb {
 	padding:0 !important;
 }
 
-/* Prevent scrolling */
-.bh-dir-fixed-header {
+/* Prevent scrolling for fixed divs*/
+.bh-dir-fixed-path {
     position: fixed;     
     top: 40px;
     padding-top: 15px;
@@ -80,7 +80,8 @@
   height: 127px;
   width: 100%;
 }
-/* Bootstrap table header */
+
+/* Bootstrap table header, like sticky header table widget */
 #bh-dir-content-table-sticky,.bh-dir-table-header  {
 	 -moz-border-bottom-colors: none;
     -moz-border-left-colors: none;
@@ -141,6 +142,22 @@ ul.dynatree-container{
   padding: 15px !important;
 }
 
+.bh-dir-nomask {
+  z-index:            600 !important;
+}
+
+/* Mask to disable input*/
+#bh-dir-all {
+   position:           fixed;
+   z-index:            400;
+   top:                0;
+   left:               0;
+   width:              100%;
+   height:             100%;
+   background: url("images/ui-bg_flat_0_a7a9ac_40x100.png") repeat-x scroll 50% 50% #A7A9AC;
+   opacity: 0.3;
+}
+
 /* Indent groups and sponsers */
 #bh-groups-panel-mygroups, #bh-groups-panel-join, #bh-sponsors-panel-mysponsors, #bh-sponsors-panel-join {
     padding-left:25px;
@@ -170,23 +187,6 @@ ul.dynatree-container{
 }
 .long_text {
   max-width: 900px;
-}
-
-.bh-dir-nomask {
-  z-index:            600 !important;
-}
-
-/* Mask to disable input*/
-#bh-dir-all {
-   position:           fixed;
-   z-index:            400;
-   top:                0;
-   left:               0;
-   width:              100%;
-   height:             100%;
-/*    background-color:   rgba(0,0,0,0.15);  */
-   background: url("images/ui-bg_flat_0_a7a9ac_40x100.png") repeat-x scroll 50% 50% #A7A9AC;
-   opacity: 0.3;
 }
 
 

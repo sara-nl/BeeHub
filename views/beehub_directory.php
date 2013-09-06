@@ -12,9 +12,11 @@ $aclAllowed = $aclAllowed[DAV::PROP_ACL];
 require 'views/header.php';
 
 /**
+ * Create tree for tree view (dynatree plugin)
+ * 
  * @var $path string a slashified path to a directory
  */
-function createTree2($path, $oldpath = null, $oldmembers = null) {
+function createTree($path, $oldpath = null, $oldmembers = null) {
   $dir = BeeHub_Registry::inst()->resource($path);
   
   $members = array();
@@ -37,21 +39,24 @@ function createTree2($path, $oldpath = null, $oldmembers = null) {
   }
   if ('/' === $path)
     return $members;
-  return createTree2(
+  return createTree(
           DAV::slashify(dirname($path)), $path, $members
   );
 }
-$testtree = createTree2(DAV::slashify(dirname($this->path)));
+$tree = createTree(DAV::slashify(dirname($this->path)));
 ?>
-<div class="bh-dir-fixed-header">
+
+<div class="bh-dir-fixed-path">
   <h4>
     <?php
     // first and last of $crumb are empty
     $crumb = explode("/", $this->path);
     print "<ul class='breadcrumb bh-dir-breadcrumb '>";
+    // Root
     print "<li><a href='/'>BeeHub root</a><span class='divider'>&raquo;</span></li>";
     $count = count($crumb);
     $start = 1;
+    //Show maximal two directories
     if ($count > 4) {
 			print "<li><span class='divider'>.. /</span></li>";
 			$start = $count - 3;
@@ -61,7 +66,9 @@ $testtree = createTree2(DAV::slashify(dirname($this->path)));
     for ($x=1; $x<=$count-2; $x++) {
       $value = urldecode($crumb[$x]);
       $newpath .= '/' . $value;
+      // Show only the two last directories
       if ($x >= $start) {
+				// Last directory is current directory, no link
 	      if ($x === $last) {
 	        print "<li class='active'>$value</li>";
 	      } else {
@@ -73,9 +80,9 @@ $testtree = createTree2(DAV::slashify(dirname($this->path)));
     ?>
   </h4>
 </div>
-<!-- End class fixed header -->
+<!-- End div class fixed path -->
 
-<!-- Tabs-->
+<!-- Tabs - Content and ACL tab -->
 <div class="bh-dir-fixed-tabs">
   <ul id="bh-dir-tabs" class="nav nav-tabs">
     <li class="active"><a href="#bh-dir-panel-contents" data-toggle="tab">Contents</a>
@@ -86,56 +93,74 @@ $testtree = createTree2(DAV::slashify(dirname($this->path)));
 <!-- End class fixed tabs -->
 
 <div class="bh-dir-fixed-buttons">
+	<!--  Up button -->
+	<!-- 	Up -->
   <?php if (DAV::unslashify($this->collection()->path) != "") : ?>
     <button id="<?= DAV::unslashify($this->collection()->path) ?>"
-            class="btn btn-small bh-dir-group">
+            class="btn btn-small bh-dir-up">
       <i class="icon-chevron-up"></i> Up
     </button>
+	<!--   No up possible -->
   <?php else: ?>
     <button id="<?= DAV::unslashify($this->collection()->path) ?>"
-            class="btn btn-small bh-dir-group" disabled="disabled">
+            class="btn btn-small bh-dir-up" disabled="disabled">
       <i class="icon-chevron-up"></i> Up
     </button>
   <?php endif; ?>
+  
+	<!--   Home -->
   <button
     id="<?= preg_replace('@^/system/users/(.*)@', '/home/\1/', BeeHub_Auth::inst()->current_user()->path) ?>"
     class="btn btn-small bh-dir-gohome" data-toggle="tooltip"
     title="Go to home folder">
     <i class="icon-home"></i> Home
   </button>
+  
+	<!--   Upload -->
   <input id="bh-dir-upload-hidden" type="file" name="files[]"
          hidden='true' multiple>
+	<!--   Hidden upload field, this is needed to show the upload button -->
   <button id="bh-dir-upload" data-toggle="tooltip"
           title="Upload to current folder" class="btn btn-small">
     <i class="icon-upload"></i> Upload
   </button>
+  
+	<!--   New folder -->
   <button id="bh-dir-newfolder" data-toggle="tooltip"
           title="Create new folder in current folder" class="btn btn-small">
     <i class="icon-folder-close"></i> New
   </button>
+  
+	<!--   Copy -->
   <button id="bh-dir-copy" data-toggle="tooltip"
           title="Copy selected to other folder" class="btn btn-small"
           disabled="disabled">
     <i class="icon-hand-right"></i> Copy
   </button>
+  
+	<!--   Move -->
   <button id="bh-dir-move" data-toggle="tooltip"
           title="Move selected to other folder" class="btn btn-small"
           disabled="disabled">
     <i class="icon-move"></i> Move
   </button>
+  
+	<!--   Delete -->
   <button id="bh-dir-delete" data-toggle="tooltip"
           title="Delete selected" class="btn btn-small" disabled="disabled">
     <i class="icon-remove"></i> Delete
   </button>
 </div>
+<!-- End fixed buttons -->
 
-<!-- Dialog -->
+<!-- Dialog, for dialog view -->
 <div id="bh-dir-dialog" hidden='true'></div>
 
-<!-- Tree slide out -->
+<!-- Tree slide out, dynatree - tree view -->
 <div id="bh-dir-tree" class="bh-dir-tree-slide">
   <ul>
     <?php
+    // Fill the tree nodes
     $registry = BeeHub_Registry::inst();
     foreach ($this as $inode) :
       $member = $registry->resource($this->path . $inode);
@@ -152,10 +177,11 @@ $testtree = createTree2(DAV::slashify(dirname($this->path)));
         $registry->forget($this->path . $inode);
       endforeach;
       ?>
-
   </ul>
 </div>
+<!-- End tree slide out -->
 
+<!-- Tree header -->
 <div id="bh-dir-tree-header">
 	<table>
 		<tr>
@@ -165,8 +191,8 @@ $testtree = createTree2(DAV::slashify(dirname($this->path)));
 	</table>
 </div>
 
-<a class="bh-dir-tree-slide-trigger" href="#"><i
-    class="icon-chevron-left"></i> </a>
+<!-- Arrow to show the tree -->
+<a class="bh-dir-tree-slide-trigger" href="#"><i class="icon-chevron-left"></i> </a>
 
 <!-- Tab contents -->
 <div
@@ -178,15 +204,21 @@ $testtree = createTree2(DAV::slashify(dirname($this->path)));
     <table id="bh-dir-content-table" class="table table-striped">
       <thead class="bh-dir-table-header">
         <tr>
-          <th width="10px"><input type="checkbox"
-                                  class="bh-dir-checkboxgroup"></th>
+<!--         	Checkbox header -->
+          <th width="10px"><input type="checkbox" class="bh-dir-checkboxgroup"></th>
+<!--           Rename icon header -->
           <th width="10px"></th>
+<!--           Name header -->
           <th>Name</th>
-          <!-- 			Hidden rename column -->
+<!-- 					Hidden rename column -->
           <th hidden='true'></th>
+<!--           Size header -->
           <th>Size</th>
+<!--           Type header -->
           <th>Type</th>
+<!--           Modified header -->
           <th>Modified</th>
+<!--           Owner header -->
           <th>Owner</th>
           <!-- share file, not yet implemented -->
           <!--  <th width="10px"></th> -->
@@ -194,6 +226,7 @@ $testtree = createTree2(DAV::slashify(dirname($this->path)));
       </thead>
       <tbody>
         <?php
+        // For all resources, fill table
         foreach ($this as $inode) :
           $member = $registry->resource($this->path . $inode);
           if (DAV::unslashify($member->path) === '/system') {
@@ -211,15 +244,19 @@ $testtree = createTree2(DAV::slashify(dirname($this->path)));
 <!--             Rename icon -->
             <td width="10px" data-toggle="tooltip" title="Rename"><i
                 class="icon-edit bh-dir-edit" style="cursor: pointer"></i></td>
-              <?php if (substr($member->path, -1) === '/'): ?>
+<!--                 Name -->
+<!--                 Directory -->
+            <?php if (substr($member->path, -1) === '/'): ?>
               <td class="bh-dir-name displayname" name='<?= $member->user_prop_displayname() ?>'><a
                   href='<?= DAV::unslashify($member->path) ?>'><b><?= $member->user_prop_displayname() ?>/</b>
                 </a></td>
+<!--                 File -->
             <?php else : ?>
               <td class="bh-dir-name displayname" name='<?= $member->user_prop_displayname() ?>'><a
                   href='<?= DAV::unslashify($member->path) ?>'><?= $member->user_prop_displayname() ?>
                 </a></td>
             <?php endif; ?>
+<!--             Hidden rename -->
             <td class="bh-dir-rename-td" hidden='true'><input
                 class="bh-dir-rename-form"
                 name='<?= $member->user_prop_displayname() ?>'
@@ -255,6 +292,7 @@ $testtree = createTree2(DAV::slashify(dirname($this->path)));
 <!--             Date, has to be the same as shown with javascript -->
             <td class="lastmodified" name='<?= date('r',$member->user_prop_getlastmodified()) ?>'><?= date('j-n-Y G:i', $member->user_prop_getlastmodified()) ?>
             </td>
+<!--             Owner -->
             <td class="owner" name='<?= $owner->path ?>'><?= $owner->user_prop_displayname() ?></td>
             <?php if (substr($member->path, -1) !== '/'): ?>
             	<!-- share file, not yet implemented -->         
@@ -294,13 +332,15 @@ $testtree = createTree2(DAV::slashify(dirname($this->path)));
 
 </div>
 <!-- End tab div -->
+
 <!-- Mask input -->
 <div id="bh-dir-all" hidden=true></div>
 
 <?php
 $footer = '
- 	  <script type="text/javascript">
- 	  var treecontents = ' . json_encode($testtree) . ';
+	<script type="text/javascript">
+  	// For Dynatree
+ 	  var treecontents = ' . json_encode($tree) . ';
     //   create acl variable
     var aclxml = ' .
         json_encode(
@@ -310,27 +350,37 @@ $footer = '
                 '</D:acl>'
         )
         . ';
+ 		
  		if (window.DOMParser) {
- 		parser = new DOMParser();
- 		var aclxmldocument = parser.parseFromString(aclxml,"text/xml");
-}else{ // IE
- 		var aclxmldocument = new ActiveXObject("Microsoft.XMLDOM");
- 		aclxmldocument.async = false;
- 		aclxmldocument.loadXML(aclxml);
-}
- 	  </script>
- 		<script type="text/javascript" src="/system/js/directory.js"></script>
- 		<script type="text/javascript" src="/system/js/directory_view.js"></script>
- 		<script type="text/javascript" src="/system/js/directory_view_content.js"></script>
- 		<script type="text/javascript" src="/system/js/directory_view_tree.js"></script>
- 		<script type="text/javascript" src="/system/js/directory_view_dialog.js"></script>
- 		<script type="text/javascript" src="/system/js/directory_view_acl.js"></script>
- 		<script type="text/javascript" src="/system/js/directory_resource.js"></script>
- 		<script type="text/javascript" src="/system/js/directory_controller.js"></script>
- 	  <link href="/system/js/plugins/dynatree/src/skin/ui.dynatree.css" rel="stylesheet" type="text/css" />
- 	  <script type="text/javascript" src="/system/js/plugins/dynatree/jquery/jquery.cookie.js"></script>
- 	  <script type="text/javascript" src="/system/js/plugins/dynatree/src/jquery.dynatree.js"></script>
-    <script type="text/javascript" src="/system/js/plugins/tablesorter/js/jquery.tablesorter.js"></script>
- 	  <script type="text/javascript" src="/system/js/plugins/tablesorter/js/jquery.tablesorter.widgets.js"></script>
- 	  ';
+	 		parser = new DOMParser();
+	 		var aclxmldocument = parser.parseFromString(aclxml,"text/xml");
+		} else { // IE
+	 		var aclxmldocument = new ActiveXObject("Microsoft.XMLDOM");
+	 		aclxmldocument.async = false;
+	 		aclxmldocument.loadXML(aclxml);
+		}
+ 	</script>
+ 	
+ 	<script type="text/javascript" src="/system/js/directory.js"></script>
+ 		
+ 	<script type="text/javascript" src="/system/js/directory_controller.js"></script>
+ 		
+ 	<script type="text/javascript" src="/system/js/directory_view.js"></script>
+ 		
+ 	<script type="text/javascript" src="/system/js/directory_view_content.js"></script>
+ 		
+ 	<script type="text/javascript" src="/system/js/directory_view_tree.js"></script>
+ 	<link href="/system/js/plugins/dynatree/src/skin/ui.dynatree.css" rel="stylesheet" type="text/css" />
+ 	<script type="text/javascript" src="/system/js/plugins/dynatree/jquery/jquery.cookie.js"></script>
+ 	<script type="text/javascript" src="/system/js/plugins/dynatree/src/jquery.dynatree.js"></script>
+ 		
+ 	<script type="text/javascript" src="/system/js/directory_view_dialog.js"></script>
+ 		
+ 	<script type="text/javascript" src="/system/js/directory_view_acl.js"></script>
+ 		
+ 	<script type="text/javascript" src="/system/js/directory_resource.js"></script>
+
+  <script type="text/javascript" src="/system/js/plugins/tablesorter/js/jquery.tablesorter.js"></script>
+ 	<script type="text/javascript" src="/system/js/plugins/tablesorter/js/jquery.tablesorter.widgets.js"></script>
+';
 require 'views/footer.php';
