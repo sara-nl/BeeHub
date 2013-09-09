@@ -93,64 +93,84 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
 <!-- End class fixed tabs -->
 
 <div class="bh-dir-fixed-buttons">
-	<!--  Up button -->
-	<!-- 	Up -->
+<!--   CONTENT VIEW -->
+	<!--  CONTENT: Up button -->
   <?php if (DAV::unslashify($this->collection()->path) != "") : ?>
     <button id="<?= DAV::unslashify($this->collection()->path) ?>"
-            class="btn btn-small bh-dir-up">
+            class="btn btn-small bh-dir-content-up">
       <i class="icon-chevron-up"></i> Up
     </button>
 	<!--   No up possible -->
   <?php else: ?>
     <button id="<?= DAV::unslashify($this->collection()->path) ?>"
-            class="btn btn-small bh-dir-up" disabled="disabled">
+            class="btn btn-small bh-dir-content-up" disabled="disabled">
       <i class="icon-chevron-up"></i> Up
     </button>
   <?php endif; ?>
   
-	<!--   Home -->
+	<!--	CONTENT: Home button-->
   <button
     id="<?= preg_replace('@^/system/users/(.*)@', '/home/\1/', BeeHub_Auth::inst()->current_user()->path) ?>"
-    class="btn btn-small bh-dir-gohome" data-toggle="tooltip"
+    class="btn btn-small bh-dir-content-gohome" data-toggle="tooltip"
     title="Go to home folder">
     <i class="icon-home"></i> Home
   </button>
   
-	<!--   Upload -->
-  <input id="bh-dir-upload-hidden" type="file" name="files[]"
+	<!--	CONTENT: Upload button-->
+  <input class="bh-dir-content-upload-hidden" type="file" name="files[]"
          hidden='true' multiple>
 	<!--   Hidden upload field, this is needed to show the upload button -->
-  <button id="bh-dir-upload" data-toggle="tooltip"
-          title="Upload to current folder" class="btn btn-small">
+  <button data-toggle="tooltip"
+          title="Upload to current folder" class="btn btn-small bh-dir-content-upload">
     <i class="icon-upload"></i> Upload
   </button>
   
-	<!--   New folder -->
-  <button id="bh-dir-newfolder" data-toggle="tooltip"
-          title="Create new folder in current folder" class="btn btn-small">
+	<!-- CONTENT: New folder button-->
+  <button data-toggle="tooltip"
+          title="Create new folder in current folder" class="btn btn-small bh-dir-content-newfolder">
     <i class="icon-folder-close"></i> New
   </button>
   
-	<!--   Copy -->
-  <button id="bh-dir-copy" data-toggle="tooltip"
-          title="Copy selected to other folder" class="btn btn-small"
+	<!-- CONTENT: Copy button-->
+  <button data-toggle="tooltip"
+          title="Copy selected to other folder" class="btn btn-small bh-dir-content-copy"
           disabled="disabled">
     <i class="icon-hand-right"></i> Copy
   </button>
   
-	<!--   Move -->
-  <button id="bh-dir-move" data-toggle="tooltip"
-          title="Move selected to other folder" class="btn btn-small"
+	<!-- CONTENT: Move button-->
+  <button data-toggle="tooltip"
+          title="Move selected to other folder" class="btn btn-small bh-dir-content-move"
           disabled="disabled">
     <i class="icon-move"></i> Move
   </button>
   
-	<!--   Delete -->
-  <button id="bh-dir-delete" data-toggle="tooltip"
-          title="Delete selected" class="btn btn-small" disabled="disabled">
+	<!-- CONTENT: Delete button-->
+  <button data-toggle="tooltip"
+          title="Delete selected" class="btn btn-small bh-dir-content-delete" disabled="disabled">
     <i class="icon-remove"></i> Delete
   </button>
 </div>
+
+<!-- 	ACL VIEW -->
+	<!-- ACL: Add button-->
+  <button data-toggle="tooltip"
+          title="Add rule" class="btn btn-small bh-dir-acl-add" hidden="true">
+    <i class="icon-plus"></i> Add rule
+  </button> 
+  
+	<!-- ACL: Up button-->
+  <button data-toggle="tooltip"
+          title="Move up" class="btn btn-small bh-dir-acl-up" hidden="true">
+    <i class="icon-chevron-up"></i> Up
+  </button>
+  
+  <!--	ACL: Down button-->
+  <button data-toggle="tooltip"
+          title="Move down" class="btn btn-small bh-dir-acl-down" hidden="true">
+    <i class="icon-chevron-down"></i> Down
+  </button>
+  
 <!-- End fixed buttons -->
 
 <!-- Dialog, for dialog view -->
@@ -202,10 +222,10 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
   <!-- Contents tab -->
   <div id="bh-dir-panel-contents" class="tab-pane fade in active">
     <table id="bh-dir-content-table" class="table table-striped">
-      <thead class="bh-dir-table-header">
+      <thead class="bh-dir-content-table-header">
         <tr>
 <!--         	Checkbox header -->
-          <th width="10px"><input type="checkbox" class="bh-dir-checkboxgroup"></th>
+          <th width="10px"><input type="checkbox" class="bh-dir-content-checkboxgroup"></th>
 <!--           Rename icon header -->
           <th width="10px"></th>
 <!--           Name header -->
@@ -239,26 +259,26 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
           ?>
           <tr id='<?= DAV::unslashify($member->path) ?>'>
 <!--             Select checkbox -->
-            <td width="10px"><input type="checkbox" class="bh-dir-checkbox" name='<?= DAV::unslashify($member->path)?>'
+            <td width="10px"><input type="checkbox" class="bh-dir-content-checkbox" name='<?= DAV::unslashify($member->path)?>'
                                     value='<?= $member->user_prop_displayname() ?>'></td>
 <!--             Rename icon -->
             <td width="10px" data-toggle="tooltip" title="Rename"><i
-                class="icon-edit bh-dir-edit" style="cursor: pointer"></i></td>
+                class="icon-edit bh-dir-content-edit" style="cursor: pointer"></i></td>
 <!--                 Name -->
 <!--                 Directory -->
             <?php if (substr($member->path, -1) === '/'): ?>
-              <td class="bh-dir-name displayname" name='<?= $member->user_prop_displayname() ?>'><a
+              <td class="bh-dir-content-name displayname" name='<?= $member->user_prop_displayname() ?>'><a
                   href='<?= DAV::unslashify($member->path) ?>'><b><?= $member->user_prop_displayname() ?>/</b>
                 </a></td>
 <!--                 File -->
             <?php else : ?>
-              <td class="bh-dir-name displayname" name='<?= $member->user_prop_displayname() ?>'><a
+              <td class="bh-dir-content-name displayname" name='<?= $member->user_prop_displayname() ?>'><a
                   href='<?= DAV::unslashify($member->path) ?>'><?= $member->user_prop_displayname() ?>
                 </a></td>
             <?php endif; ?>
 <!--             Hidden rename -->
-            <td class="bh-dir-rename-td" hidden='true'><input
-                class="bh-dir-rename-form"
+            <td class="bh-dir-content-rename-td" hidden='true'><input
+                class="bh-dir-content-rename-form"
                 name='<?= $member->user_prop_displayname() ?>'
                 value='<?= $member->user_prop_displayname() ?>'></td>
               <?php
@@ -284,7 +304,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
             <td class="contentlength" name='<?= $member->user_prop_getcontentlength()?>'><?= $showsize ?></td>
             <?php if (substr($member->path, -1) === '/'): ?>
               <td class="type" name='collection'><i name=<?= DAV::unslashify($member->path) ?>
-                     class="icon-folder-close bh-dir-openselected"
+                     class="icon-folder-close bh-dir-content-openselected"
                      style="cursor: pointer">></i></td> 
               <?php else : ?>
               <td class="type" name='<?= $member->user_prop_getcontenttype() ?>'><?= $member->user_prop_getcontenttype() ?></td>

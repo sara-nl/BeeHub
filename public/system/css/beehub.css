@@ -82,7 +82,7 @@
 }
 
 /* Bootstrap table header, like sticky header table widget */
-#bh-dir-content-table-sticky,.bh-dir-table-header  {
+#bh-dir-content-table-sticky,.bh-dir-content-table-header  {
 	 -moz-border-bottom-colors: none;
     -moz-border-left-colors: none;
     -moz-border-right-colors: none;

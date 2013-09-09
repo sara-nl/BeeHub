@@ -62,6 +62,28 @@ nl.sara.beehub.view.maskView = function(mask){
 }
 
 /*
+ * Show buttons that belong to a tab, acl or content
+ * 
+ * @param String action 'acl' or 'content'
+ * 
+ */
+nl.sara.beehub.view.showFixedButtons = function(action){
+  switch(action)
+  {
+    case 'acl':
+      nl.sara.beehub.view.content.showFixedButtons('hide');
+      nl.sara.beehub.view.acl.showFixedButtons('show');
+      break;
+    case 'content':
+      nl.sara.beehub.view.acl.showFixedButtons('hide');
+      nl.sara.beehub.view.content.showFixedButtons('show');
+      break;
+    default:
+      // This should never happen
+  };
+};
+
+/*
  * Add resource to all views
  * 
  * @param {Object} resource Resource object

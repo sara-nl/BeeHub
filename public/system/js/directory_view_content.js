@@ -81,28 +81,28 @@ nl.sara.beehub.view.content.init = function() {
  
   // Add listeners
   // Go to users homedirectory handler
-  $('.bh-dir-gohome').click(function() { window.location.href=$(this).attr("id");});
+  $('.bh-dir-content-gohome').click(function() { window.location.href=$(this).attr("id");});
   
   // Go up one directory button
-  $('.bh-dir-up').click(function() { window.location.href=$(this).attr("id");});
+  $('.bh-dir-content-up').click(function() { window.location.href=$(this).attr("id");});
   
   // Upload button
-  $('#bh-dir-upload').click(nl.sara.beehub.view.content.handle_upload_button_click);
+  $('.bh-dir-content-upload').click(nl.sara.beehub.view.content.handle_upload_button_click);
   
   // When upload files are choosen
-  $('#bh-dir-upload-hidden').change(nl.sara.beehub.view.content.handle_upload_change);
+  $('.bh-dir-content-upload-hidden').change(nl.sara.beehub.view.content.handle_upload_change);
   
   // New folder button
-  $('#bh-dir-newfolder').click(nl.sara.beehub.controller.createNewFolder);
+  $('.bh-dir-content-newfolder').click(nl.sara.beehub.controller.createNewFolder);
   
   // Delete button click handler
-  $('#bh-dir-delete').click(nl.sara.beehub.view.content.handle_delete_button_click);
+  $('.bh-dir-content-delete').click(nl.sara.beehub.view.content.handle_delete_button_click);
   
   // Copy button click handler
-  $('#bh-dir-copy').click(nl.sara.beehub.view.content.handle_copy_button_click);
+  $('.bh-dir-content-copy').click(nl.sara.beehub.view.content.handle_copy_button_click);
   
   // Move button click handler
-  $('#bh-dir-move').click(nl.sara.beehub.view.content.handle_move_button_click);
+  $('.bh-dir-content-move').click(nl.sara.beehub.view.content.handle_move_button_click);
   
   // All handlers that belong to a row
   nl.sara.beehub.view.content.setRowHandlers();
@@ -113,10 +113,28 @@ nl.sara.beehub.view.content.init = function() {
  */
 nl.sara.beehub.view.content.clearView = function(){
   // uncheck checkboxes
-  $('.bh-dir-checkboxgroup').prop('checked',false);
-  $('.bh-dir-checkbox').prop('checked',false);
+  $('.bh-dir-content-checkboxgroup').prop('checked',false);
+  $('.bh-dir-content-checkbox').prop('checked',false);
   // disable buttons
   nl.sara.beehub.view.content.disable_action_buttons();
+};
+
+/*
+ * Action for all buttons in the fixed view on the top of the contents table
+ * 
+ * @param String action 'hide' or 'show'
+ * 
+ */
+nl.sara.beehub.view.content.allFixedButtons = function(action){
+  switch(action)
+  {
+    case 'hide':
+      break;
+    case 'show':
+      break;
+    default:
+      // This should never happen
+  };
 };
 
 /*
@@ -125,24 +143,24 @@ nl.sara.beehub.view.content.clearView = function(){
 */
 nl.sara.beehub.view.content.setRowHandlers = function(){
   // Checkbox select all handler: select or deselect all checkboxes
-  $('.bh-dir-checkboxgroup').click(nl.sara.beehub.view.content.handle_checkall_checkbox_click);
+  $('.bh-dir-content-checkboxgroup').click(nl.sara.beehub.view.content.handle_checkall_checkbox_click);
   
   // Checkbox handler: select or deselect checkbox
-  $('.bh-dir-checkbox').click(nl.sara.beehub.view.content.handle_checkbox_click);
+  $('.bh-dir-content-checkbox').click(nl.sara.beehub.view.content.handle_checkbox_click);
   
   // Open selected handler: this can be a file or a directory
-  $('.bh-dir-openselected').click(function() {window.location.href=$(this).attr('name');});
+  $('.bh-dir-content-openselected').click(function() {window.location.href=$(this).attr('name');});
   
   // Edit icon
-  $('.bh-dir-edit').click(nl.sara.beehub.view.content.handle_edit_icon_click);
+  $('.bh-dir-content-edit').click(nl.sara.beehub.view.content.handle_edit_icon_click);
   
   // Rename handler
-  $('.bh-dir-rename-form').change(nl.sara.beehub.view.content.handle_rename_form_change);
+  $('.bh-dir-content-rename-form').change(nl.sara.beehub.view.content.handle_rename_form_change);
   
   // Blur: erase rename form field
-  $('.bh-dir-rename-form').blur(function(){
-    $(this).closest("tr").find(".bh-dir-name").show();
-    $(this).closest("tr").find(".bh-dir-rename-td").hide();
+  $('.bh-dir-content-rename-form').blur(function(){
+    $(this).closest("tr").find(".bh-dir-content-name").show();
+    $(this).closest("tr").find(".bh-dir-content-rename-td").hide();
   })
 };
 
@@ -152,7 +170,7 @@ nl.sara.beehub.view.content.setRowHandlers = function(){
  * @param Object resource Resource to trigger rename click
  */
 nl.sara.beehub.view.content.triggerRenameClick = function(resource){
-  $("tr[id='"+resource.path+"']").find('.bh-dir-edit').trigger('click');
+  $("tr[id='"+resource.path+"']").find('.bh-dir-content-edit').trigger('click');
 }
 
 /*
@@ -168,25 +186,25 @@ nl.sara.beehub.view.content.createRow = function(resource){
   row.push('<tr id="'+resource.path+'">');
   
   // Checkbox
-  row.push('<td width="10px"><input type="checkbox" class="bh-dir-checkbox" name="'+resource.path+'" value="'+resource.displayname+'"></td>');
+  row.push('<td width="10px"><input type="checkbox" class="bh-dir-content-checkbox" name="'+resource.path+'" value="'+resource.displayname+'"></td>');
   
   // Edit column
   row.push('<td width="10px" data-toggle="tooltip" title="Rename">');
-  row.push('<i class="icon-edit bh-dir-edit" style="cursor: pointer"></i></td>');
+  row.push('<i class="icon-edit bh-dir-content-edit" style="cursor: pointer"></i></td>');
   
   // Name
   if (resource.type==='collection') {
-    row.push('<td class="bh-dir-name displayname" name="'+resource.displayname+'"><a href="'+resource.path+'"><b>'+resource.displayname+'/</b></a></td>');
+    row.push('<td class="bh-dir-content-name displayname" name="'+resource.displayname+'"><a href="'+resource.path+'"><b>'+resource.displayname+'/</b></a></td>');
   } else {
-    row.push('<td class="bh-dir-name displayname" name="'+resource.displayname+'"><a href="'+resource.path+'">'+resource.displayname+'</a></td>');
+    row.push('<td class="bh-dir-content-name displayname" name="'+resource.displayname+'"><a href="'+resource.path+'">'+resource.displayname+'</a></td>');
   }
-  row.push('<td class="bh-dir-rename-td" hidden="true"><input class="bh-dir-rename-form" name="'+resource.displayname+'" value="'+resource.displayname+'"></td>');
+  row.push('<td class="bh-dir-content-rename-td" hidden="true"><input class="bh-dir-content-rename-form" name="'+resource.displayname+'" value="'+resource.displayname+'"></td>');
   
   if (resource.type==='collection') {
     // Size
     row.push('<td class="contentlength" name="'+resource.contentlength+'"></td>');
     // Type
-    row.push('<td class="type" name="'+resource.type+'"><i name="'+resource.path+'" class="icon-folder-close bh-dir-openselected" style="cursor: pointer">></i></td>');
+    row.push('<td class="type" name="'+resource.type+'"><i name="'+resource.path+'" class="icon-folder-close bh-dir-content-openselected" style="cursor: pointer">></i></td>');
   } else {
     // Size
     row.push('<td class="contentlength" name="'+resource.contentlength+'">'+nl.sara.beehub.controller.bytesToSize(resource.contentlength, 1)+'</td>');
@@ -224,7 +242,7 @@ nl.sara.beehub.view.content.createRow = function(resource){
  */
 nl.sara.beehub.view.content.getSelectedResources = function(){
   var resources=[];
-  $.each($('.bh-dir-checkbox:checked'), function(i, val){
+  $.each($('.bh-dir-content-checkbox:checked'), function(i, val){
     var resource = new nl.sara.beehub.ClientResource(val.name);
     resource.setDisplayName(val.value);
     resources.push(resource);
@@ -308,18 +326,18 @@ nl.sara.beehub.view.content.updateResource = function(resourceOrg, resourceNew){
  * Enable copy, move, delete buttons
  */
 nl.sara.beehub.view.content.enable_action_buttons = function() {
-  $('#bh-dir-copy').removeAttr("disabled");
-  $('#bh-dir-move').removeAttr("disabled");
-  $('#bh-dir-delete').removeAttr("disabled");
+  $('.bh-dir-content-copy').removeAttr("disabled");
+  $('.bh-dir-content-move').removeAttr("disabled");
+  $('.bh-dir-content-delete').removeAttr("disabled");
 }
 
 /*
  * Disable copy, move, delete buttons
  */
 nl.sara.beehub.view.content.disable_action_buttons = function() {
-  $('#bh-dir-copy').attr("disabled","disabled");
-  $('#bh-dir-move').attr("disabled","disabled");
-  $('#bh-dir-delete').attr("disabled","disabled");
+  $('.bh-dir-content-copy').attr("disabled","disabled");
+  $('.bh-dir-content-move').attr("disabled","disabled");
+  $('.bh-dir-content-delete').attr("disabled","disabled");
 }
 
 /*
@@ -329,13 +347,13 @@ nl.sara.beehub.view.content.disable_action_buttons = function() {
 nl.sara.beehub.view.content.handle_checkall_checkbox_click = function() {
   // When selected, check all
   if ($(this)[0].checked) {
-    $('.bh-dir-checkbox').prop('checked',true);
-    if ($('.bh-dir-checkbox:checked').length > 0) {
+    $('.bh-dir-content-checkbox').prop('checked',true);
+    if ($('.bh-dir-content-checkbox:checked').length > 0) {
       nl.sara.beehub.view.content.enable_action_buttons();
     };
   // Else uncheck all
   } else {
-    $('.bh-dir-checkbox').prop('checked',false);
+    $('.bh-dir-content-checkbox').prop('checked',false);
     nl.sara.beehub.view.content.disable_action_buttons();
   }
 }
@@ -346,7 +364,7 @@ nl.sara.beehub.view.content.handle_checkall_checkbox_click = function() {
  */
 nl.sara.beehub.view.content.handle_checkbox_click = function() {
   // When more then one resource is selected, enable buttons
-  if ($('.bh-dir-checkbox:checked').length > 0) {
+  if ($('.bh-dir-content-checkbox:checked').length > 0) {
     nl.sara.beehub.view.content.enable_action_buttons();
   // else disable buttons
   } else {
@@ -360,17 +378,17 @@ nl.sara.beehub.view.content.handle_checkbox_click = function() {
 nl.sara.beehub.view.content.handle_edit_icon_click = function(){
   // TODO - instead show and hide, replace to prevent table colums move
   // Search nearest name field and hide
-  $(this).closest("tr").find(".bh-dir-name").hide();
+  $(this).closest("tr").find(".bh-dir-content-name").hide();
   // Show form
-  $(this).closest("tr").find(".bh-dir-rename-td").show();
+  $(this).closest("tr").find(".bh-dir-content-rename-td").show();
   
   // When giving the input field the value of the field again it will
   // be empty after cancel a overwrite. Bug???
-  var name = $(this).closest("tr").find(".bh-dir-rename-td").find(':input').attr('name');
-  $(this).closest("tr").find(".bh-dir-rename-td").find(':input').val(name);
+  var name = $(this).closest("tr").find(".bh-dir-content-rename-td").find(':input').attr('name');
+  $(this).closest("tr").find(".bh-dir-content-rename-td").find(':input').val(name);
   
   // Focus mouse
-  $(this).closest("tr").find(".bh-dir-rename-td").find(':input').focus();
+  $(this).closest("tr").find(".bh-dir-content-rename-td").find(':input').focus();
 }; 
 
 /*
@@ -388,14 +406,14 @@ nl.sara.beehub.view.content.handle_rename_form_change = function(){
  */
 nl.sara.beehub.view.content.handle_upload_button_click = function() {
   // show local files and directories
-  $('#bh-dir-upload-hidden').click();
+  $('.bh-dir-content-upload-hidden').click();
 };
 
 /*
  * Handler upload files (triggered when files to upload are selected)
  */
 nl.sara.beehub.view.content.handle_upload_change = function() {
-  var files = $('#bh-dir-upload-hidden')[0].files;
+  var files = $('.bh-dir-content-upload-hidden')[0].files;
   // init and start action "upload"
   nl.sara.beehub.controller.initAction(files,"upload");
 };

@@ -77,3 +77,21 @@ $("#bh-dir-acl-table tbody").sortable();
     $('#bh-dir-aclcontent').append(appendString);
   });
 };
+
+/*
+ * Action for all buttons in the fixed view on the top of the acl table
+ * 
+ * @param String what 'hide' or 'show'
+ * 
+ */
+nl.sara.beehub.view.acl.allFixedButtons = function(action){
+  switch(action)
+  {
+    case 'hide':
+      break;
+    case 'show':
+      break;
+    default:
+      // This should never happen
+  };
+};
