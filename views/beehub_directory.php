@@ -14,7 +14,10 @@ require 'views/header.php';
 /**
  * Create tree for tree view (dynatree plugin)
  * 
- * @var $path string a slashified path to a directory
+ * @param   string  $path        A slashified path to a directory
+ * @param   string  $oldpath     The path to the collection containing $oldmembers (is one of the children of the current path)
+ * @param   string  $oldmembers  The members of the subcollection which is currently selected
+ * @return  array                An array with the following keys: title, id, expand, isFolder, children, isLazy. These are used as parameters for dynatree (see dynatree documentation for more information).
  */
 function createTree($path, $oldpath = null, $oldmembers = null) {
   $dir = BeeHub_Registry::inst()->resource($path);
@@ -33,7 +36,7 @@ function createTree($path, $oldpath = null, $oldmembers = null) {
         if ( $tmp['expand'] === true ) {
           $tmp['children'] = $oldmembers;
         } else {
-        	$tmp['isLazy'] = true;
+          $tmp['isLazy'] = true;
         };
     $members[] = $tmp;
   }
@@ -46,33 +49,34 @@ function createTree($path, $oldpath = null, $oldmembers = null) {
 $tree = createTree(DAV::slashify(dirname($this->path)));
 ?>
 
+<!-- Bread crumb -->
 <div class="bh-dir-fixed-path">
   <h4>
     <?php
     // first and last of $crumb are empty
     $crumb = explode("/", $this->path);
-    print "<ul class='breadcrumb bh-dir-breadcrumb '>";
+    print "<ul class=\"breadcrumb bh-dir-breadcrumb \">";
     // Root
-    print "<li><a href='/'>BeeHub root</a><span class='divider'>&raquo;</span></li>";
+    print "<li><a href=\"/\">BeeHub root</a><span class=\"divider\">&raquo;</span></li>";
     $count = count($crumb);
     $start = 1;
     //Show maximal two directories
     if ($count > 4) {
-			print "<li><span class='divider'>.. /</span></li>";
+			print "<li><span class=\"divider\">.. /</span></li>";
 			$start = $count - 3;
 		};
     $last = $count - 2;
     $newpath = '';
     for ($x=1; $x<=$count-2; $x++) {
       $value = urldecode($crumb[$x]);
-      $newpath .= '/' . $value;
-      // Show only the two last directories
+      $newpath .= '/' . $value; // We extend the path for each intermediate directory, but...
+      // ...show only the two last directories
       if ($x >= $start) {
 				// Last directory is current directory, no link
 	      if ($x === $last) {
-	        print "<li class='active'>$value</li>";
+	        print "<li class=\"active\">" . DAV::xmlescape( $value ) . "</li>";
 	      } else {
-	        print "<li><a href='" . $newpath . "'>$value</a><span class='divider'>/</span></li>";
+	        print "<li><a href=\"" . DAV::xmlescape( $newpath ) . "\">" . DAV::xmlescape( $value ) . "</a><span class=\"divider\">/</span></li>";
 	      }
 	    }
     }
@@ -92,17 +96,18 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
 </div>
 <!-- End class fixed tabs -->
 
+<!-- Fixed buttons at the top -->
 <div class="bh-dir-fixed-buttons">
 	<!--  Up button -->
 	<!-- 	Up -->
   <?php if (DAV::unslashify($this->collection()->path) != "") : ?>
-    <button id="<?= DAV::unslashify($this->collection()->path) ?>"
+    <button id="<?= DAV::xmlescape( DAV::unslashify($this->collection()->path) ) ?>"
             class="btn btn-small bh-dir-up">
       <i class="icon-chevron-up"></i> Up
     </button>
 	<!--   No up possible -->
   <?php else: ?>
-    <button id="<?= DAV::unslashify($this->collection()->path) ?>"
+    <button id="<?= DAV::xmlescape( DAV::unslashify($this->collection()->path) ) ?>"
             class="btn btn-small bh-dir-up" disabled="disabled">
       <i class="icon-chevron-up"></i> Up
     </button>
@@ -110,7 +115,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
   
 	<!--   Home -->
   <button
-    id="<?= preg_replace('@^/system/users/(.*)@', '/home/\1/', BeeHub_Auth::inst()->current_user()->path) ?>"
+    id="<?= DAV::xmlescape( preg_replace('@^' . BeeHub::USERS_PATH . '(.*)@', '/home/\1/', BeeHub_Auth::inst()->current_user()->path) ) ?>"
     class="btn btn-small bh-dir-gohome" data-toggle="tooltip"
     title="Go to home folder">
     <i class="icon-home"></i> Home
@@ -118,7 +123,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
   
 	<!--   Upload -->
   <input id="bh-dir-upload-hidden" type="file" name="files[]"
-         hidden='true' multiple>
+         hidden="true" multiple>
 	<!--   Hidden upload field, this is needed to show the upload button -->
   <button id="bh-dir-upload" data-toggle="tooltip"
           title="Upload to current folder" class="btn btn-small">
@@ -154,7 +159,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
 <!-- End fixed buttons -->
 
 <!-- Dialog, for dialog view -->
-<div id="bh-dir-dialog" hidden='true'></div>
+<div id="bh-dir-dialog" hidden="true"></div>
 
 <!-- Tree slide out, dynatree - tree view -->
 <div id="bh-dir-tree" class="bh-dir-tree-slide">
@@ -169,7 +174,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
       }
       if (substr($member->path, -1) === '/'):
         ?>
-        <li id="<?= $member->user_prop_displayname() ?>" class="folder"><?= $member->user_prop_displayname() ?>
+        <li id="<?= DAV::xmlescape( $member->user_prop_displayname() ) ?>" class="folder"><?= DAV::xmlescape( $member->user_prop_displayname() ) ?>
           <ul>
             <li></li>
           </ul> <?php
@@ -211,7 +216,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
 <!--           Name header -->
           <th>Name</th>
 <!-- 					Hidden rename column -->
-          <th hidden='true'></th>
+          <th hidden="true"></th>
 <!--           Size header -->
           <th>Size</th>
 <!--           Type header -->
@@ -237,30 +242,30 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
                   $member->user_prop_owner()
           );
           ?>
-          <tr id='<?= DAV::unslashify($member->path) ?>'>
+          <tr id="<?= DAV::xmlescape( DAV::unslashify($member->path) ) ?>">
 <!--             Select checkbox -->
-            <td width="10px"><input type="checkbox" class="bh-dir-checkbox" name='<?= DAV::unslashify($member->path)?>'
-                                    value='<?= $member->user_prop_displayname() ?>'></td>
+<td width="10px"><input type="checkbox" class="bh-dir-checkbox" name="<?= DAV::xmlescape( DAV::unslashify( $member->path ) ) ?>"
+                                    value=""<?= DAV::xmlescape( $member->user_prop_displayname() ) ?>"></td>
 <!--             Rename icon -->
             <td width="10px" data-toggle="tooltip" title="Rename"><i
                 class="icon-edit bh-dir-edit" style="cursor: pointer"></i></td>
 <!--                 Name -->
 <!--                 Directory -->
             <?php if (substr($member->path, -1) === '/'): ?>
-              <td class="bh-dir-name displayname" name='<?= $member->user_prop_displayname() ?>'><a
-                  href='<?= DAV::unslashify($member->path) ?>'><b><?= $member->user_prop_displayname() ?>/</b>
+              <td class="bh-dir-name displayname" name="<?= DAV::xmlescape( $member->user_prop_displayname() ) ?>"><a
+                  href="<?= DAV::xmlescape( DAV::unslashify( $member->path ) ) ?>"><b><?= DAV::xmlescape( $member->user_prop_displayname() ) ?>/</b>
                 </a></td>
 <!--                 File -->
             <?php else : ?>
-              <td class="bh-dir-name displayname" name='<?= $member->user_prop_displayname() ?>'><a
-                  href='<?= DAV::unslashify($member->path) ?>'><?= $member->user_prop_displayname() ?>
+              <td class="bh-dir-name displayname" name="<?= DAV::xmlescape( $member->user_prop_displayname() ) ?>"><a
+                  href="<?= DAV::xmlescape( DAV::unslashify( $member->path ) ) ?>"><?= DAV::xmlescape( $member->user_prop_displayname() ) ?>
                 </a></td>
             <?php endif; ?>
 <!--             Hidden rename -->
-            <td class="bh-dir-rename-td" hidden='true'><input
+            <td class="bh-dir-rename-td" hidden="true"><input
                 class="bh-dir-rename-form"
-                name='<?= $member->user_prop_displayname() ?>'
-                value='<?= $member->user_prop_displayname() ?>'></td>
+                name="<?= DAV::xmlescape( $member->user_prop_displayname() ) ?>"
+                value="<?= DAV::xmlescape( $member->user_prop_displayname() ) ?>"></td>
               <?php
               // 					  Calculate size
               $size = $member->user_prop_getcontentlength();
@@ -281,19 +286,19 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
               }
               ?>
 <!--             Size -->
-            <td class="contentlength" name='<?= $member->user_prop_getcontentlength()?>'><?= $showsize ?></td>
+            <td class="contentlength" name="<?= DAV::xmlescape( $member->user_prop_getcontentlength() ) ?>"><?= DAV::xmlescape( $showsize ) ?></td>
             <?php if (substr($member->path, -1) === '/'): ?>
-              <td class="type" name='collection'><i name=<?= DAV::unslashify($member->path) ?>
+              <td class="type" name="collection"><i name="<?= DAV::xmlescape( DAV::unslashify($member->path) ) ?>"
                      class="icon-folder-close bh-dir-openselected"
-                     style="cursor: pointer">></i></td> 
+                     style="cursor: pointer"></i></td> 
               <?php else : ?>
-              <td class="type" name='<?= $member->user_prop_getcontenttype() ?>'><?= $member->user_prop_getcontenttype() ?></td>
+              <td class="type" name="<?= DAV::xmlescape( $member->user_prop_getcontenttype() ) ?>"><?= DAV::xmlescape( $member->user_prop_getcontenttype() ) ?></td>
             <?php endif; ?> 
 <!--             Date, has to be the same as shown with javascript -->
-            <td class="lastmodified" name='<?= date('r',$member->user_prop_getlastmodified()) ?>'><?= date('j-n-Y G:i', $member->user_prop_getlastmodified()) ?>
+            <td class="lastmodified" name="<?= DAV::xmlescape( date( 'r', $member->user_prop_getlastmodified() ) ) ?>"><?= DAV::xmlescape( date('j-n-Y G:i', $member->user_prop_getlastmodified() ) ) ?>
             </td>
 <!--             Owner -->
-            <td class="owner" name='<?= $owner->path ?>'><?= $owner->user_prop_displayname() ?></td>
+            <td class="owner" name="<?= DAV::xmlescape( $owner->path ) ?>"><?= DAV::xmlescape( $owner->user_prop_displayname() ) ?></td>
             <?php if (substr($member->path, -1) !== '/'): ?>
             	<!-- share file, not yet implemented -->         
 							<!--  <td width="10px" data-toggle="tooltip" -->
@@ -314,7 +319,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
 
   <!-- Acl tab -->
   <div id="bh-dir-panel-acl" class="tab-pane fade">
-    <!-- <h4>ACL <?= $this->path ?></h4> -->
+    <!-- <h4>ACL <?= DAV::xmlescape( $this->path ) ?></h4> -->
     <table id="bh-dir-acl-table" class="table table-striped">
       <thead>
         <tr>
@@ -384,3 +389,5 @@ $footer = '
  	<script type="text/javascript" src="/system/js/plugins/tablesorter/js/jquery.tablesorter.widgets.js"></script>
 ';
 require 'views/footer.php';
+
+// End of file
