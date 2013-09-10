@@ -4,13 +4,15 @@
  */
 nl.sara.beehub.view.acl.init = function() {
 // ACL TAB ACTIONS/FUNCTIONS
+// Use table sorter for sticky headers (not scrolling
+// table header)
 $("#bh-dir-acl-table").tablesorter({
   // which columns are sortable
   headers: { 
     0 : { sorter: false },
     1 : { sorter: false },
     2 : { sorter: false},
-    3: { sorter:false },
+    3:  { sorter:false },
     4 : { sorter: false },
     5 : { sorter: false },
     6 : { sorter: false},
