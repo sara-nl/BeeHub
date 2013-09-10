@@ -129,8 +129,22 @@ nl.sara.beehub.view.content.allFixedButtons = function(action){
   switch(action)
   {
     case 'hide':
+      $('.bh-dir-content-gohome').hide();
+      $('.bh-dir-content-up').hide();
+      $('.bh-dir-content-upload').hide();
+      $('.bh-dir-content-newfolder').hide();
+      $('.bh-dir-content-delete').hide();
+      $('.bh-dir-content-copy').hide();
+      $('.bh-dir-content-move').hide();
       break;
     case 'show':
+      $('.bh-dir-content-gohome').show();
+      $('.bh-dir-content-up').show();
+      $('.bh-dir-content-upload').show();
+      $('.bh-dir-content-newfolder').show();
+      $('.bh-dir-content-delete').show();
+      $('.bh-dir-content-copy').show();
+      $('.bh-dir-content-move').show();
       break;
     default:
       // This should never happen

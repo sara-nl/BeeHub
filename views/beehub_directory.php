@@ -10,7 +10,7 @@
 $aclAllowed = $this->property_priv_read(array(DAV::PROP_ACL));
 $aclAllowed = $aclAllowed[DAV::PROP_ACL];
 require 'views/header.php';
-
+ 
 /**
  * Create tree for tree view (dynatree plugin)
  * 
@@ -156,26 +156,13 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
           title="Delete selected" class="btn btn-small bh-dir-content-delete" disabled="disabled">
     <i class="icon-remove"></i> Delete
   </button>
-</div>
 
 <!-- 	ACL VIEW -->
 	<!-- ACL: Add button-->
-  <button data-toggle="tooltip"
-          title="Add rule" class="btn btn-small bh-dir-acl-add" hidden="true">
+  <button data-toggle="tooltip" title="Add rule" class="btn btn-small bh-dir-acl-add hide" >
     <i class="icon-plus"></i> Add rule
   </button> 
-  
-	<!-- ACL: Up button-->
-  <button data-toggle="tooltip"
-          title="Move up" class="btn btn-small bh-dir-acl-up" hidden="true">
-    <i class="icon-chevron-up"></i> Up
-  </button>
-  
-  <!--	ACL: Down button-->
-  <button data-toggle="tooltip"
-          title="Move down" class="btn btn-small bh-dir-acl-down" hidden="true">
-    <i class="icon-chevron-down"></i> Down
-  </button>
+</div>
   
 <!-- End fixed buttons -->
 
@@ -184,7 +171,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
 
 <!-- Tree slide out, dynatree - tree view -->
 <div id="bh-dir-tree" class="bh-dir-tree-slide">
-  <ul>
+  <ul> 
     <?php
     // Fill the tree nodes
     $registry = BeeHub_Registry::inst();
@@ -342,21 +329,214 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
   <div id="bh-dir-panel-acl" class="tab-pane fade">
     <!-- <h4>ACL <?= DAV::xmlescape( $this->path ) ?></h4> -->
     <table id="bh-dir-acl-table" class="table table-striped">
-      <thead>
+      <thead class="bh-dir-acl-table-header">
         <tr>
+<!--           Principal -->
           <th>Principal</th>
-          <th>Privileges</th>
+<!--           Read -->
+          <th width="30px">Read</th>
+<!--           Write -->
+          <th width="30px">Write</th>
+<!--           Manage -->
+          <th width="30px">Manage</th>
+<!--           Access -->
           <th>Access</th>
-          <th>Inherited</th>
+<!--           Comments -->
+          <th>Comment</th>
+<!--         	Move up -->
+          <th width="10px"></th>
+<!--           Move down -->
+          <th width="10px"></th>
+<!--           Delete row -->
+          <th width="10px"></th>
         </tr>
       </thead>
-      <tbody id="bh-dir-aclcontent">
+      <tbody class="bh-dir-acl-contents" name="<?= DAV::xmlescape( DAV::unslashify($member->path) ) ?>">
+<!--       Niek -->
+      <?php
+      $acl = array
+      (
+      		array (
+      				// principal
+      				"principal-show" => "owner",
+							// principal
+							"principal-name" => "DAV: owner",
+      				// Read,
+      				"read" => "checked",
+      				// Write
+      				"write" => "unchecked",
+      				// Manage
+      				"manage" => "checked",
+      				// Access
+      				"access" => "grant",
+							// Info
+      				"info" => "protected",
+							// Info
+      				"info-show" => "protected, no changes are possible"
+      		),
+      		array (
+      				// principal
+      				"principal-show" => "second protected",
+      				// principal
+      				"principal-name" => "DAV: second",
+      				// Read,
+      				"read" => "checked",
+      				// Write
+      				"write" => "checked",
+      				// Manage
+      				"manage" => "unchecked",
+      				// Access
+      				"access" => "grant",
+      				// Info
+      				"info" => "protected",
+      				// Info
+      				"info-show" => "protected, no changes are possible"
+      		),
+      		array (
+      				// principal
+      				"principal-show" => "Niek Bosch",
+      				// principal
+      				"principal-name" => "DAV: niekb",
+      				// Read,
+      				"read" => "checked",
+      				// Write
+      				"write" => "checked",
+      				// Manage
+      				"manage" => "checked",
+      				// Access
+      				"access" => "deny",
+      				// Info
+      				"info" => "",
+      				// Info
+      				"info-show" => ""
+      		),
+      		array (
+      				// principal
+      				"principal-show" => "Laura Leistikow",
+      				// principal
+      				"principal-name" => "DAV: laura",
+      				// Read,
+      				"read" => "unchecked",
+      				// Write
+      				"write" => "unchecked",
+      				// Manage
+      				"manage" => "unchecked",
+      				// Access
+      				"access" => "deny",
+      				// Info
+      				"info" => "",
+      				// Info
+      				"info-show" => ""
+      		),
+      		array (
+      				// principal
+      				"principal-show" => "[All]",
+      				// principal
+      				"principal-name" => "DAV: all",
+      				// Read,
+      				"read" => "checked",
+      				// Write
+      				"write" => "checked",
+      				// Manage
+      				"manage" => "checked",
+      				// Access
+      				"access" => "grant",
+      				// Info
+      				"info" => "",
+      				// Info
+      				"info-show" => ""
+      		),
+      		array (
+      				// principal
+      				"principal-show" => "[All]",
+      				// principal
+      				"principal-name" => "DAV: all",
+      				// Read,
+      				"read" => "checked",
+      				// Write
+      				"write" => "checked",
+      				// Manage
+      				"manage" => "checked",
+      				// Access
+      				"access" => "deny",
+      				// Info
+      				"info" => "inherited",
+      				// Info
+      				"info-show" => "inherited from: link"
+      		),
+      		array (
+      				// principal
+      				"principal-show" => "Second inherited",
+      				// principal
+      				"principal-name" => "DAV: all",
+      				// Read,
+      				"read" => "checked",
+      				// Write
+      				"write" => "unchecked",
+      				// Manage
+      				"manage" => "checked",
+      				// Access
+      				"access" => "deny",
+      				// Info
+      				"info" => "inherited",
+      				// Info
+      				"info-show" => "inherited from: link"
+      		)
+      );
+      foreach ($acl as $key=>$ace) :
+    ?>
+      	<tr>
+<!-- 					Principal -->
+					<td name="<?= $ace["principal-name"] ?>" ><b><?= $ace["principal-show"] ?></b></td>
+<!-- 					Read -->
+					<td><center><input type="checkbox" class="bh-dir-acl-read" <?= $ace["read"] ?>></center></td>
+<!-- 					Write -->
+					<td><center><input type="checkbox" class="bh-dir-acl-write" <?= $ace["write"] ?>></center></td>
+<!-- 					Manage -->
+					<td><center><input type="checkbox" class="bh-dir-acl-manage" <?= $ace["manage"] ?>></center></td>
+<!-- 					Access -->
+					<td class="bh-dir-acl-access" style="cursor: pointer"><?= $ace["access"] ?></td>
+<!-- 					Info -->
+					<td class="bh-dir-acl-access" name="<?= $ace["info"] ?>" ><?= $ace["info-show"] ?></td>
+<!--       	When ace is not protected, inherited and previous ace exists and is not protected  -->
+      	<?php if (($ace["info"] != 'protected') &&
+      						($ace["info"] != 'inherited') &&
+      						($acl[$key-1] != null) &&
+      						($acl[$key-1]["info"] != 'protected'))
+      	 :?>
+<!-- 					Move up -->
+					<td><i title="Move up" class="icon-arrow-up bh-dir-acl-up" style="cursor: pointer"></i></td>
+				<?php else : ?>
+<!-- 					No move up possible -->
+					<td></td>
+				<?php endif; ?>
+				<!--       	When ace is not protected, inherited and next ace exists and is not inherited  -->
+      	<?php if (($ace["info"] != 'protected') &&
+      						($ace["info"] != 'inherited') &&
+      						($acl[$key+1] != null) &&
+      						($acl[$key+1]["info"] != 'inherited'))
+      	 :?>
+<!-- 					Move down -->
+					<td><i title="Move down" class="icon-arrow-down bh-dir-acl-down" style="cursor: pointer"></i></td>
+				<?php else : ?>
+<!-- 					No move down possible -->
+					<td></td>
+				<?php endif; ?>
+				<?php if (($ace["info"] === ("protected")) || ($ace["info"] === "inherited")) :?>
+<!--       	no delete possible -->
+      	<td><?$ace["info"]?></td>
+      	<?php else : ?>
+<!--       		Delete icon -->
+      		<td><i title="Delete" class="icon-remove bh-dir-acl-remove" style="cursor: pointer"></i></td>
+      	<?php endif; ?>
+      	</tr>  
+     <?php
+        endforeach;
+     ?>  	
       </tbody>
     </table>
   </div>
   <!-- End Acl tab -->
-
-</div>
 <!-- End tab div -->
 
 <!-- Mask input -->

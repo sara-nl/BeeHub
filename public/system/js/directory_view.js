@@ -30,9 +30,24 @@
  * 
  */
 nl.sara.beehub.view.init = function() {
+  // Init content view
   nl.sara.beehub.view.content.init();
+  
+  // Init tree view
   nl.sara.beehub.view.tree.init();
+  
+  // Init acl view
   nl.sara.beehub.view.acl.init();
+  
+  // Change tab listeners
+  // Content tab
+  $('a[href="#bh-dir-panel-contents"]').on('shown', function(e){
+    nl.sara.beehub.view.showFixedButtons('content');
+  });
+  // Acl tab
+  $('a[href="#bh-dir-panel-acl"]').on('shown', function(e){
+    nl.sara.beehub.view.showFixedButtons('acl');
+  });
 }
 
 /*
@@ -71,12 +86,12 @@ nl.sara.beehub.view.showFixedButtons = function(action){
   switch(action)
   {
     case 'acl':
-      nl.sara.beehub.view.content.showFixedButtons('hide');
-      nl.sara.beehub.view.acl.showFixedButtons('show');
+      nl.sara.beehub.view.content.allFixedButtons('hide');
+      nl.sara.beehub.view.acl.allFixedButtons('show');
       break;
     case 'content':
-      nl.sara.beehub.view.acl.showFixedButtons('hide');
-      nl.sara.beehub.view.content.showFixedButtons('show');
+      nl.sara.beehub.view.acl.allFixedButtons('hide');
+      nl.sara.beehub.view.content.allFixedButtons('show');
       break;
     default:
       // This should never happen
