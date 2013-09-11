@@ -173,7 +173,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
 <div id="bh-dir-tree" class="bh-dir-tree-slide">
   <ul> 
     <?php
-    // Fill the tree nodes
+/*    // Fill the tree nodes
     $registry = BeeHub_Registry::inst();
     foreach ($this as $inode) :
       $member = $registry->resource($this->path . $inode);
@@ -189,7 +189,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
         endif;
         $registry->forget($this->path . $inode);
       endforeach;
-      ?>
+*/      ?>
   </ul>
 </div>
 <!-- End tree slide out -->
@@ -241,7 +241,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
         <?php
         // For all resources, fill table
         foreach ($this as $inode) :
-          $member = $registry->resource($this->path . $inode);
+          $member = DAV::$REGISTRY->resource($this->path . $inode);
           if (DAV::unslashify($member->path) === '/system') {
             continue;
           }
@@ -317,7 +317,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
             <?php endif; ?>
           </tr>
           <?php
-          $registry->forget($this->path . $inode);
+          DAV::$REGISTRY->forget($this->path . $inode);
         endforeach;
         ?>
       </tbody>
