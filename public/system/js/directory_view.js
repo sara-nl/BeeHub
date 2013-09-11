@@ -33,7 +33,7 @@ nl.sara.beehub.view.init = function() {
   nl.sara.beehub.view.content.init();
   nl.sara.beehub.view.tree.init();
   nl.sara.beehub.view.acl.init();
-}
+};
 
 /*
  * Clear all views
@@ -59,7 +59,7 @@ nl.sara.beehub.view.maskView = function(mask){
   } else {
     $("#bh-dir-all").hide();
   }  
-}
+};
 
 /*
  * Add resource to all views

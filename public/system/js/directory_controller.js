@@ -533,7 +533,7 @@ nl.sara.beehub.controller.createActionCallback = function(resource, renameCounte
     case 501:
     case 512:
       // Update summary
-      nl.sara.beehub.controller.summary.error++
+      nl.sara.beehub.controller.summary.error++;
       // Update dialog info
       nl.sara.beehub.view.dialog.updateResourceInfo(resource,"Copy to parent resource is not possible.");
       break;
@@ -567,7 +567,7 @@ nl.sara.beehub.controller.createActionCallback = function(resource, renameCounte
       
     default:
       // Update summary
-      nl.sara.beehub.controller.summary.error++
+      nl.sara.beehub.controller.summary.error++;
       // Update dialog info
       nl.sara.beehub.view.dialog.updateResourceInfo(resource,"Unknown error");
     };
@@ -578,8 +578,8 @@ nl.sara.beehub.controller.createActionCallback = function(resource, renameCounte
       nl.sara.beehub.view.dialog.scrollTo(nl.sara.beehub.controller.actionCounter*35);
       // Start next action
       nl.sara.beehub.controller.startNextAction();
-    };
-  }
+    }
+  };
 };
 
 /*
@@ -655,7 +655,7 @@ nl.sara.beehub.controller.updateActionView = function(resource, renameCounter){
     default:
       // This should never happen
   }
-}
+};
 
 
 /*
