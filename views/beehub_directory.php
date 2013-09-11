@@ -354,155 +354,197 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
       <tbody class="bh-dir-acl-contents" name="<?= DAV::xmlescape( DAV::unslashify($member->path) ) ?>">
 <!--       Niek -->
       <?php
-      $acl = array
-      (
-      		array (
-      				// principal
-      				"principal-show" => "owner",
-							// principal
-							"principal-name" => "DAV: owner",
-      				// Read,
-      				"read" => "checked",
-      				// Write
-      				"write" => "unchecked",
-      				// Manage
-      				"manage" => "checked",
-      				// Access
-      				"access" => "grant",
-							// Info
-      				"info" => "protected",
-							// Info
-      				"info-show" => "protected, no changes are possible"
-      		),
-      		array (
-      				// principal
-      				"principal-show" => "second protected",
-      				// principal
-      				"principal-name" => "DAV: second",
-      				// Read,
-      				"read" => "checked",
-      				// Write
-      				"write" => "checked",
-      				// Manage
-      				"manage" => "unchecked",
-      				// Access
-      				"access" => "grant",
-      				// Info
-      				"info" => "protected",
-      				// Info
-      				"info-show" => "protected, no changes are possible"
-      		),
-      		array (
-      				// principal
-      				"principal-show" => "Niek Bosch",
-      				// principal
-      				"principal-name" => "DAV: niekb",
-      				// Read,
-      				"read" => "checked",
-      				// Write
-      				"write" => "checked",
-      				// Manage
-      				"manage" => "checked",
-      				// Access
-      				"access" => "deny",
-      				// Info
-      				"info" => "",
-      				// Info
-      				"info-show" => ""
-      		),
-      		array (
-      				// principal
-      				"principal-show" => "Laura Leistikow",
-      				// principal
-      				"principal-name" => "DAV: laura",
-      				// Read,
-      				"read" => "unchecked",
-      				// Write
-      				"write" => "unchecked",
-      				// Manage
-      				"manage" => "unchecked",
-      				// Access
-      				"access" => "deny",
-      				// Info
-      				"info" => "",
-      				// Info
-      				"info-show" => ""
-      		),
-      		array (
-      				// principal
-      				"principal-show" => "[All]",
-      				// principal
-      				"principal-name" => "DAV: all",
-      				// Read,
-      				"read" => "checked",
-      				// Write
-      				"write" => "checked",
-      				// Manage
-      				"manage" => "checked",
-      				// Access
-      				"access" => "grant",
-      				// Info
-      				"info" => "",
-      				// Info
-      				"info-show" => ""
-      		),
-      		array (
-      				// principal
-      				"principal-show" => "[All]",
-      				// principal
-      				"principal-name" => "DAV: all",
-      				// Read,
-      				"read" => "checked",
-      				// Write
-      				"write" => "checked",
-      				// Manage
-      				"manage" => "checked",
-      				// Access
-      				"access" => "deny",
-      				// Info
-      				"info" => "inherited",
-      				// Info
-      				"info-show" => "inherited from: link"
-      		),
-      		array (
-      				// principal
-      				"principal-show" => "Second inherited",
-      				// principal
-      				"principal-name" => "DAV: all",
-      				// Read,
-      				"read" => "checked",
-      				// Write
-      				"write" => "unchecked",
-      				// Manage
-      				"manage" => "checked",
-      				// Access
-      				"access" => "deny",
-      				// Info
-      				"info" => "inherited",
-      				// Info
-      				"info-show" => "inherited from: link"
-      		)
-      );
-      foreach ($acl as $key=>$ace) :
-    ?>
+//      $acl = array
+//      (
+//      		array (
+//      				// principal
+//      				"principal-show" => "owner",
+//							// principal
+//							"principal-name" => "DAV: owner",
+//      				// Read,
+//      				"read" => "checked",
+//      				// Write
+//      				"write" => "unchecked",
+//      				// Manage
+//      				"manage" => "checked",
+//      				// Access
+//      				"access" => "grant",
+//							// Info
+//      				"info" => "protected",
+//							// Info
+//      				"info-show" => "protected, no changes are possible"
+//      		),
+//      		array (
+//      				// principal
+//      				"principal-show" => "second protected",
+//      				// principal
+//      				"principal-name" => "DAV: second",
+//      				// Read,
+//      				"read" => "checked",
+//      				// Write
+//      				"write" => "checked",
+//      				// Manage
+//      				"manage" => "unchecked",
+//      				// Access
+//      				"access" => "grant",
+//      				// Info
+//      				"info" => "protected",
+//      				// Info
+//      				"info-show" => "protected, no changes are possible"
+//      		),
+//      		array (
+//      				// principal
+//      				"principal-show" => "Niek Bosch",
+//      				// principal
+//      				"principal-name" => "DAV: niekb",
+//      				// Read,
+//      				"read" => "checked",
+//      				// Write
+//      				"write" => "checked",
+//      				// Manage
+//      				"manage" => "checked",
+//      				// Access
+//      				"access" => "deny",
+//      				// Info
+//      				"info" => "",
+//      				// Info
+//      				"info-show" => ""
+//      		),
+//      		array (
+//      				// principal
+//      				"principal-show" => "Laura Leistikow",
+//      				// principal
+//      				"principal-name" => "DAV: laura",
+//      				// Read,
+//      				"read" => "unchecked",
+//      				// Write
+//      				"write" => "unchecked",
+//      				// Manage
+//      				"manage" => "unchecked",
+//      				// Access
+//      				"access" => "deny",
+//      				// Info
+//      				"info" => "",
+//      				// Info
+//      				"info-show" => ""
+//      		),
+//      		array (
+//      				// principal
+//      				"principal-show" => "[All]",
+//      				// principal
+//      				"principal-name" => "DAV: all",
+//      				// Read,
+//      				"read" => "checked",
+//      				// Write
+//      				"write" => "checked",
+//      				// Manage
+//      				"manage" => "checked",
+//      				// Access
+//      				"access" => "grant",
+//      				// Info
+//      				"info" => "",
+//      				// Info
+//      				"info-show" => ""
+//      		),
+//      		array (
+//      				// principal
+//      				"principal-show" => "[All]",
+//      				// principal
+//      				"principal-name" => "DAV: all",
+//      				// Read,
+//      				"read" => "checked",
+//      				// Write
+//      				"write" => "checked",
+//      				// Manage
+//      				"manage" => "checked",
+//      				// Access
+//      				"access" => "deny",
+//      				// Info
+//      				"info" => "inherited",
+//      				// Info
+//      				"info-show" => "inherited from: link"
+//      		),
+//      		array (
+//      				// principal
+//      				"principal-show" => "Second inherited",
+//      				// principal
+//      				"principal-name" => "DAV: all",
+//      				// Read,
+//      				"read" => "checked",
+//      				// Write
+//      				"write" => "unchecked",
+//      				// Manage
+//      				"manage" => "checked",
+//      				// Access
+//      				"access" => "deny",
+//      				// Info
+//      				"info" => "inherited",
+//      				// Info
+//      				"info-show" => "inherited from: link"
+//      		)
+//      );
+      $acl = $this->user_prop_acl();
+      $acl_length = count( $acl );
+      for ( $key = 0; $key < $acl_length; $key++ ) :
+        $ace = $acl[ $key ];
+        ?>
       	<tr>
 <!-- 					Principal -->
-					<td name="<?= $ace["principal-name"] ?>" ><b><?= $ace["principal-show"] ?></b></td>
+<?php
+  // Determine how to show the principal
+  switch ( $ace->principal ) {
+    case 'DAV: owner':
+      $displayname = '<em>Owner</em>';
+      break;
+    case DAVACL::PRINCIPAL_ALL:
+      $displayname = '<em>Everybody</em>';
+      break;
+    case DAVACL::PRINCIPAL_AUTHENTICATED:
+      $displayname = '<em>All authenticated users</em>';
+      break;
+    case DAVACL::PRINCIPAL_UNAUTHENTICATED:
+      $displayname = '<em>All unauthenticated users</em>';
+      break;
+    case DAVACL::PRINCIPAL_SELF:
+      $displayname = '<em>This resource itself</em>';
+      break;
+    default:
+      $principal = DAV::$REGISTRY->resource( $ace->principal );
+      if ( $principal instanceof DAVACL_Principal ) {
+        $displayname = $principal->user_prop( DAV::PROP_DISPLAYNAME );
+      }else{
+        $displayname = '<em>Unrecognized principal!</em>';
+      }
+    break;
+  }
+?>
+					<td name="<?= $ace->principal ?>" ><b><?= ( $ace->invert ? 'Everybody except ' : '' ) . $displayname ?></b></td>
 <!-- 					Read -->
-					<td><center><input type="checkbox" class="bh-dir-acl-read" <?= $ace["read"] ?>></center></td>
+					<td><center><input type="checkbox" class="bh-dir-acl-read" <?= ( in_array( DAVACL::PRIV_READ, $ace->privileges ) || in_array( DAVACL::PRIV_ALL, $ace->privileges ) ? ' checked' : '' ) ?>></center></td>
 <!-- 					Write -->
-					<td><center><input type="checkbox" class="bh-dir-acl-write" <?= $ace["write"] ?>></center></td>
+					<td><center><input type="checkbox" class="bh-dir-acl-write" <?= ( in_array( DAVACL::PRIV_WRITE, $ace->privileges ) || in_array( DAVACL::PRIV_ALL, $ace->privileges ) ? ' checked' : '' ) ?>></center></td>
 <!-- 					Manage -->
-					<td><center><input type="checkbox" class="bh-dir-acl-manage" <?= $ace["manage"] ?>></center></td>
+					<td><center><input type="checkbox" class="bh-dir-acl-manage" <?= ( in_array( DAVACL::PRIV_WRITE_ACL, $ace->privileges ) || in_array( DAVACL::PRIV_ALL, $ace->privileges ) ? ' checked' : '' ) ?>></center></td>
 <!-- 					Access -->
-					<td class="bh-dir-acl-access" style="cursor: pointer"><?= $ace["access"] ?></td>
+					<td class="bh-dir-acl-access" style="cursor: pointer"><?= ( $ace->deny ? 'deny' : 'allow' ) ?></td>
 <!-- 					Info -->
-					<td class="bh-dir-acl-access" name="<?= $ace["info"] ?>" ><?= $ace["info-show"] ?></td>
+<?php
+  $info = '';
+  $message = '';
+  if ( $ace->protected ) {
+    $info = 'protected';
+    $message = 'protected, no changes are possible';
+  }elseif ( ! is_null( $ace->inherited ) ) {
+    $info = 'inherited';
+    $message = 'inherited from: <a href="' . $ace->inherited . '">' . $ace->inherited . '</a>';
+  }
+?>
+					<td class="bh-dir-acl-access" name="<?= $info  ?>" ><?= $message ?></td>
 <!--       	When ace is not protected, inherited and previous ace exists and is not protected  -->
-      	<?php if (($ace["info"] != 'protected') &&
-      						($ace["info"] != 'inherited') &&
-      						($acl[$key-1] != null) &&
-      						($acl[$key-1]["info"] != 'protected'))
+      	<?php if ( ! $ace->protected &&
+      						( is_null( $ace->inherited ) ) &&
+      						($key !== 0) &&
+      						( ! $acl[$key-1]->protected ) )
       	 :?>
 <!-- 					Move up -->
 					<td><i title="Move up" class="icon-arrow-up bh-dir-acl-up" style="cursor: pointer"></i></td>
@@ -511,10 +553,10 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
 					<td></td>
 				<?php endif; ?>
 				<!--       	When ace is not protected, inherited and next ace exists and is not inherited  -->
-      	<?php if (($ace["info"] != 'protected') &&
-      						($ace["info"] != 'inherited') &&
-      						($acl[$key+1] != null) &&
-      						($acl[$key+1]["info"] != 'inherited'))
+      	<?php if ( ! $ace->protected &&
+      						( is_null( $ace->inherited ) ) &&
+      						($key !== $acl_length - 1) &&
+      						 is_null( $acl[$key+1]->inherited ) )
       	 :?>
 <!-- 					Move down -->
 					<td><i title="Move down" class="icon-arrow-down bh-dir-acl-down" style="cursor: pointer"></i></td>
@@ -522,16 +564,16 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
 <!-- 					No move down possible -->
 					<td></td>
 				<?php endif; ?>
-				<?php if (($ace["info"] === ("protected")) || ($ace["info"] === "inherited")) :?>
+				<?php if ( $ace->protected || ! is_null( $ace->inherited ) ) :?>
 <!--       	no delete possible -->
-      	<td><?$ace["info"]?></td>
+      	<td><?= $info ?></td>
       	<?php else : ?>
 <!--       		Delete icon -->
       		<td><i title="Delete" class="icon-remove bh-dir-acl-remove" style="cursor: pointer"></i></td>
       	<?php endif; ?>
       	</tr>  
      <?php
-        endforeach;
+        endfor;
      ?>  	
       </tbody>
     </table>
