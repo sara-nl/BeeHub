@@ -75,7 +75,7 @@ nl.sara.beehub.view.content.init = function() {
     widgets : ['stickyHeaders'],
     widgetOptions : {
       // apply sticky header top below the top of the browser window
-      stickyHeaders_offset : 186,
+      stickyHeaders_offset : 186
     }
   });
  
@@ -106,7 +106,7 @@ nl.sara.beehub.view.content.init = function() {
   
   // All handlers that belong to a row
   nl.sara.beehub.view.content.setRowHandlers();
-}
+};
 
 /*
  * Clear view
@@ -175,7 +175,7 @@ nl.sara.beehub.view.content.setRowHandlers = function(){
   $('.bh-dir-content-rename-form').blur(function(){
     $(this).closest("tr").find(".bh-dir-content-name").show();
     $(this).closest("tr").find(".bh-dir-content-rename-td").hide();
-  })
+  });
 };
 
 /*
@@ -185,7 +185,7 @@ nl.sara.beehub.view.content.setRowHandlers = function(){
  */
 nl.sara.beehub.view.content.triggerRenameClick = function(resource){
   $("tr[id='"+resource.path+"']").find('.bh-dir-content-edit').trigger('click');
-}
+};
 
 /*
  * Create contentview row from resource object
@@ -343,7 +343,7 @@ nl.sara.beehub.view.content.enable_action_buttons = function() {
   $('.bh-dir-content-copy').removeAttr("disabled");
   $('.bh-dir-content-move').removeAttr("disabled");
   $('.bh-dir-content-delete').removeAttr("disabled");
-}
+};
 
 /*
  * Disable copy, move, delete buttons
@@ -352,7 +352,7 @@ nl.sara.beehub.view.content.disable_action_buttons = function() {
   $('.bh-dir-content-copy').attr("disabled","disabled");
   $('.bh-dir-content-move').attr("disabled","disabled");
   $('.bh-dir-content-delete').attr("disabled","disabled");
-}
+};
 
 /*
  * On click handler select all checkbox
@@ -370,7 +370,7 @@ nl.sara.beehub.view.content.handle_checkall_checkbox_click = function() {
     $('.bh-dir-content-checkbox').prop('checked',false);
     nl.sara.beehub.view.content.disable_action_buttons();
   }
-}
+};
 
 /*
  * On click handler select checkbox
@@ -384,7 +384,7 @@ nl.sara.beehub.view.content.handle_checkbox_click = function() {
   } else {
     nl.sara.beehub.view.content.disable_action_buttons();
   }
-}
+};
 
 /*
  * Onclick handler edit icon in content view

@@ -48,7 +48,7 @@ nl.sara.beehub.view.init = function() {
   $('a[href="#bh-dir-panel-acl"]').on('shown', function(e){
     nl.sara.beehub.view.showFixedButtons('acl');
   });
-}
+};
 
 /*
  * Clear all views
@@ -74,7 +74,7 @@ nl.sara.beehub.view.maskView = function(mask){
   } else {
     $("#bh-dir-all").hide();
   }  
-}
+};
 
 /*
  * Show buttons that belong to a tab, acl or content

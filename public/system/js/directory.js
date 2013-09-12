@@ -16,7 +16,7 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with beehub.  If not, see <http://www.gnu.org/licenses/>.
  */
-"use strict"
+"use strict";
 
 /** 
  * Beehub Client
@@ -65,8 +65,8 @@ if (nl.sara.beehub.view.acl === undefined) {
 $(function() {
 	// solving bug: https://github.com/twitter/bootstrap/issues/6094
 	// conflict bootstrap and jquery
-	var btn = $.fn.button.noConflict() // reverts $.fn.button to jqueryui btn
-	$.fn.btn = btn // assigns bootstrap button functionality to $.fn.btn
+	var btn = $.fn.button.noConflict(); // reverts $.fn.button to jqueryui btn
+	$.fn.btn = btn; // assigns bootstrap button functionality to $.fn.btn
 	
 	// Init all views
 	nl.sara.beehub.view.init();

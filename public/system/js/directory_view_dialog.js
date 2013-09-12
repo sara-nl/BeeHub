@@ -68,7 +68,7 @@ nl.sara.beehub.view.dialog.setDialogReady = function(actionFunction){
   $('#bh-dir-dialog-button').unbind('click').click(function(){
     $("#bh-dir-dialog").dialog("close");
     actionFunction();
-  })
+  });
 };
 
 /*
@@ -100,9 +100,9 @@ nl.sara.beehub.view.dialog.updateResourceInfo = function(resource, info){
 * @param {Function} cancelFunction    Cancel handler.
 */
 nl.sara.beehub.view.dialog.setAlreadyExist = function(resource, overwriteFunction, renameFunction, cancelFunction){
-  var overwriteButton = '<button class="btn btn-danger overwritebutton">Overwrite</button>'
-  var renameButton = '<button class="btn btn-success renamebutton">Rename</button>'
-  var cancelButton = '<button class="btn btn-success cancelbutton">Cancel</button>'
+  var overwriteButton = '<button class="btn btn-danger overwritebutton">Overwrite</button>';
+  var renameButton = '<button class="btn btn-success renamebutton">Rename</button>';
+  var cancelButton = '<button class="btn btn-success cancelbutton">Cancel</button>';
   
   $("tr[id='dialog_tr_"+resource.path+"']").find('.info').html("Item exist on server!<br/>"+renameButton+" "+overwriteButton+" "+cancelButton);
   
@@ -171,7 +171,7 @@ nl.sara.beehub.view.dialog.showResourcesDialog = function(actionFunction){
   var appendString='';
   appendString = appendString + '<table class="table"><tbody>';
   $.each(nl.sara.beehub.controller.actionResources, function(i, item){
-     appendString = appendString + '<tr id="dialog_tr_'+item.path+'"><td>'+item.displayname+'</td><td width="60%" class="info"></td></tr>'
+     appendString = appendString + '<tr id="dialog_tr_'+item.path+'"><td>'+item.displayname+'</td><td width="60%" class="info"></td></tr>';
   });
   appendString = appendString +'</tbody></table>';
   $("#bh-dir-dialog").append(appendString);
@@ -213,8 +213,8 @@ nl.sara.beehub.view.dialog.showResourcesDialog = function(actionFunction){
  * @param Function  overwriteFunction   Overwrite handler 
  */
 nl.sara.beehub.view.dialog.showOverwriteDialog = function(resource, fileNew, overwriteFunction) {
-  var overwriteButton='<button id="bh-dir-rename-overwrite-button" class="btn btn-danger">Overwrite</button>'
-  var cancelButton='<button id="bh-dir-rename-cancel-button" class="btn btn-success">Cancel</button>'
+  var overwriteButton='<button id="bh-dir-rename-overwrite-button" class="btn btn-danger">Overwrite</button>';
+  var cancelButton='<button id="bh-dir-rename-cancel-button" class="btn btn-success">Cancel</button>';
   $("#bh-dir-dialog").html('<h5><b><i>'+fileNew+'</b></i> already exist in the current directory!</h5><br><center>'+overwriteButton+' '+cancelButton)+'</center>';
   $("#bh-dir-dialog").dialog({
        modal: true,
@@ -224,7 +224,7 @@ nl.sara.beehub.view.dialog.showOverwriteDialog = function(resource, fileNew, ove
   $("#bh-dir-rename-cancel-button").click(function(){
     $("tr[id='"+resource.path+"']").find(".bh-dir-rename-td").find(':input').val(resource.displayname);
     $("#bh-dir-dialog").dialog("close");
-  })
+  });
 };
 
 /*

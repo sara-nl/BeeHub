@@ -61,7 +61,7 @@ nl.sara.beehub.view.tree.init = function() {
 nl.sara.beehub.view.tree.getTreeNodeCallback = function(node){
   return function(status, data) {
     // Callback
-    if (status != 207) {
+    if (status !== 207) {
       // Server returned an error condition: set node status accordingly
       node.setLazyNodeStatus(DTNodeStatus_Error, {
         tooltip: data.faultDetails,
@@ -76,12 +76,12 @@ nl.sara.beehub.view.tree.getTreeNodeCallback = function(node){
       if (node.data.id !== path) {
         if (data.getResponse(path).getProperty('DAV:','resourcetype') !== undefined) {
           var resourcetypeProp = data.getResponse(path).getProperty('DAV:','resourcetype');
-          if ((resourcetypeProp.xmlvalue.length == 1)
-              &&(nl.sara.webdav.Ie.getLocalName(resourcetypeProp.xmlvalue.item(0))=='collection')
-              &&(resourcetypeProp.xmlvalue.item(0).namespaceURI=='DAV:')) 
+          if ((resourcetypeProp.xmlvalue.length === 1)
+              &&(nl.sara.webdav.Ie.getLocalName(resourcetypeProp.xmlvalue.item(0))==='collection')
+              &&(resourcetypeProp.xmlvalue.item(0).namespaceURI==='DAV:')) 
           {
             var name = path;
-            while (name.substring(name.length-1) == '/') {
+            while (name.substring(name.length-1) === '/') {
               name = name.substr(0, name.length-1);
             }
             name = decodeURIComponent(name.substr(name.lastIndexOf('/')+1));
@@ -99,8 +99,8 @@ nl.sara.beehub.view.tree.getTreeNodeCallback = function(node){
     node.setLazyNodeStatus(DTNodeStatus_Ok);
     node.addChild(res);
     // end callback
-  }
-}
+  };
+};
 
 /*
  * Action slide trigger
@@ -123,7 +123,7 @@ nl.sara.beehub.view.tree.slideTrigger = function(action){
   default:
     // This should never happen
   }
-}
+};
 
 /*
  * Overrule mask, show only tree view
@@ -139,7 +139,7 @@ nl.sara.beehub.view.tree.noMask = function(nomask){
     $(".bh-dir-tree-header").removeClass('bh-dir-nomask');
     $("#bh-dir-tree").removeClass('bh-dir-nomask');
   }
-}
+};
 
 /*
  * Show or hide cancel button and set click handler
@@ -159,7 +159,7 @@ nl.sara.beehub.view.tree.cancelButton = function(action){
     $('#bh-dir-tree-cancel').hide();
     return;
   }
-}
+};
 
 /*
  * Close tree
@@ -202,7 +202,7 @@ nl.sara.beehub.view.content.handle_tree_slide_click = function() {
   $(this).toggleClass("active");
   $('.bh-dir-tree-slide-trigger i').toggleClass('icon-chevron-left icon-chevron-right');
   return false;
-}
+};
 
 /*
  * Reload tree 
@@ -210,7 +210,7 @@ nl.sara.beehub.view.content.handle_tree_slide_click = function() {
  */
 nl.sara.beehub.view.tree.reload = function(){
   $("#bh-dir-tree").dynatree("getTree").reload();
-}
+};
 
 /*
  * Set onActivate

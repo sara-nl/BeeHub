@@ -27,7 +27,7 @@
  */
 nl.sara.beehub.ClientResource = function(path) {
   this.path = path;
-}
+};
 
 /**
  * Set type

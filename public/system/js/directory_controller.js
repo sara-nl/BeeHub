@@ -38,25 +38,25 @@ if (!nl.sara.beehub.controller.path.match(/\/$/)) {
  * 
  */
 nl.sara.beehub.controller.clearAllViews = function(){
-  nl.sara.beehub.view.clearAllViews()
-}
+  nl.sara.beehub.view.clearAllViews();
+};
 
 /*
  * Returns displayname from object
  * 
- * @param String {name} object
+ * @param   {String}  name  object
  * 
- * @return String Displayname
+ * @return  {String}        Displayname
  */
 nl.sara.beehub.controller.getDisplayName = function(name){
   if (name === undefined) {
     return "";
   };
-  if (name.indexOf(nl.sara.beehub.users_path) != -1){
+  if (name.indexOf(nl.sara.beehub.users_path) !== -1){
     var displayName = nl.sara.beehub.principals.users[name.replace(nl.sara.beehub.users_path,'')];
     return displayName;
   };
-  if (name.indexOf(nl.sara.beehub.groups_path) != -1){
+  if (name.indexOf(nl.sara.beehub.groups_path) !== -1){
     var displayName = nl.sara.beehub.principals.groups[name.replace(nl.sara.beehub.groups_path,'')];
     return displayName;
   };
@@ -66,9 +66,9 @@ nl.sara.beehub.controller.getDisplayName = function(name){
 /**
  * Convert number of bytes into human readable format
  *
- * @param integer bytes     Number of bytes to convert
- * @param integer precision Number of digits after the decimal separator
- * @return string
+ * @param    {Integer}  bytes      Number of bytes to convert
+ * @param    {Integer}  precision  Number of digits after the decimal separator
+ * @returns  {String}
  */
 nl.sara.beehub.controller.bytesToSize = function(bytes, precision)
 {  
@@ -100,9 +100,9 @@ nl.sara.beehub.controller.bytesToSize = function(bytes, precision)
 /*
  * Extract properties from webdav library response to resource object
  * 
- * @param Object {data}     Webdav propfind response
+ * @param   {nl.sara.webdav.Multistatus}     data  Webdav propfind response
  * 
- * @return resource object
+ * @return  {nl.sara.beehub.ClientResource}        Resource object
  */
 nl.sara.beehub.controller.extractPropsFromPropfindRequest = function(data){
   var path = data.getResponseNames()[0];
@@ -122,8 +122,8 @@ nl.sara.beehub.controller.extractPropsFromPropfindRequest = function(data){
   // Get displayname
   if (data.getResponse(path).getProperty('DAV:','displayname') !== undefined) {
     var displaynameProp = data.getResponse(path).getProperty('DAV:','displayname');
-    if ((displaynameProp.xmlvalue.length == 1)
-        &&(displaynameProp.namespace=='DAV:')) 
+    if ((displaynameProp.xmlvalue.length === 1)
+        &&(displaynameProp.namespace === 'DAV:'))
     { 
       resource.setDisplayName(displaynameProp.getParsedValue());
     }
@@ -140,7 +140,7 @@ nl.sara.beehub.controller.extractPropsFromPropfindRequest = function(data){
   // Get last modified date
   if (data.getResponse(path).getProperty('DAV:','getlastmodified') !== undefined) {
     var getlastmodifiedProp = data.getResponse(path).getProperty('DAV:','getlastmodified');
-    if (getlastmodifiedProp.xmlvalue.length == 1)
+    if (getlastmodifiedProp.xmlvalue.length === 1)
       // TODO uitzoeken nameSpaceURI
 //    if ((getlastmodifiedProp.xmlvalue.length == 1)
 //        &&(getlastmodifiedProp.xmlvalue.item(0).namespaceURI=='DAV:')) 
@@ -151,7 +151,7 @@ nl.sara.beehub.controller.extractPropsFromPropfindRequest = function(data){
   // Get content length
   if (data.getResponse(path).getProperty('DAV:','getcontentlength') !== undefined) {
     var getcontentlengthProp = data.getResponse(path).getProperty('DAV:','getcontentlength');
-    if (getcontentlengthProp.xmlvalue.length == 1) 
+    if (getcontentlengthProp.xmlvalue.length === 1)
       // TODO uitzoeken nameSpaceURI
 //    if ((getcontentlengthProp.xmlvalue.length == 1)
 //        &&(getcontentlengthProp.xmlvalue.item(0).namespaceURI=='DAV:')) 
@@ -166,8 +166,8 @@ nl.sara.beehub.controller.extractPropsFromPropfindRequest = function(data){
  * Collect resource details from server and call callback function 
  * after ajax call is finished
  * 
- * @param String   {resourcepath} Resource path
- * @param Function {callback}     Callback function
+ * @param {String}    resourcepath  Resource path
+ * @param {Function}  callback      Callback function
  */
 nl.sara.beehub.controller.getResourcePropsFromServer = function(resourcepath, callback){ 
   // Create properties
@@ -209,7 +209,7 @@ nl.sara.beehub.controller.getResourcePropsFromServer = function(resourcepath, ca
    */
   function createCallback(){
     return function(status, data) {
-      if (status != 207) {
+      if (status !== 207) {
         nl.sara.beehub.view.dialog.showError("Unknown error.");
         return;
       };
@@ -228,8 +228,8 @@ nl.sara.beehub.controller.getResourcePropsFromServer = function(resourcepath, ca
 /*
  * Get tree node from server
  * 
- * @param String    path      Tree path
- * @param Function  callback  Callback function
+ * @param  {String}    path      Tree path
+ * @param  {Function}  callback  Callback function
  */
 nl.sara.beehub.controller.getTreeNode = function(path, callback){
   var client = new nl.sara.webdav.Client();
@@ -254,13 +254,13 @@ nl.sara.beehub.controller.createNewFolder = function(){
   // Webdav request
   var webdav = new nl.sara.webdav.Client();
   webdav.mkcol(nl.sara.beehub.controller.path+foldername, nl.sara.beehub.controller.createNewFolderCallback(counter, foldername));
-}  
+};
 
 /*
  * Create callback for create new folder request
  * 
- * @param Integer counter     Used to make the new foldername
- * @param String  foldername  Initial foldername
+ * @param {Integer} counter     Used to make the new foldername
+ * @param {String}  foldername  Initial foldername
  * 
  */
 nl.sara.beehub.controller.createNewFolderCallback = function(counter, foldername) {
@@ -274,8 +274,8 @@ nl.sara.beehub.controller.createNewFolderCallback = function(counter, foldername
       nl.sara.beehub.controller.getResourcePropsFromServer(path, function(resource){
         // add resource to view
         nl.sara.beehub.view.addResource(resource);
-        // trigger rename click
-        nl.sara.beehub.view.content.triggerRenameClick(resource)
+        // trigger rename click so the user can immediately rename the folder to whatever name it should have
+        nl.sara.beehub.view.content.triggerRenameClick(resource);
       });
       return;
     };
@@ -292,16 +292,16 @@ nl.sara.beehub.controller.createNewFolderCallback = function(counter, foldername
     } else {
       nl.sara.beehub.view.dialog.showError("Unknown error.");
     }
-  }
+  };
 };
 
 // RENAME
 /**
  * Rename an object.
  * 
- * @param Object  resource      Resource to rename
- * @param String  fileNameNew   New resource name
- * @param Integer overwriteMode Fail on overwrite or force overwrite
+ * @param  {Object}   resource       Resource to rename
+ * @param  {String}   fileNameNew    New resource name
+ * @param  {Integer}  overwriteMode  Fail on overwrite or force overwrite
  * 
  */
 nl.sara.beehub.controller.renameResource = function(resource, fileNameNew, overwriteMode){
@@ -315,9 +315,9 @@ nl.sara.beehub.controller.renameResource = function(resource, fileNameNew, overw
  * Shows overwrite dialog when resource already exist. When rename is successfull,
  * update view.
  * 
- * @param Object  resource      Resource to rename
- * @param String  fileNameNew   New resource name
- * @param Integer overwriteMode Fail on overwrite or overwrite
+ * @param  {Object}   resource       Resource to rename
+ * @param  {String}   fileNameNew    New resource name
+ * @param  {Integer}  overwriteMode  Fail on overwrite or overwrite
  * 
  */
 nl.sara.beehub.controller.createRenameCallback = function(resource, fileNameNew, overwriteMode) {
@@ -358,15 +358,15 @@ nl.sara.beehub.controller.createRenameCallback = function(resource, fileNameNew,
         nl.sara.beehub.view.dialog.closeDialog();
       }
     }
-  }
-}
+  };
+};
 
 // COPY, MOVE, UPLOAD, DELETE
 /*
  * Initialize action Copy, Move, Upload or Delete
  * 
- * @param List items The resource list
- * @param String action Which action
+ * @param  {List}    items   The resource list
+ * @param  {String}  action  Which action
  */
 nl.sara.beehub.controller.initAction = function(items, action){
   // actionCounter, used for rename resources when resource already exists
@@ -378,7 +378,7 @@ nl.sara.beehub.controller.initAction = function(items, action){
       error:      0,
       exist:      0,
       forbidden:  0
-  }
+  };
   
   // When action is not upload items is an array of resources
   if (action !== "upload"){
@@ -453,7 +453,7 @@ nl.sara.beehub.controller.setCopyMoveView = function(view){
     // show slide trigger
     nl.sara.beehub.view.tree.slideTrigger('show');
   }
-}
+};
 
 /*
  * Start action Copy, Move, Upload or Delete for one resource
@@ -533,7 +533,7 @@ nl.sara.beehub.controller.createActionCallback = function(resource, renameCounte
     case 501:
     case 512:
       // Update summary
-      nl.sara.beehub.controller.summary.error++
+      nl.sara.beehub.controller.summary.error++;
       // Update dialog info
       nl.sara.beehub.view.dialog.updateResourceInfo(resource,"Copy to parent resource is not possible.");
       break;
@@ -567,7 +567,7 @@ nl.sara.beehub.controller.createActionCallback = function(resource, renameCounte
       
     default:
       // Update summary
-      nl.sara.beehub.controller.summary.error++
+      nl.sara.beehub.controller.summary.error++;
       // Update dialog info
       nl.sara.beehub.view.dialog.updateResourceInfo(resource,"Unknown error");
     };
@@ -578,8 +578,8 @@ nl.sara.beehub.controller.createActionCallback = function(resource, renameCounte
       nl.sara.beehub.view.dialog.scrollTo(nl.sara.beehub.controller.actionCounter*35);
       // Start next action
       nl.sara.beehub.controller.startNextAction();
-    };
-  }
+    }
+  };
 };
 
 /*
@@ -655,7 +655,7 @@ nl.sara.beehub.controller.updateActionView = function(resource, renameCounter){
     default:
       // This should never happen
   }
-}
+};
 
 
 /*
