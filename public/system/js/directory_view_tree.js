@@ -77,25 +77,20 @@
         
         // put response in array
         if (node.data.id !== path) {
-          if (data.getResponse(path).getProperty('DAV:','resourcetype') !== undefined) {
-            var resourcetypeProp = data.getResponse(path).getProperty('DAV:','resourcetype');
-            if ((resourcetypeProp.xmlvalue.length === 1)
-                &&(nl.sara.webdav.Ie.getLocalName(resourcetypeProp.xmlvalue.item(0))==='collection')
-                &&(resourcetypeProp.xmlvalue.item(0).namespaceURI==='DAV:')) 
-            {
-              var name = path;
-              while (name.substring(name.length-1) === '/') {
-                name = name.substr(0, name.length-1);
-              }
-              name = decodeURIComponent(name.substr(name.lastIndexOf('/')+1));
-              res.push({
-                'title': name,
-                'id' : path,
-                'isFolder': 'true',
-                'isLazy' : 'true'
-              });
-            }
-          }
+          if ((data.getResponse(path).getProperty('DAV:','resourcetype') !== null) && 
+              (nl.sara.webdav.codec.ResourcetypeCodec.COLLECTION === data.getResponse(path).getProperty('DAV:','resourcetype').getParsedValue())){
+            var name = path;
+            while (name.substring(name.length-1) === '/') {
+              name = name.substr(0, name.length-1);
+            };
+            name = decodeURIComponent(name.substr(name.lastIndexOf('/')+1));
+            res.push({
+              'title': name,
+              'id' : path,
+              'isFolder': 'true',
+              'isLazy' : 'true'
+            });
+          };
         };
       });
       // PWS status OK

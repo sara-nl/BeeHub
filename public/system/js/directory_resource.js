@@ -19,6 +19,7 @@
 
 /**
  * @class Webdav Resource
+ * 
  *
  * @param  {String}   path            The path of the resource
  * 
@@ -28,49 +29,3 @@
 nl.sara.beehub.ClientResource = function(path) {
   this.path = path;
 };
-
-/**
- * Set type
- * 
- * @param {String} type Resource type
- */
-nl.sara.beehub.ClientResource.prototype.setType = function(type){
-  this.type = type;
-};
-
-/**
- * Set displayname
- * 
- * @param {String} displayname Displayname of resource
- */
-nl.sara.beehub.ClientResource.prototype.setDisplayName = function(displayname){
-  this.displayname = displayname;
-};
-
-/**
- * Set owner
- * 
- * @param {String} owner Owner of resource
- */
-nl.sara.beehub.ClientResource.prototype.setOwner = function(owner){
-  this.owner = owner;
-};
-
-/**
- * Set lastmodified
- * 
- * @param {String} lastmodified Last modified date of resource
- */
-nl.sara.beehub.ClientResource.prototype.setLastModified = function(lastmodified){
-  this.lastmodified = lastmodified;
-};
-
-/**
- * Set setcontentlength
- * 
- * @param {String} setcontentlength Length of the content
- */
-nl.sara.beehub.ClientResource.prototype.setContentLength = function(contentlength){
-  this.contentlength = contentlength;
-};
-

@@ -267,7 +267,7 @@
     var resources=[];
     $.each($('.bh-dir-content-checkbox:checked'), function(i, val){
       var resource = new nl.sara.beehub.ClientResource(val.name);
-      resource.setDisplayName(val.value);
+      resource.displayname = val.value;
       resources.push(resource);
     });
     return resources;

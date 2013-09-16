@@ -114,58 +114,35 @@
    */
   var extractPropsFromPropfindRequest = function(data){
     var path = data.getResponseNames()[0];
+    
     var resource = new nl.sara.beehub.ClientResource(path);
+    
     // Get type
-    if (data.getResponse(path).getProperty('DAV:','resourcetype') !== undefined) {
-      var resourcetypeProp = data.getResponse(path).getProperty('DAV:','resourcetype');
-      var getcontenttypeProp = data.getResponse(path).getProperty('DAV:','getcontenttype');
-      if ((resourcetypeProp.xmlvalue.length === 1) &&(resourcetypeProp.xmlvalue.item(0).namespaceURI==='DAV:')){
-          resource.setType(nl.sara.webdav.Ie.getLocalName(resourcetypeProp.xmlvalue.item(0)));
-      } else {
-        if ((getcontenttypeProp.xmlvalue.length === 1) && (getcontenttypeProp.namespace ==='DAV:')){
-          resource.setType(getcontenttypeProp.getParsedValue());
-        }
-      }
-    } 
+    if (data.getResponse(path).getProperty('DAV:','resourcetype').getParsedValue() !== null) {
+      if (nl.sara.webdav.codec.ResourcetypeCodec.COLLECTION === data.getResponse(path).getProperty('DAV:','resourcetype').getParsedValue()) {
+        resource.type = "collection";
+      };
+    } else if (data.getResponse(path).getProperty('DAV:','getcontenttype').getParsedValue() !== null) {
+      resource.type = data.getResponse(path).getProperty('DAV:','getcontenttype').getParsedValue();
+    }; 
+    
     // Get displayname
-    if (data.getResponse(path).getProperty('DAV:','displayname') !== undefined) {
-      var displaynameProp = data.getResponse(path).getProperty('DAV:','displayname');
-      if ((displaynameProp.xmlvalue.length === 1)
-          &&(displaynameProp.namespace === 'DAV:'))
-      { 
-        resource.setDisplayName(displaynameProp.getParsedValue());
-      }
+    if (data.getResponse(path).getProperty('DAV:','displayname').getParsedValue() !== null) {
+      resource.displayname = data.getResponse(path).getProperty('DAV:','displayname').getParsedValue();
     };
     // Get owner
-    if (data.getResponse(path).getProperty('DAV:','owner') !== undefined) {
-      var ownerProp = data.getResponse(path).getProperty('DAV:','owner');
-      if ((ownerProp.xmlvalue.length === 1)
-          &&(ownerProp.xmlvalue.item(0).namespaceURI === 'DAV:')) 
-      { 
-        resource.setOwner(ownerProp.xmlvalue.item(0).textContent);
-      }
+    if (data.getResponse(path).getProperty('DAV:','owner').getParsedValue() !== null) {
+      resource.owner = data.getResponse(path).getProperty('DAV:','owner').getParsedValue();
     };
+    
     // Get last modified date
-    if (data.getResponse(path).getProperty('DAV:','getlastmodified') !== undefined) {
-      var getlastmodifiedProp = data.getResponse(path).getProperty('DAV:','getlastmodified');
-      if (getlastmodifiedProp.xmlvalue.length === 1)
-        // TODO uitzoeken nameSpaceURI
-  //    if ((getlastmodifiedProp.xmlvalue.length == 1)
-  //        &&(getlastmodifiedProp.xmlvalue.item(0).namespaceURI=='DAV:')) 
-      { 
-        resource.setLastModified(getlastmodifiedProp.xmlvalue[0].textContent);
-      }
+    if (data.getResponse(path).getProperty('DAV:','getlastmodified').getParsedValue() !== null) {
+      resource.lastmodified = data.getResponse(path).getProperty('DAV:','getlastmodified').getParsedValue();
     };
+    
     // Get content length
-    if (data.getResponse(path).getProperty('DAV:','getcontentlength') !== undefined) {
-      var getcontentlengthProp = data.getResponse(path).getProperty('DAV:','getcontentlength');
-      if (getcontentlengthProp.xmlvalue.length === 1)
-        // TODO uitzoeken nameSpaceURI
-  //    if ((getcontentlengthProp.xmlvalue.length == 1)
-  //        &&(getcontentlengthProp.xmlvalue.item(0).namespaceURI=='DAV:')) 
-      { 
-        resource.setContentLength(getcontentlengthProp.xmlvalue[0].textContent);
-      }
+    if (data.getResponse(path).getProperty('DAV:','getcontentlength').getParsedValue() !== null) {
+      resource.contentlength = data.getResponse(path).getProperty('DAV:','getcontentlength').getParsedValue();
     };
     return resource;
   };
@@ -352,11 +329,11 @@
         var newPath = path+fileNameNew;
         // new resource
         var resourceNew = new nl.sara.beehub.ClientResource(newPath);
-        resourceNew.setDisplayName(fileNameNew);
-        resourceNew.setType(resource.type);
-        resourceNew.setContentLength(resource.contentlength);
-        resourceNew.setLastModified(resource.lastmodified);
-        resourceNew.setOwner(resource.owner);
+        resourceNew.displayname   = fileNameNew;
+        resourceNew.type          = resource.type;
+        resourceNew.contentlength = resource.contentlength;
+        resourceNew.lastmodified  = resource.lastmodified;
+        resourceNew.owner         = resource.owner;
     
         // Update view
         // When resource is renamed
@@ -410,7 +387,7 @@
       // put items in actionFiles and actionResources
       $.each(items, function(i, item){
         var resource = new nl.sara.beehub.ClientResource(path + item.name);
-        resource.setDisplayName(item.name);
+        resource.displayname = item.name;
         nl.sara.beehub.controller.actionResources.push(resource);
         actionFiles[path + item.name] = item;
       });
