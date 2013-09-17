@@ -59,6 +59,42 @@
       }]
     });
   };
+  /*
+   * Show add rule dialog
+   * 
+   * Public function
+   * 
+   * @param {String} error The error to show
+   */
+  nl.sara.beehub.view.dialog.showAddRuleDialog = function(addFunction) {
+    // Radio button(s)
+    var html = '<label class="radio"><input type="radio" name="optionsRadios" id="optionsRadios1" \
+                value="option1" unchecked>World</label>'
+    // Select user or group
+    html += '<label class="select"><input type="select" name="optionsSelect" id="optionsSelect" \
+              value="option1" unchecked>World</label>'
+    $('#bh-dir-dialog').html(html);
+  
+    $('#bh-dir-dialog').dialog({
+      modal: true,
+      maxHeight: 400,
+      resizable: false,
+      title: " Add acl rule",
+      closeOnEscape: false,
+      dialogClass: "custom_dialog",
+      buttons: [{
+        text: "Add",
+        click: function() {
+          var principal = {
+              name: 'test',
+              displayname : 'test'
+            };
+          addFunction(principal);
+          $(this).dialog("close");
+        }
+      }]
+    });
+  };
   
   /*
    * Show dialog with ready buttons
@@ -256,4 +292,5 @@
   nl.sara.beehub.view.dialog.closeDialog = function() {
     $("#bh-dir-dialog").dialog("close");
   };
+  
 })();

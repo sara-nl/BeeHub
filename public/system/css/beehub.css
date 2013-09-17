@@ -189,5 +189,16 @@ ul.dynatree-container{
   max-width: 900px;
 }
 
+/* ACL view */
+.bh-dir-acl-fixedrow {
+  color: red;
+}
+.bh-dir-acl-allow {
+  color: green;
+}
+.bh-dir-acl-deny {
+  color: red;
+}
+
 
 
