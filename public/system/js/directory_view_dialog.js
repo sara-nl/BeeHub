@@ -59,65 +59,7 @@
       }]
     });
   };
-  /*
-   * Show add rule dialog
-   * 
-   * Public function
-   * 
-   * @param {String} error The error to show
-   */
-  nl.sara.beehub.view.dialog.showAddRuleDialog = function(addFunction) {
-    // Radio button(s)
-    var html = '\
-      <table>\
-        <tr>\
-          <td class="bh-dir-acl-table-label"><label><b>Principal</b></label></td>\
-          <td><label class="radio"><input type="radio" name="optionsRadios" id="bh-dir-acl-add-radio1" value="option1" unchecked>All BeeHub users</label></td>\
-        </tr>\
-        <tr>\
-          <td class="bh-dir-acl-table-label"></td>\
-          <td><label class="radio"><input type="radio" name="optionsRadios" id="bh-dir-acl-add-radio1" value="option2" unchecked>Everybody</label></td>\
-        </tr>\
-        <tr>\
-          <td class="bh-dir-acl-table-label"></td>\
-          <td><div class="radio"><input type="radio" name="optionsRadios" id="bh-dir-acl-add-radio1" value="option3" checked><input class="bh-dir-acl-table-search" type="text" placeholder="Search user or group..."></div></td>\
-        </tr>\
-        <tr>\
-          <td class="bh-dir-acl-table-label"><label><b>Permisions</b></label></td>\
-          <td><select class="bh-dir-acl-table-permisions">\
-            <option>allow read (read)</option>\
-            <option>allow write (read, write)</option>\
-            <option>allow manage (read, write, write acl)</option>\
-            <option>deny read (read)</option>\
-            <option>deny write (read, write)</option>\
-            <option>deny manage (read, write, write acl)</option>\
-          </select></td>\
-        </tr>\
-      </table>\
-      ';
-      $('#bh-dir-dialog').html(html);
-  
-    $('#bh-dir-dialog').dialog({
-      modal: true,
-      maxHeight: 400,
-      width: 370,
-      resizable: false,
-      title: " Add acl rule",
-      closeOnEscape: false,
-      dialogClass: "custom_dialog",
-      buttons: [{
-        text: "Add",
-        click: function() {
-          var principal = {
-              name: 'test',
-              displayname : 'test'
-            };
-          addFunction(principal);
-          $(this).dialog("close");
-        }
-      }]
-    });
-  };
+
   
   /*
    * Show dialog with ready buttons
@@ -314,6 +256,162 @@
    */
   nl.sara.beehub.view.dialog.closeDialog = function() {
     $("#bh-dir-dialog").dialog("close");
+  };  
+  
+  // ACL
+  /**
+   * Create html for acl form
+   * 
+   * @return {String} html
+   * 
+   */
+  createHtmlAclForm = function() {
+    return '\
+        <table>\
+        <tr>\
+          <td class="bh-dir-acl-table-label"><label><b>Principal</b></label></td>\
+          <td><label class="radio"><input type="radio" name="optionsRadios" id="bh-dir-acl-add-radio1" value="option1" unchecked>All BeeHub users</label></td>\
+        </tr>\
+        <tr>\
+          <td class="bh-dir-acl-table-label"></td>\
+          <td><label class="radio"><input type="radio" name="optionsRadios" id="bh-dir-acl-add-radio2" value="option2" unchecked>Everybody</label></td>\
+        </tr>\
+        <tr>\
+          <td class="bh-dir-acl-table-label"></td>\
+          <td>\
+            <div class="radio">\
+              <input type="radio" name="optionsRadios" id="bh-dir-acl-add-radio3" value="option3" checked>\
+              <input id="bh-dir-acl-table-autocomplete" class="bh-dir-acl-table-search" type="text"  value="" placeholder="Search user or group...">\
+            </div></td>\
+        </tr>\
+        <tr>\
+          <td class="bh-dir-acl-table-label"><label><b>Permisions</b></label></td>\
+          <td><select class="bh-dir-acl-table-permisions">\
+            <option>allow read (read)</option>\
+            <option>allow write (read, write)</option>\
+            <option>allow manage (read, write, write acl)</option>\
+            <option>deny read (read)</option>\
+            <option>deny write (read, write)</option>\
+            <option>deny manage (read, write, write acl)</option>\
+          </select></td>\
+        </tr>\
+      </table>\
+    ';
   };
   
+  /**
+   * Initialize autocomplete for searching users and groups
+   */
+  setupAutoComplete = function(){
+    var searchList = [];
+    $.each(nl.sara.beehub.principals.users, function (username, displayname) {
+      searchList.push({
+         "label"        : displayname+' ('+username+') ',
+         "name"         : username,
+         "displayname"  : displayname,
+         "icon"         : '<i class="icon-user"></i>'
+      });
+    });
+    
+    $.each(nl.sara.beehub.principals.groups, function (groupname, displayname) {
+      searchList.push({
+         "label"        : displayname+' ('+groupname+') ',
+         "name"         : groupname,
+         "displayname"  : displayname,
+         "icon"         : '<i class="icon-user"></i><i class="icon-user"></i>'
+      });
+    });
+
+    $( "#bh-dir-acl-table-autocomplete" ).autocomplete({
+      source:searchList,
+      select: function( event, ui ) {
+        $("#bh-dir-acl-table-autocomplete").val(ui.item.label);
+        $("#bh-dir-aclform-add-button").button('enable');
+        return false;
+      },
+      change: function (event, ui) {
+        if(!ui.item){
+            //http://api.jqueryui.com/autocomplete/#event-change -
+            // The item selected from the menu, if any. Otherwise the property is null
+            //so clear the item for force selection
+            $("#bh-dir-aclform-add-button").button('disable');
+            $("#bh-dir-acl-table-autocomplete").val("");
+        }
+
+      }
+    }).data( "ui-autocomplete" )._renderItem = function( ul, item ) {
+      return $( "<li></li>" )
+        .data( "ui-autocomplete-item", item )
+        .append( "<a><strong>" +item.icon +"  "+ item.label + "</strong></a>" )
+        .appendTo( ul );
+    };  
+  };
+  
+  /**
+   * Add radio buttons handlers in Add acl rule form
+   * 
+   */
+  setAddRadioButtons = function(){
+    $("#bh-dir-acl-add-radio1").click(function(){
+      $("#bh-dir-acl-table-autocomplete").attr("disabled",true);
+      $("#bh-dir-acl-table-autocomplete").val("");
+      $("#bh-dir-aclform-add-button").button('enable');
+
+    });
+    $("#bh-dir-acl-add-radio2").click(function(){
+      $("#bh-dir-acl-table-autocomplete").attr("disabled",true);
+      $("#bh-dir-acl-table-autocomplete").val("");
+      $("#bh-dir-aclform-add-button").button('enable');
+    });
+    $("#bh-dir-acl-add-radio3").click(function(){
+      $("#bh-dir-acl-table-autocomplete").attr("disabled",false);
+      $("#bh-dir-aclform-add-button").button('disable');
+    });
+  };
+  
+  /*
+   * Show add rule dialog
+   * 
+   * Public function
+   * 
+   * @param {String} error The error to show
+   */
+  nl.sara.beehub.view.dialog.showAddRuleDialog = function(addFunction) {
+    // createForm
+    $('#bh-dir-dialog').html(createHtmlAclForm());
+
+    // auto complete for searching users and groups
+    setupAutoComplete();
+ 
+    // radiobutton handlers
+    setAddRadioButtons();
+        
+    $('#bh-dir-dialog').dialog({
+      title: " Add acl rule",
+      modal: true,
+      maxHeight: 400,
+      closeOnEscape: false,
+      dialogClass: "custom-dialog",
+      resizable: false,
+      width: 370,
+      buttons: [{
+        text: "Cancel",
+        click: function() {
+          $(this).dialog("close");
+        }
+      },{
+        text: "Add rule",
+        id: "bh-dir-aclform-add-button",
+        click: function() {
+          var principal = {
+              name: 'test',
+              displayname : 'test'
+            };
+          addFunction(principal);
+          $(this).dialog("close");
+        }
+      }]
+    });
+    $("#bh-dir-aclform-add-button").button('disable');
+  };
 })();
