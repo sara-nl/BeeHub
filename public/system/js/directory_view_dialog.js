@@ -68,16 +68,39 @@
    */
   nl.sara.beehub.view.dialog.showAddRuleDialog = function(addFunction) {
     // Radio button(s)
-    var html = '<label class="radio"><input type="radio" name="optionsRadios" id="optionsRadios1" \
-                value="option1" unchecked>World</label>'
-    // Select user or group
-    html += '<label class="select"><input type="select" name="optionsSelect" id="optionsSelect" \
-              value="option1" unchecked>World</label>'
-    $('#bh-dir-dialog').html(html);
+    var html = '\
+      <table>\
+        <tr>\
+          <td class="bh-dir-acl-table-label"><label><b>Principal</b></label></td>\
+          <td><label class="radio"><input type="radio" name="optionsRadios" id="bh-dir-acl-add-radio1" value="option1" unchecked>All BeeHub users</label></td>\
+        </tr>\
+        <tr>\
+          <td class="bh-dir-acl-table-label"></td>\
+          <td><label class="radio"><input type="radio" name="optionsRadios" id="bh-dir-acl-add-radio1" value="option2" unchecked>Everybody</label></td>\
+        </tr>\
+        <tr>\
+          <td class="bh-dir-acl-table-label"></td>\
+          <td><div class="radio"><input type="radio" name="optionsRadios" id="bh-dir-acl-add-radio1" value="option3" checked><input class="bh-dir-acl-table-search" type="text" placeholder="Search user or group..."></div></td>\
+        </tr>\
+        <tr>\
+          <td class="bh-dir-acl-table-label"><label><b>Permisions</b></label></td>\
+          <td><select class="bh-dir-acl-table-permisions">\
+            <option>allow read (read)</option>\
+            <option>allow write (read, write)</option>\
+            <option>allow manage (read, write, write acl)</option>\
+            <option>deny read (read)</option>\
+            <option>deny write (read, write)</option>\
+            <option>deny manage (read, write, write acl)</option>\
+          </select></td>\
+        </tr>\
+      </table>\
+      ';
+      $('#bh-dir-dialog').html(html);
   
     $('#bh-dir-dialog').dialog({
       modal: true,
       maxHeight: 400,
+      width: 370,
       resizable: false,
       title: " Add acl rule",
       closeOnEscape: false,

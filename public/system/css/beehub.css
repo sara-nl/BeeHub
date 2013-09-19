@@ -199,6 +199,14 @@ ul.dynatree-container{
 .bh-dir-acl-deny {
   color: red;
 }
-
+.bh-dir-acl-table-label {
+	  width: 100px !important;
+}
+.bh-dir-acl-table-permisions {
+    width: 250px !important;
+}
+.bh-dir-acl-table-search {
+    width: 216px !important;
+}
 
 

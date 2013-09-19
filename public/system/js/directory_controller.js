@@ -125,7 +125,6 @@
     } else if (data.getResponse(path).getProperty('DAV:','getcontenttype').getParsedValue() !== null) {
       resource.type = data.getResponse(path).getProperty('DAV:','getcontenttype').getParsedValue();
     }; 
-    console.log(data.getResponse(path).getProperty('DAV:','owner').getParsedValue());
     // Get displayname
     if (data.getResponse(path).getProperty('DAV:','displayname').getParsedValue() !== null) {
       resource.displayname = data.getResponse(path).getProperty('DAV:','displayname').getParsedValue();
