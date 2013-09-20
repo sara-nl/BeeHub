@@ -373,7 +373,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
       $displayname = '<em>Everybody</em>';
       break;
     case DAVACL::PRINCIPAL_AUTHENTICATED:
-      $displayname = '<em>All authenticated users</em>';
+      $displayname = '<em>All BeeHub users</em>';
       break;
     case DAVACL::PRINCIPAL_UNAUTHENTICATED:
       $displayname = '<em>All unauthenticated users</em>';
@@ -530,7 +530,8 @@ $footer = '
  	<script type="text/javascript" src="/system/js/directory_view_acl.js"></script>
  		
  	<script type="text/javascript" src="/system/js/directory_resource.js"></script>
-
+ 	<script type="text/javascript" src="/system/js/directory_ace.js"></script>
+ 		
   <script type="text/javascript" src="/system/js/plugins/tablesorter/js/jquery.tablesorter.js"></script>
  	<script type="text/javascript" src="/system/js/plugins/tablesorter/js/jquery.tablesorter.widgets.js"></script>
 ';

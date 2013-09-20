@@ -890,8 +890,9 @@
   
   // ACL
   nl.sara.beehub.controller.addAclRule = function(){
-    nl.sara.beehub.view.dialog.showAddRuleDialog(function(ace){
-      console.log(ace);
+    nl.sara.beehub.view.dialog.showAddRuleDialog(function(userInput){
+      var ace = new nl.sara.beehub.ClientAce(userInput.principal, userInput.permissions, "");
+      nl.sara.beehub.view.acl.addAce(ace);
     });
   };
 })();

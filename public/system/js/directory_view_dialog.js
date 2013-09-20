@@ -270,11 +270,11 @@
         <table>\
         <tr>\
           <td class="bh-dir-acl-table-label"><label><b>Principal</b></label></td>\
-          <td><label class="radio"><input type="radio" name="bh-dir-view-acl-optionRadio" id="bh-dir-acl-add-radio1" value="all" unchecked>All BeeHub users</label></td>\
+          <td><label class="radio"><input type="radio" name="bh-dir-view-acl-optionRadio" id="bh-dir-acl-add-radio1" value="authenticated" unchecked>All BeeHub users</label></td>\
         </tr>\
         <tr>\
           <td class="bh-dir-acl-table-label"></td>\
-          <td><label class="radio"><input type="radio" name="bh-dir-view-acl-optionRadio" id="bh-dir-acl-add-radio2" value="authenticated" unchecked>Everybody</label></td>\
+          <td><label class="radio"><input type="radio" name="bh-dir-view-acl-optionRadio" id="bh-dir-acl-add-radio2" value="all" unchecked>Everybody</label></td>\
         </tr>\
         <tr>\
           <td class="bh-dir-acl-table-label"></td>\
@@ -289,9 +289,9 @@
           <td><select class="bh-dir-acl-table-permisions">\
             <option value="allow read">allow read (read)</option>\
             <option value="allow write">allow write (read, write)</option>\
-            <option value="allow manage">allow manage (read, write, write acl)</option>\
-            <option value="deny read">deny read (read, write, write acl)</option>\
-            <option value="deny write">deny write (write, write acl)</option>\
+            <option value="allow manage">allow manage (read, write, change acl)</option>\
+            <option value="deny read">deny read (read, write, change acl)</option>\
+            <option value="deny write">deny write (write, change acl)</option>\
             <option value="deny manage">deny manage (write acl)</option>\
           </select></td>\
         </tr>\
