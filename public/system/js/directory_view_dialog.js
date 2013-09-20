@@ -270,29 +270,29 @@
         <table>\
         <tr>\
           <td class="bh-dir-acl-table-label"><label><b>Principal</b></label></td>\
-          <td><label class="radio"><input type="radio" name="optionsRadios" id="bh-dir-acl-add-radio1" value="option1" unchecked>All BeeHub users</label></td>\
+          <td><label class="radio"><input type="radio" name="bh-dir-view-acl-optionRadio" id="bh-dir-acl-add-radio1" value="all" unchecked>All BeeHub users</label></td>\
         </tr>\
         <tr>\
           <td class="bh-dir-acl-table-label"></td>\
-          <td><label class="radio"><input type="radio" name="optionsRadios" id="bh-dir-acl-add-radio2" value="option2" unchecked>Everybody</label></td>\
+          <td><label class="radio"><input type="radio" name="bh-dir-view-acl-optionRadio" id="bh-dir-acl-add-radio2" value="authenticated" unchecked>Everybody</label></td>\
         </tr>\
         <tr>\
           <td class="bh-dir-acl-table-label"></td>\
           <td>\
             <div class="radio">\
-              <input type="radio" name="optionsRadios" id="bh-dir-acl-add-radio3" value="option3" checked>\
+              <input type="radio" name="bh-dir-view-acl-optionRadio" id="bh-dir-acl-add-radio3" value="user_or_group" checked>\
               <input id="bh-dir-acl-table-autocomplete" class="bh-dir-acl-table-search" type="text"  value="" placeholder="Search user or group...">\
             </div></td>\
         </tr>\
         <tr>\
           <td class="bh-dir-acl-table-label"><label><b>Permisions</b></label></td>\
           <td><select class="bh-dir-acl-table-permisions">\
-            <option>allow read (read)</option>\
-            <option>allow write (read, write)</option>\
-            <option>allow manage (read, write, write acl)</option>\
-            <option>deny read (read)</option>\
-            <option>deny write (read, write)</option>\
-            <option>deny manage (read, write, write acl)</option>\
+            <option value="allow read">allow read (read)</option>\
+            <option value="allow write">allow write (read, write)</option>\
+            <option value="allow manage">allow manage (read, write, write acl)</option>\
+            <option value="deny read">deny read (read, write, write acl)</option>\
+            <option value="deny write">deny write (write, write acl)</option>\
+            <option value="deny manage">deny manage (write acl)</option>\
           </select></td>\
         </tr>\
       </table>\
@@ -307,7 +307,7 @@
     $.each(nl.sara.beehub.principals.users, function (username, displayname) {
       searchList.push({
          "label"        : displayname+' ('+username+') ',
-         "name"         : username,
+         "name"         : nl.sara.beehub.users_path+username,
          "displayname"  : displayname,
          "icon"         : '<i class="icon-user"></i>'
       });
@@ -316,7 +316,7 @@
     $.each(nl.sara.beehub.principals.groups, function (groupname, displayname) {
       searchList.push({
          "label"        : displayname+' ('+groupname+') ',
-         "name"         : groupname,
+         "name"         : nl.sara.beehub.groups_path+groupname,
          "displayname"  : displayname,
          "icon"         : '<i class="icon-user"></i><i class="icon-user"></i>'
       });
@@ -326,6 +326,7 @@
       source:searchList,
       select: function( event, ui ) {
         $("#bh-dir-acl-table-autocomplete").val(ui.item.label);
+        $("#bh-dir-acl-table-autocomplete").attr('name' ,ui.item.name);
         $("#bh-dir-aclform-add-button").button('enable');
         return false;
       },
@@ -369,6 +370,38 @@
     });
   };
   
+  /**
+   * Get value from the Acl add rule form
+   * 
+   * @return {Object} Principal and permissions
+   */
+  getFormAce= function(){
+    var principal = '';
+    switch($('input[name = "bh-dir-view-acl-optionRadio"]:checked').val())
+    {
+    // all
+    case "all":
+      principal="all";
+      break;
+    // Everybody
+    case "authenticated":
+      principal="authenticated";
+      break;
+    // User or group
+    case "user_or_group":
+      principal=$("#bh-dir-acl-table-autocomplete").attr('name');
+      break;
+    default:
+      // This should never happen
+    }
+    var ace = {
+        "principal": principal,
+        "permissions": $(".bh-dir-acl-table-permisions option:selected").val()
+    };
+    
+    return ace;
+  }
+  
   /*
    * Show add rule dialog
    * 
@@ -403,11 +436,7 @@
         text: "Add rule",
         id: "bh-dir-aclform-add-button",
         click: function() {
-          var principal = {
-              name: 'test',
-              displayname : 'test'
-            };
-          addFunction(principal);
+          addFunction(getFormAce());
           $(this).dialog("close");
         }
       }]
