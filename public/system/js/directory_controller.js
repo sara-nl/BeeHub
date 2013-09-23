@@ -889,10 +889,57 @@
   
   
   // ACL
+  /**
+   * Save acl on server
+   * 
+   */
+  nl.sara.beehub.controller.saveAclOnServer = function(functionSaveAclOk, functionSaveAclError){
+    var acl = nl.sara.beehub.view.acl.getAcl();
+    // create webdav client object
+    var webdav = new nl.sara.webdav.Client();
+    // send acl request to the server
+    webdav.acl(path,function(status,data){
+      // Delete dialog
+      nl.sara.beehub.view.dialog.clearView();
+      // callback
+      if (status === 403) {
+        nl.sara.beehub.view.dialog.showError('You are not allowed to change the acl.');
+        functionSaveAclError();
+        return;
+      };
+      
+      if (status !== 200) {
+        nl.sara.beehub.view.dialog.showError('Something went wrong on the server. No changed were made.');
+        functionSaveAclError();
+        return;
+      };
+      functionSaveAclOk();
+    }, acl);
+  };
+  
+  /**
+   * Show add acl rule dialog.
+   * 
+   */
   nl.sara.beehub.controller.addAclRule = function(){
     nl.sara.beehub.view.dialog.showAddRuleDialog(function(userInput){
-      var ace = new nl.sara.beehub.ClientAce(userInput.principal, userInput.permissions, "");
+      var ace = {
+          principal :   userInput.principal, 
+          permissions:  userInput.permissions, 
+          info:         ""
+      }
+      // Add row in view
       nl.sara.beehub.view.acl.addAce(ace);
+      
+      functionSaveAclOk = function(){
+        nl.sara.beehub.view.dialog.clearView();
+      };
+      
+      functionSaveAclError = function(){
+        // Update view
+        nl.sara.beehub.view.acl.deleteAce(ace);
+      };
+      nl.sara.beehub.controller.saveAclOnServer(functionSaveAclOk, functionSaveAclError);
     });
   };
 })();

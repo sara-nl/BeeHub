@@ -391,7 +391,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
     break;
   }
 ?>
-					<td name="<?= $ace->principal ?>" data-toggle="tooltip"
+					<td class="bh-dir-acl-principal" name="<?= $ace->principal ?>" data-toggle="tooltip"
           title="<?= $ace->principal?>" ><b><?= ( $ace->invert ? 'Everybody except ' : '' ) . $displayname ?></b></td>
 <!-- 					Read -->
 <!--  	<td><center><input type="checkbox" class="bh-dir-acl-read" <?= ( in_array( DAVACL::PRIV_READ, $ace->privileges ) || in_array( DAVACL::PRIV_ALL, $ace->privileges ) ? ' checked' : '' ) ?>></center></td> -->
@@ -450,10 +450,10 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
       						( ! $acl[$key-1]->protected ) )
       	 :?>
 <!-- 					Move up -->
-					<td><i title="Move up" class="icon-arrow-up bh-dir-acl-up" style="cursor: pointer"></i></td>
+					<td class="bh-dir-acl-up"><i title="Move up" class="icon-arrow-up bh-dir-acl-up" style="cursor: pointer"></i></td>
 				<?php else : ?>
 <!-- 					No move up possible -->
-					<td></td>
+					<td class="bh-dir-acl-up"></td>
 				<?php endif; ?>
 				<!--       	When ace is not protected, inherited and next ace exists and is not inherited  -->
       	<?php if ( ! $ace->protected &&
@@ -462,10 +462,10 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
       						 is_null( $acl[$key+1]->inherited ) )
       	 :?>
 <!-- 					Move down -->
-					<td><i title="Move down" class="icon-arrow-down bh-dir-acl-down" style="cursor: pointer"></i></td>
+					<td class="bh-dir-acl-down"><i title="Move down" class="icon-arrow-down bh-dir-acl-down" style="cursor: pointer"></i></td>
 				<?php else : ?>
 <!-- 					No move down possible -->
-					<td></td>
+					<td class="bh-dir-acl-down"></td>
 				<?php endif; ?>
 				<?php if ( $ace->protected || ! is_null( $ace->inherited ) ) :?>
 <!--       	no delete possible -->
@@ -530,7 +530,6 @@ $footer = '
  	<script type="text/javascript" src="/system/js/directory_view_acl.js"></script>
  		
  	<script type="text/javascript" src="/system/js/directory_resource.js"></script>
- 	<script type="text/javascript" src="/system/js/directory_ace.js"></script>
  		
   <script type="text/javascript" src="/system/js/plugins/tablesorter/js/jquery.tablesorter.js"></script>
  	<script type="text/javascript" src="/system/js/plugins/tablesorter/js/jquery.tablesorter.widgets.js"></script>

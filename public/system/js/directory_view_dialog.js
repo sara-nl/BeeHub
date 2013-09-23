@@ -437,7 +437,6 @@
         id: "bh-dir-aclform-add-button",
         click: function() {
           addFunction(getFormAce());
-          $(this).dialog("close");
         }
       }]
     });
