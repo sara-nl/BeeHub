@@ -435,11 +435,11 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
   if ( $ace->protected ) {
     $info = 'protected';
     $message = 'protected, no changes are possible';
-    $class ='bh-dir-acl-fixedrow';
+    $class ='bh-dir-acl-protected';
   }elseif ( ! is_null( $ace->inherited ) ) {
     $info = 'inherited';
     $message = 'inherited from: <a href="' . $ace->inherited . '">' . $ace->inherited . '</a>';
-    $class ='bh-dir-acl-fixedrow';
+    $class ='bh-dir-acl-inherited';
   }
 ?>
 					<td class="bh-dir-acl-comment <?= $class  ?>" name="<?= $info  ?>" ><?= $message ?></td>

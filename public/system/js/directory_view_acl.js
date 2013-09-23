@@ -115,14 +115,43 @@
     row.push('<td></td>');
     // Up
     row.push('<td></td>');
-    // Down
-    row.push('<td></td>');
+    // Down (if possible)
+    if (getIndexLastProtected()+1 === getIndexFirstInherited()) {
+      row.push('<td></td>');
+    } else {
+      row.push('<td><i title="Move down" class="icon-arrow-down bh-dir-acl-down" style="cursor: pointer"></i></td>');
+    }
     // Delete
-    row.push('<td></td>');
+    row.push('<td><i title="Delete" class="icon-remove bh-dir-acl-remove" style="cursor: pointer"></i></td>');
     
     row.push('</tr>');
     return row.join("");
   };
+  
+  /**
+   * Returns index of the last protected rule
+   * 
+   * @return {Integer} index Index of last protected rule
+   */
+  getIndexLastProtected = function(){
+    // Get protected items. length -1 is index
+    return $('.bh-dir-acl-protected').length-1;
+  }
+  
+  /**
+   * Returns index of the last protected rule
+   * 
+   * @return {Integer} index Index of last protected rule
+   */
+  getIndexFirstInherited = function(){
+    // Count of all items
+    var all = $('.bh-dir-acl-contents > tr').length;
+    // Count of all inherited items
+    var allInherited = $('.bh-dir-acl-inherited').length;
+    // Index
+    var index = all - allInherited;
+    return index;
+  }
   
   /*
    * Add ace to Acl view
@@ -133,23 +162,7 @@
    */
   nl.sara.beehub.view.acl.addAce = function(ace){
     var row = createRow(ace);
-    // Find position
-    var index = 0;
-    // First is allways protected, owner
-    for (var i=1; i < $('.bh-dir-acl-contents > tr').length; i++) {
-      var isProtected = false;
-      if ($('.bh-dir-acl-contents > tr:eq('+i+')').find(".bh-dir-acl-comment").attr('name') === 'protected'){
-        isProtected = true;
-      }
-      if (!isProtected) {
-        index = i-1;
-        break;
-      };
-      if (i === $('.bh-dir-acl-contents > tr').length -1){
-        index = i;
-        break;
-      }
-    };
+    var index = getIndexLastProtected();
     $('.bh-dir-acl-contents > tr:eq('+index+')').after(row);
     $(".bh-dir-acl-contents").trigger("update");
     // Set handlers again

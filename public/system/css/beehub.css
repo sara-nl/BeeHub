@@ -190,7 +190,7 @@ ul.dynatree-container{
 }
 
 /* ACL view */
-.bh-dir-acl-fixedrow {
+.bh-dir-acl-protected, .bh-dir-acl-protected {
   color: red;
 }
 .bh-dir-acl-allow {
@@ -208,6 +208,7 @@ ul.dynatree-container{
 .bh-dir-acl-table-search {
     width: 216px !important;
 }
+
 /* scrollbar autocomplete*/
  .ui-autocomplete {
 	max-height: 200px;
