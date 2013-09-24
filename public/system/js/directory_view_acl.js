@@ -58,13 +58,13 @@
    */
   var setRowHandlers = function(){
     // Up icon
-    $('.bh-dir-acl-icon-up').click(handle_up_click);
+    $('.bh-dir-acl-icon-up').unbind().click(handle_up_click);
     
     // Down icon
-    $('.bh-dir-acl-icon-down').click(handle_down_click);
+    $('.bh-dir-acl-icon-down').unbind().click(handle_down_click);
     
     // Delete icon
-    $('.bh-dir-acl-icon-remove').click(handle_remove_click);
+    $('.bh-dir-acl-icon-remove').unbind().click(handle_remove_click);
   };
   
   /*
@@ -228,7 +228,7 @@
           default:
             ace.principal = principal;
         };
-        
+
         var readPriv = new nl.sara.webdav.Privilege();
         readPriv.namespace = "DAV:";
         readPriv.tagname= "read";
@@ -237,13 +237,9 @@
         writePriv.namespace = "DAV:";
         writePriv.tagname= "write";
         
-        var readAclPriv = new nl.sara.webdav.Privilege();
-        readAclPriv.namespace = "DAV:";
-        readAclPriv.tagname= "read_acl";
-        
-        var writeAclPriv = new nl.sara.webdav.Privilege();
-        readAclPriv.namespace = "DAV:";
-        readAclPriv.tagname= "write_acl";
+        var managePriv = new nl.sara.webdav.Privilege();
+        managePriv.namespace = "DAV:";
+        managePriv.tagname= "all";
         
         switch( permissions )
         {
@@ -260,8 +256,7 @@
             ace.grantdeny = nl.sara.webdav.Ace.DENY;
             ace.addPrivilege(readPriv);
             ace.addPrivilege(writePriv);
-            ace.addPrivilege(readAclPriv);
-            ace.addPrivilege(writeAclPriv);
+            ace.addPrivilege(managePriv);
             break;
           case 'allow read':
             ace.grantdeny = nl.sara.webdav.Ace.GRANT;
@@ -276,8 +271,7 @@
             ace.grantdeny = nl.sara.webdav.Ace.GRANT;
             ace.addPrivilege(readPriv);
             ace.addPrivilege(writePriv);
-            ace.addPrivilege(readAclPriv);
-            ace.addPrivilege(writeAclPriv);         
+            ace.addPrivilege(managePriv);
             break;
           default:
             // This should never happen  
@@ -299,22 +293,26 @@
    */
   nl.sara.beehub.view.acl.addRow = function(row, index){
     $('.bh-dir-acl-contents > tr:eq('+index+')').after(row);
+    $('.bh-dir-acl-contents').trigger("update");
+
     setUpDownButtons();
-    $(".bh-dir-acl-contents").trigger("update");
     // Set handlers again
     setRowHandlers();
   };
   
-  /*
-   * Add ace to Acl view
+  /**
+   * Delete row at certain index
    * 
    * Public function
    * 
-   * @param {nl.sara.beehub.ClientAce} ace Ace object
+   * @param {Integer} index Index of row to delete
    */
-  nl.sara.beehub.view.acl.deleteRow = function(row){
-    row.remove();
+  nl.sara.beehub.view.acl.deleteRowIndex = function(index){
+    $('.bh-dir-acl-contents > tr:eq('+index+')').remove();
+    $('.bh-dir-acl-contents').trigger("update");
     setUpDownButtons();
+    // Set handlers again
+    setRowHandlers();
   }
   
   /**
@@ -341,7 +339,7 @@
     setRowHandlers();
   };
   
-  /*
+  /**
    * Onclick handler up icon acl view
    */
   var handle_up_click = function() {
@@ -355,7 +353,7 @@
      nl.sara.beehub.controller.moveUpAclRule(row);
   };
   
-  /*
+  /**
    * Onclick handler up icon acl view
    */
   var handle_down_click = function() {
@@ -369,16 +367,17 @@
     nl.sara.beehub.controller.moveDownAclRule(row);
   };
   
-  /*
+  /**
    * Onclick handler up icon acl view
    */
   var handle_remove_click = function() {
     // mask view
     nl.sara.beehub.controller.maskView(true);
     var row = $(this).closest('tr');
-    nl.sara.beehub.view.acl.deleteRow(row);
+    var index = row.index();
+    nl.sara.beehub.view.acl.deleteRowIndex(index);
    
     // Add rule on server
-    nl.sara.beehub.controller.deleteAclRule(row, row.index());
+    nl.sara.beehub.controller.deleteAclRule(row, index);
   };
 })();

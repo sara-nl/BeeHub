@@ -164,19 +164,19 @@
   */
   var setRowHandlers = function(){
     // Checkbox select all handler: select or deselect all checkboxes
-    $('.bh-dir-content-checkboxgroup').click(handle_checkall_checkbox_click);
+    $('.bh-dir-content-checkboxgroup').unbind().click(handle_checkall_checkbox_click);
     
     // Checkbox handler: select or deselect checkbox
-    $('.bh-dir-content-checkbox').click(handle_checkbox_click);
+    $('.bh-dir-content-checkbox').unbind().click(handle_checkbox_click);
     
     // Open selected handler: this can be a file or a directory
-    $('.bh-dir-content-openselected').click(function() {window.location.href=$(this).attr('name');});
+    $('.bh-dir-content-openselected').unbind().click(function() {window.location.href=$(this).attr('name');});
     
     // Edit icon
-    $('.bh-dir-content-edit').click(handle_edit_icon_click);
+    $('.bh-dir-content-edit').unbind().click(handle_edit_icon_click);
     
     // Rename handler
-    $('.bh-dir-content-rename-form').change(handle_rename_form_change);
+    $('.bh-dir-content-rename-form').unbind().change(handle_rename_form_change);
     
     // Blur: erase rename form field
     $('.bh-dir-content-rename-form').blur(function(){

@@ -945,7 +945,7 @@
       
       functionSaveAclError = function(){
         // Update view
-        nl.sara.beehub.view.acl.deleteRow(row);
+        nl.sara.beehub.view.acl.deleteRowIndex(nl.sara.beehub.view.acl.getIndexLastProtected() + 1);
       };
       nl.sara.beehub.controller.saveAclOnServer(functionSaveAclOk, functionSaveAclError);
     });
@@ -964,6 +964,8 @@
       // Update view
       nl.sara.beehub.view.maskView(false);
       nl.sara.beehub.view.acl.addRow(row, index -1);
+//      var row = nl.sara.beehub.view.acl.createRow(ace);
+//      nl.sara.beehub.view.acl.addRow(row, ace.index -1);
     };
     nl.sara.beehub.controller.saveAclOnServer(functionSaveAclOk, functionSaveAclError);
   };
