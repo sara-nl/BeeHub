@@ -450,7 +450,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
       						( ! $acl[$key-1]->protected ) )
       	 :?>
 <!-- 					Move up -->
-					<td class="bh-dir-acl-up"><i title="Move up" class="icon-arrow-up bh-dir-acl-up" style="cursor: pointer"></i></td>
+					<td class="bh-dir-acl-up"><i title="Move up" class="icon-arrow-up bh-dir-acl-icon-up" style="cursor: pointer"></i></td>
 				<?php else : ?>
 <!-- 					No move up possible -->
 					<td class="bh-dir-acl-up"></td>
@@ -462,7 +462,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
       						 is_null( $acl[$key+1]->inherited ) )
       	 :?>
 <!-- 					Move down -->
-					<td class="bh-dir-acl-down"><i title="Move down" class="icon-arrow-down bh-dir-acl-down" style="cursor: pointer"></i></td>
+					<td class="bh-dir-acl-down"><i title="Move down" class="icon-arrow-down bh-dir-acl-icon-down" style="cursor: pointer"></i></td>
 				<?php else : ?>
 <!-- 					No move down possible -->
 					<td class="bh-dir-acl-down"></td>
@@ -472,7 +472,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
       	<td></td>
       	<?php else : ?>
 <!--       		Delete icon -->
-      		<td><i title="Delete" class="icon-remove bh-dir-acl-remove" style="cursor: pointer"></i></td>
+      		<td><i title="Delete" class="icon-remove bh-dir-acl-icon-remove" style="cursor: pointer"></i></td>
       	<?php endif; ?>
       	</tr>  
      <?php

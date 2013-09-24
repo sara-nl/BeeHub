@@ -29,6 +29,8 @@
     });
     // Add rule handler
     $('.bh-dir-acl-add').click(nl.sara.beehub.controller.addAclRule);
+    // Add handler on row
+    setRowHandlers();
   };
   
   /*
@@ -51,14 +53,30 @@
     };
   };
   
+  /**
+   * Sets up, down, delete handlers
+   */
+  var setRowHandlers = function(){
+    // Up icon
+    $('.bh-dir-acl-icon-up').click(handle_up_click);
+    
+    // Down icon
+    $('.bh-dir-acl-icon-down').click(handle_down_click);
+    
+    // Delete icon
+    $('.bh-dir-acl-icon-remove').click(handle_remove_click);
+  };
+  
   /*
    * Create aclview row from ace object
+   * 
+   * Public function
    * 
    * @param {nl.sara.beehub.ClientAce} ace Ace object
    * 
    * @return String Row string 
    */
-  var createRow = function(ace){
+  nl.sara.beehub.view.acl.createRow = function(ace){
     var row = [];
     
     row.push('<tr>');
@@ -66,10 +84,10 @@
     var show = '';
     switch(ace.principal)
     {
-      case 'all':
+      case 'DAV: all':
         show = '<em>Everybody</em>'
         break;
-      case 'authenticated':
+      case 'DAV: authenticated':
         show = '<em>All BeeHub users</em>'
         break;
       default:
@@ -115,25 +133,49 @@
     row.push('<td class="bh-dir-acl-comment" name=""></td>');
     // Up
     row.push('<td class="bh-dir-acl-up"></td>');
-    // Down (if possible)
-    if (getIndexLastProtected()+1 === getIndexFirstInherited()) {
-      row.push('<td class="bh-dir-acl-down"></td>');
-    } else {
-      row.push('<td class="bh-dir-acl-down"><i title="Move down" class="icon-arrow-down bh-dir-acl-down" style="cursor: pointer"></i></td>');
-    }
+    // Down 
+    row.push('<td class="bh-dir-acl-down"></td>');
     // Delete
-    row.push('<td><i title="Delete" class="icon-remove bh-dir-acl-remove" style="cursor: pointer"></i></td>');
+    row.push('<td><i title="Delete" class="icon-remove bh-dir-acl-icon-remove" style="cursor: pointer"></i></td>');
     
     row.push('</tr>');
     return row.join("");
   };
   
   /**
+   * Checks if up or down is possible and show arrows
+   *  
+   */
+  var setUpDownButtons = function(){  
+    $.each($('.bh-dir-acl-contents > tr'), function(index, row){
+      var info = $(row).find('.bh-dir-acl-comment').attr('name');
+      
+      if (info !== 'protected' && info !== 'inherited') {
+        // Check up button
+        if ( index - 1 !== nl.sara.beehub.view.acl.getIndexLastProtected() ) {
+          $(row).find('.bh-dir-acl-up').html('<i title="Move up" class="icon-arrow-up bh-dir-acl-icon-up" style="cursor: pointer"></i>');
+        } else {
+          $(row).find('.bh-dir-acl-up').html('');
+        }
+        
+        // Check down button
+        if ( index + 1 !== getIndexFirstInherited() ) {
+          $(row).find('.bh-dir-acl-down').html('<i title="Move down" class="icon-arrow-down bh-dir-acl-icon-down" style="cursor: pointer"></i>');
+        } else {
+          $(row).find('.bh-dir-acl-down').html('');
+        }
+      }
+    });
+  };
+  
+  /**
    * Returns index of the last protected rule
+   * 
+   * Public function
    * 
    * @return {Integer} index Index of last protected rule
    */
-  getIndexLastProtected = function(){
+  nl.sara.beehub.view.acl.getIndexLastProtected = function(){
     // Get protected items. length -1 is index
     return $('.bh-dir-acl-protected').length-1;
   }
@@ -143,7 +185,7 @@
    * 
    * @return {Integer} index Index of last protected rule
    */
-  getIndexFirstInherited = function(){
+  var getIndexFirstInherited = function(){
     // Count of all items
     var all = $('.bh-dir-acl-contents > tr').length;
     // Count of all inherited items
@@ -151,41 +193,6 @@
     // Index
     var index = all - allInherited;
     return index;
-  }
-  
-  /*
-   * Add ace to Acl view
-   * 
-   * Public function
-   * 
-   * @param {Object} ace  
-   * 
-   * @param {nl.sara.beehub.ClientAce} ace Ace object
-   */
-  nl.sara.beehub.view.acl.addAce = function(ace){
-    var row = createRow(ace);
-    var index = getIndexLastProtected();
-    ace.index = index+1;
-    var nextRow = $('.bh-dir-acl-contents > tr:eq('+index+1+')');
-    if ($(nextRow).find('.bh-dir-acl-comment') !== 'inherited') {
-      $(nextRow).find('.bh-dir-acl-up').html('<i title="Move up" class="icon-arrow-up bh-dir-acl-up" style="cursor: pointer"></i>');
-    }
-    $('.bh-dir-acl-contents > tr:eq('+index+')').after(row);
-    $(".bh-dir-acl-contents").trigger("update");
-    // Set handlers again
-//    setRowHandlers();
-  };
-  
-  /*
-   * Add ace to Acl view
-   * 
-   * Public function
-   * 
-   * @param {nl.sara.beehub.ClientAce} ace Ace object
-   */
-  nl.sara.beehub.view.acl.deleteAce = function(ace){
-    $('.bh-dir-acl-contents > tr:eq('+ace.index+')').remove();
-    $(".bh-dir-acl-contents").trigger("update");
   }
   
   /**
@@ -279,5 +286,99 @@
       };
     });
     return acl;
+  };
+  
+  /*
+   * Add ace to Acl view
+   * 
+   * Public function
+   * 
+   * @param {DOM Object} row  
+   * @param {Integer} index Index to prepend row after
+   * 
+   */
+  nl.sara.beehub.view.acl.addRow = function(row, index){
+    $('.bh-dir-acl-contents > tr:eq('+index+')').after(row);
+    setUpDownButtons();
+    $(".bh-dir-acl-contents").trigger("update");
+    // Set handlers again
+    setRowHandlers();
+  };
+  
+  /*
+   * Add ace to Acl view
+   * 
+   * Public function
+   * 
+   * @param {nl.sara.beehub.ClientAce} ace Ace object
+   */
+  nl.sara.beehub.view.acl.deleteRow = function(row){
+    row.remove();
+    setUpDownButtons();
+  }
+  
+  /**
+   * Move down acl rule
+   * 
+   * @param {DOM object} row  Row to move down
+   */
+  nl.sara.beehub.view.acl.moveDownAclRule = function(row) {
+    row.insertAfter( row.next() );
+    setUpDownButtons();
+    // Set handlers again
+    setRowHandlers();
+  };
+  
+  /**
+   * Move up acl rule
+   * 
+   * @param {DOM object} row  Row to move up
+   */
+  nl.sara.beehub.view.acl.moveUpAclRule = function(row) {
+    row.insertBefore( row.prev() );
+    setUpDownButtons();
+    // Set handlers again
+    setRowHandlers();
+  };
+  
+  /*
+   * Onclick handler up icon acl view
+   */
+  var handle_up_click = function() {
+     // mask view
+     nl.sara.beehub.controller.maskView(true);
+     
+     var row = $(this).closest('tr');
+     nl.sara.beehub.view.acl.moveUpAclRule(row);
+     
+     // Add rule on server
+     nl.sara.beehub.controller.moveUpAclRule(row);
+  };
+  
+  /*
+   * Onclick handler up icon acl view
+   */
+  var handle_down_click = function() {
+    // mask view
+    nl.sara.beehub.controller.maskView(true);
+    
+    var row = $(this).closest('tr');
+    nl.sara.beehub.view.acl.moveDownAclRule(row);
+    
+    // Add rule on server
+    nl.sara.beehub.controller.moveDownAclRule(row);
+  };
+  
+  /*
+   * Onclick handler up icon acl view
+   */
+  var handle_remove_click = function() {
+    // mask view
+    nl.sara.beehub.controller.maskView(true);
+    var row = $(this).closest('tr');
+    nl.sara.beehub.view.acl.deleteRow(row);
+   
+    // Add rule on server
+    nl.sara.beehub.controller.deleteAclRule(row, row.index());
   };
 })();

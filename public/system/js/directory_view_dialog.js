@@ -381,11 +381,11 @@
     {
     // all
     case "all":
-      principal="all";
+      principal="DAV: all";
       break;
     // Everybody
     case "authenticated":
-      principal="authenticated";
+      principal="DAV: authenticated";
       break;
     // User or group
     case "user_or_group":

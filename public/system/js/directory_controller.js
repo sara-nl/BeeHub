@@ -47,6 +47,14 @@
     nl.sara.beehub.view.clearAllViews();
   };
   
+  /**
+   * Set mask on view
+   * 
+   */
+  nl.sara.beehub.controller.maskView = function(boolean){
+    nl.sara.beehub.view.maskView(boolean);
+  };
+  
   /*
    * Returns displayname from object
    * 
@@ -900,20 +908,19 @@
     // send acl request to the server
     webdav.acl(path,function(status,data){
       // Delete dialog
-      nl.sara.beehub.view.dialog.clearView();
+      if (status === 200){
+        functionSaveAclOk();
+        return;
+      }
       // callback
       if (status === 403) {
         nl.sara.beehub.view.dialog.showError('You are not allowed to change the acl.');
         functionSaveAclError();
         return;
-      };
-      
-      if (status !== 200) {
+      } else {
         nl.sara.beehub.view.dialog.showError('Something went wrong on the server. No changed were made.');
         functionSaveAclError();
-        return;
       };
-      functionSaveAclOk();
     }, acl);
   };
   
@@ -929,7 +936,8 @@
           info:         ""
       }
       // Add row in view
-      nl.sara.beehub.view.acl.addAce(ace);
+      var row = nl.sara.beehub.view.acl.createRow(ace);
+      nl.sara.beehub.view.acl.addRow(row, nl.sara.beehub.view.acl.getIndexLastProtected());
       
       functionSaveAclOk = function(){
         nl.sara.beehub.view.dialog.clearView();
@@ -937,9 +945,60 @@
       
       functionSaveAclError = function(){
         // Update view
-        nl.sara.beehub.view.acl.deleteAce(ace);
+        nl.sara.beehub.view.acl.deleteRow(row);
       };
       nl.sara.beehub.controller.saveAclOnServer(functionSaveAclOk, functionSaveAclError);
     });
+  };
+  
+  /**
+   * Delete acl rule
+   * 
+   */
+  nl.sara.beehub.controller.deleteAclRule = function(row, index){
+    functionSaveAclOk = function(){
+      nl.sara.beehub.view.maskView(false);
+    };
+    
+    functionSaveAclError = function(){
+      // Update view
+      nl.sara.beehub.view.maskView(false);
+      nl.sara.beehub.view.acl.addRow(row, index -1);
+    };
+    nl.sara.beehub.controller.saveAclOnServer(functionSaveAclOk, functionSaveAclError);
+  };
+  
+  /**
+   * Move down acl rule
+   * 
+   */
+  nl.sara.beehub.controller.moveDownAclRule = function(row){
+    functionSaveAclOk = function(){
+      nl.sara.beehub.view.maskView(false);
+    };
+    
+    functionSaveAclError = function(){
+      // Update view
+      nl.sara.beehub.view.maskView(false);
+      nl.sara.beehub.view.acl.moveUpAclRule(row);
+    };
+    nl.sara.beehub.controller.saveAclOnServer(functionSaveAclOk, functionSaveAclError);
+  };
+  
+  /**
+   * Move up acl rule
+   * 
+   */
+  nl.sara.beehub.controller.moveUpAclRule = function(row){
+    functionSaveAclOk = function(){
+      nl.sara.beehub.view.maskView(false);
+    };
+    
+    functionSaveAclError = function(){
+      // Update view
+      nl.sara.beehub.view.maskView(false);
+      nl.sara.beehub.view.acl.moveDownAclRule(row);
+    };
+    nl.sara.beehub.controller.saveAclOnServer(functionSaveAclOk, functionSaveAclError);
   };
 })();
