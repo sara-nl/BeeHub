@@ -304,14 +304,6 @@
    */
   setupAutoComplete = function(){
     var searchList = [];
-    $.each(nl.sara.beehub.principals.users, function (username, displayname) {
-      searchList.push({
-         "label"        : displayname+' ('+username+') ',
-         "name"         : nl.sara.beehub.users_path+username,
-         "displayname"  : displayname,
-         "icon"         : '<i class="icon-user"></i>'
-      });
-    });
     
     $.each(nl.sara.beehub.principals.groups, function (groupname, displayname) {
       searchList.push({
@@ -319,6 +311,15 @@
          "name"         : nl.sara.beehub.groups_path+groupname,
          "displayname"  : displayname,
          "icon"         : '<i class="icon-user"></i><i class="icon-user"></i>'
+      });
+    });
+    
+    $.each(nl.sara.beehub.principals.users, function (username, displayname) {
+      searchList.push({
+         "label"        : displayname+' ('+username+') ',
+         "name"         : nl.sara.beehub.users_path+username,
+         "displayname"  : displayname,
+         "icon"         : '<i class="icon-user"></i>'
       });
     });
 
@@ -396,7 +397,7 @@
     }
     var ace = {
         "principal": principal,
-        "permissions": $(".bh-dir-acl-table-permisions option:selected").val()
+        "permissions": $(".bh-dir-acl-table-permisions option:selected").val(),
     };
     
     return ace;

@@ -190,7 +190,7 @@ ul.dynatree-container{
 }
 
 /* ACL view */
-.bh-dir-acl-protected, .bh-dir-acl-protected {
+.bh-dir-acl-protected, .bh-dir-acl-inherited {
   color: red;
 }
 .bh-dir-acl-allow {

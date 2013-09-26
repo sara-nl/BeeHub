@@ -85,15 +85,20 @@
     switch(ace.principal)
     {
       case 'DAV: all':
-        show = '<em>Everybody</em>'
+        show = '<em>Everybody</em>';
         break;
       case 'DAV: authenticated':
         show = '<em>All BeeHub users</em>'
         break;
       default:
-        show = nl.sara.beehub.controller.getDisplayName(ace.principal);
+        show = nl.sara.beehub.controller.getDisplayName(ace.principal)
     };
-    row.push('<td class="bh-dir-acl-principal" name="'+ace.principal+'" data-toggle="tooltip" title="'+ace.principal+'" ><b>'+show+'</b></td>');
+    // Groups icon unless it's a single user
+    var icon = '<i class="icon-user"></i><i class="icon-user"></i>';
+    if (ace.principal.indexOf(nl.sara.beehub.users_path) !== -1) {
+      icon = '<i class="icon-user"></i>';
+    }
+    row.push('<td class="bh-dir-acl-principal" name="'+ace.principal+'" data-toggle="tooltip" title="'+ace.principal+'" ></i><b>'+show+'</b> ('+icon+')</td>');
     
     // Permissions
     var aceClass= '';

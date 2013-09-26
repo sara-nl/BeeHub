@@ -390,9 +390,13 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
       }
     break;
   }
+    $icon= '<i class="icon-user"></i><i class="icon-user"></i>';
+    if ((strpos($ace->principal, BeeHub::USERS_PATH) !== false) || ($ace->principal == 'DAV: owner' )) {
+  		$icon= '<i class="icon-user"></i>';
+    }
 ?>
 					<td class="bh-dir-acl-principal" name="<?= $ace->principal ?>" data-toggle="tooltip"
-          title="<?= $ace->principal?>" ><b><?= ( $ace->invert ? 'Everybody except ' : '' ) . $displayname ?></b></td>
+          title="<?= $ace->principal?>" ><b><?= ( $ace->invert ? 'Everybody except ' : '' ) . $displayname ?> </b>(<?= $icon?>)</td>
 <!-- 					Read -->
 <!--  	<td><center><input type="checkbox" class="bh-dir-acl-read" <?= ( in_array( DAVACL::PRIV_READ, $ace->privileges ) || in_array( DAVACL::PRIV_ALL, $ace->privileges ) ? ' checked' : '' ) ?>></center></td> -->
 <!-- 					Write -->
