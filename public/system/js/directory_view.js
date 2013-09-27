@@ -66,15 +66,44 @@ nl.sara.beehub.view.clearAllViews = function(){
 /*
  * Mask view, disable input
  * 
+ * @param {String} type Mask type
  * @param Boolean mask true or false
  */
-nl.sara.beehub.view.maskView = function(mask){
-  if (mask) { 
-    $("#bh-dir-all").show();
-  } else {
-    $("#bh-dir-all").hide();
-  }  
+nl.sara.beehub.view.maskView = function(type , show){
+  switch (type) {
+    case  "mask":
+      if (show) { 
+        $("#bh-dir-mask").show();
+      } else {
+        $("#bh-dir-mask").hide();
+      } 
+      break;
+    case "transparant":
+      if (show) { 
+        $("#bh-dir-mask-transparant").show();
+      } else {
+        $("#bh-dir-mask-transparant").hide();
+      } 
+      break;
+    case "loading":
+      if (show) { 
+        $("#bh-dir-mask-loading").show();
+      } else {
+        $("#bh-dir-mask-loading").hide();
+      } 
+      break;
+  } 
 };
+
+/*
+ * Hide all masks
+ * 
+ */
+nl.sara.beehub.view.hideMasks = function(){
+  $("#bh-dir-mask").hide();
+  $("#bh-dir-mask-transparant").hide();
+  $("#bh-dir-mask-loading").hide();
+}
 
 /*
  * Show buttons that belong to a tab, acl or content

@@ -51,18 +51,17 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
 
 <!-- Bread crumb -->
 <div class="bh-dir-fixed-path">
-  <h4>
     <?php
     // first and last of $crumb are empty
     $crumb = explode("/", $this->path);
-    print "<ul class=\"breadcrumb bh-dir-breadcrumb \">";
+    $pathString = "<ul class=\"breadcrumb bh-dir-breadcrumb \">";
     // Root
-    print "<li><a href=\"/\">BeeHub root</a><span class=\"divider\">&raquo;</span></li>";
+    $pathString .= "<li><a href=\"/\">BeeHub root</a><span class=\"divider\">&raquo;</span></li>";
     $count = count($crumb);
     $start = 1;
     //Show maximal two directories
     if ($count > 4) {
-			print "<li><span class=\"divider\">.. /</span></li>";
+			$pathString .= "<li><span class=\"divider\">.. /</span></li>";
 			$start = $count - 3;
 		};
     $last = $count - 2;
@@ -74,15 +73,15 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
       if ($x >= $start) {
 				// Last directory is current directory, no link
 	      if ($x === $last) {
-	        print "<li class=\"active\">" . DAV::xmlescape( $value ) . "</li>";
+	        $pathString .= "<li class=\"active\">" . DAV::xmlescape( $value ) . "</li>";
 	      } else {
-	        print "<li><a href=\"" . DAV::xmlescape( $newpath ) . "\">" . DAV::xmlescape( $value ) . "</a><span class=\"divider\">/</span></li>";
+	        $pathString .= "<li><a href=\"" . DAV::xmlescape( $newpath ) . "\">" . DAV::xmlescape( $value ) . "</a><span class=\"divider\">/</span></li>";
 	      }
 	    }
     }
-    print "</ul>";
+    $pathString .= "</ul>";
     ?>
-  </h4>
+  <h4><?= $pathString ?></h4>
 </div>
 <!-- End div class fixed path -->
 
@@ -123,7 +122,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
   
 	<!--	CONTENT: Upload button-->
   <input class="bh-dir-content-upload-hidden" type="file" name="files[]"
-         hidden="true" multiple>
+         hidden  multiple>
          
 	<!--   Hidden upload field, this is needed to show the upload button -->
   <button data-toggle="tooltip"
@@ -167,7 +166,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
 <!-- End fixed buttons -->
 
 <!-- Dialog, for dialog view -->
-<div id="bh-dir-dialog" hidden="true"></div>
+<div id="bh-dir-dialog" hidden></div>
 
 <!-- Tree slide out, dynatree - tree view -->
 <div id="bh-dir-tree" class="bh-dir-tree-slide">
@@ -198,8 +197,8 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
 <div id="bh-dir-tree-header">
 	<table>
 		<tr>
-			<td id="bh-dir-tree-cancel" hidden=true><i class="icon-remove" style="cursor: pointer"></i></td>
-			<td class="bh-dir-tree-header" hidden=true>Browse</td>
+			<td id="bh-dir-tree-cancel" hidden><i class="icon-remove" style="cursor: pointer"></i></td>
+			<td class="bh-dir-tree-header" hidden>Browse</td>
 		</tr>
 	</table>
 </div>
@@ -218,13 +217,13 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
       <thead class="bh-dir-content-table-header">
         <tr>
 <!--         	Checkbox header -->
-          <th width="10px"><input type="checkbox" class="bh-dir-content-checkboxgroup"></th>
+          <th class="bh-dir-small-column"><input type="checkbox" class="bh-dir-content-checkboxgroup"></th>
 <!--           Rename icon header -->
-          <th width="10px"></th>
+          <th class="bh-dir-small-column"></th>
 <!--           Name header -->
           <th>Name</th>
 <!-- 					Hidden rename column -->
-          <th hidden="true"></th>
+          <th hidden></th>
 <!--           Size header -->
           <th>Size</th>
 <!--           Type header -->
@@ -234,7 +233,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
 <!--           Owner header -->
           <th>Owner</th>
           <!-- share file, not yet implemented -->
-          <!--  <th width="10px"></th> -->
+          <!--  <th class="bh-dir-small-column"></th> -->
         </tr>
       </thead>
       <tbody>
@@ -252,10 +251,10 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
           ?>
           <tr id="<?= DAV::xmlescape( DAV::unslashify($member->path) ) ?>">
 <!--             Select checkbox -->
-<td width="10px"><input type="checkbox" class="bh-dir-content-checkbox" name="<?= DAV::xmlescape( DAV::unslashify( $member->path ) ) ?>"
+<td class="bh-dir-small-column"><input type="checkbox" class="bh-dir-content-checkbox" name="<?= DAV::xmlescape( DAV::unslashify( $member->path ) ) ?>"
                                     value="<?= DAV::xmlescape( $member->user_prop_displayname() ) ?>"></td>
 <!--             Rename icon -->
-            <td width="10px" data-toggle="tooltip" title="Rename"><i
+            <td class="bh-dir-small-column" data-toggle="tooltip" title="Rename"><i
                 class="icon-edit bh-dir-content-edit" style="cursor: pointer"></i></td>
 <!--                 Name -->
 <!--                 Directory -->
@@ -270,7 +269,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
                 </a></td>
             <?php endif; ?>
 <!--             Hidden rename -->
-            <td class="bh-dir-content-rename-td" hidden="true"><input
+            <td class="bh-dir-content-rename-td" hidden><input
                 class="bh-dir-content-rename-form"
                 name="<?= DAV::xmlescape( $member->user_prop_displayname() ) ?>"
                 value="<?= DAV::xmlescape( $member->user_prop_displayname() ) ?>"></td>
@@ -309,7 +308,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
             <td class="owner" name="<?= DAV::xmlescape( $owner->path ) ?>"><?= DAV::xmlescape( $owner->user_prop_displayname() ) ?></td>
             <?php if (substr($member->path, -1) !== '/'): ?>
             	<!-- share file, not yet implemented -->         
-							<!--  <td width="10px" data-toggle="tooltip" -->
+							<!--  <td class="bh-dir-small-column" data-toggle="tooltip" -->
 							<!--      title="Email read-only share link"><i class="icon-share"></i></td> -->
             <?php else : ?>
 	            <!-- share file, not yet implemented -->         
@@ -333,24 +332,16 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
         <tr>
 <!--           Principal -->
           <th>Principal</th>
-<!--           Read -->
-<!--           <th width="30px">Read</th> -->
-<!--           Write -->
-<!--           <th width="30px">Write</th> -->
-<!--           Manage -->
-<!--           <th width="30px">Manage</th> -->
-<!--           Access -->
-<!--           <th>Access</th> -->
 <!--           Permissions -->
           <th>Permissions</th>
 <!--           Comments -->
           <th>Comment</th>
 <!--         	Move up -->
-          <th width="10px"></th>
+          <th class="bh-dir-small-column"></th>
 <!--           Move down -->
-          <th width="10px"></th>
+          <th class="bh-dir-small-column"></th>
 <!--           Delete row -->
-          <th width="10px"></th>
+          <th class="bh-dir-small-column"></th>
         </tr>
       </thead>
       <tbody class="bh-dir-acl-contents" name="<?= DAV::xmlescape( DAV::unslashify($member->path) ) ?>">
@@ -397,14 +388,6 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
 ?>
 					<td class="bh-dir-acl-principal" name="<?= $ace->principal ?>" data-toggle="tooltip"
           title="<?= $ace->principal?>" ><b><?= ( $ace->invert ? 'Everybody except ' : '' ) . $displayname ?> </b>(<?= $icon?>)</td>
-<!-- 					Read -->
-<!--  	<td><center><input type="checkbox" class="bh-dir-acl-read" <?= ( in_array( DAVACL::PRIV_READ, $ace->privileges ) || in_array( DAVACL::PRIV_ALL, $ace->privileges ) ? ' checked' : '' ) ?>></center></td> -->
-<!-- 					Write -->
-<!--  				<td><center><input type="checkbox" class="bh-dir-acl-write" <?= ( in_array( DAVACL::PRIV_WRITE, $ace->privileges ) || in_array( DAVACL::PRIV_ALL, $ace->privileges ) ? ' checked' : '' ) ?>></center></td> -->
-<!-- 					Manage -->
-<!--  				<td><center><input type="checkbox" class="bh-dir-acl-manage" <?= ( in_array( DAVACL::PRIV_WRITE_ACL, $ace->privileges ) || in_array( DAVACL::PRIV_ALL, $ace->privileges ) ? ' checked' : '' ) ?>></center></td> -->
-<!-- 					Access -->
-<!--  			<td class="bh-dir-acl-access" style="cursor: pointer"><?= ( $ace->deny ? 'deny' : 'allow' ) ?></td> -->
 					
 <?php 
 	// make permissions string
@@ -420,16 +403,38 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
 	};
 	if (in_array( DAVACL::PRIV_WRITE_ACL, $ace->privileges ) || in_array( DAVACL::PRIV_ALL, $ace->privileges )) {
 		$permissions .= "manage";
-		$tooltip="read, write, change acl";
+		if ($ace->deny) {
+			$tooltip="deny change acl";
+		} else {
+			$tooltip="allow read, write, change acl";
+		}
 	} elseif (in_array( DAVACL::PRIV_WRITE, $ace->privileges ) || in_array( DAVACL::PRIV_ALL, $ace->privileges)) {
 		$permissions .= "write";
-		$tooltip="read, write";
+		if ($ace->deny) {
+			$tooltip="deny write, change acl";
+		} else {
+			$tooltip="allow read, write";
+		}
 	} elseif (in_array( DAVACL::PRIV_READ, $ace->privileges ) || in_array( DAVACL::PRIV_ALL, $ace->privileges )) {
 		$permissions .= "read";
-		$tooltip="read";
+		if ($ace->deny) {
+			$tooltip="deny read, write, change acl";
+		} else {
+			$tooltip="allow read";
+		}
 	};
 ?>
-	<td class="bh-dir-acl-permissions <?= $class?>" data-toggle="tooltip"
+	<td class="bh-dir-acl-permissions-select" hidden>
+		<select class="bh-dir-acl-table-permissions">
+            <option value="allow read">allow read (read)</option>
+            <option value="allow write">allow write (read, write)</option>
+            <option value="allow manage">allow manage (read, write, change acl)</option>
+            <option value="deny read">deny read (read, write, change acl)</option>
+            <option value="deny write">deny write (write, change acl)</option>
+            <option value="deny manage">deny manage (change acl)</option>
+  	</select>
+  </td>
+	<td class="bh-dir-acl-permissions <?= $class?>" style="cursor: pointer" data-toggle="tooltip"
           title="<?= $tooltip?>" name="<?= $permissions ?>"><?= $permissions ?></td>
 <!-- 					Info -->
 <?php
@@ -489,7 +494,14 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
 <!-- End tab div -->
 
 <!-- Mask input -->
-<div id="bh-dir-all" hidden=true></div>
+<div id="bh-dir-mask" hidden></div>
+
+<!-- Disable input -->
+<div id="bh-dir-mask-transparant" hidden></div>
+
+<!-- Loading mask -->
+<div id="bh-dir-mask-loading" hidden></div>
+<!--  <img src="/system/img/bh-dir-loading.gif" id="bh-dir-mask-loading" style="display:none" /> -->
 
 <?php
 $footer = '

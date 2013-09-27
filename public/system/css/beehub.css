@@ -102,7 +102,9 @@
     text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
     vertical-align: middle;
 }
-
+.bh-dir-small-column {
+	width: 10px
+}
 
 /* Tree settings */
 .bh-dir-tree-slide {
@@ -147,14 +149,23 @@ ul.dynatree-container{
 }
 
 /* Mask to disable input*/
-#bh-dir-all {
+#bh-dir-mask, #bh-dir-mask-transparant, #bh-dir-mask-loading {
    position:           fixed;
    z-index:            400;
    top:                0;
    left:               0;
    width:              100%;
    height:             100%;
-   background: url("images/ui-bg_flat_0_a7a9ac_40x100.png") repeat-x scroll 50% 50% #A7A9AC;
+}
+
+#bh-dir-mask-loading {
+	background: url("/system/img/bh-dir-loading.gif") no-repeat scroll 50% 50% #A7A9AC;
+  opacity: 0.3;
+}
+
+/* Mask to disable input*/
+#bh-dir-mask {
+	 background: url("images/ui-bg_flat_0_a7a9ac_40x100.png") repeat-x scroll 50% 50% #A7A9AC;
    opacity: 0.3;
 }
 
@@ -223,4 +234,8 @@ ul.dynatree-container{
 * html .ui-autocomplete {
   height: 150px;
   width: 350px;
+}
+/* width permissions colum to prevent size change after onclick event*/
+.bh-dir-acl-permissions-select, .bh-dir-acl-permissions {
+	width: 250px;
 }

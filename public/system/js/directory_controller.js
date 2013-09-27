@@ -51,8 +51,16 @@
    * Set mask on view
    * 
    */
-  nl.sara.beehub.controller.maskView = function(boolean){
-    nl.sara.beehub.view.maskView(boolean);
+  nl.sara.beehub.controller.maskView = function(type, boolean){
+    nl.sara.beehub.view.maskView(type, boolean);
+  };
+  
+  /**
+   * Set input disable mask (transparant) on view
+   * 
+   */
+  nl.sara.beehub.controller.inputDisable = function(boolean){
+    nl.sara.beehub.view.inputDisable(boolean);
   };
   
   /*
@@ -952,20 +960,35 @@
   };
   
   /**
+   * Change permissions of a row
+   */
+  nl.sara.beehub.controller.changePermissions = function(row, oldVal){
+    functionSaveAclOk = function(){
+      // do nothin
+    };
+    
+    functionSaveAclError = function(){
+      // Put back old value
+      nl.sara.beehub.view.acl.changePermissions(row, oldVal);
+    };
+    nl.sara.beehub.controller.saveAclOnServer(functionSaveAclOk, functionSaveAclError);
+  };
+  
+  /**
    * Delete acl rule
    * 
    */
-  nl.sara.beehub.controller.deleteAclRule = function(row, index){
+  nl.sara.beehub.controller.deleteAclRule = function(row, index, t){
     functionSaveAclOk = function(){
-      nl.sara.beehub.view.maskView(false);
+      clearTimeout(t);
+      nl.sara.beehub.view.hideMasks();
     };
     
     functionSaveAclError = function(){
       // Update view
-      nl.sara.beehub.view.maskView(false);
+      clearTimeout(t);
+      nl.sara.beehub.view.hideMasks();
       nl.sara.beehub.view.acl.addRow(row, index -1);
-//      var row = nl.sara.beehub.view.acl.createRow(ace);
-//      nl.sara.beehub.view.acl.addRow(row, ace.index -1);
     };
     nl.sara.beehub.controller.saveAclOnServer(functionSaveAclOk, functionSaveAclError);
   };
@@ -974,14 +997,16 @@
    * Move down acl rule
    * 
    */
-  nl.sara.beehub.controller.moveDownAclRule = function(row){
+  nl.sara.beehub.controller.moveDownAclRule = function(row, t){
     functionSaveAclOk = function(){
-      nl.sara.beehub.view.maskView(false);
+      clearTimeout(t);
+      nl.sara.beehub.view.hideMasks();
     };
     
     functionSaveAclError = function(){
       // Update view
-      nl.sara.beehub.view.maskView(false);
+      clearTimeout(t);
+      nl.sara.beehub.view.hideMasks();
       nl.sara.beehub.view.acl.moveUpAclRule(row);
     };
     nl.sara.beehub.controller.saveAclOnServer(functionSaveAclOk, functionSaveAclError);
@@ -991,16 +1016,19 @@
    * Move up acl rule
    * 
    */
-  nl.sara.beehub.controller.moveUpAclRule = function(row){
+  nl.sara.beehub.controller.moveUpAclRule = function(row,t){
     functionSaveAclOk = function(){
-      nl.sara.beehub.view.maskView(false);
+      clearTimeout(t);
+      nl.sara.beehub.view.hideMasks();
     };
     
     functionSaveAclError = function(){
       // Update view
-      nl.sara.beehub.view.maskView(false);
+      clearTimeout(t);
+      nl.sara.beehub.view.hideMasks();
       nl.sara.beehub.view.acl.moveDownAclRule(row);
     };
     nl.sara.beehub.controller.saveAclOnServer(functionSaveAclOk, functionSaveAclError);
   };
+  
 })();

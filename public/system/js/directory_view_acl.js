@@ -3,6 +3,36 @@
  * 
  */
 (function() {
+  permissions = {
+    'deny read': {
+      'class'  : "bh-dir-acl-deny",
+      'title'  : "deny read, write, change acl",
+    },
+    'deny write': {
+      'class' : "bh-dir-acl-deny",
+      'title' : "deny write, change acl"
+    },
+    'deny manage': {
+      'class' : "bh-dir-acl-deny",
+      'title' : "deny change acl"
+    },
+    'allow read': {
+      'class' : "bh-dir-acl-allow",
+      'title' : "allow read"
+    },
+    'allow write': {
+      'class' : "bh-dir-acl-allow",
+      'title' : "allow read, write"
+    },
+    'allow manage': {
+      'class' : "bh-dir-acl-allow",
+      'title' : "allow read, write, change acl"
+    } 
+  }
+
+  // Used for showing the mask after delete, up or down
+  var timeout = 500;
+  
   nl.sara.beehub.view.acl.init = function() {
     // ACL TAB ACTIONS/FUNCTIONS
     // Use table sorter for sticky headers (not scrolling
@@ -32,7 +62,7 @@
     // Add handler on row
     setRowHandlers();
   };
-  
+    
   /*
    * Action for all buttons in the fixed view on the top of the acl table
    * 
@@ -57,6 +87,24 @@
    * Sets up, down, delete handlers
    */
   var setRowHandlers = function(){
+    // Permissions
+    $('.bh-dir-acl-permissions').unbind().click(handle_permissions_click);
+    
+    $('.bh-dir-acl-permissions-select').unbind().change(function(){
+      var row = $(this).closest('tr');
+      var oldVal = $(row).find(".bh-dir-acl-permissions").html();
+      var val = $(row).find(".bh-dir-acl-table-permissions option:selected").val();
+      nl.sara.beehub.view.acl.showChangePermissions(row, false);
+      nl.sara.beehub.view.acl.changePermissions(row, val);
+      nl.sara.beehub.controller.changePermissions(row, oldVal);
+    });
+    
+    // Blur handler
+    $('.bh-dir-acl-table-permissions').unbind().blur(function(){
+      var row = $(this).closest('tr');
+      nl.sara.beehub.view.acl.showChangePermissions(row, false);
+    });
+    
     // Up icon
     $('.bh-dir-acl-icon-up').unbind().click(handle_up_click);
     
@@ -65,6 +113,7 @@
     
     // Delete icon
     $('.bh-dir-acl-icon-remove').unbind().click(handle_remove_click);
+   
   };
   
   /*
@@ -103,36 +152,8 @@
     // Permissions
     var aceClass= '';
     var tooltip = '';
-    switch(ace.permissions)
-    {
-      case 'deny read':
-        aceClass="bh-dir-acl-deny";
-        tooltip="deny read, write, change acl";
-        break;
-      case 'deny write':
-        aceClass="bh-dir-acl-deny";
-        tooltip="deny write, change acl";
-        break;
-      case 'deny manage':
-        aceClass="bh-dir-acl-deny";
-        tooltip="deny change acl";
-        break;
-      case 'allow read':
-        aceClass="bh-dir-acl-allow";
-        tooltip="allow read";
-        break;
-      case 'allow write':
-        aceClass="bh-dir-acl-allow";
-        tooltip="allow read, write";
-        break;
-      case 'allow manage':
-        aceClass="bh-dir-acl-allow";
-        tooltip="allow read, write, change acl";
-        break;
-      default:
-        // This should never happen  
-    };
-    row.push('<td class="bh-dir-acl-permissions '+aceClass+'" data-toggle="tooltip" title="'+tooltip+'" name="'+ace.permissions+'">'+ace.permissions+'</td>');
+
+    row.push('<td class="bh-dir-acl-permissions '+permissions[ace.permissions].class+'" style="cursor: pointer" data-toggle="tooltip" title="'+permissions[ace.permissions].title+'" name="'+ace.permissions+'" >'+ace.permissions+'</td>');
     
     // Comment, not changable by user
     row.push('<td class="bh-dir-acl-comment" name=""></td>');
@@ -140,7 +161,7 @@
     row.push('<td class="bh-dir-acl-up"></td>');
     // Down 
     row.push('<td class="bh-dir-acl-down"></td>');
-    // Delete
+    // Delete 
     row.push('<td><i title="Delete" class="icon-remove bh-dir-acl-icon-remove" style="cursor: pointer"></i></td>');
     
     row.push('</tr>');
@@ -345,17 +366,51 @@
   };
   
   /**
+   * Change permissions of row
+   * 
+   * @param {DOM object}  row Row to change permissions
+   * @param {String}      val Permission value
+   */
+  nl.sara.beehub.view.acl.changePermissions = function(row, val){
+    var td = '<td class="bh-dir-acl-permissions '+permissions[val].class+'"\
+    name="'+val+'" title="'+permissions[val].title+'" data-toggle="tooltip" \
+    style="cursor: pointer; display: table-cell;">'+val+'</td>';
+    $(row).find(".bh-dir-acl-permissions").replaceWith(td);
+  };
+  
+  nl.sara.beehub.view.acl.showChangePermissions = function(row, show){
+    if (show) {
+      $(row).find(".bh-dir-acl-permissions").hide();
+      $(row).find(".bh-dir-acl-permissions-select").show();
+    } else {
+      $(row).find(".bh-dir-acl-permissions-select").hide();
+      $(row).find(".bh-dir-acl-permissions").show();
+    }
+    setRowHandlers();   
+  }
+  
+  /**
+   * Onclick handler permissions acl view
+   */
+  var handle_permissions_click = function() {
+    var row = $(this).closest('tr');    
+    nl.sara.beehub.view.acl.showChangePermissions(row, true);  
+    $(row).find(".bh-dir-acl-table-permissions").focus();
+  };
+  
+  /**
    * Onclick handler up icon acl view
    */
   var handle_up_click = function() {
      // mask view
-     nl.sara.beehub.controller.maskView(true);
+     nl.sara.beehub.controller.maskView("transparant", true);
+     var t=setTimeout(function(){nl.sara.beehub.controller.maskView("loading", true);},timeout);
      
      var row = $(this).closest('tr');
      nl.sara.beehub.view.acl.moveUpAclRule(row);
      
      // Add rule on server
-     nl.sara.beehub.controller.moveUpAclRule(row);
+     nl.sara.beehub.controller.moveUpAclRule(row, t);
   };
   
   /**
@@ -363,13 +418,14 @@
    */
   var handle_down_click = function() {
     // mask view
-    nl.sara.beehub.controller.maskView(true);
+    nl.sara.beehub.controller.maskView("transparant", true);
+    var t=setTimeout(function(){nl.sara.beehub.controller.maskView("loading", true);},timeout);
     
     var row = $(this).closest('tr');
     nl.sara.beehub.view.acl.moveDownAclRule(row);
     
     // Add rule on server
-    nl.sara.beehub.controller.moveDownAclRule(row);
+    nl.sara.beehub.controller.moveDownAclRule(row, t);
   };
   
   /**
@@ -377,12 +433,13 @@
    */
   var handle_remove_click = function() {
     // mask view
-    nl.sara.beehub.controller.maskView(true);
+    nl.sara.beehub.controller.maskView("transparant", true);
+    var t=setTimeout(function(){nl.sara.beehub.controller.maskView("loading", true);},timeout);
     var row = $(this).closest('tr');
     var index = row.index();
     nl.sara.beehub.view.acl.deleteRowIndex(index);
    
     // Add rule on server
-    nl.sara.beehub.controller.deleteAclRule(row, index);
+    nl.sara.beehub.controller.deleteAclRule(row, index, t);
   };
 })();

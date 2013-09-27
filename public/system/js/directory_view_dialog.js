@@ -45,12 +45,13 @@
   nl.sara.beehub.view.dialog.showError = function(error) {
     $('#bh-dir-dialog').html(error);
     $('#bh-dir-dialog').dialog({
-      modal: true,
-      maxHeight: 400,
       resizable: false,
       title: " Error!",
-      closeOnEscape: false,
       dialogClass: "custom_dialog",
+      modal: true,
+      maxHeight: 400,
+      closeOnEscape: false,
+      dialogClass: "custom-dialog",
       buttons: [{
         text: "Ok",
         click: function() {
@@ -292,7 +293,7 @@
             <option value="allow manage">allow manage (read, write, change acl)</option>\
             <option value="deny read">deny read (read, write, change acl)</option>\
             <option value="deny write">deny write (write, change acl)</option>\
-            <option value="deny manage">deny manage (write acl)</option>\
+            <option value="deny manage">deny manage (change acl)</option>\
           </select></td>\
         </tr>\
       </table>\
