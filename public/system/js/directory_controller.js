@@ -961,15 +961,17 @@
   
   /**
    * Change permissions of a row
+   * 
    */
-  nl.sara.beehub.controller.changePermissions = function(row, oldVal){
+  nl.sara.beehub.controller.changePermissions = function(row, oldVal, callback){
     functionSaveAclOk = function(){
-      // do nothin
+      // Do nothing
     };
     
     functionSaveAclError = function(){
       // Put back old value
       nl.sara.beehub.view.acl.changePermissions(row, oldVal);
+      // Do nothing
     };
     nl.sara.beehub.controller.saveAclOnServer(functionSaveAclOk, functionSaveAclError);
   };

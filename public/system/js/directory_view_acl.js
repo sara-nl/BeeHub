@@ -5,28 +5,34 @@
 (function() {
   permissions = {
     'deny read': {
-      'class'  : "bh-dir-acl-deny",
-      'title'  : "deny read, write, change acl",
+      'class'     : "bh-dir-acl-deny",
+      'title'     : "deny read, write, change acl",
+      'dropdown'  : "deny read (read, write, change acl)"
     },
     'deny write': {
-      'class' : "bh-dir-acl-deny",
-      'title' : "deny write, change acl"
+      'class'     : "bh-dir-acl-deny",
+      'title'     : "deny write, change acl",
+      'dropdown'  : "deny write (write, change acl)"
     },
     'deny manage': {
-      'class' : "bh-dir-acl-deny",
-      'title' : "deny change acl"
+      'class'     : "bh-dir-acl-deny",
+      'title'     : "deny change acl",
+      'dropdown'  : "deny manage (change acl)"
     },
     'allow read': {
-      'class' : "bh-dir-acl-allow",
-      'title' : "allow read"
+      'class'     : "bh-dir-acl-allow",
+      'title'     : "allow read",
+      'dropdown' : "allow read (read)"
     },
     'allow write': {
-      'class' : "bh-dir-acl-allow",
-      'title' : "allow read, write"
+      'class'     : "bh-dir-acl-allow",
+      'title'     : "allow read, write",
+      'dropdown'  : "allow write (read, write)"
     },
     'allow manage': {
-      'class' : "bh-dir-acl-allow",
-      'title' : "allow read, write, change acl"
+      'class'     : "bh-dir-acl-allow",
+      'title'     : "allow read, write, change acl",
+      'dropdown'  : "allow manage (read, write, change acl)"
     } 
   }
 
@@ -87,8 +93,8 @@
    * Sets up, down, delete handlers
    */
   var setRowHandlers = function(){
-    // Permissions
-    $('.bh-dir-acl-permissions').unbind().click(handle_permissions_click);
+    // Permissions 
+    $('.bh-dir-acl-change-permissions').unbind().click(handle_permissions_click);
     
     $('.bh-dir-acl-permissions-select').unbind().change(function(){
       var row = $(this).closest('tr');
@@ -153,7 +159,19 @@
     var aceClass= '';
     var tooltip = '';
 
-    row.push('<td class="bh-dir-acl-permissions '+permissions[ace.permissions].class+'" style="cursor: pointer" data-toggle="tooltip" title="'+permissions[ace.permissions].title+'" name="'+ace.permissions+'" >'+ace.permissions+'</td>');
+    var dropdown = '<td class="bh-dir-acl-permissions-select" hidden>\
+                      <select class="bh-dir-acl-table-permissions">\
+                        <option value="allow read">'+permissions['allow read'].dropdown+'</option>\
+                        <option value="allow write">'+permissions['allow write'].dropdown+'</option>\
+                        <option value="allow manage">'+permissions['allow manage'].dropdown+'</option>\
+                        <option value="deny read">'+permissions['deny read'].dropdown+'</option>\
+                        <option value="deny write">'+permissions['deny write'].dropdown+'</option>\
+                        <option value="deny manage">'+permissions['deny manage'].dropdown+'</option>\
+                      </select>\
+                    </td>';
+    row.push(dropdown);
+    
+    row.push('<td class="bh-dir-acl-permissions bh-dir-acl-change-permissions '+permissions[ace.permissions].class+'" style="cursor: pointer" data-toggle="tooltip" title="'+permissions[ace.permissions].title+'" name="'+ace.permissions+'" >'+ace.permissions+'</td>');
     
     // Comment, not changable by user
     row.push('<td class="bh-dir-acl-comment" name=""></td>');
@@ -372,7 +390,7 @@
    * @param {String}      val Permission value
    */
   nl.sara.beehub.view.acl.changePermissions = function(row, val){
-    var td = '<td class="bh-dir-acl-permissions '+permissions[val].class+'"\
+    var td = '<td class="bh-dir-acl-permissions bh-dir-acl-change-permissions '+permissions[val].class+'"\
     name="'+val+'" title="'+permissions[val].title+'" data-toggle="tooltip" \
     style="cursor: pointer; display: table-cell;">'+val+'</td>';
     $(row).find(".bh-dir-acl-permissions").replaceWith(td);

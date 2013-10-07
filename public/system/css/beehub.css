@@ -201,8 +201,12 @@ ul.dynatree-container{
 }
 
 /* ACL view */
+.bh-dir-acl-unknown {
+	color: red;
+}
+
 .bh-dir-acl-protected, .bh-dir-acl-inherited {
-  color: red;
+  color: #49AFCD;
 }
 .bh-dir-acl-allow {
   color: green;

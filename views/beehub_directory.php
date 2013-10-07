@@ -423,6 +423,11 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
 			$tooltip="allow read";
 		}
 	};
+	
+	$changePermissionsClass = "bh-dir-acl-change-permissions";
+	if  ( $ace->protected  || $ace->inherited ) {
+		$changePermissionsClass = "";
+	}
 ?>
 	<td class="bh-dir-acl-permissions-select" hidden>
 		<select class="bh-dir-acl-table-permissions">
@@ -434,7 +439,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
             <option value="deny manage">deny manage (change acl)</option>
   	</select>
   </td>
-	<td class="bh-dir-acl-permissions <?= $class?>" style="cursor: pointer" data-toggle="tooltip"
+	<td class="bh-dir-acl-permissions <?= $changePermissionsClass ?> <?= $class?>" style="cursor: pointer" data-toggle="tooltip"
           title="<?= $tooltip?>" name="<?= $permissions ?>"><?= $permissions ?></td>
 <!-- 					Info -->
 <?php
