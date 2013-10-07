@@ -425,8 +425,10 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
 	};
 	
 	$changePermissionsClass = "bh-dir-acl-change-permissions";
+	$style= 'style="cursor: pointer"';
 	if  ( $ace->protected  || $ace->inherited ) {
 		$changePermissionsClass = "";
+		$style= "";
 	}
 ?>
 	<td class="bh-dir-acl-permissions-select" hidden>
@@ -439,7 +441,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
             <option value="deny manage">deny manage (change acl)</option>
   	</select>
   </td>
-	<td class="bh-dir-acl-permissions <?= $changePermissionsClass ?> <?= $class?>" style="cursor: pointer" data-toggle="tooltip"
+	<td class="bh-dir-acl-permissions <?= $changePermissionsClass ?> <?= $class?>" <?= $style ?> data-toggle="tooltip"
           title="<?= $tooltip?>" name="<?= $permissions ?>"><?= $permissions ?></td>
 <!-- 					Info -->
 <?php
@@ -450,7 +452,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
     $info = 'protected';
     $message = 'protected, no changes are possible';
     $class ='bh-dir-acl-protected';
-  }elseif ( ! is_null( $ace->inherited ) ) {
+  } elseif ( ! is_null( $ace->inherited ) ) {
     $info = 'inherited';
     $message = 'inherited from: <a href="' . $ace->inherited . '">' . $ace->inherited . '</a>';
     $class ='bh-dir-acl-inherited';
