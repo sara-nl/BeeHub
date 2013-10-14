@@ -66,7 +66,8 @@
     // Add rule handler
     $('.bh-dir-acl-add').click(nl.sara.beehub.controller.addAclRule);
     // Add handler on row
-    setRowHandlers();
+    var rows = $('.bh-dir-acl-row');
+    setRowHandlers(rows); 
   };
     
   /*
@@ -91,35 +92,38 @@
   
   /**
    * Sets up, down, delete handlers
+   * 
+   * @param rows Array of row to set handlers for
    */
-  var setRowHandlers = function(){
-    // Permissions 
-    $('.bh-dir-acl-change-permissions').unbind().click(handle_permissions_click);
-    
-    $('.bh-dir-acl-permissions-select').unbind().change(function(){
-      var row = $(this).closest('tr');
-      var oldVal = $(row).find(".bh-dir-acl-permissions").html();
-      var val = $(row).find(".bh-dir-acl-table-permissions option:selected").val();
-      nl.sara.beehub.view.acl.showChangePermissions(row, false);
-      nl.sara.beehub.view.acl.changePermissions(row, val);
-      nl.sara.beehub.controller.changePermissions(row, oldVal);
-    });
-    
-    // Blur handler
-    $('.bh-dir-acl-table-permissions').unbind().blur(function(){
-      var row = $(this).closest('tr');
-      nl.sara.beehub.view.acl.showChangePermissions(row, false);
-    });
-    
-    // Up icon
-    $('.bh-dir-acl-icon-up').unbind().click(handle_up_click);
-    
-    // Down icon
-    $('.bh-dir-acl-icon-down').unbind().click(handle_down_click);
-    
-    // Delete icon
-    $('.bh-dir-acl-icon-remove').unbind().click(handle_remove_click);
-   
+  var setRowHandlers = function(rows){   
+    $.each(rows, function (key, row){
+      // Permissions 
+      $(row).find('.bh-dir-acl-change-permissions').unbind().click(handle_permissions_click);
+      
+      $(row).find('.bh-dir-acl-permissions-select').unbind().change(function(){
+        var row = $(this).closest('tr');
+        var oldVal = $(row).find(".bh-dir-acl-permissions").html();
+        var val = $(row).find(".bh-dir-acl-table-permissions option:selected").val();
+        nl.sara.beehub.view.acl.showChangePermissions(row, false);
+        nl.sara.beehub.view.acl.changePermissions(row, val);
+        nl.sara.beehub.controller.changePermissions(row, oldVal);
+      });
+      
+      // Blur handler
+      $(row).find('.bh-dir-acl-table-permissions').unbind().blur(function(){
+        var row = $(this).closest('tr');
+        nl.sara.beehub.view.acl.showChangePermissions(row, false);
+      });
+      
+      // Up icon
+      $(row).find('.bh-dir-acl-icon-up').unbind().click(handle_up_click);
+      
+      // Down icon
+      $(row).find('.bh-dir-acl-icon-down').unbind().click(handle_down_click);
+      
+      // Delete icon
+      $(row).find('.bh-dir-acl-icon-remove').unbind().click(handle_remove_click);
+    }) 
   };
   
   /*
@@ -197,14 +201,16 @@
       if (info !== 'protected' && info !== 'inherited') {
         // Check up button
         if ( index - 1 !== nl.sara.beehub.view.acl.getIndexLastProtected() ) {
-          $(row).find('.bh-dir-acl-up').html('<i title="Move up" class="icon-arrow-up bh-dir-acl-icon-up" style="cursor: pointer"></i>');
+          $(row).find('.bh-dir-acl-up').html('<i title="Move up" class="icon-chevron-up bh-dir-acl-icon-up" style="cursor: pointer"></i>');
+          setRowHandlers([row]);
         } else {
           $(row).find('.bh-dir-acl-up').html('');
         }
         
         // Check down button
         if ( index + 1 !== getIndexFirstInherited() ) {
-          $(row).find('.bh-dir-acl-down').html('<i title="Move down" class="icon-arrow-down bh-dir-acl-icon-down" style="cursor: pointer"></i>');
+          $(row).find('.bh-dir-acl-down').html('<i title="Move down" class="icon-chevron-down bh-dir-acl-icon-down" style="cursor: pointer"></i>');
+          setRowHandlers([row]);
         } else {
           $(row).find('.bh-dir-acl-down').html('');
         }
@@ -341,7 +347,7 @@
 
     setUpDownButtons();
     // Set handlers again
-    setRowHandlers();
+    setRowHandlers([row]);
   };
   
   /**
@@ -355,8 +361,6 @@
     $('.bh-dir-acl-contents > tr:eq('+index+')').remove();
     $('.bh-dir-acl-contents').trigger("update");
     setUpDownButtons();
-    // Set handlers again
-    setRowHandlers();
   }
   
   /**
@@ -368,7 +372,7 @@
     row.insertAfter( row.next() );
     setUpDownButtons();
     // Set handlers again
-    setRowHandlers();
+    setRowHandlers([row]);
   };
   
   /**
@@ -380,7 +384,7 @@
     row.insertBefore( row.prev() );
     setUpDownButtons();
     // Set handlers again
-    setRowHandlers();
+    setRowHandlers([row]);
   };
   
   /**
@@ -404,7 +408,7 @@
       $(row).find(".bh-dir-acl-permissions-select").hide();
       $(row).find(".bh-dir-acl-permissions").show();
     }
-    setRowHandlers();   
+    setRowHandlers([row]);   
   }
   
   /**

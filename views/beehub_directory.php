@@ -213,7 +213,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
   <div class="bh-dir-allocate-space"></div>
   <!-- Contents tab -->
   <div id="bh-dir-panel-contents" class="tab-pane fade in active">
-    <table id="bh-dir-content-table" class="table table-striped">
+    <table id="bh-dir-content-table" class="table table-striped table-hover table-condensed">
       <thead class="bh-dir-content-table-header">
         <tr>
 <!--         	Checkbox header -->
@@ -327,7 +327,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
   <!-- Acl tab -->
   <div id="bh-dir-panel-acl" class="tab-pane fade">
     <!-- <h4>ACL <?= DAV::xmlescape( $this->path ) ?></h4> -->
-    <table id="bh-dir-acl-table" class="table table-striped">
+    <table id="bh-dir-acl-table" class="table table-striped table-hover table-condensed">
       <thead class="bh-dir-acl-table-header">
         <tr>
 <!--           Principal -->
@@ -351,8 +351,14 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
       $acl_length = count( $acl );
       for ( $key = 0; $key < $acl_length; $key++ ) :
         $ace = $acl[ $key ];
+      
+      if  ( $ace->protected  || $ace->inherited ) {
+      	$class = "info";
+      } else {
+				$class = "";
+			};
         ?>
-      	<tr>
+      	<tr class="bh-dir-acl-row <?= $class ?>">
 <!-- 					Principal -->
 <?php
   // Determine how to show the principal
@@ -466,7 +472,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
       						( ! $acl[$key-1]->protected ) )
       	 :?>
 <!-- 					Move up -->
-					<td class="bh-dir-acl-up"><i title="Move up" class="icon-arrow-up bh-dir-acl-icon-up" style="cursor: pointer"></i></td>
+					<td class="bh-dir-acl-up"><i title="Move up" class="icon-chevron-up bh-dir-acl-icon-up" style="cursor: pointer"></i></td>
 				<?php else : ?>
 <!-- 					No move up possible -->
 					<td class="bh-dir-acl-up"></td>
@@ -478,7 +484,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
       						 is_null( $acl[$key+1]->inherited ) )
       	 :?>
 <!-- 					Move down -->
-					<td class="bh-dir-acl-down"><i title="Move down" class="icon-arrow-down bh-dir-acl-icon-down" style="cursor: pointer"></i></td>
+					<td class="bh-dir-acl-down"><i title="Move down" class="icon-chevron-down bh-dir-acl-icon-down" style="cursor: pointer"></i></td>
 				<?php else : ?>
 <!-- 					No move down possible -->
 					<td class="bh-dir-acl-down"></td>

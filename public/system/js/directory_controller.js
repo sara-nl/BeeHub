@@ -481,30 +481,43 @@
     {
     // copy
     case "copy":
-        // destination
-        var resourceDestination = nl.sara.beehub.controller.actionDestination + resource.displayname;
-        // update dialog
-        // TODO - show progress with progress bar. Not yet possible it's one request, not like uploading files
+      // destination
+      var resourceDestination = nl.sara.beehub.controller.actionDestination + resource.displayname;
+      // update dialog
+      // TODO - show progress with progress bar. Not yet possible it's one request, not like uploading files
+      if (nl.sara.beehub.controller.actionDestination !== path) {
         nl.sara.beehub.view.dialog.updateResourceInfo(resource,"Copy resource. This can take a while and no progress info is available. Please wait...");
         // start copy
-        webdav.copy(resource.path, createActionCallback(resource, 0), resourceDestination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
-      break;
+        webdav.copy(resource.path, createActionCallback(resource, 0, false), resourceDestination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
+      } else {
+       resourceDestination = nl.sara.beehub.controller.actionDestination + resource.displayname+"_1";
+       // start copy or move with new name
+       // Update dialog info
+       nl.sara.beehub.view.dialog.updateResourceInfo(resource,"Copy resource. This can take a while and no progress info is available. Please wait...");
+       // start copy request
+       webdav.copy(resource.path, createActionCallback(resource, 1, false), resourceDestination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
+      } 
+       break;
     // move settings 
     case "move": 
       // destination
       var resourceDestination = nl.sara.beehub.controller.actionDestination + resource.displayname;
-      // start move
-      webdav.move(resource.path,createActionCallback(resource, 0), resourceDestination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
+      if (nl.sara.beehub.controller.actionDestination !== path) {
+        // start move
+        webdav.move(resource.path,createActionCallback(resource, 0, false), resourceDestination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
+      } else {
+        nl.sara.beehub.view.dialog.showError("Moving items to the current directory is not possible. Use rename icon for renaming the resource(s).");
+      }
       break;
     // delete settings
     case "delete":
       // start delete
-      webdav.remove(resource.path,createActionCallback(resource, 0));
+      webdav.remove(resource.path,createActionCallback(resource, 0, false));
       break;
     case "upload":
       // head request, notice: request and callback are not the same as the other actions. FAIL_ON_OVERWRITE is not implemented with uploading. 
       // Testing if file already exist must be done before start uploading the file
-      webdav.head(resource.path, createUploadHeadCallback(resource, 0) ,"");
+      webdav.head(resource.path, createUploadHeadCallback(resource, 0, false) ,"");
     default:
       // This should never happen
     }
@@ -513,13 +526,13 @@
   /*
    * Return callback function for copy, move, delete requests
    * 
-   * @params {Object} resource Resource to create callback for
-   * @params {Integer} renameCounter Used to create new name when object already exist
+   * @params {Object} resource        Resource to create callback for
+   * @params {Integer} renameCounter  Used to create new name when object already exist
+   * @params {Boolean} single         Single or multiple resources
    */
-  var createActionCallback = function(resource, renameCounter){
+  var createActionCallback = function(resource, renameCounter, single){
     return function(status){ 
       var webdav = new nl.sara.webdav.Client();
-  
       switch(status)
       {
       //Succeeded
@@ -552,7 +565,7 @@
       // Already exist
       case 412:
         // First time resource already exist on server
-        if (0 === renameCounter) {
+        if ((0 === renameCounter)) {
           // Update summary
           summary.exist++;
           // Show button in dialog for user input
@@ -567,11 +580,11 @@
             // Update dialog info
             nl.sara.beehub.view.dialog.updateResourceInfo(resource,"Copy resource. This can take a while and no progress info is available. Please wait...");
             // start copy request
-            webdav.copy(resource.path, createActionCallback(resource, renameCounter), resourceDestination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
+            webdav.copy(resource.path, createActionCallback(resource, renameCounter, true), resourceDestination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
           };
           if (nl.sara.beehub.controller.actionAction === "move") {
             // start move request
-            webdav.move(resource.path, createActionCallback(resource, renameCounter), resourceDestination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
+            webdav.move(resource.path, createActionCallback(resource, renameCounter, true), resourceDestination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
           };
         }
         break;
@@ -582,9 +595,8 @@
         // Update dialog info
         nl.sara.beehub.view.dialog.updateResourceInfo(resource,"Unknown error");
       };
-      // When renameCounter = 0 the callback is not initiated by a one time rename action with the rename
-      // button. So the next action from the actionResources array should start
-      if (0 === renameCounter) {
+    
+      if (!single) {
         // Scroll to next position
         nl.sara.beehub.view.dialog.scrollTo(actionCounter*35);
         // Start next action
@@ -642,22 +654,17 @@
         nl.sara.beehub.view.deleteResource(resource);
         break; 
       case "move":
-        // Move to current directory (automatically with rename), update resource
-        if (nl.sara.beehub.controller.actionDestination === path) {
-          var resourceDestination = nl.sara.beehub.controller.actionDestination + resource.displayname+"_"+renameCounter;
-          getResourcePropsFromServer(resourceDestination, function(resource) {
-            var orgResource = new nl.sara.beehub.ClientResource(resource.path);
-            nl.sara.beehub.view.updateResource(orgResource,resource);
-          }); 
-        } else {
-          // delete resource from current view
-          nl.sara.beehub.view.deleteResource(resource);
-        }
+        // delete resource from current view
+        nl.sara.beehub.view.deleteResource(resource);  
         break;
       case  "copy":
-        // Move to current directory (automatically with rename), update resource
         if (nl.sara.beehub.controller.actionDestination === path) {
-          var resourceDestination = nl.sara.beehub.controller.actionDestination + resource.displayname+"_"+renameCounter;
+          // Flow of copy to same dir with automatically rename is different. This if statement solves this
+          if (renameCounter === 1) {
+            var resourceDestination = nl.sara.beehub.controller.actionDestination + resource.displayname+"_"+renameCounter;
+          } else {
+            var resourceDestination = nl.sara.beehub.controller.actionDestination + resource.displayname+"_"+(renameCounter -1);
+          }
           getResourcePropsFromServer(resourceDestination, function(resource) {
             nl.sara.beehub.view.addResource(resource);
           }); 
@@ -675,9 +682,10 @@
    * 
    * @param {Object}  resource      Resource to create callback for
    * @param {Integer} renameCounter Used to create new name when object already exist
+   * @param {Boolean} single        Single or multiple resources
    * 
    */
-  var createUploadHeadCallback = function(resource, renameCounter){
+  var createUploadHeadCallback = function(resource, renameCounter, single){
     return function(status) {  
       var webdav = new nl.sara.webdav.Client();
       switch(status)
@@ -696,11 +704,10 @@
           renameCounter = renameCounter + 1;
           destination = resource.path+"_"+renameCounter;
           // start head request with new name
-          webdav.head(destination, createUploadHeadCallback(resource, renameCounter));
+          webdav.head(destination, createUploadHeadCallback(resource, renameCounter, true));
         };
-        // When renameCounter = 0 the callback is not initiated by a one time rename action with the rename
-        // button. So the next action from the actionResources array should start
-        if (0 === renameCounter) {
+        
+        if (!single) {
           // Start next
           startNextAction();
         };
@@ -714,14 +721,13 @@
         }
         // Put empty file on server to check if upload is allowed. This prevent waiting for a long time (large files) 
         // while the upload is forbidden
-        webdav.put(destination, createUploadEmptyFileCallback(resource, destination, renameCounter, false),"");
+        webdav.put(destination, createUploadEmptyFileCallback(resource, destination, renameCounter, false, single),"");
         break;
       default:
         // Something went wrong, a new action should start
         nl.sara.beehub.view.dialog.updateResourceInfo(resource,'Unknown error.');
-        // When renameCounter = 0 the callback is not initiated by a one time rename action with the rename
-        // button. So the next action from the actionResources array should start
-        if (0 === renameCounter) {
+
+        if (!single) {
           // Start next
           startNextAction();
         };
@@ -737,9 +743,10 @@
    * @param  String   destination    Upload destination
    * @param  Integer  renameCounter  Used to create new name when object already exist
    * @param  Boolean  overwrite      True when user has choosen overwrite when already exist
+   * @param {Boolean} single         Single or multiple resources
    * 
    */
-  var createUploadEmptyFileCallback = function(resource, destination, renameCounter, overwrite) {
+  var createUploadEmptyFileCallback = function(resource, destination, renameCounter, overwrite, single) {
     return function(status, responseText) {  
       switch(status)
       {
@@ -755,7 +762,7 @@
           var ajax = nl.sara.webdav.Client.getAjax( 
           "PUT",
               destination,
-              createUploadCallback(resource, destination, renameCounter, overwrite),
+              createUploadCallback(resource, destination, renameCounter, overwrite, single),
               headers 
           );
           
@@ -784,9 +791,8 @@
         // Unknown error
         nl.sara.beehub.view.dialog.updateResourceInfo(resource,responseText);
         // Start next action
-        // When renameCounter = 0 the callback is not initiated by a one time rename action with the rename
-        // button. So the next action from the actionResources array should start
-        if (0 === renameCounter) {
+        
+        if (!single) {
           startNextAction();
         };
       };
@@ -800,9 +806,10 @@
    * @param  String   destination    Upload destination
    * @param  Integer  renameCounter  Used to create new name when object already exist
    * @param  Boolean  overwrite      True when user has choosen overwrite when already exist
+   * @param  Boolean  single         Single or multiple resources
    * 
    */
-  var createUploadCallback = function(resource, destination, renameCounter, overwrite){
+  var createUploadCallback = function(resource, destination, renameCounter, overwrite, single){
     return function(status, responseText) {
       switch(status)
       {
@@ -827,9 +834,8 @@
           var webdav = new nl.sara.webdav.Client();
           webdav.remove(destination);
       }
-      // When renameCounter = 0 the callback is not initiated by a one time rename action with the rename
-      // button. So the next action from the actionResources array should start
-      if (0 === renameCounter) {
+
+      if (!single) {
         startNextAction();
      // Scroll to next position
         nl.sara.beehub.view.dialog.scrollTo(actionCounter*35);
@@ -853,41 +859,41 @@
         var overwrite = function() {
           var resourceDestination = nl.sara.beehub.controller.actionDestination + resource.displayname;
           // start copy with SILENT OVERWRITE and renameCounter=1
-          webdav.copy(resource.path, createActionCallback(resource, 1), resourceDestination, nl.sara.webdav.Client.SILENT_OVERWRITE);
+          webdav.copy(resource.path, createActionCallback(resource, 1, false), resourceDestination, nl.sara.webdav.Client.SILENT_OVERWRITE);
         };
         
         var rename = function() {
           // change destination name with renameCounter
           var resourceDestination = nl.sara.beehub.controller.actionDestination + resource.displayname+"_1";
           // start copy with renameCounter=1
-          webdav.copy(resource.path, createActionCallback(resource, 1), resourceDestination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
+          webdav.copy(resource.path, createActionCallback(resource, 1, false), resourceDestination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
         };
         break;
       case "move": 
         var overwrite = function() {
           var resourceDestination = nl.sara.beehub.controller.actionDestination + resource.displayname;
           // start move with SILENT OVERWRITE and renameCounter=1
-          webdav.move(resource.path, createActionCallback(resource, 1), resourceDestination, nl.sara.webdav.Client.SILENT_OVERWRITE);
+          webdav.move(resource.path, createActionCallback(resource, 1, false), resourceDestination, nl.sara.webdav.Client.SILENT_OVERWRITE);
         };
         
         var rename = function() {
           // change destination name with renameCounter
           var resourceDestination = nl.sara.beehub.controller.actionDestination + resource.displayname+"_1";
           // start move with renameCounter=1
-          webdav.move(resource.path, createActionCallback(resource, 1), resourceDestination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
+          webdav.move(resource.path, createActionCallback(resource, 1, false), resourceDestination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
         };  
         break;
       case "upload":
         var overwrite = function() {
           // start upload flow but skip head and set overwrite true and renameCounter=1
-          webdav.put(resource.path, createUploadEmptyFileCallback(resource, resource.path, 1, true), "");
+          webdav.put(resource.path, createUploadEmptyFileCallback(resource, resource.path, 1, true, true), "");
         };
         
         var rename = function() {
           // change destination name
           var resourcePath = resource.path+"_1";
           // start head request with renameCounter=1
-          webdav.head(resourcePath, createUploadHeadCallback(resource, 1) ,"");
+          webdav.head(resourcePath, createUploadHeadCallback(resource, 1, true) ,"");
         };
         break;
       default:

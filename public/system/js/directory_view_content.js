@@ -230,7 +230,7 @@
       row.push('<td class="type" name="'+resource.type+'"><i name="'+resource.path+'" class="icon-folder-close bh-dir-content-openselected" style="cursor: pointer">></i></td>');
     } else {
       // Size
-      row.push('<td class="contentlength" name="'+resource.contentlength+'">'+nl.sara.beehub.controller.bytesToSize(resource.contentlength, 1)+'</td>');
+      row.push('<td class="contentlength" name="'+resource.contentlength+'">'+nl.sara.beehub.controller.bytesToSize(resource.contentlength, 2)+'</td>');
       //Type
       row.push('<td class="type" name="'+resource.type+'">'+resource.type+'</td>');
   
