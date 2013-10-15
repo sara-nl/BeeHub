@@ -4,3 +4,6 @@
 [submodule "js-webdav-client"]
 	path = js-webdav-client
 	url = git@github.com:sara-nl/js-webdav-client.git
+[submodule "client"]
+	path = client
+	url = git@github.com:sara-nl/beehub_client.git

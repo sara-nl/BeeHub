@@ -14,7 +14,18 @@
     preg_replace(
       '@^/system/users/(.*)@', '/home/\1/',
       BeeHub_Auth::inst()->current_user()->path
-    ) : BeeHub::urlbase(false) . '?nosystem' ?>">Files</a></li>
+    ) . ( substr( $_SERVER['REMOTE_ADDR'], 0, strlen( BeeHub::$CONFIG['environment']['trusted_lan'] ) ) === BeeHub::$CONFIG['environment']['trusted_lan']  ? '?client=new_one' : '' ) : BeeHub::urlbase(false) . '?nosystem' . ( substr( $_SERVER['REMOTE_ADDR'], 0, strlen( BeeHub::$CONFIG['environment']['trusted_lan'] ) ) === BeeHub::$CONFIG['environment']['trusted_lan'] ? '&client=new_one' : '' ) ?>">Files
+
+<?php if ( substr( $_SERVER['REMOTE_ADDR'], 0, strlen( BeeHub::$CONFIG['environment']['trusted_lan'] ) ) === BeeHub::$CONFIG['environment']['trusted_lan'] ) : ?>
+  (new client)</a></li>
+              <li id="navbar-li-files"><a href="<?=
+  BeeHub_Auth::inst()->is_authenticated() ?
+    preg_replace(
+      '@^/system/users/(.*)@', '/home/\1/',
+      BeeHub_Auth::inst()->current_user()->path
+    ) . '?client=old_one' : BeeHub::urlbase(false) . '?nosystem&client=old_one' ?>">Files (old client)</a></li>
+<?php endif; ?>
+  </a></li>
               <?php if (BeeHub_Auth::inst()->is_authenticated()) : ?>
                 <li id="navbar-li-groups"><a href="<?= DAV::xmlescape(BeeHub::GROUPS_PATH) ?>">Groups</a></li>
 								<li id="navbar-li-sponsors"><a href="<?= DAV::xmlescape(BeeHub::SPONSORS_PATH) ?>">Sponsors</a></li>
