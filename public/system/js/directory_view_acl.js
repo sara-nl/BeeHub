@@ -197,12 +197,10 @@
   var setUpDownButtons = function(){  
     $.each($('.bh-dir-acl-contents > tr'), function(index, row){
       var info = $(row).find('.bh-dir-acl-comment').attr('name');
-      
       if (info !== 'protected' && info !== 'inherited') {
         // Check up button
         if ( index - 1 !== nl.sara.beehub.view.acl.getIndexLastProtected() ) {
           $(row).find('.bh-dir-acl-up').html('<i title="Move up" class="icon-chevron-up bh-dir-acl-icon-up" style="cursor: pointer"></i>');
-          setRowHandlers([row]);
         } else {
           $(row).find('.bh-dir-acl-up').html('');
         }
@@ -210,11 +208,11 @@
         // Check down button
         if ( index + 1 !== getIndexFirstInherited() ) {
           $(row).find('.bh-dir-acl-down').html('<i title="Move down" class="icon-chevron-down bh-dir-acl-icon-down" style="cursor: pointer"></i>');
-          setRowHandlers([row]);
         } else {
           $(row).find('.bh-dir-acl-down').html('');
         }
       }
+      setRowHandlers([row]);
     });
   };
   
