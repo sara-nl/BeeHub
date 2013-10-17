@@ -1,8 +1,8 @@
 <?php
 if ( ( substr( $_SERVER['REMOTE_ADDR'], 0, strlen( BeeHub::$CONFIG['environment']['trusted_lan'] ) ) !== BeeHub::$CONFIG['environment']['trusted_lan'] ) ||
-     ( ( $_GET['client'] !== 'new_one' ) &&
-       ( ( $_COOKIE['client'] === 'old_one' ) ||
-         ( $_GET['client'] === 'old_one' )
+     ( ( @$_GET['client'] !== 'new_one' ) &&
+       ( ( @$_COOKIE['client'] === 'old_one' ) ||
+         ( @$_GET['client'] === 'old_one' )
        )
      )
    ) {
