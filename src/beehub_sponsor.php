@@ -304,8 +304,7 @@ BeeHub';
         throw new DAV_Status( DAV::HTTP_NOT_FOUND );
 
       $this->stored_props[DAV::PROP_DISPLAYNAME] = $row[0];
-      $this->stored_props[BeeHub::PROP_DESCRIPTION] =
-        DAV::xmlescape($row[1]);
+      $this->stored_props[BeeHub::PROP_DESCRIPTION] = $row[1];
       $statement_props->free_result();
 
       $statement_users = BeeHub_DB::execute(
@@ -346,7 +345,7 @@ BeeHub';
         WHERE `sponsor_name` = ?',
       'sss',
       @$this->stored_props[DAV::PROP_DISPLAYNAME],
-      DAV::xmlunescape( @$this->stored_props[BeeHub::PROP_DESCRIPTION] ),
+      @$this->stored_props[BeeHub::PROP_DESCRIPTION],
       $this->name
     );
     // Update the json file containing all displaynames of all privileges
@@ -404,6 +403,20 @@ BeeHub';
     if ( @$retval[DAV::PROP_GROUP_MEMBER_SET] )
       $retval[DAV::PROP_GROUP_MEMBER_SET] = $this->is_admin();
     return $retval;
+  }
+
+
+  public function user_set($name, $value = null) {
+    if ( $name === BeeHub::PROP_DESCRIPTION ) {
+      $this->user_set_description( $value );
+    }else{
+      parent::user_set( $name, $value );
+    }
+  }
+
+
+  public function user_set_description( $description ) {
+    parent::user_set( BeeHub::PROP_DESCRIPTION, DAV::xmlunescape( $description ) );
   }
 
 
