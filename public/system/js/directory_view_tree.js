@@ -48,10 +48,21 @@
         nl.sara.beehub.controller.getTreeNode(node.data.id, getTreeNodeCallback(node));
       }
     });
-    // Tree slide handler
-    $(".bh-dir-tree-slide-trigger").hover(handle_tree_slide_click, function(){
-     // No action;
-    });
+    // Decided to implement this later
+//     Tree slide handler
+//    $(".bh-dir-tree-slide-trigger").hover(function() {
+//      console.log($(this).data('timeout'));
+//      clearTimeout($(this).data('timeout'));
+//      handle_tree_slide_click();
+//  }, function() {
+//      var t = setTimeout(function() {
+//        handle_tree_slide_click();
+//      }, 60000);
+//      $(this).data('timeout', t);
+//  });
+//    $(".bh-dir-tree-slide-trigger").hover(handle_tree_slide_click, function(){
+////      No action;
+//    });
     $(".bh-dir-tree-slide-trigger").click(handle_tree_slide_click);
   };
   
@@ -85,8 +96,8 @@
             };
             name = decodeURIComponent(name.substr(name.lastIndexOf('/')+1));
             res.push({
-              'title': name,
-              'id' : path,
+              'title': nl.sara.beehub.controller.htmlEscape(name),
+              'id' : nl.sara.beehub.controller.htmlEscape(path),
               'isFolder': 'true',
               'isLazy' : 'true'
             });
@@ -117,8 +128,8 @@
       $(".bh-dir-tree-slide-trigger").hide();
       break;
     case "left":
-      $('.bh-dir-tree-slide-trigger i').removeClass('icon-chevron-right');
-      $('.bh-dir-tree-slide-trigger i').addClass('icon-chevron-left');
+      $('.bh-dir-tree-slide-trigger i').removeClass('icon-folder-open');
+      $('.bh-dir-tree-slide-trigger i').addClass('icon-folder-close');
       break;
     default:
       // This should never happen
@@ -213,7 +224,7 @@
     $(".bh-dir-tree-slide").slideToggle("slow");
     $(".bh-dir-tree-header").toggle();
     $(this).toggleClass("active");
-    $('.bh-dir-tree-slide-trigger i').toggleClass('icon-chevron-left icon-chevron-right');
+    $('.bh-dir-tree-slide-trigger i').toggleClass('icon-folder-open icon-folder-close');
     return false;
   };
   
