@@ -193,7 +193,7 @@
    * @param Object resource Resource to trigger rename click
    */
   nl.sara.beehub.view.content.triggerRenameClick = function(resource){
-    $("tr[id='"+resource.path+"']").find('.bh-dir-content-edit').trigger('click');
+    $("tr[id='"+nl.sara.beehub.controller.htmlEscape(resource.path)+"']").find('.bh-dir-content-edit').trigger('click');
   };
   
   /*
@@ -206,10 +206,10 @@
   var createRow = function(resource){
     var row = [];
     
-    row.push('<tr id="'+resource.path+'">');
+    row.push('<tr id="'+nl.sara.beehub.controller.htmlEscape(resource.path)+'">');
     
     // Checkbox
-    row.push('<td width="10px"><input type="checkbox" class="bh-dir-content-checkbox" name="'+resource.path+'" value="'+resource.displayname+'"></td>');
+    row.push('<td width="10px"><input type="checkbox" class="bh-dir-content-checkbox" name="'+nl.sara.beehub.controller.htmlEscape(resource.path)+'" value="'+nl.sara.beehub.controller.htmlEscape(resource.displayname)+'"></td>');
     
     // Edit column
     row.push('<td width="10px" data-toggle="tooltip" title="Rename">');
@@ -217,22 +217,22 @@
     
     // Name
     if (resource.type==='collection') {
-      row.push('<td class="bh-dir-content-name displayname" name="'+resource.displayname+'"><a href="'+resource.path+'"><b>'+resource.displayname+'/</b></a></td>');
+      row.push('<td class="bh-dir-content-name displayname" name="'+nl.sara.beehub.controller.htmlEscape(resource.displayname)+'"><a href="'+nl.sara.beehub.controller.htmlEscape(resource.path)+'"><b>'+nl.sara.beehub.controller.htmlEscape(resource.displayname)+'/</b></a></td>');
     } else {
-      row.push('<td class="bh-dir-content-name displayname" name="'+resource.displayname+'"><a href="'+resource.path+'">'+resource.displayname+'</a></td>');
+      row.push('<td class="bh-dir-content-name displayname" name="'+nl.sara.beehub.controller.htmlEscape(resource.displayname)+'"><a href="'+nl.sara.beehub.controller.htmlEscape(resource.path)+'">'+nl.sara.beehub.controller.htmlEscape(resource.displayname)+'</a></td>');
     }
-    row.push('<td class="bh-dir-content-rename-td" hidden="true"><input class="bh-dir-content-rename-form" name="'+resource.displayname+'" value="'+resource.displayname+'"></td>');
+    row.push('<td class="bh-dir-content-rename-td" hidden="true"><input class="bh-dir-content-rename-form" name="'+nl.sara.beehub.controller.htmlEscape(resource.displayname)+'" value="'+nl.sara.beehub.controller.htmlEscape(resource.displayname)+'"></td>');
     
     if (resource.type==='collection') {
       // Size
-      row.push('<td class="contentlength" name="'+resource.contentlength+'"></td>');
+      row.push('<td class="contentlength" name="'+nl.sara.beehub.controller.htmlEscape(resource.contentlength)+'"></td>');
       // Type
-      row.push('<td class="type" name="'+resource.type+'"><i name="'+resource.path+'" class="icon-folder-close bh-dir-content-openselected" style="cursor: pointer">></i></td>');
+      row.push('<td class="type" name="'+nl.sara.beehub.controller.htmlEscape(resource.type)+'"><i name="'+nl.sara.beehub.controller.htmlEscape(resource.path)+'" class="icon-folder-close bh-dir-content-openselected" style="cursor: pointer">></i></td>');
     } else {
       // Size
-      row.push('<td class="contentlength" name="'+resource.contentlength+'">'+nl.sara.beehub.controller.bytesToSize(resource.contentlength, 2)+'</td>');
+      row.push('<td class="contentlength" name="'+nl.sara.beehub.controller.htmlEscape(resource.contentlength)+'">'+nl.sara.beehub.controller.bytesToSize(resource.contentlength, 2)+'</td>');
       //Type
-      row.push('<td class="type" name="'+resource.type+'">'+resource.type+'</td>');
+      row.push('<td class="type" name="'+nl.sara.beehub.controller.htmlEscape(resource.type)+'">'+nl.sara.beehub.controller.htmlEscape(resource.type)+'</td>');
   
     }
     // Last Modified
@@ -283,27 +283,27 @@
   nl.sara.beehub.view.content.getUnknownResourceValues = function(resource){
     // Displayname
     if (resource.displayname === undefined) {
-      resource.displayname = $("tr[id='"+resource.path+"']").find('.displayname').attr('name');
+      resource.displayname = $("tr[id='"+nl.sara.beehub.controller.htmlEscape(resource.path)+"']").find('.displayname').attr('name');
     }
     
     // Type
     if (resource.type === undefined) {
-      resource.type = $("tr[id='"+resource.path+"']").find('.type').attr('name');
+      resource.type = $("tr[id='"+nl.sara.beehub.controller.htmlEscape(resource.path)+"']").find('.type').attr('name');
     }
     
     // Owner
     if (resource.owner === undefined) {
-      resource.owner = $("tr[id='"+resource.path+"']").find('.owner').attr('name');
+      resource.owner = $("tr[id='"+nl.sara.beehub.controller.htmlEscape(resource.path)+"']").find('.owner').attr('name');
     }
     
     // Contentlenght
     if (resource.contentlength === undefined) {
-      resource.contentlength = $("tr[id='"+resource.path+"']").find('.contentlength').attr('name');
+      resource.contentlength = $("tr[id='"+nl.sara.beehub.controller.htmlEscape(resource.path)+"']").find('.contentlength').attr('name');
     }
     
     // Last modiefied
     if (resource.lastmodified === undefined) {
-      resource.lastmodified = $("tr[id='"+resource.path+"']").find('.lastmodified').attr('name');
+      resource.lastmodified = $("tr[id='"+nl.sara.beehub.controller.htmlEscape(resource.path)+"']").find('.lastmodified').attr('name');
     }
     
     return resource;
@@ -334,7 +334,7 @@
    * @param {Object} resource Resource object
    */
   nl.sara.beehub.view.content.deleteResource = function(resource){
-    $("tr[id='"+resource.path+"']").remove();
+    $("tr[id='"+nl.sara.beehub.controller.htmlEscape(resource.path)+"']").remove();
   };
   
   /*
