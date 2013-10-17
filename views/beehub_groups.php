@@ -30,7 +30,7 @@
           <div class="accordion-heading">
             <div class="accordion-toggle" data-toggle="collapse" data-parent="#bh-gs-mygs" href="#bh-gs-mygs-<?= $i ?>">
               <table width="100%"><tbody><tr>
-                <th align="left"><?= DAV::xmlescape($group->prop_displayname()) ?></th>
+                <th align="left"><?= DAV::xmlescape($group->user_prop_displayname()) ?></th>
                 <td align="right">
                   <!--    View button (when not admin of the group) or manage button -->
                   <?php if ( $group->is_admin() ) : ?>
@@ -47,7 +47,7 @@
           <div id="bh-gs-mygs-<?= $i ?>" class="accordion-body collapse">
 
             <div class="accordion-inner">
-              <?= DAV::xmlescape($group->prop(BeeHub::PROP_DESCRIPTION)) ?>
+              <?= DAV::xmlescape($group->user_prop(BeeHub::PROP_DESCRIPTION)) ?>
             </div>
           </div>
         </div>
@@ -86,7 +86,7 @@
           <div class="accordion-heading">
             <div class="accordion-toggle" data-toggle="collapse" data-parent="#bh-gs-join-gs" href="#bh-gs-join-gs-<?= $i ?>">
               <table width="100%"><tbody><tr>
-                <th align="left"><?= DAV::xmlescape($group->prop_displayname()) ?></th>
+                <th align="left"><?= DAV::xmlescape($group->user_prop_displayname()) ?></th>
                 <td align="right">
                   <!--    Leave, Cancel request or Join button -->
                   <?php if ($group->is_requested()) : ?>
@@ -102,7 +102,7 @@
           </div>
           <div id="bh-gs-join-gs-<?= $i ?>" class="accordion-body collapse">
             <div class="accordion-inner">
-              <?= DAV::xmlescape($group->prop(BeeHub::PROP_DESCRIPTION)) ?>
+              <?= DAV::xmlescape($group->user_prop(BeeHub::PROP_DESCRIPTION)) ?>
             </div>
           </div>
         </div>
