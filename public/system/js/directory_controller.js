@@ -33,9 +33,19 @@
   var path = location.pathname;
   if (!path.match(/\/$/)) {
     path=path+'/'; 
-  } 
+  };
+  
   // Needed for copy, move, delete and upload
   var actionCounter = 0;
+  
+  nl.sara.beehub.controller.htmlEscape = function(str) {
+    return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;');
+  };
   
   /*
    * Clear all views

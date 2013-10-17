@@ -122,7 +122,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
   
 	<!--	CONTENT: Upload button-->
   <input class="bh-dir-content-upload-hidden" type="file" name="files[]"
-         hidden  multiple>
+         multiple hidden>
          
 	<!--   Hidden upload field, this is needed to show the upload button -->
   <button data-toggle="tooltip"
@@ -204,7 +204,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
 </div>
 
 <!-- Arrow to show the tree -->
-<a class="bh-dir-tree-slide-trigger" href="#"><i class="icon-chevron-left"></i> </a>
+<a class="bh-dir-tree-slide-trigger" href="#"><i class="icon-folder-open"></i></a>
 
 <!-- Tab contents -->
 <div
