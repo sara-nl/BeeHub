@@ -38,6 +38,13 @@
   // Needed for copy, move, delete and upload
   var actionCounter = 0;
   
+  /**
+   * Escape html characters
+   * 
+   * Public function
+   * 
+   * @param {String} String to escape
+   */
   nl.sara.beehub.controller.htmlEscape = function(str) {
     return String(str)
             .replace(/&/g, '&amp;')
