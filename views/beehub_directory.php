@@ -269,7 +269,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
                 </a></td>
             <?php endif; ?>
 <!--             Hidden rename -->
-            <td class="bh-dir-content-rename-td" hidden><input
+            <td class="bh-dir-content-rename-td" hidden><input 
                 class="bh-dir-content-rename-form"
                 name="<?= DAV::xmlescape( $member->user_prop_displayname() ) ?>"
                 value="<?= DAV::xmlescape( $member->user_prop_displayname() ) ?>"></td>
@@ -381,7 +381,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
     default:
       $principal = DAV::$REGISTRY->resource( $ace->principal );
       if ( $principal instanceof DAVACL_Principal ) {
-        $displayname = $principal->user_prop( DAV::PROP_DISPLAYNAME );
+        $displayname = DAV::xmlescape($principal->user_prop( DAV::PROP_DISPLAYNAME ));
       }else{
         $displayname = '<em>Unrecognized principal!</em>';
       }
@@ -392,8 +392,8 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
   		$icon= '<i class="icon-user"></i>';
     }
 ?>
-					<td class="bh-dir-acl-principal" name="<?= $ace->principal ?>" data-toggle="tooltip"
-          title="<?= $ace->principal?>" ><b><?= ( $ace->invert ? 'Everybody except ' : '' ) . $displayname ?> </b>(<?= $icon?>)</td>
+					<td class="bh-dir-acl-principal" name="<?= DAV::xmlescape($ace->principal) ?>" data-toggle="tooltip"
+          title="<?= DAV::xmlescape($ace->principal)?>" ><b><?= ( $ace->invert ? 'Everybody except ' : '' ) . $displayname ?> </b>(<?= $icon?>)</td>
 					
 <?php 
 	// make permissions string
