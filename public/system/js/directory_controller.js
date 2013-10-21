@@ -80,6 +80,15 @@
     nl.sara.beehub.view.inputDisable(boolean);
   };
   
+  /**
+   * Show error
+   * 
+   * @param {String} error Error to show
+   */
+  nl.sara.beehub.controller.showError = function(error){
+    nl.sara.beehub.view.dialog.showError(error);
+  };
+  
   /*
    * Returns displayname from object
    * 

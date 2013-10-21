@@ -442,8 +442,13 @@
    * Onclick handler upload button content view
    */
   var handle_upload_button_click = function() {
-    // show local files and directories
-    $('.bh-dir-content-upload-hidden').click();
+    if (window.File && window.FileList) {
+      // Great success! All the File APIs are supported.
+     // show local files and directories
+        $('.bh-dir-content-upload-hidden').click();
+    } else {
+      nl.sara.beehub.controller.showError('Unfortunately this browser does not support file uploads. You could try it using Internet Explorer 10 or a recent version of Chrome, Firefox or Safari. Alternatively see the documentation on how to access BeeHub from your PC.');
+    }   
   };
   
   /*
