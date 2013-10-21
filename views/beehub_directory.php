@@ -207,8 +207,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
 <a class="bh-dir-tree-slide-trigger" href="#"><i class="icon-folder-open"></i></a>
 
 <!-- Tab contents -->
-<div
-  class="tab-content">
+<div class="tab-content">
   <!-- Fixed divs don't use space -->
   <div class="bh-dir-allocate-space"></div>
   <!-- Contents tab -->
@@ -334,6 +333,8 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
           <th>Principal</th>
 <!--           Permissions -->
           <th>Permissions</th>
+<!-- 					Hidden dropdown column -->
+          <th hidden></th>
 <!--           Comments -->
           <th>Comment</th>
 <!--         	Move up -->
@@ -504,6 +505,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
     </table>
   </div>
   <!-- End Acl tab -->
+</div>
 <!-- End tab div -->
 
 <!-- Mask input -->
@@ -515,7 +517,6 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
 <!-- Loading mask -->
 <div id="bh-dir-mask-loading" hidden></div>
 <!--  <img src="/system/img/bh-dir-loading.gif" id="bh-dir-mask-loading" style="display:none" /> -->
-
 <?php
 $footer = '
 	<script type="text/javascript">
