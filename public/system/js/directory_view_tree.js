@@ -46,7 +46,8 @@
       // collapse
       onLazyRead: function(node){
         nl.sara.beehub.controller.getTreeNode(node.data.id, getTreeNodeCallback(node));
-      }
+      },
+      debugLevel: 0
     });
     // Decided to implement this later
 //     Tree slide handler
@@ -64,6 +65,14 @@
 ////      No action;
 //    });
     $(".bh-dir-tree-slide-trigger").click(handle_tree_slide_click);
+    if ($.cookie("beehub-showtree") !== "done") {
+      $.cookie("beehub-showtree", "done", { path: '/' });
+      $(".bh-dir-tree-slide").toggle();
+      $(".bh-dir-tree-header").toggle();
+      $(this).toggleClass("active");
+      $('.bh-dir-tree-slide-trigger i').toggleClass('icon-folder-open icon-folder-close');
+      setTimeout(function(){$(".bh-dir-tree-slide-trigger").trigger('click');},1000);
+    };
   };
   
   /*

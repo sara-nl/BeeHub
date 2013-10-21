@@ -114,8 +114,8 @@ $(function (){
       location.pathname,
       function(status, data) {
     	if (status === 207) {
-	        $('#bh-gs-display-name-value').html($('input[name="displayname"]').val());
-	        $('#bh-gs-description-value').html($('textarea[name="description"]').val());
+	        $('#bh-gs-display-name-value').text($('input[name="displayname"]').val());
+	        $('#bh-gs-description-value').text($('textarea[name="description"]').val());
 	        $('#bh-gs-display').removeClass('hide');
 	        $('#bh-gs-edit').addClass('hide');
     	} else {
@@ -128,8 +128,8 @@ $(function (){
 	
   $('#bh-gs-cancel-button').click(
 	function() {
-	  $('input[name="displayname"]').val($('#bh-gs-display-name-value').html());
-	  $('textarea[name="description"]').val($('#bh-gs-description-value').html());
+	  $('input[name="displayname"]').val($('#bh-gs-display-name-value').text());
+	  $('textarea[name="description"]').val($('#bh-gs-description-value').text());
 	  $('#bh-gs-display').removeClass('hide');
       $('#bh-gs-edit').addClass('hide');
   }); // End of button click event listener

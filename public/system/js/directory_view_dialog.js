@@ -90,7 +90,7 @@
   * @param Integer  progress Progress of action
   */
   nl.sara.beehub.view.dialog.showProgressBar = function(resource, progress){
-    $("tr[id='dialog_tr_"+nl.sara.beehub.controller.htmlEscape(resource.path)+"']").find('.info').html("<div class='progress progress-success progress-striped'><div class='bar' style='width: "+progress+"%;'>"+progress+"%</div></div>");
+    $("tr[id='dialog_tr_"+resource.path+"']").find('.info').html("<div class='progress progress-success progress-striped'><div class='bar' style='width: "+progress+"%;'>"+progress+"%</div></div>");
   };
   
   /*
@@ -102,7 +102,7 @@
   * @param String   info     Information for dialog
   */
   nl.sara.beehub.view.dialog.updateResourceInfo = function(resource, info){
-    $("tr[id='dialog_tr_"+nl.sara.beehub.controller.htmlEscape(resource.path)+"']").find('.info').html("<b>"+info+"</b>");
+    $("tr[id='dialog_tr_"+resource.path+"']").find('.info').html("<b>"+info+"</b>");
   };
   
   /*
@@ -120,20 +120,20 @@
     var renameButton = '<button class="btn btn-success renamebutton">Rename</button>';
     var cancelButton = '<button class="btn btn-success cancelbutton">Cancel</button>';
     
-    $("tr[id='dialog_tr_"+nl.sara.beehub.controller.htmlEscape(resource.path)+"']").find('.info').html("Item exist on server!<br/>"+renameButton+" "+overwriteButton+" "+cancelButton);
+    $("tr[id='dialog_tr_"+resource.path+"']").find('.info').html("Item exist on server!<br/>"+renameButton+" "+overwriteButton+" "+cancelButton);
     
     // Overwrite click handler
-    $("tr[id='dialog_tr_"+nl.sara.beehub.controller.htmlEscape(resource.path)+"']").find('.overwritebutton').click(function(){
+    $("tr[id='dialog_tr_"+resource.path+"']").find('.overwritebutton').click(function(){
       overwriteFunction();
     });
     
     // Cancel click handler
-    $("tr[id='dialog_tr_"+nl.sara.beehub.controller.htmlEscape(resource.path)+"']").find('.cancelbutton').click(function(){
+    $("tr[id='dialog_tr_"+resource.path+"']").find('.cancelbutton').click(function(){
       cancelFunction();
     });
     
     // Rename click handler
-    $("tr[id='dialog_tr_"+nl.sara.beehub.controller.htmlEscape(resource.path)+"']").find('.renamebutton').click(function(){   
+    $("tr[id='dialog_tr_"+resource.path+"']").find('.renamebutton').click(function(){   
       renameFunction();
     });
   };
@@ -244,7 +244,7 @@
           });
     $("#bh-dir-rename-overwrite-button").click(overwriteFunction);
     $("#bh-dir-rename-cancel-button").click(function(){
-      $("tr[id='"+nl.sara.beehub.controller.htmlEscape(resource.path)+"']").find(".bh-dir-rename-td").find(':input').val(nl.sara.beehub.controller.htmlEscape(resource.displayname));
+      $("tr[id='"+resource.path+"']").find(".bh-dir-rename-td").find(':input').val(resource.displayname);
       $("#bh-dir-dialog").dialog("close");
     });
   };
@@ -327,8 +327,8 @@
     $( "#bh-dir-acl-table-autocomplete" ).autocomplete({
       source:searchList,
       select: function( event, ui ) {
-        $("#bh-dir-acl-table-autocomplete").val(nl.sara.beehub.controller.htmlEscape(ui.item.label));
-        $("#bh-dir-acl-table-autocomplete").attr('name' ,nl.sara.beehub.controller.htmlEscape(ui.item.name));
+        $("#bh-dir-acl-table-autocomplete").val(ui.item.label);
+        $("#bh-dir-acl-table-autocomplete").attr('name' ,ui.item.name);
         $("#bh-dir-aclform-add-button").button('enable');
         return false;
       },

@@ -177,6 +177,12 @@
     
     // Rename handler
     $('.bh-dir-content-rename-form').unbind().change(handle_rename_form_change);
+    $('.bh-dir-content-rename-form').keypress(function(e) {
+      if(e.which === 13) {
+        e.preventDefault();
+        $('.bh-dir-content-rename-form').trigger('change');
+      }
+    });
     
     // Blur: erase rename form field
     $('.bh-dir-content-rename-form').blur(function(){
@@ -193,7 +199,7 @@
    * @param Object resource Resource to trigger rename click
    */
   nl.sara.beehub.view.content.triggerRenameClick = function(resource){
-    $("tr[id='"+nl.sara.beehub.controller.htmlEscape(resource.path)+"']").find('.bh-dir-content-edit').trigger('click');
+    $("tr[id='"+resource.path+"']").find('.bh-dir-content-edit').trigger('click');
   };
   
   /*
@@ -245,10 +251,10 @@
     var minutes = date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes();
     var dateString = (day+"-"+month+"-"+year+" "+hours+":"+minutes);
     
-    row.push('<td class="lastmodified" name="'+resource.lastmodified+'">'+dateString+'</td>');
+    row.push('<td class="lastmodified" name="'+nl.sara.beehub.controller.htmlEscape(resource.lastmodified)+'">'+dateString+'</td>');
     
     // Owner
-    row.push('<td class="owner" name="'+resource.owner+'">'+nl.sara.beehub.controller.getDisplayName(resource.owner)+'</td>');
+    row.push('<td class="owner" name="'+nl.sara.beehub.controller.htmlEscape(resource.owner)+'">'+nl.sara.beehub.controller.htmlEscape(nl.sara.beehub.controller.getDisplayName(resource.owner))+'</td>');
     
     // TODO Share link, not implemented yet
   //  row.push('<td></td>');
@@ -283,27 +289,27 @@
   nl.sara.beehub.view.content.getUnknownResourceValues = function(resource){
     // Displayname
     if (resource.displayname === undefined) {
-      resource.displayname = $("tr[id='"+nl.sara.beehub.controller.htmlEscape(resource.path)+"']").find('.displayname').attr('name');
+      resource.displayname = $("tr[id='"+resource.path+"']").find('.displayname').attr('name');
     }
     
     // Type
     if (resource.type === undefined) {
-      resource.type = $("tr[id='"+nl.sara.beehub.controller.htmlEscape(resource.path)+"']").find('.type').attr('name');
+      resource.type = $("tr[id='"+resource.path+"']").find('.type').attr('name');
     }
     
     // Owner
     if (resource.owner === undefined) {
-      resource.owner = $("tr[id='"+nl.sara.beehub.controller.htmlEscape(resource.path)+"']").find('.owner').attr('name');
+      resource.owner = $("tr[id='"+resource.path+"']").find('.owner').attr('name');
     }
     
     // Contentlenght
     if (resource.contentlength === undefined) {
-      resource.contentlength = $("tr[id='"+nl.sara.beehub.controller.htmlEscape(resource.path)+"']").find('.contentlength').attr('name');
+      resource.contentlength = $("tr[id='"+resource.path+"']").find('.contentlength').attr('name');
     }
     
     // Last modiefied
     if (resource.lastmodified === undefined) {
-      resource.lastmodified = $("tr[id='"+nl.sara.beehub.controller.htmlEscape(resource.path)+"']").find('.lastmodified').attr('name');
+      resource.lastmodified = $("tr[id='"+resource.path+"']").find('.lastmodified').attr('name');
     }
     
     return resource;
@@ -334,7 +340,7 @@
    * @param {Object} resource Resource object
    */
   nl.sara.beehub.view.content.deleteResource = function(resource){
-    $("tr[id='"+nl.sara.beehub.controller.htmlEscape(resource.path)+"']").remove();
+    $("tr[id='"+resource.path+"']").remove();
   };
   
   /*
@@ -436,8 +442,13 @@
    * Onclick handler upload button content view
    */
   var handle_upload_button_click = function() {
-    // show local files and directories
-    $('.bh-dir-content-upload-hidden').click();
+    if (window.File && window.FileList) {
+      // Great success! All the File APIs are supported.
+     // show local files and directories
+        $('.bh-dir-content-upload-hidden').click();
+    } else {
+      nl.sara.beehub.controller.showError('Unfortunately this browser does not support file uploads. You could try it using Internet Explorer 10 or a recent version of Chrome, Firefox or Safari. Alternatively see the documentation on how to access BeeHub from your PC.');
+    }   
   };
   
   /*

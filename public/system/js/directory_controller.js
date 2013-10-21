@@ -38,6 +38,13 @@
   // Needed for copy, move, delete and upload
   var actionCounter = 0;
   
+  /**
+   * Escape html characters
+   * 
+   * Public function
+   * 
+   * @param {String} String to escape
+   */
   nl.sara.beehub.controller.htmlEscape = function(str) {
     return String(str)
             .replace(/&/g, '&amp;')
@@ -71,6 +78,15 @@
    */
   nl.sara.beehub.controller.inputDisable = function(boolean){
     nl.sara.beehub.view.inputDisable(boolean);
+  };
+  
+  /**
+   * Show error
+   * 
+   * @param {String} error Error to show
+   */
+  nl.sara.beehub.controller.showError = function(error){
+    nl.sara.beehub.view.dialog.showError(error);
   };
   
   /*
