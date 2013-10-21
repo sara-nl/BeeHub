@@ -294,16 +294,16 @@
           case 'deny read':
             ace.grantdeny = nl.sara.webdav.Ace.DENY;
             ace.addPrivilege(readPriv);
+            ace.addPrivilege(writePriv);
+            ace.addPrivilege(managePriv);
             break;
           case 'deny write':
             ace.grantdeny = nl.sara.webdav.Ace.DENY;
-            ace.addPrivilege(readPriv);
             ace.addPrivilege(writePriv);
+            ace.addPrivilege(managePriv);
             break;
           case 'deny manage':
             ace.grantdeny = nl.sara.webdav.Ace.DENY;
-            ace.addPrivilege(readPriv);
-            ace.addPrivilege(writePriv);
             ace.addPrivilege(managePriv);
             break;
           case 'allow read':
