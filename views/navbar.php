@@ -9,26 +9,31 @@
           <a class="brand" href="<?= DAV::xmlescape(BeeHub::SYSTEM_PATH) ?>">BeeHub</a>
           <div class="nav-collapse collapse">
             <ul class="nav">
-              <li id="navbar-li-files"><a href="<?=
-  BeeHub_Auth::inst()->is_authenticated() ?
-    preg_replace(
-      '@^/system/users/(.*)@', '/home/\1/',
-      BeeHub_Auth::inst()->current_user()->path
-    ) . ( substr( $_SERVER['REMOTE_ADDR'], 0, strlen( BeeHub::$CONFIG['environment']['trusted_lan'] ) ) === BeeHub::$CONFIG['environment']['trusted_lan']  ? '?client=new_one' : '' ) : BeeHub::urlbase(false) . '?nosystem' . ( substr( $_SERVER['REMOTE_ADDR'], 0, strlen( BeeHub::$CONFIG['environment']['trusted_lan'] ) ) === BeeHub::$CONFIG['environment']['trusted_lan'] ? '&client=new_one' : '' ) ?>">Files
-
-<?php if ( substr( $_SERVER['REMOTE_ADDR'], 0, strlen( BeeHub::$CONFIG['environment']['trusted_lan'] ) ) === BeeHub::$CONFIG['environment']['trusted_lan'] ) : ?>
-  (new client)</a></li>
-              <li id="navbar-li-files"><a href="<?=
-  BeeHub_Auth::inst()->is_authenticated() ?
-    preg_replace(
-      '@^/system/users/(.*)@', '/home/\1/',
-      BeeHub_Auth::inst()->current_user()->path
-    ) . '?client=old_one' : BeeHub::urlbase(false) . '?nosystem&client=old_one' ?>">Files (old client)</a></li>
-<?php endif; ?>
-  </a></li>
-              <?php if (BeeHub_Auth::inst()->is_authenticated()) : ?>
+              <?php
+              $trusted_lan = ( substr( $_SERVER['REMOTE_ADDR'], 0, strlen( BeeHub::$CONFIG['environment']['trusted_lan'] ) ) === BeeHub::$CONFIG['environment']['trusted_lan'] );
+              $user_home_path = ( BeeHub_Auth::inst()->is_authenticated() ?
+                      preg_replace( '@^/system/users/(.*)@', '/home/\1/', BeeHub_Auth::inst()->current_user()->path ) . ( $trusted_lan ? '?client=new_one' : '' )
+                  :
+                      BeeHub::urlbase(false) . '?nosystem' . ( $trusted_lan ? '&client=new_one' : '' )
+                  ) ;
+              if ( $trusted_lan ) : ?>
+                <li id="navbar-li-new_files"><a href="<?= $user_home_path ?>">Files (new client)</a></li>
+                <?php
+                if ( $trusted_lan ) {
+                  $user_home_path = substr( $user_home_path, 0, -7 ) . 'old_one';
+                }
+                ?>
+                <li id="navbar-li-files"><a href="<?= $user_home_path ?>">Files (old client)</a></li>
+              <?php else :
+                if ( $trusted_lan ) {
+                  $user_home_path = substr( $user_home_path, 0, -15 );
+                }
+                ?>
+                <li id="navbar-li-files"><a href="<?= $user_home_path ?>">Files</a></li>
+              <?php endif;
+              if (BeeHub_Auth::inst()->is_authenticated()) : ?>
                 <li id="navbar-li-groups"><a href="<?= DAV::xmlescape(BeeHub::GROUPS_PATH) ?>">Groups</a></li>
-								<li id="navbar-li-sponsors"><a href="<?= DAV::xmlescape(BeeHub::SPONSORS_PATH) ?>">Sponsors</a></li>
+								<!--li id="navbar-li-sponsors"><a href="<?= DAV::xmlescape(BeeHub::SPONSORS_PATH) ?>">Sponsors</a></li-->
               <?php endif; ?>
               <li id="navbar-li-docs"><a href="/system/docs.php">Docs</a></li>
             </ul>

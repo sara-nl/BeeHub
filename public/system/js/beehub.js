@@ -37,6 +37,8 @@ nl.sara.beehub.forbidden_group_names = [
 		active = 'beehub';
 	} else if ( RegExp('^/system/users/$').test( window.location.pathname ) ) {
     active = 'signup';
+  } else if ( RegExp(' client=new_one').test( document.cookie ) || RegExp('^client=new_one').test( document.cookie ) ) {
+		active = 'new_files';
   } else {
 		active = 'files';
 	}
