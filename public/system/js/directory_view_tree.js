@@ -46,7 +46,8 @@
       // collapse
       onLazyRead: function(node){
         nl.sara.beehub.controller.getTreeNode(node.data.id, getTreeNodeCallback(node));
-      }
+      },
+      debugLevel: 0
     });
     // Decided to implement this later
 //     Tree slide handler
