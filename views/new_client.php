@@ -414,8 +414,8 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
 			$permissions .= "read";
 			$tooltip="deny read, write, change acl";
     } elseif ( in_array( DAVACL::PRIV_ALL, $ace->privileges ) ) {
-      $permissions .= "all";
-      $tooltip="deny all privileges";
+			$permissions .= "read";
+			$tooltip="deny read, write, change acl";
 		} else {
 			$permissions .= "unknown privilege (combination)";
 			$tooltip="deny " . implode( '; ', $ace->privileges );
@@ -433,8 +433,8 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
 			$permissions .= "manage";
 			$tooltip="allow read, write, change acl";
     } elseif ( in_array( DAVACL::PRIV_ALL, $ace->privileges ) ) {
-      $permissions .= "all";
-      $tooltip="allow all privileges";
+			$permissions .= "manage";
+			$tooltip="allow read, write, change acl";
 		} else {
 			$permissions .= "unknown privilege (combination)";
 			$tooltip="allow " . implode( '; ', $ace->privileges );
