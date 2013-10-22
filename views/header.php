@@ -13,6 +13,12 @@ if ( isset($this) && ( false !== strpos( $this->user_prop_getcontenttype(), 'xml
     <link rel="stylesheet" href="/system/css/beehub.css"/>
     <link rel="shortcut icon" href="https://www.surfsara.nl/sites/all/themes/st_sara/favicon.ico" type="image/x-icon" />
     <?= isset($header) ? $header : '' ?>
-  </head><body class="bootstrap">
+  </head>
+    <?php if ( $_COOKIE['client'] === 'old_one' ) : ?>
+      <body>
+      <div class="bootstrap">
+    <?php else : ?>
+      <body class="bootstrap">
+    <?php endif; ?>
     <?php require 'views/navbar.php' ?>
     <div class="container-fluid">

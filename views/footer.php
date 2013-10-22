@@ -5,6 +5,9 @@
  */
 ?>
     </div>
+    <?php if ( $_COOKIE['client'] === 'old_one' ) : ?>
+      </div>
+    <?php endif; ?>
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
     <script type="text/javascript" src="/system/js/jquery-ui.js"></script>
     <script type="text/javascript" src="/system/bootstrap/js/bootstrap.js"></script>

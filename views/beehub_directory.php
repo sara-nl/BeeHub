@@ -7,9 +7,11 @@ if ( ( substr( $_SERVER['REMOTE_ADDR'], 0, strlen( BeeHub::$CONFIG['environment'
      )
    ) {
   setcookie ( 'client', 'old_one', 0, '/' );
+  $_COOKIE['client'] = 'old_one';
   require_once( dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'old_client.php' );
 }else{
   setcookie ( 'client', 'new_one', 0, '/' );
+  $_COOKIE['client'] = 'new_one';
   require_once( dirname( __FILE__ ) . DIRECTORY_SEPARATOR . 'new_client.php' );
 }
 
