@@ -404,33 +404,43 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
 	if ( $ace->deny) {
 		$permissions="deny ";
 		$class="bh-dir-acl-deny";
-	} else {
+		if ( ( count( $ace->privileges ) === 1 ) && in_array( DAVACL::PRIV_WRITE_ACL, $ace->privileges ) ) {
+			$permissions .= "manage";
+			$tooltip="deny change acl";
+		} elseif ( ( count( $ace->privileges ) === 2 ) && in_array( DAVACL::PRIV_WRITE, $ace->privileges ) && in_array( DAVACL::PRIV_WRITE_ACL, $ace->privileges) ) {
+			$permissions .= "write";
+			$tooltip="deny write, change acl";
+		} elseif ( ( count( $ace->privileges ) === 3 ) && in_array( DAVACL::PRIV_READ, $ace->privileges ) && in_array( DAVACL::PRIV_WRITE, $ace->privileges ) && in_array( DAVACL::PRIV_WRITE_ACL, $ace->privileges) ) {
+			$permissions .= "read";
+			$tooltip="deny read, write, change acl";
+    } elseif ( in_array( DAVACL::PRIV_ALL, $ace->privileges ) ) {
+      $permissions .= "all";
+      $tooltip="deny all privileges";
+		} else {
+			$permissions .= "unknown privilege (combination)";
+			$tooltip="deny " . implode( '; ', $ace->privileges );
+		}
+	} else { 
 		$permissions="allow ";
 		$class="bh-dir-acl-allow";
-	};
-	if (in_array( DAVACL::PRIV_WRITE_ACL, $ace->privileges ) || in_array( DAVACL::PRIV_ALL, $ace->privileges )) {
-		$permissions .= "manage";
-		if ($ace->deny) {
-			$tooltip="deny change acl";
-		} else {
-			$tooltip="allow read, write, change acl";
-		}
-	} elseif (in_array( DAVACL::PRIV_WRITE, $ace->privileges ) || in_array( DAVACL::PRIV_ALL, $ace->privileges)) {
-		$permissions .= "write";
-		if ($ace->deny) {
-			$tooltip="deny write, change acl";
-		} else {
-			$tooltip="allow read, write";
-		}
-	} elseif (in_array( DAVACL::PRIV_READ, $ace->privileges ) || in_array( DAVACL::PRIV_ALL, $ace->privileges )) {
-		$permissions .= "read";
-		if ($ace->deny) {
-			$tooltip="deny read, write, change acl";
-		} else {
+		if ( ( count( $ace->privileges ) === 1 ) && in_array( DAVACL::PRIV_READ, $ace->privileges ) ) {
+			$permissions .= "read";
 			$tooltip="allow read";
+		} elseif ( ( count( $ace->privileges ) === 2 ) && in_array( DAVACL::PRIV_WRITE, $ace->privileges ) && in_array( DAVACL::PRIV_READ, $ace->privileges) ) {
+			$permissions .= "write";
+			$tooltip="allow read, write";
+		} elseif ( ( count( $ace->privileges ) === 3 ) && in_array( DAVACL::PRIV_WRITE_ACL, $ace->privileges ) && in_array( DAVACL::PRIV_WRITE, $ace->privileges ) && in_array( DAVACL::PRIV_READ, $ace->privileges ) ) {
+			$permissions .= "manage";
+			$tooltip="allow read, write, change acl";
+    } elseif ( in_array( DAVACL::PRIV_ALL, $ace->privileges ) ) {
+      $permissions .= "all";
+      $tooltip="allow all privileges";
+		} else {
+			$permissions .= "unknown privilege (combination)";
+			$tooltip="allow " . implode( '; ', $ace->privileges );
 		}
 	};
-	
+
 	$changePermissionsClass = "bh-dir-acl-change-permissions";
 	$style= 'style="cursor: pointer"';
 	if  ( $ace->protected  || $ace->inherited ) {
@@ -440,16 +450,20 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
 ?>
 	<td class="bh-dir-acl-permissions-select" hidden>
 		<select class="bh-dir-acl-table-permissions">
-            <option value="allow read">allow read (read)</option>
-            <option value="allow write">allow write (read, write)</option>
-            <option value="allow manage">allow manage (read, write, change acl)</option>
-            <option value="deny read">deny read (read, write, change acl)</option>
-            <option value="deny write">deny write (write, change acl)</option>
-            <option value="deny manage">deny manage (change acl)</option>
+      <option value="allow read" <?= ( $permissions === 'allow read' ) ? 'selected="selected"' : '' ?> >allow read (read)</option>
+      <option value="allow write" <?= ( $permissions === 'allow write' ) ? 'selected="selected"' : '' ?> >allow write (read, write)</option>
+      <option value="allow manage" <?= ( $permissions === 'allow manage' ) ? 'selected="selected"' : '' ?> >allow manage (read, write, change acl)</option>
+      <option value="deny read" <?= ( $permissions === 'deny read' ) ? 'selected="selected"' : '' ?> >deny read (read, write, change acl)</option>
+      <option value="deny write" <?= ( $permissions === 'deny write' ) ? 'selected="selected"' : '' ?> >deny write (write, change acl)</option>
+      <option value="deny manage" <?= ( $permissions === 'deny manage' ) ? 'selected="selected"' : '' ?> >deny manage (change acl)</option>
   	</select>
   </td>
-	<td class="bh-dir-acl-permissions <?= $changePermissionsClass ?> <?= $class?>" <?= $style ?> data-toggle="tooltip"
-          title="<?= $tooltip?>" name="<?= $permissions ?>"><?= $permissions ?></td>
+	<td class="bh-dir-acl-permissions <?= $changePermissionsClass ?> <?= $class?>" <?= $style ?> data-toggle="tooltip" title="<?= $tooltip?>">
+    <span class="presentation"><?= $permissions ?></span>
+    <?php if ( strpos( $permissions, 'unknown' ) !== false ) : ?>
+      <span class="original" hidden="hidden"><?= implode( ' ', $ace->privileges ) ?></span>
+    <?php endif; ?>
+  </td>
 <!-- 					Info -->
 <?php
   $info = '';

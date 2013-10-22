@@ -175,7 +175,7 @@
                     </td>';
     row.push(dropdown);
     
-    row.push('<td class="bh-dir-acl-permissions bh-dir-acl-change-permissions '+permissions[ace.permissions].class+'" style="cursor: pointer" data-toggle="tooltip" title="'+permissions[ace.permissions].title+'" name="'+ace.permissions+'" >'+ace.permissions+'</td>');
+    row.push('<td class="bh-dir-acl-permissions bh-dir-acl-change-permissions '+permissions[ace.permissions].class+'" style="cursor: pointer" data-toggle="tooltip" title="'+permissions[ace.permissions].title+'" ><span class="presentation">'+ace.permissions+'</span></td>');
     
     // Comment, not changable by user
     row.push('<td class="bh-dir-acl-comment" name=""></td>');
@@ -253,7 +253,7 @@
     // put each item acl table in the created webdav acl
     $.each($('.bh-dir-acl-contents > tr'), function(index, row){
       var principal = $(row).find('.bh-dir-acl-principal').attr('name');
-      var permissions = $(row).find('.bh-dir-acl-permissions').attr('name');
+      var permissions = $(row).find('.bh-dir-acl-permissions span.presentation').text();
       var info = $(row).find('.bh-dir-acl-comment').attr('name');
       
       if (info !== 'protected' && info !== 'inherited') {
@@ -280,31 +280,39 @@
         var readPriv = new nl.sara.webdav.Privilege();
         readPriv.namespace = "DAV:";
         readPriv.tagname= "read";
-        
+
         var writePriv = new nl.sara.webdav.Privilege();
         writePriv.namespace = "DAV:";
         writePriv.tagname= "write";
         
         var managePriv = new nl.sara.webdav.Privilege();
         managePriv.namespace = "DAV:";
-        managePriv.tagname= "all";
+        managePriv.tagname= "write-acl";
+
+        var allPriv = new nl.sara.webdav.Privilege();
+        allPriv.namespace = "DAV:";
+        allPriv.tagname= "all";
         
         switch( permissions )
         {
           case 'deny read':
             ace.grantdeny = nl.sara.webdav.Ace.DENY;
             ace.addPrivilege(readPriv);
+            ace.addPrivilege(writePriv);
+            ace.addPrivilege(managePriv);
             break;
           case 'deny write':
             ace.grantdeny = nl.sara.webdav.Ace.DENY;
-            ace.addPrivilege(readPriv);
             ace.addPrivilege(writePriv);
+            ace.addPrivilege(managePriv);
             break;
           case 'deny manage':
             ace.grantdeny = nl.sara.webdav.Ace.DENY;
-            ace.addPrivilege(readPriv);
-            ace.addPrivilege(writePriv);
             ace.addPrivilege(managePriv);
+            break;
+          case 'deny all':
+            ace.grantdeny = nl.sara.webdav.Ace.DENY;
+            ace.addPrivilege(allPriv);
             break;
           case 'allow read':
             ace.grantdeny = nl.sara.webdav.Ace.GRANT;
@@ -321,8 +329,29 @@
             ace.addPrivilege(writePriv);
             ace.addPrivilege(managePriv);
             break;
+          case 'allow all':
+            ace.grantdeny = nl.sara.webdav.Ace.GRANT;
+            ace.addPrivilege(allPriv);
+            break;
           default:
-            // This should never happen  
+            var originalPrivs = $(row).find('.bh-dir-acl-permissions span.original').text().split(' ');
+            if ( ( originalPrivs.length === 0 ) || ( ( originalPrivs.length % 2 ) !== 0 ) ) {
+              alert( 'There was an error identifying an unknown privilege. Please reload the page and make sure all your privileges are displayed correctly!' );
+            } else {
+              if ( RegExp('^allow ').test( permissions ) ) {
+                ace.grantdeny = nl.sara.webdav.Ace.GRANT;
+              } else {
+                ace.grantdeny = nl.sara.webdav.Ace.DENY;
+              }
+              var privWordCounter = 0;
+              while ( privWordCounter < originalPrivs.length ) {
+                var newPriv = new nl.sara.webdav.Privilege();
+                newPriv.namespace = originalPrivs[ privWordCounter++ ];
+                newPriv.tagname = originalPrivs[ privWordCounter++ ];
+                ace.addPrivilege( newPriv );
+              }
+            }
+          break;
         };
         acl.addAce(ace);
       };
@@ -393,8 +422,8 @@
    */
   nl.sara.beehub.view.acl.changePermissions = function(row, val){
     var td = '<td class="bh-dir-acl-permissions bh-dir-acl-change-permissions '+permissions[val].class+'"\
-    name="'+val+'" title="'+permissions[val].title+'" data-toggle="tooltip" \
-    style="cursor: pointer; display: table-cell;">'+val+'</td>';
+    title="'+permissions[val].title+'" data-toggle="tooltip" \
+    style="cursor: pointer; display: table-cell;"><span class="presentation">'+val+'</span></td>';
     $(row).find(".bh-dir-acl-permissions").replaceWith(td);
   };
   
