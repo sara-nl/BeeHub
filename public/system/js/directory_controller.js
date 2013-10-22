@@ -958,7 +958,7 @@
         functionSaveAclError();
         return;
       } else {
-        nl.sara.beehub.view.dialog.showError('Something went wrong on the server. No changed were made.');
+        nl.sara.beehub.view.dialog.showError('Something went wrong on the server. No changes were made.');
         functionSaveAclError();
       };
     }, acl);

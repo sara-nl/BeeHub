@@ -404,15 +404,18 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
 	if ( $ace->deny) {
 		$permissions="deny ";
 		$class="bh-dir-acl-deny";
-		if ( ( count( $ace->privileges ) === 1 ) && in_array( DAVACL::PRIV_ALL, $ace->privileges ) ) {
+		if ( ( count( $ace->privileges ) === 1 ) && in_array( DAVACL::PRIV_WRITE_ACL, $ace->privileges ) ) {
 			$permissions .= "manage";
 			$tooltip="deny change acl";
-		} elseif (( count( $ace->privileges ) === 2 ) &&in_array( DAVACL::PRIV_WRITE, $ace->privileges ) && in_array( DAVACL::PRIV_ALL, $ace->privileges)) {
+		} elseif ( ( count( $ace->privileges ) === 2 ) && in_array( DAVACL::PRIV_WRITE, $ace->privileges ) && in_array( DAVACL::PRIV_WRITE_ACL, $ace->privileges) ) {
 			$permissions .= "write";
 			$tooltip="deny write, change acl";
-		} elseif (( count( $ace->privileges ) === 3 ) &&in_array( DAVACL::PRIV_READ, $ace->privileges ) && in_array( DAVACL::PRIV_WRITE, $ace->privileges ) && in_array( DAVACL::PRIV_ALL, $ace->privileges)) {
+		} elseif ( ( count( $ace->privileges ) === 3 ) && in_array( DAVACL::PRIV_READ, $ace->privileges ) && in_array( DAVACL::PRIV_WRITE, $ace->privileges ) && in_array( DAVACL::PRIV_WRITE_ACL, $ace->privileges) ) {
 			$permissions .= "read";
 			$tooltip="deny read, write, change acl";
+    } elseif ( in_array( DAVACL::PRIV_ALL, $ace->privileges ) ) {
+      $permissions .= "all";
+      $tooltip="deny all privileges";
 		} else {
 			$permissions .= "unknown privilege (combination)";
 			$tooltip="deny unknown privilege (combination)";
@@ -423,41 +426,21 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
 		if ( ( count( $ace->privileges ) === 1 ) && in_array( DAVACL::PRIV_READ, $ace->privileges ) ) {
 			$permissions .= "read";
 			$tooltip="allow read";
-		} elseif (( count( $ace->privileges ) === 2 ) &&in_array( DAVACL::PRIV_WRITE, $ace->privileges ) && in_array( DAVACL::PRIV_READ, $ace->privileges)) {
+		} elseif ( ( count( $ace->privileges ) === 2 ) && in_array( DAVACL::PRIV_WRITE, $ace->privileges ) && in_array( DAVACL::PRIV_READ, $ace->privileges) ) {
 			$permissions .= "write";
 			$tooltip="allow read, write";
-		} elseif (( count( $ace->privileges ) === 3 ) &&in_array( DAVACL::PRIV_ALL, $ace->privileges ) && in_array( DAVACL::PRIV_WRITE, $ace->privileges ) && in_array( DAVACL::PRIV_READ, $ace->privileges)) {
+		} elseif ( ( count( $ace->privileges ) === 3 ) && in_array( DAVACL::PRIV_WRITE_ACL, $ace->privileges ) && in_array( DAVACL::PRIV_WRITE, $ace->privileges ) && in_array( DAVACL::PRIV_READ, $ace->privileges ) ) {
 			$permissions .= "manage";
 			$tooltip="allow read, write, change acl";
+    } elseif ( in_array( DAVACL::PRIV_ALL, $ace->privileges ) ) {
+      $permissions .= "all";
+      $tooltip="allow all privileges";
 		} else {
 			$permissions .= "unknown privilege (combination)";
 			$tooltip="allow unknown privilege (combination)";
 		}
 	};
-// 	if (in_array( DAVACL::PRIV_ALL, $ace->privileges )) {
-// 		$permissions .= "manage";
-// 		if ($ace->deny) {
-// 			$tooltip="deny change acl";
-// 		} else {
-// 			$tooltip="allow read, write, change acl";
-// 		}
-// 	} elseif (in_array( DAVACL::PRIV_WRITE, $ace->privileges ) || in_array( DAVACL::PRIV_ALL, $ace->privileges)) {
-// 		$permissions .= "write";
-// 		if ($ace->deny) {
-// 			$tooltip="deny write, change acl";
-// 		} else {
-// 			$tooltip="allow read, write";
-// 		}
-// 	} elseif (in_array( DAVACL::PRIV_READ, $ace->privileges ) || in_array( DAVACL::PRIV_ALL, $ace->privileges )) {
-// 		$permissions .= "read";
-// 		if ($ace->deny) {
-// 			$tooltip="deny read, write, change acl";
-// 		} else {
-// 			$tooltip="allow read";
-// 		}
-// 	};
-	
-	
+
 	$changePermissionsClass = "bh-dir-acl-change-permissions";
 	$style= 'style="cursor: pointer"';
 	if  ( $ace->protected  || $ace->inherited ) {

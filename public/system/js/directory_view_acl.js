@@ -280,14 +280,18 @@
         var readPriv = new nl.sara.webdav.Privilege();
         readPriv.namespace = "DAV:";
         readPriv.tagname= "read";
-        
+
         var writePriv = new nl.sara.webdav.Privilege();
         writePriv.namespace = "DAV:";
         writePriv.tagname= "write";
         
         var managePriv = new nl.sara.webdav.Privilege();
         managePriv.namespace = "DAV:";
-        managePriv.tagname= "all";
+        managePriv.tagname= "write-acl";
+
+        var allPriv = new nl.sara.webdav.Privilege();
+        allPriv.namespace = "DAV:";
+        allPriv.tagname= "all";
         
         switch( permissions )
         {
@@ -306,6 +310,10 @@
             ace.grantdeny = nl.sara.webdav.Ace.DENY;
             ace.addPrivilege(managePriv);
             break;
+          case 'deny all':
+            ace.grantdeny = nl.sara.webdav.Ace.DENY;
+            ace.addPrivilege(allPriv);
+            break;
           case 'allow read':
             ace.grantdeny = nl.sara.webdav.Ace.GRANT;
             ace.addPrivilege(readPriv);
@@ -321,8 +329,13 @@
             ace.addPrivilege(writePriv);
             ace.addPrivilege(managePriv);
             break;
+          case 'allow all':
+            ace.grantdeny = nl.sara.webdav.Ace.GRANT;
+            ace.addPrivilege(allPriv);
+            break;
           default:
-            // This should never happen  
+            // TODO: User is about to overwrite an unrecognized ACE. That is; unrecognized by the client, not necessarilly by the server! So warn him/her and handle gracefully 
+            return;
         };
         acl.addAce(ace);
       };
