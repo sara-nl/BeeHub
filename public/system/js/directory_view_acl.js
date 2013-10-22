@@ -175,7 +175,7 @@
                     </td>';
     row.push(dropdown);
     
-    row.push('<td class="bh-dir-acl-permissions bh-dir-acl-change-permissions '+permissions[ace.permissions].class+'" style="cursor: pointer" data-toggle="tooltip" title="'+permissions[ace.permissions].title+'" name="'+ace.permissions+'" >'+ace.permissions+'</td>');
+    row.push('<td class="bh-dir-acl-permissions bh-dir-acl-change-permissions '+permissions[ace.permissions].class+'" style="cursor: pointer" data-toggle="tooltip" title="'+permissions[ace.permissions].title+'" ><span class="presentation">'+ace.permissions+'</span></td>');
     
     // Comment, not changable by user
     row.push('<td class="bh-dir-acl-comment" name=""></td>');
@@ -253,7 +253,7 @@
     // put each item acl table in the created webdav acl
     $.each($('.bh-dir-acl-contents > tr'), function(index, row){
       var principal = $(row).find('.bh-dir-acl-principal').attr('name');
-      var permissions = $(row).find('.bh-dir-acl-permissions').attr('name');
+      var permissions = $(row).find('.bh-dir-acl-permissions span.presentation').text();
       var info = $(row).find('.bh-dir-acl-comment').attr('name');
       
       if (info !== 'protected' && info !== 'inherited') {
@@ -334,8 +334,24 @@
             ace.addPrivilege(allPriv);
             break;
           default:
-            // TODO: User is about to overwrite an unrecognized ACE. That is; unrecognized by the client, not necessarilly by the server! So warn him/her and handle gracefully 
-            return;
+            var originalPrivs = $(row).find('.bh-dir-acl-permissions span.original').text().split(' ');
+            if ( ( originalPrivs.length === 0 ) || ( ( originalPrivs.length % 2 ) !== 0 ) ) {
+              alert( 'There was an error identifying an unknown privilege. Please reload the page and make sure all your privileges are displayed correctly!' );
+            } else {
+              if ( RegExp('^allow ').test( permissions ) ) {
+                ace.grantdeny = nl.sara.webdav.Ace.GRANT;
+              } else {
+                ace.grantdeny = nl.sara.webdav.Ace.DENY;
+              }
+              var privWordCounter = 0;
+              while ( privWordCounter < originalPrivs.length ) {
+                var newPriv = new nl.sara.webdav.Privilege();
+                newPriv.namespace = originalPrivs[ privWordCounter++ ];
+                newPriv.tagname = originalPrivs[ privWordCounter++ ];
+                ace.addPrivilege( newPriv );
+              }
+            }
+          break;
         };
         acl.addAce(ace);
       };
@@ -406,8 +422,8 @@
    */
   nl.sara.beehub.view.acl.changePermissions = function(row, val){
     var td = '<td class="bh-dir-acl-permissions bh-dir-acl-change-permissions '+permissions[val].class+'"\
-    name="'+val+'" title="'+permissions[val].title+'" data-toggle="tooltip" \
-    style="cursor: pointer; display: table-cell;">'+val+'</td>';
+    title="'+permissions[val].title+'" data-toggle="tooltip" \
+    style="cursor: pointer; display: table-cell;"><span class="presentation">'+val+'</span></td>';
     $(row).find(".bh-dir-acl-permissions").replaceWith(td);
   };
   
