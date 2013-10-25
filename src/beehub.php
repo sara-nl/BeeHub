@@ -1,7 +1,8 @@
 <?php
-
-/*·************************************************************************
- * Copyright ©2007-2012 SARA b.v., Amsterdam, The Netherlands
+/**
+ * Contains the BeeHub class
+ *
+ * Copyright ©2007-2013 SURFsara b.v., Amsterdam, The Netherlands
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -12,38 +13,12 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- **************************************************************************/
-
-/**
- * File documentation (who cares)
+ *
  * @package BeeHub
  */
 
-
-// Set the include path, so BeeHub_* classes are automatically loaded
-set_include_path(
-  realpath( dirname( dirname(__FILE__) ) ) . PATH_SEPARATOR .
-  dirname(__FILE__) . PATH_SEPARATOR .
-  get_include_path()
-);
-require_once dirname(dirname(__FILE__)) . '/webdav-php/lib/dav.php';
-
-
-// Set a default exception handler, so we always output nice errors if an exception is uncaught
-function beehub_exception_handler($e) {
-  if (! $e instanceof DAV_Status) {
-    $e = new DAV_Status(
-      DAV::HTTP_INTERNAL_SERVER_ERROR,
-      "$e"
-    );
-  }
-  $e->output();
-}
-set_exception_handler('beehub_exception_handler');
-
-
 /**
- * Just a namespace.
+ * This class contains several general (static) functions and is more like a namespace than a real class
  * @package BeeHub
  */
 class BeeHub {
@@ -95,8 +70,6 @@ class BeeHub {
   const ENVIRONMENT_DEVELOPMENT = 'development';
   const ENVIRONMENT_PRODUCTION  = 'production';
   /**#@-*/
-
-  public static $CONFIG;
 
 
   /**
@@ -330,15 +303,48 @@ class BeeHub {
   }
 
 
+  /**
+   * This should be made private in the future. See the comments at the bottom of this source file
+   * @var  array  Contains the configuration options once they are parsed from file
+   */
+  public static $CONFIG = null;
+
+  /**
+   * Returns the configuration file parsed into an array
+   * @return  array  An array with the configuration options
+   */
+  public static function config() {
+    if ( is_null( self::$CONFIG ) ) {
+      BeeHub::$CONFIG = parse_ini_file(
+        dirname( dirname( __FILE__ ) ) . DIRECTORY_SEPARATOR . 'config.ini',
+        true
+      );
+    }
+    return self::$CONFIG;
+  }
+
+
+  /**
+   * The default exception handler, so we always output nice errors if an exception is uncaught
+   * @param   exception  $exception  The (uncaught) exception
+   * @return  void
+   */
+  public static function exception_handler( $exception ) {
+    if ( ! $exception instanceof DAV_Status ) {
+      $exception = new DAV_Status(
+        DAV::HTTP_INTERNAL_SERVER_ERROR,
+        strval( $exception )
+      );
+    }
+    $exception->output();
+  }
+
 } // class BeeHub
 
-BeeHub::$CONFIG = parse_ini_file(
-  dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'config.ini',
-  true
-);
-// We need SimpleSamlPHP
-require_once(BeeHub::$CONFIG['environment']['simplesamlphp_autoloader']);
+// When PHP 5.4 is more widely adapted, all calls to BeeHub::$CONFIG['some_key']
+// should be replaced by BeeHub::config()['some_key']. But as PHP 5.3.3 and
+// earlier don't support this, let's not make things more complicated and make
+// BeeHub::$CONFIG public and call BeeHub::config() here so it is always filled.
+BeeHub::config();
 
-DAV::$PROTECTED_PROPERTIES[ DAV::PROP_GROUP_MEMBER_SET ] = true;
-DAV::$ACL_PROPERTIES[BeeHub::PROP_SPONSOR] =
-DAV::$SUPPORTED_PROPERTIES[BeeHub::PROP_SPONSOR] = 'sponsor';
+// End of file

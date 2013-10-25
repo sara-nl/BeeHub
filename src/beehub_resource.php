@@ -1,7 +1,8 @@
 <?php
-
-/*·************************************************************************
- * Copyright ©2007-2012 SARA b.v., Amsterdam, The Netherlands
+/**
+ * Contains the BeeHub_Resource class
+ *
+ * Copyright ©2007-2013 SURFsara b.v., Amsterdam, The Netherlands
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -12,39 +13,48 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- **************************************************************************/
-
-/**
- * File documentation (who cares)
+ *
  * @package BeeHub
  */
 
 /**
- * Some class.
+ * All BeeHub (webDAV) resources inherit from this class
  * @package BeeHub
  */
 abstract class BeeHub_Resource extends DAVACL_Resource {
 
 
   /**
-   * @var boolean
+   * @var  boolean  True if one of the properties are changed
    */
   protected $touched = false;
 
 
   /**
-   * @var array Array of propery_name => property_value pairs.
+   * @var  array  Array of propery_name => property_value pairs.
    */
   protected $stored_props = null;
 
 
+  /**
+   * Loads all the properties from persistent storage
+   *
+   * This function loads all properties from persistent storage. They can then
+   * be modified and should later be stored into persistence with
+   * DAV_Resource::storeProperties()
+   *
+   * @return  void
+   */
   abstract protected function init_props();
 
 
 
   /**
-   * @param array $privileges
-   * @throws DAV_Status FORBIDDEN
+   * Checks whether the current user has certain privileges.
+   *
+   * @param   array       $privileges  The privileges needed
+   * @return  void                     This function only returns if the current user has the privileges
+   * @throws  DAV_Status               FORBIDDEN  When the user doesn't have the privileges
    */
   public function assert($privileges) {
     if (BeeHub_ACL_Provider::inst()->wheel())
@@ -54,8 +64,11 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
 
 
   /**
-   * @param $name string
-   * @param $value mixed
+   * Sets a (webDAV) property
+   *
+   * @param   string  $name   The name of the property
+   * @param   mixed   $value  The value of the property
+   * @return  void
    */
   public function user_set($name, $value = null) {
     $this->init_props();
@@ -73,6 +86,11 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
   }
 
 
+  /**
+   * Checks whether this resource is visible to the current user
+   *
+   * @return  boolean  True if this resource is visible, false otherwise
+   */
   public function isVisible() {
     try {
       $this->assert(DAVACL::PRIV_READ);
@@ -91,8 +109,10 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
 
 
   /**
-   * @param $name string
-   * @param $value mixed
+   * Gets a (webDAV) property
+   *
+   * @param   string  $name  The name of the property
+   * @return  mixed          The value of the property
    */
   public function user_prop($name) {
     $this->init_props();
@@ -101,15 +121,15 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
 
 
   /**
-   * @return array of principals (either paths or properties),
-   *         indexed by their own value.
+   * Returns an array with all sponsors of the current user
+   *
+   * @return  array  An array of principals (either paths or properties), indexed by their own value
    */
   final public function current_user_sponsors() {
     $retval = array();
     $user = $this->user_prop_current_user_principal();
     if (null === $user)
       return $retval;
-    $statement =
     $retval = array(DAVACL::PRINCIPAL_ALL => DAVACL::PRINCIPAL_ALL);
     if ( $current_user_principal = $this->user_prop_current_user_principal() ) {
       $retval = array_merge($retval, self::current_user_principals_recursive($current_user_principal));
@@ -123,7 +143,10 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
 
 
   /**
-   * @see DAV_Resource::property_priv_read()
+   * Determines which properties are readable
+   *
+   * @param   array  $properties  An array with the properties to check
+   * @return  array               An array of (property => isReadable) pairs.
    */
   public function property_priv_read($properties) {
     $retval = array();
@@ -154,11 +177,18 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
 
 
   /**
-   * @return Array a list of ACEs.
+   * Gets all not inherited and not protected ACEs of an ACL
+   *
+   * @return  array  A list of ACEs
    */
   abstract public function user_prop_acl_internal();
 
 
+  /**
+   * Gets a complete ACL (including inherited and protected ACEs)
+   *
+   * @return  array  A list of ACEs
+   */
   public function user_prop_acl() {
     $protected = array(
       new DAVACL_Element_ace(
@@ -184,6 +214,11 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
   }
 
 
+  /**
+   * Gets the (path of the) owner of this resource
+   *
+   * @return  string  The path to the owner
+   */
   public function user_prop_owner() {
     $retval = $this->user_prop(DAV::PROP_OWNER);
     return $retval ? $retval : BeeHub::$CONFIG['namespace']['wheel_path'];
@@ -191,7 +226,9 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
 
 
   /**
-   * @return DAV_Element_href
+   * Gets DAV_Element_href with the path of the sponsor of this resource
+   *
+   * @return  DAV_Element_href  The path to the sponsor
    */
   final public function prop_sponsor() {
     $retval = $this->user_prop_sponsor();
@@ -199,6 +236,11 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
   }
 
 
+  /**
+   * Set the sponsor of this resource
+   * @param   string  $sponsor  The path to the new sponsor in an XML piece (<D:href></D:href>)
+   * @return  void
+   */
   final public function set_sponsor($sponsor) {
     $sponsor = DAVACL::parse_hrefs($sponsor);
     if (1 !== count($sponsor->URIs))
@@ -211,7 +253,9 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
 
 
   /**
-   * @return string path
+   * Gets the (path of the) sponsor of this resource
+   *
+   * @return  string  The path to the sponsor
    */
   public function user_prop_sponsor() {
     return $this->user_prop(BeeHub::PROP_SPONSOR);
@@ -219,7 +263,10 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
 
 
   /**
-   * @param string $sponsor path
+   * Sets the sponsor of this resource
+   *
+   * @param   string  $sponsor  The path to the new sponsor
+   * @return  void
    */
   protected function user_set_sponsor($sponsor) {
     throw new DAV_Status( DAV::HTTP_FORBIDDEN );
@@ -227,20 +274,20 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
 
 
   /**
-   * Should be overriden by BeeHub_File
+   * Gets the getcontenttype property
+   *
+   * @return  string  The content-type
    */
   public function user_prop_getcontenttype() {
-    //return 'httpd/unix-directory';
-    // Hmm, this was commented out, but why? I think XHTML is perfect for now.
-    // [PieterB]
     return BeeHub::best_xhtml_type() . '; charset="utf-8"';
   }
 
 
   /**
    * Include a view (mostly an HTML page) to present to the user
-   * @param   type   $view_name   Optionally; The name of the view. If omitted, the name of the current class is used.
-   * @param   array  $parameters  Optionally; Variables which should be available in the view. This should be an array with variable names as array keys.
+   *
+   * @param   string  $view_name   Optionally; The name of the view. If omitted, the name of the current class is used.
+   * @param   array   $parameters  Optionally; Variables which should be available in the view. This should be an array with variable names as array keys.
    * @return  void
    */
   public function include_view() {
@@ -261,3 +308,4 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
 
 } // class BeeHub_Resource
 
+// End of file

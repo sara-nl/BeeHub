@@ -1,7 +1,8 @@
 <?php
-
-/*·************************************************************************
- * Copyright ©2007-2012 SARA b.v., Amsterdam, The Netherlands
+/**
+ * Contains the BeeHub_Auth class
+ *
+ * Copyright ©2007-2013 SURFsara b.v., Amsterdam, The Netherlands
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -12,10 +13,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- **************************************************************************/
-
-/**
- * File documentation (who cares)
+ *
  * @package BeeHub
  */
 
@@ -210,4 +208,32 @@ class BeeHub_Auth {
   }
 
 
+  /**
+   * Determines whether you need to authenticate based on the method and URL of the request
+   * @return  boolean  True if authentication is required, false otherwise
+   */
+  public static function is_authentication_required() {
+    $path = DAV::unslashify(DAV::$PATH);
+    /**
+     * You don't need to authenticate when:
+     * - GET (or HEAD) or POST on the users collection (required to create a new user)
+     * - GET (or HEAD) on the system collection (required to read the 'homepage')
+     * In other cases you do need to authenticate
+     */
+    $noRequireAuth = (
+      (
+        $path === DAV::unslashify( BeeHub::USERS_PATH ) &&
+        in_array( $_SERVER['REQUEST_METHOD'], array('GET', 'POST', 'HEAD') )
+      ) ||
+      (
+        $path === DAV::unslashify( BeeHub::SYSTEM_PATH ) &&
+        in_array($_SERVER['REQUEST_METHOD'], array('GET', 'HEAD') )
+      )
+    );
+
+    return ! $noRequireAuth;
+  }
+
 } // class BeeHub_Auth
+
+// End of file
