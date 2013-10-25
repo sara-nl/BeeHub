@@ -30,7 +30,7 @@
           <div class="accordion-heading">
             <div class="accordion-toggle" data-toggle="collapse" data-parent="#bh-gs-mygs" href="#bh-gs-mygs-<?= $i ?>">
               <table width="100%"><tbody><tr>
-                <th align="left"><?= DAV::xmlescape($group->prop_displayname()) ?></th>
+                <th align="left"><?= DAV::xmlescape($group->user_prop_displayname()) ?></th>
                 <td align="right">
                   <!--    View button (when not admin of the group) or manage button -->
                   <?php if ( $group->is_admin() ) : ?>
@@ -47,7 +47,7 @@
           <div id="bh-gs-mygs-<?= $i ?>" class="accordion-body collapse">
 
             <div class="accordion-inner">
-              <?= DAV::xmlescape($group->prop(BeeHub::PROP_DESCRIPTION)) ?>
+              <?= DAV::xmlescape($group->user_prop(BeeHub::PROP_DESCRIPTION)) ?>
             </div>
           </div>
         </div>
@@ -79,18 +79,20 @@
         <?php
       $i = 1;
       foreach ($groups as $group) :
-        if ( $group->is_member() || $group->is_invited() )
+        if ( $group->is_member() )
           continue;
         ?> 
         <div class="accordion-group">
           <div class="accordion-heading">
             <div class="accordion-toggle" data-toggle="collapse" data-parent="#bh-gs-join-gs" href="#bh-gs-join-gs-<?= $i ?>">
               <table width="100%"><tbody><tr>
-                <th align="left"><?= DAV::xmlescape($group->prop_displayname()) ?></th>
+                <th align="left"><?= DAV::xmlescape($group->user_prop_displayname()) ?></th>
                 <td align="right">
                   <!--    Leave, Cancel request or Join button -->
                   <?php if ($group->is_requested()) : ?>
                     <a><button type="button" value="<?= $group->path ?>" class="btn btn-danger bh-gs-join-leave-button">Cancel request</button></a>
+                  <?php elseif ( $group->is_invited() ) : ?>
+                    <a><button type="button" value="<?= $group->path ?>" class="btn btn-success bh-gs-join-button">Accept invitation</button></a>
                   <?php else : ?>
                     <a><button type="button" value="<?= $group->path ?>" class="btn btn-success bh-gs-join-button">Join</button></a>
                   <?php endif; ?>
@@ -100,7 +102,7 @@
           </div>
           <div id="bh-gs-join-gs-<?= $i ?>" class="accordion-body collapse">
             <div class="accordion-inner">
-              <?= DAV::xmlescape($group->prop(BeeHub::PROP_DESCRIPTION)) ?>
+              <?= DAV::xmlescape($group->user_prop(BeeHub::PROP_DESCRIPTION)) ?>
             </div>
           </div>
         </div>

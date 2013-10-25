@@ -322,8 +322,7 @@ BeeHub';
       if ( $row === null )
         throw new DAV_Status( DAV::HTTP_NOT_FOUND );
       $this->stored_props[DAV::PROP_DISPLAYNAME] = $row[0];
-      $this->stored_props[BeeHub::PROP_DESCRIPTION] =
-        DAV::xmlescape($row[1]);
+      $this->stored_props[BeeHub::PROP_DESCRIPTION] = $row[1];
       $stmt->free_result();
 
       # Query table `beehub_group_members`
@@ -363,7 +362,7 @@ BeeHub';
     }
 
     $p_displayname = $this->stored_props[DAV::PROP_DISPLAYNAME];
-    $p_description = DAV::xmlunescape( $this->stored_props[BeeHub::PROP_DESCRIPTION] );
+    $p_description = $this->stored_props[BeeHub::PROP_DESCRIPTION];
     $stmt = BeeHub_DB::execute(
       'UPDATE `beehub_groups`
           SET `displayname` = ?,
@@ -434,6 +433,20 @@ BeeHub';
     if ( @$retval[DAV::PROP_GROUP_MEMBER_SET] )
       $retval[DAV::PROP_GROUP_MEMBER_SET] = $this->is_member();
     return $retval;
+  }
+
+
+  public function user_set($name, $value = null) {
+    if ( $name === BeeHub::PROP_DESCRIPTION ) {
+      $this->user_set_description( $value );
+    }else{
+      parent::user_set( $name, $value );
+    }
+  }
+
+
+  public function user_set_description( $description ) {
+    parent::user_set( BeeHub::PROP_DESCRIPTION, DAV::xmlunescape( $description ) );
   }
 
 } // class BeeHub_Group

@@ -1,6 +1,10 @@
+/* attibute hidden does not exists in IE */
+[hidden] { display: none; }
+
 .beehub-spacer-navbar-fixed-top {
   height: 58px; /* 40px + 18px padding */
 }
+
 .beehub-spacer-surfsara-logo {
   width: 202px;
 }
@@ -20,6 +24,154 @@
 }
 #notifications li:nth-child(even) {
   background-color: #e8f1e9;
+}
+
+/* CLIENT */
+/* Background color path */
+.breadcrumb {
+  background-color: white !important;
+}
+
+/* Do not show close button on dialog */
+.custom-dialog .ui-dialog-titlebar-close {
+  display: none !important;
+}
+
+/* Prevent scroll dialog */
+.custom-dialog {
+	position: fixed;
+  top: 50px;
+  left: 50px;
+}
+
+/* Position content table */
+#bh-dir-content-table {
+	top: 185px;
+}
+
+/* Align path with tabs */
+.bh-dir-breadcrumb {
+	padding:0 !important;
+}
+
+/* Prevent scrolling for fixed divs*/
+.bh-dir-fixed-path {
+    position: fixed;     
+    top: 40px;
+    padding-top: 15px;
+    width: 100%;
+    height:55;
+    background-color: white; 
+    z-index: 100;
+}
+.bh-dir-fixed-tabs {
+    position: fixed;     
+    top: 95px;
+    width: 100%;
+    height: 50px;
+    background-color: white; 
+    z-index: 100;
+}
+.bh-dir-fixed-buttons {
+    position: fixed;     
+    top: 145px;
+    width: 100%;
+    height: 41px;
+    background-color: white; 
+    z-index: 100; 
+}
+.bh-dir-allocate-space {
+  height: 127px;
+  width: 100%;
+}
+
+/* Bootstrap table header, like sticky header table widget */
+#bh-dir-content-table-sticky,.bh-dir-content-table-header, .bh-dir-acl-table-header {
+	 -moz-border-bottom-colors: none;
+    -moz-border-left-colors: none;
+    -moz-border-right-colors: none;
+    -moz-border-top-colors: none;
+    background-color: #F5F5F5;
+    background-image: -moz-linear-gradient(center top , #FFFFFF, #E6E6E6);
+    background-repeat: repeat-x;
+    box-shadow: 0 1px 0 rgba(255, 255, 255, 0.2) inset, 0 1px 2px rgba(0, 0, 0, 0.05);
+    color: #58595B;
+    cursor: pointer;
+    border-bottom: 2px solid white;
+    font-size: 13px;
+    line-height: 18px;
+    margin-bottom: 0;
+    padding: 4px 12px;
+    text-align: center;
+    text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
+    vertical-align: middle;
+}
+.bh-dir-small-column {
+	width: 10px
+}
+
+/* Tree settings */
+.bh-dir-tree-slide {
+  position: fixed ;
+  top: 187px;
+  bottom: 50px !important;
+  right: 0;
+  display: none;
+  z-index: 100; 
+}
+
+#bh-dir-tree-header {
+  position: fixed ;
+  top: 165px;
+  right: 20px;
+  z-index: 100; 
+  color: #008741;
+  font-weight:bold;
+}
+
+#bh-dir-tree-cancel {
+	width: 20px;
+}
+
+a.bh-dir-tree-slide-trigger{
+  position: fixed;
+  top: 165px; right: 3px;
+  z-index: 100;
+}
+ul.dynatree-container{
+	border-left: 4px solid #58595B !important;
+  border-top: 4px solid #58595B !important;
+  border-bottom: 4px solid #58595B !important;
+  min-width: 200px !important;
+  max-width: 350px !important;
+  border-top-left-radius: 20px;
+  border-bottom-left-radius: 20px;
+  padding: 15px !important;
+}
+
+.bh-dir-nomask {
+  z-index:            600 !important;
+}
+
+/* Mask to disable input*/
+#bh-dir-mask, #bh-dir-mask-transparant, #bh-dir-mask-loading {
+   position:           fixed;
+   z-index:            400;
+   top:                0;
+   left:               0;
+   width:              100%;
+   height:             100%;
+}
+
+#bh-dir-mask-loading {
+	background: url("/system/img/bh-dir-loading.gif") no-repeat scroll 50% 50% #A7A9AC;
+  opacity: 0.3;
+}
+
+/* Mask to disable input*/
+#bh-dir-mask {
+	 background: url("images/ui-bg_flat_0_a7a9ac_40x100.png") repeat-x scroll 50% 50% #A7A9AC;
+   opacity: 0.3;
 }
 
 /* Indent groups and sponsers */
@@ -51,4 +203,48 @@
 }
 .long_text {
   max-width: 900px;
+}
+
+/* ACL view */
+.bh-dir-acl-unknown {
+	color: red;
+}
+
+.bh-dir-acl-protected, .bh-dir-acl-inherited {
+  color: #49AFCD;
+}
+.bh-dir-acl-allow {
+  color: green;
+}
+.bh-dir-acl-deny {
+  color: red;
+}
+.bh-dir-acl-table-label {
+	  width: 100px !important;
+}
+.bh-dir-acl-table-permisions {
+    width: 250px !important;
+}
+.bh-dir-acl-table-search {
+    width: 216px !important;
+}
+
+/* scrollbar autocomplete*/
+ .ui-autocomplete {
+	max-height: 200px;
+	width: 350px;
+	overflow-y: auto;
+	/* prevent horizontal scrollbar */
+	overflow-x: hidden;
+}
+/* IE 6 doesn't support max-height
+* we use height instead, but this forces the menu to always be this tall
+*/
+* html .ui-autocomplete {
+  height: 150px;
+  width: 350px;
+}
+/* width permissions colum to prevent size change after onclick event*/
+.bh-dir-acl-permissions-select, .bh-dir-acl-permissions {
+	width: 250px;
 }
