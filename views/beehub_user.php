@@ -43,7 +43,7 @@ require 'views/header.php';
     <div class="control-group">
       <label class="control-label" for="displayname">Display name</label>
       <div class="controls">
-        <input type="text" id="displayname" name="displayname" value="<?= DAV::xmlescape($this->prop(DAV::PROP_DISPLAYNAME)) ?>" required />
+        <input type="text" id="displayname" name="displayname" value="<?= DAV::xmlescape($this->user_prop(DAV::PROP_DISPLAYNAME)) ?>" required />
       </div>
     </div>
     <?php if ( !is_null( $this->unverified_address ) ) : ?>
@@ -53,7 +53,7 @@ require 'views/header.php';
     <?php endif;?>
       <label class="control-label" for="email">E-mail address</label>
       <div class="controls">
-        <input type="email" id="email" name="email" value="<?= DAV::xmlescape($this->prop(BeeHub::PROP_EMAIL)) ?>" required />
+        <input type="email" id="email" name="email" value="<?= DAV::xmlescape($this->user_prop(BeeHub::PROP_EMAIL)) ?>" required />
         <?php if ( !is_null( $this->unverified_address ) ) : ?>
         	<span class="help-inline">You've requested to change this to <?= DAV::xmlescape($this->unverified_address) ?>, but you haven't verified this address yet!</span>
         <?php endif; ?>
@@ -65,15 +65,15 @@ require 'views/header.php';
       <?php
 /*        <?php if ( DAV::determine_client() & DAV::CLIENT_IE ) : ?>
           <input type="hidden" id="sponsor" name="sponsor" value="<?= DAV::xmlescape( $this->user_prop( BeeHub::PROP_SPONSOR ) ) ?>" />
-          <?= DAV::xmlescape( BeeHub::sponsor( $this->user_prop(BeeHub::PROP_SPONSOR) )->prop( DAV::PROP_DISPLAYNAME ) ) ?> (Sponsor can't be changed in Internet Explorer)
+          <?= DAV::xmlescape( BeeHub::sponsor( $this->user_prop(BeeHub::PROP_SPONSOR) )->user_prop( DAV::PROP_DISPLAYNAME ) ) ?> (Sponsor can't be changed in Internet Explorer)
         <?php else: ?>
 */ ?>
           <select id="sponsor" name="sponsor" <?= ( DAV::determine_client() & DAV::CLIENT_IE ) ? 'disabled="disabled"' : '' ?> >
             <?php
             $registry = BeeHub_Registry::inst();
-            foreach($this->prop(BeeHub::PROP_SPONSOR_MEMBERSHIP) as $sponsor_path) : ?>
+            foreach($this->user_prop(BeeHub::PROP_SPONSOR_MEMBERSHIP) as $sponsor_path) : ?>
               <option value="<?= DAV::xmlescape($sponsor_path) ?>" <?= ( $this->user_prop(BeeHub::PROP_SPONSOR) === $sponsor_path ) ? 'selected="selected"' : '' ?>>
-                <?= DAV::xmlescape( BeeHub::sponsor($sponsor_path)->prop( DAV::PROP_DISPLAYNAME ) ) ?>
+                <?= DAV::xmlescape( BeeHub::sponsor($sponsor_path)->user_prop( DAV::PROP_DISPLAYNAME ) ) ?>
               </option>
               <?php
               $registry->forget($sponsor_path);
@@ -123,7 +123,7 @@ require 'views/header.php';
 
 <div id="panel-surfconext" class="tab-pane fade">
 	<div id="surfconext">
-	  <?php if ( !is_null($this->prop( BeeHub::PROP_SURFCONEXT ) ) ) : ?>
+	  <?php if ( !is_null($this->user_prop( BeeHub::PROP_SURFCONEXT ) ) ) : ?>
 	  <div id="surfconext_linked">
 	    <h5>Your BeeHub account is currently linked to SURFconext account:</h5>
 	    <table><tbody><tr>

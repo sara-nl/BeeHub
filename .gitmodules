@@ -1,9 +1,6 @@
 [submodule "webdav-php"]
 	path = webdav-php
 	url = git@github.com:pieterb/webdav-php.git
-[submodule "client"]
-	path = client
-	url = git@github.com:sara-nl/beehub_client.git
 [submodule "js-webdav-client"]
 	path = js-webdav-client
 	url = git@github.com:sara-nl/js-webdav-client.git

@@ -11,22 +11,8 @@ if ( isset($this) && ( false !== strpos( $this->user_prop_getcontenttype(), 'xml
     <link rel="stylesheet" href="/system/bootstrap/css/bootstrap.min.css" />
     <link rel="stylesheet" href="/system/bootstrap/css/bootstrap-responsive.min.css" />
     <link rel="stylesheet" href="/system/css/beehub.css"/>
+    <link rel="shortcut icon" href="https://www.surfsara.nl/sites/all/themes/st_sara/favicon.ico" type="image/x-icon" />
     <?= isset($header) ? $header : '' ?>
-  </head><?php
-
-if ( @$CONFINED_BOOTSTRAP ) {
-
-  ?><body>
-    <div class="bootstrap">
-      <?php require 'views/navbar.php' ?>
-    </div><?php
-
-} else {
-
-  ?><body class="bootstrap">
+  </head><body class="bootstrap">
     <?php require 'views/navbar.php' ?>
-    <div class="container-fluid"><?php
-
-}
-
-?>
+    <div class="container-fluid">

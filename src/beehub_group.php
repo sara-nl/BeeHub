@@ -530,7 +530,7 @@ BeeHub';
       }
       
       $this->stored_props[DAV::PROP_DISPLAYNAME] = @$document['displayname'];
-      $this->stored_props[BeeHub::PROP_DESCRIPTION] = DAV::xmlescape(@$document['description']);
+      $this->stored_props[BeeHub::PROP_DESCRIPTION] = @$document['description'];
 
       $this->users = array();
       $members = array();
@@ -594,7 +594,7 @@ BeeHub';
     $collection = BeeHub::getNoSQL()->groups;
     $update_document = array(
         'displayname' => @$this->stored_props[DAV::PROP_DISPLAYNAME],
-        'description' => DAV::xmlunescape( $this->stored_props[BeeHub::PROP_DESCRIPTION] )
+        'description' => @$this->stored_props[BeeHub::PROP_DESCRIPTION]
     );
     $collection->update( array( 'name' => $this->name ), array( '$set' => $update_document ) );
             
@@ -679,6 +679,20 @@ BeeHub';
     if ( @$retval[DAV::PROP_GROUP_MEMBER_SET] )
       $retval[DAV::PROP_GROUP_MEMBER_SET] = $this->is_member();
     return $retval;
+  }
+
+
+  public function user_set($name, $value = null) {
+    if ( $name === BeeHub::PROP_DESCRIPTION ) {
+      $this->user_set_description( $value );
+    }else{
+      parent::user_set( $name, $value );
+    }
+  }
+
+
+  public function user_set_description( $description ) {
+    parent::user_set( BeeHub::PROP_DESCRIPTION, DAV::xmlunescape( $description ) );
   }
 
 } // class BeeHub_Group
