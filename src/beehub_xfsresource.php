@@ -88,8 +88,9 @@ class BeeHub_XFSResource extends BeeHub_Resource {
   public function user_propname() {
     $this->init_props();
     $retval = array();
+    $SUPPORTED_PROPERTIES = DAV::getSupported_Properties();
     foreach (array_keys($this->stored_props) as $prop)
-      if (!isset(DAV::$SUPPORTED_PROPERTIES[$prop]))
+      if (!isset($SUPPORTED_PROPERTIES[$prop]))
         $retval[$prop] = true;
     return $retval;
   }

@@ -29,7 +29,7 @@ if ( ( $_SERVER['REQUEST_METHOD'] === 'GET' ) &&
 
 // If a GET request on the root doesn't have this server as a referer, redirect to the homepage:
 if ( !isset($_GET['nosystem']) &&
-     DAV::$PATH === '/' &&
+     DAV::getPath() === '/' &&
      $_SERVER['REQUEST_METHOD'] === 'GET' &&
      ( ! isset( $_SERVER['HTTP_REFERER'] ) ||
        $_SERVER['SERVER_NAME'] !== parse_url(

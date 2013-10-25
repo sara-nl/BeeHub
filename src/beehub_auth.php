@@ -131,7 +131,7 @@ class BeeHub_Auth {
     if (!is_null($user)) {
       $email = $user->prop(BeeHub::PROP_EMAIL);
       if ( empty($email) &&
-           DAV::unslashify(DAV::$PATH) != DAV::unslashify($user->path) ) {
+           DAV::unslashify( DAV::getPath() ) != DAV::unslashify($user->path) ) {
         $message = file_get_contents( dirname( dirname ( __FILE__ ) ) . '/views/error_no_verified_email.html' );
         $message = str_replace( '%USER_PATH%', BeeHub::urlbase(true) . $user->path, $message );
         BeeHub::htmlError( $message, DAV::HTTP_FORBIDDEN );
@@ -213,7 +213,7 @@ class BeeHub_Auth {
    * @return  boolean  True if authentication is required, false otherwise
    */
   public static function is_authentication_required() {
-    $path = DAV::unslashify(DAV::$PATH);
+    $path = DAV::unslashify( DAV::getPath() );
     /**
      * You don't need to authenticate when:
      * - GET (or HEAD) or POST on the users collection (required to create a new user)

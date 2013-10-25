@@ -101,7 +101,7 @@ public function method_GET() {
 
 
 public function method_PUT($stream) {
-  if (DAV::$PATH === $this->path)
+  if ( DAV::getPath() === $this->path )
     $this->assert(DAVACL::PRIV_WRITE);
   if ( !($resource = fopen( $this->localPath, 'w' )) )
     throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);

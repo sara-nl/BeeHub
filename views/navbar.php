@@ -37,7 +37,7 @@
                   <ul class="dropdown-menu">
                     <li><a href="<?= DAV::xmlescape($meResource->path) ?>">Profile</a></li>
                     <?php if (@BeeHub_Auth::inst()->surfconext()) : ?>
-                      <li><a href="<?= DAV::$PATH . '?logout=yes' ?>">Log out</a></li>
+                      <li><a href="<?= DAV::getPath() . '?logout=yes' ?>">Log out</a></li>
                     <?php endif ?>
                     <li><a href="<?= BeeHub::urlbase(false) . BeeHub::SYSTEM_PATH ?>">Go anonymous</a></li>
                   </ul>
@@ -47,11 +47,11 @@
                 <li class="dropdown">
                   <a href="#" class="dropdown-toggle" data-toggle="dropdown">Log in <span class="caret"></span></a>
                   <ul class="dropdown-menu">
-                    <li><a href="<?= BeeHub::urlbase(true) . DAV::$PATH . '?login=passwd' ?>">With username/password</a></li>
+                    <li><a href="<?= BeeHub::urlbase(true) . DAV::getPath() . '?login=passwd' ?>">With username/password</a></li>
                     <?php if (@BeeHub_Auth::inst()->simpleSaml()->isAuthenticated()) : ?>
-                      <li><a href="<?= DAV::$PATH . '?logout=yes' ?>">Log out from SURFconext</a></li>
+                      <li><a href="<?= DAV::getPath() . '?logout=yes' ?>">Log out from SURFconext</a></li>
                     <?php else: ?>
-                      <li><a href="<?= BeeHub::urlbase(true) . DAV::$PATH . '?login=conext' ?>">With SURFconext</a></li>
+                      <li><a href="<?= BeeHub::urlbase(true) . DAV::getPath() . '?login=conext' ?>">With SURFconext</a></li>
                     <?php endif; ?>
                     <li><a href="<?= BeeHub::urlbase(true) . '/system/password_reset.php' ?>">I forgot my password</a></li>
                   </ul>

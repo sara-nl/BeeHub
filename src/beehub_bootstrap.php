@@ -30,7 +30,7 @@ set_include_path(
   dirname(__FILE__) . PATH_SEPARATOR .
   get_include_path()
 );
-require_once( dirname( dirname( __FILE__ ) ) . DIRECTORY_SEPARATOR .'webdav-php' . DIRECTORY_SEPARATOR . 'lib' . DIRECTORY_SEPARATOR . 'dav.php' );
+require_once( dirname( dirname( __FILE__ ) ) . DIRECTORY_SEPARATOR .'webdav-php' . DIRECTORY_SEPARATOR . 'lib' . DIRECTORY_SEPARATOR . 'bootstrap.php' );
 
 set_exception_handler( array( 'BeeHub', 'exception_handler' ) );
 
@@ -38,8 +38,8 @@ set_exception_handler( array( 'BeeHub', 'exception_handler' ) );
 require_once( BeeHub::$CONFIG['environment']['simplesamlphp_autoloader'] );
 
 DAV::$PROTECTED_PROPERTIES[ DAV::PROP_GROUP_MEMBER_SET ] = true;
-DAV::$ACL_PROPERTIES[BeeHub::PROP_SPONSOR] =
-DAV::$SUPPORTED_PROPERTIES[BeeHub::PROP_SPONSOR] = 'sponsor';
+DAV::$ACL_PROPERTIES[BeeHub::PROP_SPONSOR] = 'sponsor';
+DAV::addSupported_Properties( BeeHub::PROP_SPONSOR, 'sponsor' );
 
 BeeHub::handle_method_spoofing();
 
