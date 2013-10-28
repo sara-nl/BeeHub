@@ -129,6 +129,13 @@ class BeeHub {
   }
 
 
+  /**
+   * Returns the best content-type value for (X)HTML output
+   *
+   * For now this should always return text/html
+   *
+   * @return  string  The best content-type value
+   */
   public static function best_xhtml_type() {
     return 'text/html';
     // The rest of the function will be skipped. This is because ExtJS doesn't support X(HT)ML, so we always need to send it as 'text/html'
@@ -176,8 +183,11 @@ class BeeHub {
 
 
   /**
-   * @param $name string the path or name of the resource
-   * @return BeeHub_Group
+   * Convert a path to a BeeHub_Group
+   *
+   * @param   string        $name  The path or name of the resource
+   * @return  BeeHub_Group
+   * @throws  DAV_Status           DAV::HTTP_FORBIDDEN when the path provided doesn't point to a group
    */
   public static function group($name) {
     if ($name[0] !== '/')
@@ -192,8 +202,11 @@ class BeeHub {
 
 
   /**
-   * @param $name string the path or name of the resource
-   * @return BeeHub_Sponsor
+   * Convert a path to a BeeHub_Sponsor
+   *
+   * @param   string          $name  The path or name of the resource
+   * @return  BeeHub_Sponsor
+   * @throws  DAV_Status             DAV::HTTP_FORBIDDEN when the path provided doesn't point to a sponsor
    */
   public static function sponsor($name) {
     if ($name[0] !== '/')
