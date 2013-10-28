@@ -22,13 +22,14 @@ function reset_SERVER() {
   $_SERVER = array();
   $_SERVER['HTTPS'] = true;
   $_SERVER['REQUEST_URI'] = '/';
+  $_SERVER['SCRIPT_NAME'] = 'bootstrap.php'; // Strange enough, PHPunit seems to use this, so let's set it to some value
   $_SERVER['REQUEST_METHOD'] = 'GET';
   $_SERVER['PHP_AUTH_USER'] = 'user';
   $_SERVER['PHP_AUTH_PW'] = 'password';
   $_SERVER['HTTP_REFERER'] = 'http://www.example.org/';
   $_SERVER['SERVER_NAME'] = 'beehub.nl';
   $_SERVER['SERVER_PORT'] = 443;
-  $_SERVER['HTTP_USER_AGENT'] = 'MSIE';
+  $_SERVER['HTTP_USER_AGENT'] = 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:24.0) Gecko/20100101 Firefox/24.0';
   $_SERVER['CONTENT_TYPE'] = 'application/x-www-form-urlencoded';
   $_SERVER['QUERY_STRING'] = '';
   $_SERVER['CONTENT_LENGTH'] = 100;
