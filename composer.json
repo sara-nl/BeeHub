@@ -1,0 +1,21 @@
+{
+    "name": "SURFsara/BeeHub",
+    "description": "The webDAV server for BeeHub",
+    "require-dev": {
+        "phpunit/phpunit": "3.7.*",
+        "phpdocumentor/phpdocumentor": "2.*"
+    },
+    "authors": [
+        {
+            "name": "Pieter van Beek"
+        },
+        {
+            "name": "Niek Bosch",
+            "email": "niek.bosch@surfsara.nl"
+        },
+        {
+            "name": "Laura Leistikow",
+            "email": "laura.leistikow@surfsara.nl"
+        }
+    ]
+}
