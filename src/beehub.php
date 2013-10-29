@@ -78,7 +78,11 @@ class BeeHub {
    * @return string
    */
   public static function urlbase($https = null) {
-    static $URLBASE = array();
+    $cache = DAV_Cache::inst( 'BeeHub' );
+    $URLBASE = $cache->get( 'urlbase' );
+    if ( is_null( $URLBASE ) ) {
+      $URLBASE = array();
+    }
     if ( !@$URLBASE[$https] ) {
       if ( true === $https || ! empty($_SERVER['HTTPS']) && null === $https )
         $tmp = 'https://';
@@ -95,6 +99,7 @@ class BeeHub {
         $tmp .= ":{$server_port}";
       }
       $URLBASE[$https] = $tmp;
+      $cache->set( 'urlbase', $URLBASE );
     }
     return $URLBASE[$https];
   }
@@ -124,6 +129,12 @@ class BeeHub {
   }
 
 
+  /**
+   * Determine the local path in the storage backend
+   *
+   * @param   string  $path  The path in the webDAV namespace
+   * @return  string         The location where the data is stored in the storage backend
+   */
   public static function localPath($path) {
     return DAV::unslashify(self::$CONFIG['environment']['datadir'] . rawurldecode($path));
   }
@@ -145,6 +156,26 @@ class BeeHub {
   }
 
 
+  /**
+   * Handles method spoofing
+   *
+   * Some browsers (read: Internet Explorer) don't support all webDAV request
+   * methods. For these browsers, the build-in client will use a (non-standard)
+   * form of method spoofing which this server can handle.
+   *
+   * The HTTP POST method is used along with a (GET) query string containing one
+   * variable '_method' describing the method that should have been used. For
+   * example: POST /path/to/resource?_method=ACL
+   *
+   * This function puts the original request method in
+   * $_SERVER['ORIGINAL_REQUEST_METHOD'], removes the _method key from $_GET,
+   * rebuilds $_SERVER['QUERY_STRING'] to exclude _method, also rebuilds
+   * $_SERVER['REQUEST_URI'] to do the same and of course sets
+   * $_SERVER['REQUEST_METHOD'] to the spoofed method. Also, it copies $_POST to
+   * $_GET if the spoofed method is GET (and $_POST is cleared).
+   *
+   * @return void
+   */
   public static function handle_method_spoofing() {
     $_SERVER['ORIGINAL_REQUEST_METHOD'] = $_SERVER['REQUEST_METHOD'];
     if ($_SERVER['REQUEST_METHOD'] === 'POST' and
@@ -174,7 +205,7 @@ class BeeHub {
     if ($name[0] !== '/')
       $name = BeeHub::USERS_PATH .
         rawurlencode($name);
-    $retval = BeeHub_Registry::inst()->resource( $name );
+    $retval = DAV::$REGISTRY->resource( $name );
     if ( !$retval || !( $retval instanceof BeeHub_User ) ) throw new DAV_Status(
       DAV::HTTP_FORBIDDEN, DAV::COND_RECOGNIZED_PRINCIPAL
     );
@@ -193,7 +224,7 @@ class BeeHub {
     if ($name[0] !== '/')
       $name = BeeHub::GROUPS_PATH .
         rawurlencode($name);
-    $retval = BeeHub_Registry::inst()->resource( $name );
+    $retval = DAV::$REGISTRY->resource( $name );
     if ( !$retval || !( $retval instanceof BeeHub_Group ) ) throw new DAV_Status(
       DAV::HTTP_FORBIDDEN, DAV::COND_RECOGNIZED_PRINCIPAL
     );
@@ -212,7 +243,7 @@ class BeeHub {
     if ($name[0] !== '/')
       $name = BeeHub::SPONSORS_PATH .
         rawurlencode($name);
-    $retval = BeeHub_Registry::inst()->resource( $name );
+    $retval = DAV::$REGISTRY->resource( $name );
     if ( !$retval || !( $retval instanceof BeeHub_Sponsor ) ) throw new DAV_Status(
       DAV::HTTP_FORBIDDEN, DAV::COND_RECOGNIZED_PRINCIPAL
     );
