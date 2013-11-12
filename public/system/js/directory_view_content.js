@@ -174,21 +174,6 @@
     
     // Edit icon
     $('.bh-dir-content-edit').unbind().click(handle_edit_icon_click);
-    
-    // Rename handler
-    $('.bh-dir-content-rename-form').unbind().change(handle_rename_form_change);
-    $('.bh-dir-content-rename-form').keypress(function(e) {
-      if(e.which === 13) {
-        e.preventDefault();
-        $('.bh-dir-content-rename-form').trigger('change');
-      }
-    });
-    
-    // Blur: erase rename form field
-    $('.bh-dir-content-rename-form').blur(function(){
-      $(this).closest("tr").find(".bh-dir-content-name").show();
-      $(this).closest("tr").find(".bh-dir-content-rename-td").hide();
-    });
   };
   
   /*
@@ -426,6 +411,20 @@
     
     // Focus mouse
     $(this).closest("tr").find(".bh-dir-content-rename-td").find(':input').focus();
+
+    // Set rename handler
+    $(this).closest("tr").find(".bh-dir-content-rename-td").find(':input').unbind().change(handle_rename_form_change);
+    $(this).closest("tr").find(".bh-dir-content-rename-td").find(':input').keypress(function(e) {
+      if(e.which === 13) {
+        e.preventDefault();
+        $(this).closest("tr").find(".bh-dir-content-rename-td").find(':input').trigger('change');
+      }
+    });
+    // Blur: erase rename form field
+    $(this).closest("tr").find(".bh-dir-content-rename-td").find(':input').blur(function(){
+      $(this).closest("tr").find(".bh-dir-content-name").show();
+      $(this).closest("tr").find(".bh-dir-content-rename-td").hide();
+    });
   }; 
   
   /*
