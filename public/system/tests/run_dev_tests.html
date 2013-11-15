@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>QUnit tests</title>
+    <link rel="stylesheet" href="resources/qunit.css" />
+    <link href="/system/js/plugins/dynatree/src/skin/ui.dynatree.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <div id="qunit"></div>
+    <div id="qunit-fixture"></div>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
+    <script src="../js/jquery-ui.js"></script>
+    <script src="../bootstrap/js/bootstrap.js"></script>
+    <script src="../js/webdavlib.js"></script>
+    <script src="../js/beehub.js"></script>
+    <script src="../js/server/principals.js"></script>
+    <script src="resources/qunit.js"></script>
+    <script src="resources/mock.js"></script>
+    <script src="../js/directory.js"></script> 
+    <script src="../js/directory_controller.js"></script>    
+    <script src="../js/directory_view.js"></script> 
+    <script src="../js/directory_view_content.js"></script> 
+    <script src="../js/directory_view_tree.js"></script>
+    <script src="../js/plugins/dynatree/jquery/jquery.cookie.js"></script>
+    <script src="../js/plugins/dynatree/src/jquery.dynatree.js"></script>  
+    <script src="../js/directory_view_dialog.js"></script>  
+    <script src="../js/directory_view_acl.js"></script>  
+    <script src="../js/directory_resource.js"></script>
+	  <script src="../js/plugins/tablesorter/js/jquery.tablesorter.js"></script>
+	  <script src="../js/plugins/tablesorter/js/jquery.tablesorter.widgets.js"></script>
+	  <script type="text/javascript">
+	    // For Dynatree
+	    var treecontents = [{ title:"home", id:"/home/", expand:true}];
+	  </script>
+    <script src="../tests/unittests/directory_controller.js"></script>
+  </body>
+</html>
