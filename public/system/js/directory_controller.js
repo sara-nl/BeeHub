@@ -54,6 +54,17 @@
             .replace(/>/g, '&gt;');
   };
   
+  /**
+   * Go to page
+   * 
+   * Public function
+   * 
+   * @param {String} location
+   */
+  nl.sara.beehub.controller.goToPage = function(location) {
+    window.location.href=location;
+  };
+  
   /*
    * Clear all views
    * 

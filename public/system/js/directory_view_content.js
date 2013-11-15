@@ -84,28 +84,28 @@
    
     // Add listeners
     // Go to users homedirectory handler
-    $('.bh-dir-content-gohome').click(function() { window.location.href=$(this).attr("id");});
+    $('.bh-dir-content-gohome').unbind().click(function(){nl.sara.beehub.controller.goToPage($(this).attr("id"))});
     
     // Go up one directory button
-    $('.bh-dir-content-up').click(function() { window.location.href=$(this).attr("id");});
+    $('.bh-dir-content-up').unbind().click(function(){nl.sara.beehub.controller.goToPage($(this).attr("id"))});
     
     // Upload button
-    $('.bh-dir-content-upload').click(handle_upload_button_click);
+    $('.bh-dir-content-upload').unbind().click(handle_upload_button_click);
     
     // When upload files are choosen
-    $('.bh-dir-content-upload-hidden').change(handle_upload_change);
+    $('.bh-dir-content-upload-hidden').unbind().change(handle_upload_change);
     
     // New folder button
-    $('.bh-dir-content-newfolder').click(nl.sara.beehub.controller.createNewFolder);
+    $('.bh-dir-content-newfolder').unbind().click(handle_newfolder_button_click);
     
     // Delete button click handler
-    $('.bh-dir-content-delete').click(handle_delete_button_click);
+    $('.bh-dir-content-delete').unbind().click(handle_delete_button_click);
     
     // Copy button click handler
-    $('.bh-dir-content-copy').click(handle_copy_button_click);
+    $('.bh-dir-content-copy').unbind().click(handle_copy_button_click);
     
     // Move button click handler
-    $('.bh-dir-content-move').click(handle_move_button_click);
+    $('.bh-dir-content-move').unbind().click(handle_move_button_click);
     
     // All handlers that belong to a row
     setRowHandlers();
@@ -174,21 +174,6 @@
     
     // Edit icon
     $('.bh-dir-content-edit').unbind().click(handle_edit_icon_click);
-    
-    // Rename handler
-    $('.bh-dir-content-rename-form').unbind().change(handle_rename_form_change);
-    $('.bh-dir-content-rename-form').keypress(function(e) {
-      if(e.which === 13) {
-        e.preventDefault();
-        $('.bh-dir-content-rename-form').trigger('change');
-      }
-    });
-    
-    // Blur: erase rename form field
-    $('.bh-dir-content-rename-form').blur(function(){
-      $(this).closest("tr").find(".bh-dir-content-name").show();
-      $(this).closest("tr").find(".bh-dir-content-rename-td").hide();
-    });
   };
   
   /*
@@ -426,6 +411,21 @@
     
     // Focus mouse
     $(this).closest("tr").find(".bh-dir-content-rename-td").find(':input').focus();
+    
+    // Rename handler
+    $('.bh-dir-content-rename-form').unbind().change(handle_rename_form_change);
+    $('.bh-dir-content-rename-form').keypress(function(e) {
+      if(e.which === 13) {
+        e.preventDefault();
+        $('.bh-dir-content-rename-form').trigger('change');
+      }
+    });
+    
+    // Blur: erase rename form field
+    $('.bh-dir-content-rename-form').blur(function(){
+      $(this).closest("tr").find(".bh-dir-content-name").show();
+      $(this).closest("tr").find(".bh-dir-content-rename-td").hide();
+    });
   }; 
   
   /*
@@ -463,11 +463,17 @@
   /*
    * Onclick handler delete button content view
    */
+  var handle_newfolder_button_click = function(){
+    nl.sara.beehub.controller.createNewFolder();
+  };
+  
+  /*
+   * Onclick handler delete button content view
+   */
   var handle_delete_button_click = function(){
     var resources = getSelectedResources();
     // init and start action "delete"
     nl.sara.beehub.controller.initAction(resources,"delete");
-  
   };
   
   /*
