@@ -170,7 +170,7 @@
     $('.bh-dir-content-checkbox').unbind().click(handle_checkbox_click);
     
     // Open selected handler: this can be a file or a directory
-    $('.bh-dir-content-openselected').unbind().click(function() {window.location.href=$(this).attr('name');});
+    $('.bh-dir-content-openselected').unbind().click(function(){nl.sara.beehub.controller.goToPage($(this).attr("name"))});
     
     // Edit icon
     $('.bh-dir-content-edit').unbind().click(handle_edit_icon_click);

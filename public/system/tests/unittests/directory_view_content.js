@@ -78,9 +78,6 @@ test( 'Init: Delete, copy and move buttons click handlers', function() {
  */
 test( 'Init: Upload click and change handlers', function() {
   expect( 4 );
-
-  window.File = true;
-  window.FileList = true;
   
   $("#qunit-fixture").append('<button class="bh-dir-content-upload"></button>');
   $("#qunit-fixture").append('<button class="bh-dir-content-upload-hidden"></button>');
@@ -182,5 +179,26 @@ test( 'Init: Select checboxes handlers', function() {
   deepEqual($('.bh-dir-content-delete').attr("disabled"), "disabled", "Delete button should be disabled");
 });
 
+/**
+ * Test open selected folder icon
+ */
+test( 'Init: Open selected folder icon', function() {
+  expect( 1 );
 
+  // Home and up button
+  
+  $("#qunit-fixture").append('<i class="bh-dir-content-openselected" name="/home/testfolder/"></i>');
+
+  // Rewrite controller goToPage
+  nl.sara.beehub.controller.goToPage = function(location){
+    deepEqual(location, "/home/testfolder/", "Location should be /home/testfolder" );
+  };
+  
+  // Call init function
+  nl.sara.beehub.view.content.init();
+  
+  // Call click handlers
+  // Buttons
+  $('.bh-dir-content-openselected').click();
+});
 // End of file
