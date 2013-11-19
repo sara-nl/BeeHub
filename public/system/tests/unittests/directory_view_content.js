@@ -12,7 +12,7 @@
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU Lesser General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU Lesser General Public License
  * along with js-webdav-client.  If not, see <http://www.gnu.org/licenses/>.
  */
@@ -30,10 +30,10 @@ test( 'Init: Home and up buttons click handlers', function() {
   $("#qunit-fixture").append('<button id="/home/testuser/" class="bh-dir-content-up"></button>');
   
   // Rewrite controller goToPage
+  var rememberGoToPage = nl.sara.beehub.controller.goToPage;
   nl.sara.beehub.controller.goToPage = function(location){
     deepEqual(location, "/home/testuser/", "Location should be /home/testuser" );
   };
-  
   // Call init function
   nl.sara.beehub.view.content.init();
   
@@ -41,6 +41,10 @@ test( 'Init: Home and up buttons click handlers', function() {
   // Buttons
   $('.bh-dir-content-gohome').click();
   $('.bh-dir-content-up').click();
+  
+  // Original environment
+  nl.sara.beehub.controller.goToPage = rememberGoToPage;
+  nl.sara.beehub.view.content.init();
 });
 
 /**
@@ -57,6 +61,7 @@ test( 'Init: Delete, copy and move buttons click handlers', function() {
   $("#qunit-fixture").append('<input type="checkbox" value="testfile1" name="/home/laura/testfile1" class="bh-dir-content-checkbox" checked>');
   $("#qunit-fixture").append('<input type="checkbox" value="testfile2" name="/home/laura/testfile2" class="bh-dir-content-checkbox">');
   
+  var rememberInitAction = nl.sara.beehub.controller.initAction;
   nl.sara.beehub.controller.initAction = function(resources, action){
     deepEqual(resources[0].path, "/home/laura/testfolder1", action+": Name of first resource should be /home/laura/testfolder1");
     deepEqual(resources[0].displayname, "testfolder1", action+": Displayname of first resource shpuld be testfolder1");
@@ -71,21 +76,26 @@ test( 'Init: Delete, copy and move buttons click handlers', function() {
   $('.bh-dir-content-copy').click();
   $('.bh-dir-content-move').click();
  
+  // Original environment
+  nl.sara.beehub.controller.initAction = rememberInitAction;
+  nl.sara.beehub.view.content.init();
 });
 
 /**
  * Test upload button click handler
  */
 test( 'Init: Upload click and change handlers', function() {
-  expect( 4 );
+  expect( 2 );  
   
   $("#qunit-fixture").append('<button class="bh-dir-content-upload"></button>');
   $("#qunit-fixture").append('<button class="bh-dir-content-upload-hidden"></button>');
   
+  var rememberInitAction = nl.sara.beehub.controller.initAction;
   nl.sara.beehub.controller.initAction = function(resources, action){
     ok(true, "Upload click handler is set");
   };
   
+  var rememberShowError = nl.sara.beehub.controller.showError;
   nl.sara.beehub.controller.showError = function(){
     ok(true, "IE should show an error when uploading files is clicked")
   }; 
@@ -97,22 +107,18 @@ test( 'Init: Upload click and change handlers', function() {
     // This should be done bu clicking the upload button
       ok(true, "Upload hidden click handler field is set");
   });
-  window.File = true;
-  window.FileList = true;
+  
   $('.bh-dir-content-upload').click();
-
-  window.File = false;
-  $('.bh-dir-content-upload').click();
-
-  window.File = true;
-  window.FileList = false;
-  $('.bh-dir-content-upload').click();
-
  
   // Call init function
   nl.sara.beehub.view.content.init();
   
   $('.bh-dir-content-upload-hidden').change();
+  
+  // Original environment
+  nl.sara.beehub.controller.initAction = rememberInitAction;
+  nl.sara.beehub.controller.showError = rememberShowError;
+  nl.sara.beehub.view.content.init();
 });
 
 /**
@@ -126,11 +132,16 @@ test( 'Init: New folder button click handler', function() {
   // Call init function
   nl.sara.beehub.view.content.init();
  
+  var rememberCreateNewFolder = nl.sara.beehub.controller.createNewFolder;
   nl.sara.beehub.controller.createNewFolder = function(){
     ok(true, "Click handler new folder button is set");
   };
   
   $('.bh-dir-content-newfolder').click();
+  
+  // Original environment
+  nl.sara.beehub.controller.createNewFolder = rememberCreateNewFolder;
+  nl.sara.beehub.view.content.init();
 });
 
 /**
@@ -190,6 +201,7 @@ test( 'Init: Open selected folder icon', function() {
   $("#qunit-fixture").append('<i class="bh-dir-content-openselected" name="/home/testfolder/"></i>');
 
   // Rewrite controller goToPage
+  var rememberGoToPage = nl.sara.beehub.controller.goToPage;
   nl.sara.beehub.controller.goToPage = function(location){
     deepEqual(location, "/home/testfolder/", "Location should be /home/testfolder" );
   };
@@ -200,5 +212,63 @@ test( 'Init: Open selected folder icon', function() {
   // Call click handlers
   // Buttons
   $('.bh-dir-content-openselected').click();
+  
+  // Original environment
+  nl.sara.beehub.controller.goToPage = rememberGoToPage;
+  nl.sara.beehub.view.content.init();
+});
+
+/**
+ * Test edit icon
+ */
+test( 'Init: Edit icon', function() {
+  expect( 10 );
+
+  // Create environment
+  $("#qunit-fixture").append('<table><tbody><tr id="/home/testuser/testfolder">\
+      <td title="Rename"><i class="icon-edit bh-dir-content-edit"></i></td>\
+      <td name="new_folder" class="bh-dir-content-name displayname">\
+        <a href="/home/testuser/testfolder"><b>testfolder/</b></a>\
+      </td>\
+      <td hidden="" class="bh-dir-content-rename-td">\
+        <input value="testfolder" name="testfolder" class="bh-dir-content-rename-form">\
+      </td>\
+    </tr></tbody></table>');
+  
+  // Call init function
+  nl.sara.beehub.view.content.init();
+  
+  var rememberRenameResource = nl.sara.beehub.controller.renameResource;
+  nl.sara.beehub.controller.renameResource = function(resource, value, overwrite){
+    deepEqual(resource.path, "/home/testuser/testfolder", "Location should be /home/testuser/testfolder" );
+    deepEqual(value, "newFolderName", "Value should be newFolderName" );
+  };
+  
+  // Call events
+  // Check click event
+  $('.bh-dir-content-edit').click();
+  deepEqual($(".bh-dir-content-name").is(':hidden'), true, 'Name field should be hidden');
+  deepEqual($(".bh-dir-content-rename-td").is(':hidden'), false, 'Input field should be shown');
+  deepEqual($(".bh-dir-content-rename-td").find(':input').val(),'testfolder','Input field value should be testfolder');
+  deepEqual($(".bh-dir-content-rename-td").find(':input').is(':focus'), true, 'Mouse should be focused in input field');
+
+  $(".bh-dir-content-rename-td").find(':input').val("newFolderName");
+  
+  // Check change event
+  $('.bh-dir-content-rename-form').change();
+  
+  // Check keypress event
+  var e = jQuery.Event("keypress");
+  e.which = 13; // # Some key code value
+  $('.bh-dir-content-rename-form').trigger(e);
+  
+  // Check blur event
+  $('.bh-dir-content-rename-form').blur();
+  deepEqual($(".bh-dir-content-name").is(':hidden'), false, 'Name field should be shown');
+  deepEqual($(".bh-dir-content-rename-td").is(':hidden'), true, 'Input field should be hidden');
+  
+  // Original environment
+  nl.sara.beehub.controller.renameResource = rememberRenameResource;
+  nl.sara.beehub.view.content.init();
 });
 // End of file
