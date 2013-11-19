@@ -28,20 +28,20 @@ require 'views/header.php';
 		 		<ul>
 		 			<li>A directory with the groupname will be created</li>
 		 			<li>By default all group members have all permissions to the contents of this directory</li>
-		 			<li>Create or control a group <a href="groups">here</a></li>
+		 			<li>Create or control a group <a href="https://beehub.nl/system/groups">here</a></li>
 		 		</ul>
 		 	</li>
       <li>
 		 		<b>Change an ACL</b>
 		 		<ul>
-		 			<li>This can be done with the <a href="/home">BeeHub Web Interface</a></li>
+		 			<li>This can be done with the <a href="/?nosystem">BeeHub Web Interface</a></li>
 		 			<li>See below for more information about the BeeHub Web Interface</li>
 		 		</ul>
 		 	</li>
 		</ul>
 		<br/>
 		<h4>BeeHub Web Interface</h4>
-		<p>With the <a title="BeeHub Web Interface" href="/home" target="_blank">BeeHub Web Interface</a>  
+		<p>With the <a title="BeeHub Web Interface" href="/?nosystem" target="_blank">BeeHub Web Interface</a>  
 		it is possible to share your BeeHub data with others. At this moment the best browsers to use are firefox and chrome.</p>
 		
 		<p>The user interface contains three panels:</p>
