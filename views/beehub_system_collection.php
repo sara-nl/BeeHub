@@ -23,4 +23,10 @@ require 'views/header.php';
     <p>BeeHub uses the WebDAV protocol, including all the more advanced features of WebDAV an HTTP, such as Locking, lost-update prevention, partial file up- and downloads, metadata management and more. All from your favorite programming language, as long as it has an HTTP library. You can even script it in Bash!</p>
   </div>
 </div>
+<div class="row-fluid">
+  <div class="span12">
+    <h5>Support</h5>
+    If you have any questions or remarks, please read the <a href="https://www.surfsara.nl/systems/beehub/usage/">documentation</a> or contact us at <a href="mailto:support@beehub.nl">support@beehub.nl</a>.
+  </div>
+</div>
 <?php require 'views/footer.php'; ?>
