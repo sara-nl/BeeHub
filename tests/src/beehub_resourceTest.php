@@ -18,12 +18,15 @@
  * @subpackage  tests
  */
 
+declare( encoding = 'UTF-8' );
+namespace BeeHub\tests;
+
 /**
  * Tests for the class BeeHub_Resource
  * @package     BeeHub
  * @subpackage  tests
  */
-class BeeHub_ResourceTest extends PHPUnit_Framework_TestCase {
+class BeeHub_ResourceTest extends \PHPUnit_Framework_TestCase {
 
   public function setUp() {
     reset_SERVER();

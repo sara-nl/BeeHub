@@ -18,6 +18,14 @@
  * @subpackage  tests
  */
 
+declare( encoding = 'UTF-8' );
+namespace BeeHub\tests;
+
+/**
+ * Resets the $_SERVER super global to a fixed state
+ *
+ * @return  void
+ */
 function reset_SERVER() {
   $_SERVER = array();
   $_SERVER['HTTPS'] = true;
@@ -56,8 +64,8 @@ function reset_SERVER() {
 }
 reset_SERVER();
 
-require_once( dirname( dirname( __FILE__ ) ) . DIRECTORY_SEPARATOR . 'webdav-php' . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR . 'mocks' . DIRECTORY_SEPARATOR . 'dav_cache.php' );
-spl_autoload_register('spl_autoload');
-require_once( dirname( dirname( __FILE__ ) ) . '/src/beehub_bootstrap.php' );
+require_once( \dirname( \dirname( __FILE__ ) ) . \DIRECTORY_SEPARATOR . 'webdav-php' . \DIRECTORY_SEPARATOR . 'tests' . \DIRECTORY_SEPARATOR . 'mocks' . \DIRECTORY_SEPARATOR . 'dav_cache.php' );
+\spl_autoload_register('\spl_autoload');
+require_once( \dirname( \dirname( __FILE__ ) ) . '/src/beehub_bootstrap.php' );
 
 // End of file
