@@ -40,7 +40,7 @@ class BeeHub_ACL_ProviderTest extends \PHPUnit_Framework_TestCase {
 
 
   public function testUser_prop_current_user_principal() {
-    $authJohn = $this->getMock( '\BeeHub\tests\BeeHub_Auth' );
+    $authJohn = $this->getMock( '\BeeHub\tests\BeeHub_Auth', array( 'is_authenticated', 'current_user' ), array( new \SimpleSAML_Auth_Simple( 'BeeHub' ) ) );
     $authJohn->expects( $this->any() )
              ->method( 'is_authenticated' )
              ->will( $this->returnValue( true ) );
@@ -51,7 +51,7 @@ class BeeHub_ACL_ProviderTest extends \PHPUnit_Framework_TestCase {
     $obj = new \BeeHub_ACL_Provider( $authJohn );
     $this->assertSame( '/system/users/john', $obj->user_prop_current_user_principal(), 'BeeHub_ACL_Provider::user_prop_current_user_principal() should return a string with the path to the current user' );
 
-    $authNull = $this->getMock( '\BeeHub\tests\BeeHub_Auth' );
+    $authNull = $this->getMock( '\BeeHub\tests\BeeHub_Auth', array( 'is_authenticated', 'current_user' ), array( new \SimpleSAML_Auth_Simple( 'BeeHub' ) ) );
     $authNull->expects( $this->any() )
              ->method( 'is_authenticated' )
              ->will( $this->returnValue( false ) );
@@ -65,7 +65,7 @@ class BeeHub_ACL_ProviderTest extends \PHPUnit_Framework_TestCase {
 
 
   public function testWheel() {
-    $authJohn = $this->getMock( '\BeeHub\tests\BeeHub_Auth' );
+    $authJohn = $this->getMock( '\BeeHub\tests\BeeHub_Auth', array( 'is_authenticated', 'current_user' ), array( new \SimpleSAML_Auth_Simple( 'BeeHub' ) ) );
     $authJohn->expects( $this->any() )
              ->method( 'is_authenticated' )
              ->will( $this->returnValue( true ) );
@@ -76,7 +76,7 @@ class BeeHub_ACL_ProviderTest extends \PHPUnit_Framework_TestCase {
     $obj = new \BeeHub_ACL_Provider( $authJohn );
     $this->assertTrue( $obj->wheel(), 'BeeHub_ACL_Provider::wheel() should return true, because John is the administrator' );
 
-    $authJane = $this->getMock( '\BeeHub\tests\BeeHub_Auth' );
+    $authJane = $this->getMock( '\BeeHub\tests\BeeHub_Auth', array( 'is_authenticated', 'current_user' ), array( new \SimpleSAML_Auth_Simple( 'BeeHub' ) ) );
     $authJane->expects( $this->any() )
              ->method( 'is_authenticated' )
              ->will( $this->returnValue( true ) );

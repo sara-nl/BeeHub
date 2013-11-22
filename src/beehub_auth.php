@@ -43,8 +43,8 @@ class BeeHub_Auth {
   /**
    * This class is a singleton, so the constructor is private. Instantiate through BeeHub_Auth::inst()
    */
-  private function __construct() {
-    $this->simpleSAML_authentication = new SimpleSAML_Auth_Simple('BeeHub');
+  protected function __construct( SimpleSAML_Auth_Simple $simpleSAML ) {
+    $this->simpleSAML_authentication = $simpleSAML;
   }
 
   /**
@@ -52,10 +52,13 @@ class BeeHub_Auth {
    *
    * @return  BeeHub_Auth  The only instance of this class
    */
-  public static function inst() {
+  public static function inst( SimpleSAML_Auth_Simple $simpleSAML = null ) {
+    if ( is_null( $simpleSAML ) ) {
+      $simpleSAML = new SimpleSAML_Auth_Simple( 'BeeHub' );
+    }
     static $inst = null;
     if (is_null($inst)) {
-      $inst = new BeeHub_Auth();
+      $inst = new BeeHub_Auth( $simpleSAML );
     }
     return $inst;
   }

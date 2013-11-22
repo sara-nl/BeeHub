@@ -28,8 +28,8 @@ namespace BeeHub\tests;
  */
 class BeeHub_Auth extends \BeeHub_Auth {
 
-  public function __construct() {
-    $this->simpleSAML_authentication = new \SimpleSAML_Auth_Simple('BeeHub');
+  function __construct( \SimpleSAML_Auth_Simple $simpleSAML ) {
+    parent::__construct( $simpleSAML );
   }
 
 } // Class BeeHub_Test_Auth

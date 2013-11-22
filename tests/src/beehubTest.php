@@ -140,7 +140,7 @@ class beehubTest extends BeeHub_Tests_Db_Test_Case {
 
   public function testNotifications() {
     // First check the notifications for John
-    $authJohn = $this->getMock( '\BeeHub\tests\BeeHub_Auth' );
+    $authJohn = $this->getMock( '\BeeHub\tests\BeeHub_Auth', array( 'is_authenticated', 'current_user' ), array( new \SimpleSAML_Auth_Simple( 'BeeHub' ) ) );
     $authJohn->expects( $this->any() )
              ->method( 'is_authenticated' )
              ->will( $this->returnValue( true ) );
@@ -174,7 +174,7 @@ class beehubTest extends BeeHub_Tests_Db_Test_Case {
     $this->assertSame( \BeeHub::notifications( $authJohn ), $expectedJohn, 'BeeHub::notifications() should return an array with the correct notifications for John Doe' );
 
     // And check the notifications for Jane
-    $authJane = $this->getMock( '\BeeHub\tests\BeeHub_Auth' );
+    $authJane = $this->getMock( '\BeeHub\tests\BeeHub_Auth', array( 'is_authenticated', 'current_user' ), array( new \SimpleSAML_Auth_Simple( 'BeeHub' ) ) );
     $authJane->expects( $this->any() )
              ->method( 'is_authenticated' )
              ->will( $this->returnValue( true ) );
