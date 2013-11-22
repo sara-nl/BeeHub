@@ -1,7 +1,8 @@
 <?php
-
-/*·************************************************************************
- * Copyright ©2007-2012 SARA b.v., Amsterdam, The Netherlands
+/**
+ * Contains the BeeHub_ACL_Provider class
+ *
+ * Copyright ©2007-2013 SURFsara b.v., Amsterdam, The Netherlands
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -12,39 +13,68 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- **************************************************************************/
-
-/**
- * File documentation (who cares)
+ *
  * @package BeeHub
  */
 
 /**
- * Lock provider.
+ * ACL provider.
  * @package BeeHub
  */
 class BeeHub_ACL_Provider implements DAVACL_ACL_Provider {
 
-
-/**
- * @return BeeHub_ACL_Provider
- */
-static public function inst() {
-  static $inst = null;
-  if (!$inst) $inst = new BeeHub_ACL_Provider();
-  return $inst;
-}
+  /**
+   * @var  BeeHub_Auth  The authentication instance to check authentication against
+   */
+  private $auth;
 
 
-// TODO: Deprecate.
-public $CURRENT_USER_PRINCIPAL = null;
+  /**
+   * Constructor just requires dependecies
+   *
+   * For backwards compatibility, the parameters can be omitted and the
+   * constructor will set it to the default values
+   *
+   * @param  BeeHub_Auth  $auth  The authentication instance to check authentication against
+   */
+  public function __construct( BeeHub_Auth $auth = null ) {
+    if ( is_null( $auth ) ) {
+      $this->auth = BeeHub_Auth::inst();
+    }else{
+      $this->auth = $auth;
+    }
+  }
+
+
+  /**
+   * Returns the cached instance of this class
+   *
+   * For backwards compatibility, the parameters can be omitted and the method
+   * will set it to the default values
+   *
+   * @param   BeeHub_Auth          $auth  The authentication instance to check authentication against
+   * @return  BeeHub_ACL_Provider         The cached instance of this class
+   */
+  static public function inst( BeeHub_Auth $auth = null ) {
+    if ( is_null( $auth ) ) {
+      $auth = BeeHub_Auth::inst();
+    }
+    static $inst = null;
+    if (!$inst) $inst = new BeeHub_ACL_Provider( $auth );
+    return $inst;
+  }
 
 
 /**
  * @see DAVACL_ACL_Provider::user_prop_current_user_principal
  */
 public function user_prop_current_user_principal() {
-  return $this->CURRENT_USER_PRINCIPAL;
+  $currentUser = $this->auth->current_user();
+  if ( !is_null( $currentUser ) ) {
+    return $currentUser->path;
+  }else{
+    return null;
+  }
 }
 
 
@@ -52,7 +82,7 @@ public function user_prop_current_user_principal() {
  * @return boolean is the current user an administrator?
  */
 public function wheel() {
-  return BeeHub::$CONFIG['namespace']['wheel_path'] === $this->CURRENT_USER_PRINCIPAL;
+  return BeeHub::$CONFIG['namespace']['wheel_path'] === $this->user_prop_current_user_principal();
 //  if ($this->wheelCache === null)
 //    $this->wheelCache = (
 //      ($cup = $this->user_prop_current_user_principal()) &&
@@ -107,7 +137,7 @@ public function user_prop_acl_restrictions() {
 
 
 public function user_prop_principal_collection_set() {
-  return array(BeeHub::GROUPS_PATH, BeeHub::USERS_PATH);
+  return array( BeeHub::GROUPS_PATH, BeeHub::USERS_PATH, BeeHub::SPONSORS_PATH );
 }
 
 

@@ -34,6 +34,12 @@ class BeeHub_Auth {
    */
   private $simpleSAML_authentication;
 
+
+  /**
+   * @var  BeeHub_User  The user currently logged in, or null if no user is logged in
+   */
+  private $currentUserPrincipal = null;
+
   /**
    * This class is a singleton, so the constructor is private. Instantiate through BeeHub_Auth::inst()
    */
@@ -146,8 +152,7 @@ class BeeHub_Auth {
    * @return  void
    */
   private function set_user($user_name) {
-    BeeHub_ACL_Provider::inst()->CURRENT_USER_PRINCIPAL =
-      BeeHub::USERS_PATH . $user_name;
+    $this->currentUserPrincipal = BeeHub::user( $user_name );
   }
 
 
@@ -158,8 +163,7 @@ class BeeHub_Auth {
    *   logged in.
    */
   public function current_user() {
-    $cup = BeeHub_ACL_Provider::inst()->user_prop_current_user_principal();
-    return $cup ? BeeHub::user($cup) : null;
+    return $this->currentUserPrincipal;
   }
 
 
