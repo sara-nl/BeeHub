@@ -261,11 +261,11 @@ class BeeHub {
    * handling the type. This can for example be an array with the group name and
    * display name of the group you are invited for.
    *
-   * @return  array  An array with notifications.
+   * @param   BeeHub_Auth  $auth  An instance of the authentication class that can be used to determine the current user
+   * @return  array               An array with notifications.
    */
-  public static function notifications() {
+  public static function notifications( BeeHub_Auth $auth ) {
     $notifications = array();
-    $auth = BeeHub_Auth::inst();
     if ($auth->is_authenticated()) {
       $user = $auth->current_user();
 

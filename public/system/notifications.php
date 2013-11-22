@@ -12,6 +12,6 @@ $auth->handle_authentication(false);
 header('Content-type: application/json');
 header('Cache-Control: no-cache, must-revalidate');
 
-$notifications = BeeHub::notifications();
+$notifications = BeeHub::notifications( BeeHub_Auth::inst() );
 
 print(json_encode($notifications));

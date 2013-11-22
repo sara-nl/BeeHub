@@ -3,6 +3,7 @@
     "description": "The webDAV server for BeeHub",
     "require-dev": {
         "phpunit/phpunit": "3.7.*",
+        "phpunit/dbunit": "1.3.*",
         "phpdocumentor/phpdocumentor": "2.*"
     },
     "authors": [

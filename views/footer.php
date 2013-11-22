@@ -12,7 +12,7 @@
     <script type="text/javascript" src="/system/js/beehub.js"></script>
     <script type="text/javascript" src="/system/js/server/principals.js"></script>
     <script type="text/javascript">
-      nl.sara.beehub.show_notifications(<?= json_encode(BeeHub::notifications()) ?>);
+      nl.sara.beehub.show_notifications(<?= json_encode( BeeHub::notifications( BeeHub_Auth::inst() ) ) ?>);
       <?= ( ( intval(@$_GET['show_notifications']) === 1 ) ? '$("#notification_button").dropdown("toggle");' : '' ) ?>
     </script>
     <?= isset($footer) ? $footer : '' ?>

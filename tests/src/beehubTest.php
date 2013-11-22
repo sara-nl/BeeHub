@@ -26,9 +26,10 @@ namespace BeeHub\tests;
  * @package     BeeHub
  * @subpackage  tests
  */
-class beehubTest extends \PHPUnit_Framework_TestCase {
+class beehubTest extends BeeHub_Tests_Db_Test_Case {
 
   public function setUp() {
+    parent::setUp();
     reset_SERVER();
   }
 
@@ -138,7 +139,64 @@ class beehubTest extends \PHPUnit_Framework_TestCase {
 
 
   public function testNotifications() {
-    // TODO
+    // First check the notifications for John
+    $authJohn = $this->getMock( '\BeeHub\tests\BeeHub_Auth' );
+    $authJohn->expects( $this->any() )
+             ->method( 'is_authenticated' )
+             ->will( $this->returnValue( true ) );
+    $authJohn->expects( $this->any() )
+             ->method( 'current_user' )
+             ->will( $this->returnValue( new \BeeHub_User( '/system/users/john' ) ) );
+
+    $expectedJohn = array(
+        array(
+            'type' => 'group_request',
+            'data' => array(
+                'group' => '/system/groups/bar',
+                'group_displayname' => 'Bar',
+                'user' => '/system/users/jane',
+                'user_displayname' => 'Jane Doe',
+                'user_email' => 'jane.doe@mailservice.com'
+            )
+        ),
+        array(
+            'type' => 'sponsor_request',
+            'data' => array(
+                'sponsor' => '/system/sponsors/sponsor_b',
+                'sponsor_displayname' => 'Company B',
+                'user' => '/system/users/jane',
+                'user_displayname' => 'Jane Doe',
+                'user_email' => 'jane.doe@mailservice.com'
+            )
+        )
+    );
+
+    $this->assertSame( \BeeHub::notifications( $authJohn ), $expectedJohn, 'BeeHub::notifications() should return an array with the correct notifications for John Doe' );
+
+    // And check the notifications for Jane
+    $authJane = $this->getMock( '\BeeHub\tests\BeeHub_Auth' );
+    $authJane->expects( $this->any() )
+             ->method( 'is_authenticated' )
+             ->will( $this->returnValue( true ) );
+    $authJane->expects( $this->any() )
+             ->method( 'current_user' )
+             ->will( $this->returnValue( new \BeeHub_User( '/system/users/jane' ) ) );
+
+    $expectedJane = array(
+        array(
+            'type' => 'group_invitation',
+            'data' => array(
+                'group' => '/system/groups/foo',
+                'displayname' => 'Foo'
+            )
+        ),
+        array(
+            'type' => 'no_sponsor',
+            'data' => array()
+        )
+    );
+    
+    $this->assertSame( \BeeHub::notifications( $authJane ), $expectedJane, 'BeeHub::notifications() should return an array with the correct notifications for Jane Doe' );
   }
 
 
@@ -165,9 +223,13 @@ class beehubTest extends \PHPUnit_Framework_TestCase {
   }
 
   
-//  public function testUrlbase() {
-//   TODO
-//  }
+  public function testUrlbase() {
+    $this->assertSame( 'https://beehub.nl', \BeeHub::urlbase(), 'BeeHub::urlbase() should return the correct base URL' );
+
+    $_SERVER['SERVER_NAME'] = 'www.beehub.nl';
+    unset( $_SERVER['HTTPS'] );
+    $this->assertSame( 'http://www.beehub.nl:443', \BeeHub::urlbase(), 'BeeHub::urlbase() should return the correct base URL for none HTTPS requests' );
+  }
 
 
   public function testUser() {

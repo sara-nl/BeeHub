@@ -64,8 +64,44 @@ function reset_SERVER() {
 }
 reset_SERVER();
 
+
+/**
+ * Returns an array with the parsed configuration file
+ *
+ * @param   boolean  $parse  If set to true, the configuration file will be parsed, even if we have a parsed version in cache
+ * @return  array            The configuration.
+ * @see     parse_ini_file
+ */
+function getConfig( $parse = false ) {
+  static $config = null;
+  if ( $parse || \is_null( $config ) ) {
+    $config = \parse_ini_file( \dirname( __FILE__ ) . \DIRECTORY_SEPARATOR . 'config.ini', true );
+  }
+  return $config;
+}
+
+
+// Check for configuration file
+if ( !\file_exists( \dirname( __FILE__ ) . \DIRECTORY_SEPARATOR . 'config.ini' ) ) {
+  print( "No configuration file exists. Please copy ' . \dirname( __FILE__ ) . \DIRECTORY_SEPARATOR . 'config_example.ini to ' . \dirname( __FILE__ ) . \DIRECTORY_SEPARATOR . 'config.ini and edit it to set the right configuration options\n" );
+  die( 1 );
+}
+
+// Load dependencies
+require_once( \dirname( __FILE__ ) . \DIRECTORY_SEPARATOR . 'dbtests_data' . \DIRECTORY_SEPARATOR . 'db_testcase.php' );
 require_once( \dirname( \dirname( __FILE__ ) ) . \DIRECTORY_SEPARATOR . 'webdav-php' . \DIRECTORY_SEPARATOR . 'tests' . \DIRECTORY_SEPARATOR . 'mocks' . \DIRECTORY_SEPARATOR . 'dav_cache.php' );
 \spl_autoload_register('\spl_autoload');
 require_once( \dirname( \dirname( __FILE__ ) ) . '/src/beehub_bootstrap.php' );
+
+function loadMocks() {
+  $mockPath = \realpath( \dirname( __FILE__ ) ) . \DIRECTORY_SEPARATOR . 'mocks' . \DIRECTORY_SEPARATOR;
+  $dir = new \DirectoryIterator( $mockPath );
+  foreach ( $dir as $file ) {
+    if ( ( substr( $file, 0, 1 ) !== '.' ) && ( substr( $file, -4 ) === '.php' ) ) {
+      require_once( $mockPath . $file );
+    }
+  }
+}
+loadMocks();
 
 // End of file
