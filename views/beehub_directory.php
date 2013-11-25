@@ -288,7 +288,11 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
                 }
                 $showsize = round($size, 2) . ' ' . $unit;
               } else {
-                $showsize = '';
+								if (substr($member->path, -1) === '/') {
+                	$showsize = '';
+                } else {
+									$showsize = '0 B';
+								}
               }
               ?>
 <!--             Size -->
