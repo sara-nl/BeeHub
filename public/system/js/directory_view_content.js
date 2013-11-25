@@ -411,13 +411,14 @@
     
     // Focus mouse
     $(this).closest("tr").find(".bh-dir-content-rename-td").find(':input').focus();
-    
+
     // Rename handler
     $('.bh-dir-content-rename-form').unbind().change(handle_rename_form_change);
     $('.bh-dir-content-rename-form').keypress(function(e) {
+      var input = $(this);
       if(e.which === 13) {
         e.preventDefault();
-        $('.bh-dir-content-rename-form').trigger('change');
+        input.trigger('change');
       }
     });
     
