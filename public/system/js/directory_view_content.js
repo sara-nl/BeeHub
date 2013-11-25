@@ -425,6 +425,11 @@
     $(this).closest("tr").find(".bh-dir-content-rename-td").find(':input').val(name);
     
     // Focus mouse
+    $(this).closest("tr").find(".bh-dir-content-rename-td").find(':input').focus(
+      function() {
+        $(this).select();
+        }
+     );
     $(this).closest("tr").find(".bh-dir-content-rename-td").find(':input').focus();
   }; 
   
