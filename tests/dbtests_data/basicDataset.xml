@@ -108,7 +108,7 @@
       <value>John Doe</value>
       <value>john.doe@mailservice.com</value>
       <null />
-      <value>password_of_john (should be encrypted)</value>
+      <value>$6$rounds=5000$126b519331f5189c$cvGKahLo6.q/TSTeLMxGC8qpwHC6QIA37NCdn6xKpBJVCU3vBzwJkK3HS7.d4RwJcCG.oXMHBiv06oMnZCwjM0</value>
       <null />
       <null />
       <null />
@@ -123,7 +123,7 @@
       <value>Jane Doe</value>
       <value>jane.doe@mailservice.com</value>
       <value>j.doe@mailservice.com</value>
-      <value>password_of_jane (should be encrypted)</value>
+      <value>$6$rounds=5000$cvGKahLo6.q/TSTe$20dAPKtCcskhKC7SJ0ObfQodGu8dKhj5Eb4ipm09NK7RRJzTONJTsZgxASn3I1PtV6Yrwi186Xw9mn2mOxqKc.</value>
       <value>qwertyuiop</value>
       <value>Account at the top row of letters on my keyboard</value>
       <value>CN=Jane Doe</value>

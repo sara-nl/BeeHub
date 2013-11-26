@@ -92,6 +92,7 @@ require_once( \dirname( __FILE__ ) . \DIRECTORY_SEPARATOR . 'dbtests_data' . \DI
 require_once( \dirname( \dirname( __FILE__ ) ) . \DIRECTORY_SEPARATOR . 'webdav-php' . \DIRECTORY_SEPARATOR . 'tests' . \DIRECTORY_SEPARATOR . 'mocks' . \DIRECTORY_SEPARATOR . 'dav_cache.php' );
 \spl_autoload_register('\spl_autoload');
 require_once( \dirname( \dirname( __FILE__ ) ) . '/src/beehub_bootstrap.php' );
+\DAV::$testMode = true;
 
 function loadMocks() {
   $mockPath = \realpath( \dirname( __FILE__ ) ) . \DIRECTORY_SEPARATOR . 'mocks' . \DIRECTORY_SEPARATOR;
