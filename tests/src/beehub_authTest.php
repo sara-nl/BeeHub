@@ -84,42 +84,52 @@ class BeeHub_AuthTest extends BeeHub_Tests_Db_Test_Case {
     $objUnauthorized->handle_authentication( true, true); //Do not stumble on a double login (SimpleSaml looks like it's logged in)
   }
 
-  public function ttestHandle_authenticationHTTP2() {
-    if ( ( 'passwd' !== @$_GET['login'] ) && $this->simpleSAML_authentication->isAuthenticated() ) {
-      $surfId = $this->simpleSAML_authentication->getAuthData("saml:sp:NameID");
-      $surfId = $surfId['Value'];
-      $statement = BeeHub_DB::execute('SELECT `user_name` FROM `beehub_users` WHERE `surfconext_id`=?', 's', $surfId);
-      if ( $row = $statement->fetch_row() ) { // We found a user, this is the one that's logged in!
-        $this->SURFconext = true;
-        $this->set_user( $row[0] );
-      } elseif ($_SERVER['REQUEST_URI'] !== BeeHub::USERS_PATH) {
-        throw new DAV_Status(
-          DAV::HTTP_TEMPORARY_REDIRECT,
-          BeeHub::urlbase(true) . BeeHub::USERS_PATH
-        );
-      }
-    } elseif ( ('conext' === @$_GET['login']) ) { // We don't know this SURFconext ID, this is a new user
-        $this->simpleSAML_authentication->login();
-    } elseif ( ( 'passwd' === @$_GET['login'] ) || $requireAuth ) {
-      // If the user didn't send any credentials, but we require authentication, ask for it!
-      $this->unauthorized();
-    }
+  public function testHandle_authenticationSimpleSaml() {
+    unset( $_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW'] );
 
-    // If the current user is logged in, but has no verified e-mail address.
-    // He/she is not authorized to do anything, but will get a message that we
-    // want a verified e-mail address. Although he has to be able to verify
-    // his e-mail address of course (so GET and POST on /system/users/<name>
-    // is allowed)
-    $user = $this->current_user();
-    if (!is_null($user)) {
-      $email = $user->prop(BeeHub::PROP_EMAIL);
-      if ( empty($email) &&
-           DAV::unslashify( DAV::getPath() ) != DAV::unslashify($user->path) ) {
-        $message = file_get_contents( dirname( dirname ( __FILE__ ) ) . '/views/error_no_verified_email.html' );
-        $message = str_replace( '%USER_PATH%', BeeHub::urlbase(true) . $user->path, $message );
-        BeeHub::htmlError( $message, DAV::HTTP_FORBIDDEN );
-      }
-    }
+    // First test when not logged in yet, but when we want to login using SimpleSaml
+    $simpleSamlLogin = $this->getMock( 'SimpleSAML_Auth_Simple', array( 'login', 'isAuthenticated' ), array( 'BeeHub' ) );
+    $simpleSamlLogin->expects( $this->once() )
+                    ->method( 'login' );
+    $simpleSamlLogin->expects( $this->any() )
+                    ->method( 'isAuthenticated' )
+                    ->will( $this->returnValue( false ) );
+
+    $_GET['login'] = 'conext';
+
+    $objLogin = new BeeHub_Auth( $simpleSamlLogin );
+    $objLogin->handle_authentication();
+
+    // And test once when simpleSaml is logged in
+    $simpleSaml = $this->getMock( 'SimpleSAML_Auth_Simple', array( 'login', 'getAuthData', 'isAuthenticated' ), array( 'BeeHub' ) );
+    $simpleSaml->expects( $this->once() )
+               ->method( 'getAuthData' )
+               ->with( $this->equalTo( 'saml:sp:NameID' ) )
+               ->will( $this->returnValue( array( 'Value' => 'qwertyuiop' ) ) );
+    $simpleSaml->expects( $this->any() )
+               ->method( 'isAuthenticated' )
+               ->will( $this->returnValue( true ) );
+
+    $_GET['login'] = 'conext';
+
+    $obj = new BeeHub_Auth( $simpleSaml );
+    $obj->handle_authentication();
+
+    // And test once when simpleSaml is logged in
+    $simpleSamlUnknown = $this->getMock( 'SimpleSAML_Auth_Simple', array( 'login', 'getAuthData', 'isAuthenticated' ), array( 'BeeHub' ) );
+    $simpleSamlUnknown->expects( $this->once() )
+                      ->method( 'getAuthData' )
+                      ->with( $this->equalTo( 'saml:sp:NameID' ) )
+                      ->will( $this->returnValue( array( 'Value' => 'unknown id' ) ) );
+    $simpleSamlUnknown->expects( $this->any() )
+                      ->method( 'isAuthenticated' )
+                      ->will( $this->returnValue( true ) );
+
+    $_GET['login'] = 'conext';
+
+    $objUnknown = new BeeHub_Auth( $simpleSamlUnknown );
+    $this->setExpectedException( 'DAV_Status', null, \DAV::HTTP_TEMPORARY_REDIRECT );
+    $objUnknown->handle_authentication();
   }
 
 
