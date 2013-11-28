@@ -76,66 +76,18 @@
       widthFixed: false,
       // Fixed header on top of the table
       widgets : ['stickyHeaders'],
+      // Start with sort asc
+      sortRestart: true,
       widgetOptions : {
         // apply sticky header top below the top of the browser window
         stickyHeaders_offset : 186
       }
     });
-//    $("#bh-dir-content-table").tablesorter({sortList: [[2,0]]});
-//    $("#bh-dir-content-table").trigger("update");
-    var currentSort;
-//  //assign the sortStart event
-//    $("#bh-dir-content-table").unbind().bind("sortStart",function(sorter) {
-//////      console.log("ja");
-//////      console.log($(this));
-//////      console.log(sorter.target.config.sortList);
-//    }).bind("sortEnd", function(sorter) {
-//        currentSort = sorter.target.config.sortList;
-//////        console.log(currentSort); 
-//    });
-//    
-    nl.sara.beehub.view.content.sorting = [];
-    $('.tablesorter-header').click(function() {
-////      handleHeaderClick(this);
-      console.log(nl.sara.beehub.view.content.sorting);
-      var a = parseInt($(this).attr('data-column'),0);
-      console.log(a);
-      switch(nl.sara.beehub.view.content.sorting.length)
-      {
-        case 0:
-          nl.sara.beehub.view.content.sorting = [[a,0]]; 
-          break;
-        case 1:
-        case 2:
-          var b = 0;
-          if ((a === nl.sara.beehub.view.content.sorting[0][0]) &&
-            (nl.sara.beehub.view.content.sorting[0][1] === 0))
-          {
-            b = 1;
-          }
-          var c = nl.sara.beehub.view.content.sorting[0][0];
-          nl.sara.beehub.view.content.sorting = [[a,b],[c,0]]
-          break;
-//        case 2:
-//          var b = 0;
-//          if ((a === nl.sara.beehub.view.content.sorting[0][0]) &&
-//            (nl.sara.beehub.view.content.sorting[0][1] === 0))
-//          {
-//            b = 1;
-//          }
-//          var c = nl.sara.beehub.view.content.sorting[0][0];
-//          nl.sara.beehub.view.content.sorting = [[a,b],[c,b]]
-//          break;
-        default:
-          // This should never happen
-      };
-//      var sorting = [[2,0]]; 
-    // sort on the first column 
-      console.log(nl.sara.beehub.view.content.sorting);
-      $("#bh-dir-content-table").trigger("sorton",[nl.sara.beehub.view.content.sorting]); 
-    // return false to stop default link action 
-      return false; 
-    });  
+
+   // Remember previous sort columns and use it for second sort column
+    $("#bh-dir-content-table").unbind().bind("sortStart",function(sorter) {
+     sorter.target.config.sortAppend = sorter.target.config.sortList;
+    });
 
     // Add listeners
     // Go to users homedirectory handler
