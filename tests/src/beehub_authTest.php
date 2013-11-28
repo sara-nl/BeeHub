@@ -41,20 +41,30 @@ class BeeHub_AuthTest extends BeeHub_Tests_Db_Test_Case {
 
 
   public function testHandle_authenticationLogout() {
-    $simpleSaml = $this->getMock( 'SimpleSAML_Auth_Simple', array( 'isAuthenticated', 'logout' ), array( 'BeeHub' ) );
+    $simpleSaml = $this->getMock( 'SimpleSAML_Auth_Simple', array( 'getAuthData', 'isAuthenticated', 'logout' ), array( 'BeeHub' ) );
+    $simpleSaml->expects( $this->once() )
+               ->method( 'getAuthData' )
+               ->with( $this->equalTo( 'saml:sp:NameID' ) )
+               ->will( $this->returnValue( array( 'Value' => 'qwertyuiop' ) ) );
     $simpleSaml->expects( $this->any() )
                ->method( 'isAuthenticated' )
-               ->will( $this->returnValue( true ) );
+               ->will( $this->onConsecutiveCalls( true, true, false ) );
     $simpleSaml->expects( $this->once() )
                ->method( 'logout' );
 
-    $_GET['logout'] = 1;
-    unset( $_SERVER['HTTPS'] );
-    unset( $_SERVER['PHP_AUTH_USER'] );
-    unset( $_SERVER['PHP_AUTH_PW'] );
+    unset( $_SERVER['HTTPS'], $_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW'] );
     $_SERVER['REQUEST_URI'] = \BeeHub::USERS_PATH;
     $obj = new BeeHub_Auth( $simpleSaml );
-    $obj->handle_authentication();
+    $obj->handle_authentication( false );
+    $this->assertSame( '/system/users/jane', $obj->current_user()->path, 'BeeHub_Auth::current_user() should be set to the principal path of Jane Doe before logout' );
+    $this->assertTrue( $obj->is_authenticated(), 'BeeHub_Auth::is_authenticated() should be true before logout' );
+    $this->assertTrue( $obj->surfconext(), 'BeeHub_Auth::surfconext() should return the true before logout' );
+
+    $_GET['logout'] = 1;
+    $obj->handle_authentication( false );
+    $this->assertNull( $obj->current_user(), 'BeeHub_Auth::current_user() should be null after logout' );
+    $this->assertFalse( $obj->is_authenticated(), 'BeeHub_Auth::is_authenticated() should be false after logout' );
+    $this->assertFalse( $obj->surfconext(), 'BeeHub_Auth::surfconext() should return the false after logout' );
   }
 
 
@@ -71,17 +81,38 @@ class BeeHub_AuthTest extends BeeHub_Tests_Db_Test_Case {
 
     $obj = new BeeHub_Auth( $simpleSaml );
     $obj->handle_authentication();
-
-    // No need to put an explicit assertion here; if things go wrong, handle_authentication() is made to generate error messages
+    $this->assertSame( '/system/users/john', $obj->current_user()->path, 'BeeHub_Auth::current_user() should now be set to the principal path of John Doe' );
+    $this->assertTrue( $obj->is_authenticated(), 'BeeHub_Auth::is_authenticated() should be true after HTTP login' );
+    $this->assertFalse( $obj->surfconext(), 'BeeHub_Auth::surfconext() should return the false after HTTP login' );
 
     // And check for wrong passwords
+    $simpleSamlWrongPwd = $this->getMock( 'SimpleSAML_Auth_Simple', array( 'getAuthData', 'isAuthenticated', 'logout' ), array( 'BeeHub' ) );
+    $simpleSamlWrongPwd->expects( $this->once() )
+                       ->method( 'getAuthData' )
+                       ->with( $this->equalTo( 'saml:sp:NameID' ) )
+                       ->will( $this->returnValue( array( 'Value' => 'qwertyuiop' ) ) );
+    $simpleSamlWrongPwd->expects( $this->any() )
+                       ->method( 'isAuthenticated' )
+                       ->will( $this->onConsecutiveCalls( true, true, false ) );
+    $simpleSamlWrongPwd->expects( $this->once() )
+                       ->method( 'logout' );
+    $objUnauthorized = $this->getMock( '\BeeHub\tests\BeeHub_Auth', array( 'unauthorized' ), array( $simpleSamlWrongPwd ) );
+    $objUnauthorized->expects( $this->once() )
+                    ->method( 'unauthorized' );
+
+    unset( $_SERVER['PHP_AUTH_USER'], $_SERVER['PHP_AUTH_PW'] );
+    $objUnauthorized->handle_authentication();
+    $this->assertSame( '/system/users/jane', $objUnauthorized->current_user()->path, 'BeeHub_Auth::current_user() should be set to the principal path of Jane Doe before attempting a password login with the wrong password' );
+    $this->assertTrue( $objUnauthorized->is_authenticated(), 'BeeHub_Auth::is_authenticated() should be true before attempting a password login with the wrong password' );
+    $this->assertTrue( $objUnauthorized->surfconext(), 'BeeHub_Auth::surfconext() should return the true before attempting a password login with the wrong password' );
+
     $_SERVER['PHP_AUTH_USER'] = 'john';
     $_SERVER['PHP_AUTH_PW'] = 'wrong password';
 
-    $objUnauthorized = $this->getMock( '\BeeHub\tests\BeeHub_Auth', array( 'unauthorized' ), array( $simpleSaml ) );
-    $objUnauthorized->expects( $this->once() )
-                    ->method( 'unauthorized' );
-    $objUnauthorized->handle_authentication( true, true); //Do not stumble on a double login (SimpleSaml looks like it's logged in)
+    $objUnauthorized->handle_authentication();
+    $this->assertNull( $objUnauthorized->current_user(), 'BeeHub_Auth::current_user() should be null after using a wrong password' );
+    $this->assertFalse( $objUnauthorized->is_authenticated(), 'BeeHub_Auth::is_authenticated() should be false after using a wrong password' );
+    $this->assertfalse( $objUnauthorized->surfconext(), 'BeeHub_Auth::surfconext() should return the false after using a wrong password' );
   }
 
   public function testHandle_authenticationSimpleSaml() {
@@ -101,7 +132,7 @@ class BeeHub_AuthTest extends BeeHub_Tests_Db_Test_Case {
     $objLogin->handle_authentication();
 
     // And test once when simpleSaml is logged in
-    $simpleSaml = $this->getMock( 'SimpleSAML_Auth_Simple', array( 'login', 'getAuthData', 'isAuthenticated' ), array( 'BeeHub' ) );
+    $simpleSaml = $this->getMock( 'SimpleSAML_Auth_Simple', array( 'getAuthData', 'isAuthenticated' ), array( 'BeeHub' ) );
     $simpleSaml->expects( $this->once() )
                ->method( 'getAuthData' )
                ->with( $this->equalTo( 'saml:sp:NameID' ) )
@@ -114,6 +145,9 @@ class BeeHub_AuthTest extends BeeHub_Tests_Db_Test_Case {
 
     $obj = new BeeHub_Auth( $simpleSaml );
     $obj->handle_authentication();
+    $this->assertSame( '/system/users/jane', $obj->current_user()->path, 'BeeHub_Auth::current_user() should now be set to the principal path of Jane Doe' );
+    $this->assertTrue( $obj->is_authenticated(), 'BeeHub_Auth::is_authenticated() should be true when Jane Doe is logged in' );
+    $this->assertTrue( $obj->surfconext(), 'BeeHub_Auth::surfconext() should return the true when Jane Doe logs in through SimpleSaml' );
 
     // And test once when simpleSaml is logged in
     $simpleSamlUnknown = $this->getMock( 'SimpleSAML_Auth_Simple', array( 'login', 'getAuthData', 'isAuthenticated' ), array( 'BeeHub' ) );
@@ -133,98 +167,36 @@ class BeeHub_AuthTest extends BeeHub_Tests_Db_Test_Case {
   }
 
 
-//  /**
-//   * Sets the current user
-//   *
-//   * @param   string  $user_name  The user name
-//   * @return  void
-//   */
-//  private function set_user($user_name) {
-//    $this->currentUserPrincipal = BeeHub::user( $user_name );
-//  }
-//
-//
-//  /**
-//   * Gives the currently logged in user
-//   *
-//   * @return  BeeHub_User  The currently logged in user or NULL if no user is
-//   *   logged in.
-//   */
-//  public function current_user() {
-//    return $this->currentUserPrincipal;
-//  }
-//
-//
-//  /**
-//   * Is the current user authenticated?
-//   *
-//   * @return  boolean  True if the user is authenticated, false otherwise
-//   */
-//  public function is_authenticated() {
-//    $cup = BeeHub_ACL_Provider::inst()->user_prop_current_user_principal();
-//    return (boolean) $cup;
-//  }
-//
-//
-//  /**
-//   * Checks if this user is logged in through SURFconext
-//   * @return  boolean  True if the user is logged in through SURFconext, false otherwise
-//   */
-//  public function surfconext() {
-//    return $this->SURFconext;
-//  }
-//
-//
-//  /**
-//   * Fetches the SimpleSaml object
-//   * @return  SimpleSAML_Auth_Simple  The SimpleSAML_Auth_Simple instance used for authentication
-//   */
-//  public function simpleSaml() {
-//    return $this->simpleSAML_authentication;
-//  }
-//
-//
-//  /**
-//   * This method is called when DAV receives an 401 Unauthenticated exception.
-//   * @return bool true if a response has been sent to the user.
-//   */
-//  public function unauthorized() {
-//    DAV::header( array(
-//      'WWW-Authenticate' => 'Basic realm="' . BeeHub::$CONFIG['authentication']['realm'] . '"',
-//      'Content-Type' => BeeHub::best_xhtml_type()
-//    ) );
-//    BeeHub::htmlError(
-//            file_get_contents( dirname( dirname ( __FILE__ ) ) . '/views/error_unauthorized.html' ) ,
-//            DAV::HTTP_UNAUTHORIZED
-//    );
-//  }
-//
-//
-//  /**
-//   * Determines whether you need to authenticate based on the method and URL of the request
-//   * @return  boolean  True if authentication is required, false otherwise
-//   */
-//  public static function is_authentication_required() {
-//    $path = DAV::unslashify( DAV::getPath() );
-//    /**
-//     * You don't need to authenticate when:
-//     * - GET (or HEAD) or POST on the users collection (required to create a new user)
-//     * - GET (or HEAD) on the system collection (required to read the 'homepage')
-//     * In other cases you do need to authenticate
-//     */
-//    $noRequireAuth = (
-//      (
-//        $path === DAV::unslashify( BeeHub::USERS_PATH ) &&
-//        in_array( $_SERVER['REQUEST_METHOD'], array('GET', 'POST', 'HEAD') )
-//      ) ||
-//      (
-//        $path === DAV::unslashify( BeeHub::SYSTEM_PATH ) &&
-//        in_array($_SERVER['REQUEST_METHOD'], array('GET', 'HEAD') )
-//      )
-//    );
-//
-//    return ! $noRequireAuth;
-//  }
+  public function testSimpleSaml() {
+    $simpleSaml = $this->getMock( 'SimpleSAML_Auth_Simple', null, array( 'BeeHub' ) );
+    $obj = new BeeHub_Auth( $simpleSaml );
+    $this->assertSame( $simpleSaml, $obj->simpleSaml(), 'BeeHub_Auth::simpleSaml() should return the simpleSaml instance provided to the constructor' );
+  }
+
+
+  public function testIs_authentication_required() {
+    $_SERVER['REQUEST_URI'] = \BeeHub::USERS_PATH;
+    $_SERVER['REQUEST_METHOD'] = 'GET';
+    $this->assertFalse( \BeeHub_Auth::is_authentication_required(), 'BeeHub_Auth::is_authentication_required() should return false when doing GET on the users collection (required to create a new user)' );
+    $_SERVER['REQUEST_METHOD'] = 'HEAD';
+    $this->assertFalse( \BeeHub_Auth::is_authentication_required(), 'BeeHub_Auth::is_authentication_required() should return false when doing HEAD on the users collection (required to create a new user)' );
+    $_SERVER['REQUEST_METHOD'] = 'POST';
+    $this->assertFalse( \BeeHub_Auth::is_authentication_required(), 'BeeHub_Auth::is_authentication_required() should return false when doing POST on the users collection (required to create a new user)' );
+    $_SERVER['REQUEST_METHOD'] = 'PUT';
+    $this->assertTrue ( \BeeHub_Auth::is_authentication_required(), 'BeeHub_Auth::is_authentication_required() should return true when using another request method on the users collection (required to create a new user)' );
+
+    $_SERVER['REQUEST_URI'] = \BeeHub::SYSTEM_PATH;
+    $_SERVER['REQUEST_METHOD'] = 'GET';
+    $this->assertFalse( \BeeHub_Auth::is_authentication_required(), 'BeeHub_Auth::is_authentication_required() should return false when doing GET on the system collection (required to read the homepage)' );
+    $_SERVER['REQUEST_METHOD'] = 'HEAD';
+    $this->assertFalse( \BeeHub_Auth::is_authentication_required(), 'BeeHub_Auth::is_authentication_required() should return false when doing HEAD on the system collection (required to read the homepage)' );
+    $_SERVER['REQUEST_METHOD'] = 'PUT';
+    $this->assertTrue ( \BeeHub_Auth::is_authentication_required(), 'BeeHub_Auth::is_authentication_required() should return false when using another request method on the system collection (required to read the homepage)' );
+
+    $_SERVER['REQUEST_URI'] = '/some/other/path';
+    $_SERVER['REQUEST_METHOD'] = 'GET';
+    $this->assertTrue ( \BeeHub_Auth::is_authentication_required(), 'BeeHub_Auth::is_authentication_required() should return true on all other locations' );
+  }
 
 } // class BeeHub_AuthTest
 

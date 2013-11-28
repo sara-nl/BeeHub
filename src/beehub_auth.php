@@ -72,6 +72,10 @@ class BeeHub_Auth {
    * @param  boolean  $allowDoubleLogin  TODO documentation
    */
   public function handle_authentication($requireAuth = true, $allowDoubleLogin = false) {
+    // We start with assuming nobody is logged in
+    $this->set_user( null );
+    $this->SURFconext = false;
+
     if (isset($_GET['logout'])) {
       if ($this->simpleSAML_authentication->isAuthenticated()) {
         $this->simpleSAML_authentication->logout();
@@ -151,11 +155,15 @@ class BeeHub_Auth {
   /**
    * Sets the current user
    *
-   * @param   string  $user_name  The user name
+   * @param   string  $user_name  The user name, or null to indicate no user is logged in
    * @return  void
    */
   private function set_user($user_name) {
-    $this->currentUserPrincipal = BeeHub::user( $user_name );
+    if ( is_null( $user_name ) ) {
+      $this->currentUserPrincipal = null;
+    }else{
+      $this->currentUserPrincipal = BeeHub::user( $user_name );
+    }
   }
 
 
@@ -176,8 +184,7 @@ class BeeHub_Auth {
    * @return  boolean  True if the user is authenticated, false otherwise
    */
   public function is_authenticated() {
-    $cup = BeeHub_ACL_Provider::inst()->user_prop_current_user_principal();
-    return (boolean) $cup;
+    return ! is_null( $this->current_user() );
   }
 
 
