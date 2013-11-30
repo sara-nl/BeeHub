@@ -88,6 +88,7 @@ public function method_COPY( $path ) {
       DAV::PROP_GETETAG,
       DAV::PROP_OWNER,
       DAV::PROP_GROUP,
+      BeeHub::PROP_SPONSOR,
       DAV::PROP_ACL,
       DAV::PROP_LOCKDISCOVERY
     ) ) )
