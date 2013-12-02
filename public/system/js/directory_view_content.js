@@ -63,6 +63,23 @@
       }, 
       type: 'numeric' 
     }); 
+    
+    // Sort on name attribute
+    $.tablesorter.addParser({ 
+      // set a unique id 
+      id: 'name', 
+      is: function(s) { 
+        // return false so this parser is not auto detected 
+        return false; 
+      }, 
+      format: function(s, table, cell, cellIndex) { 
+        // get data attributes from $(cell).attr('data-something');
+        // check specific column using cellIndex
+        return $(cell).attr('name');
+      }, 
+      // set type, either numeric or text 
+      type: 'text' 
+    }); 
   
   //make table sortable with tablesorter plugin
     $("#bh-dir-content-table").tablesorter({
@@ -71,8 +88,10 @@
         0 : { sorter: false },
         1 : { sorter: false },
         4 : { sorter: 'filesize'},
-        8: { sorter:false }
+        5 : { sorter: 'name'},
+        8 : { sorter:false }
       },
+      dateFormat : "ddmmyyyy", // set the default date format
       widthFixed: false,
       // Fixed header on top of the table
       widgets : ['stickyHeaders'],
@@ -113,7 +132,7 @@
     
     // Move button click handler
     $('.bh-dir-content-move').click(handle_move_button_click);
-    
+  
     // All handlers that belong to a row
     setRowHandlers();
   };
@@ -181,6 +200,9 @@
     
     // Edit icon
     $('.bh-dir-content-edit').unbind().click(handle_edit_icon_click);
+    
+    // Menu icon
+//    $('.bh-dir-content-menu').unbind().hover(handle_menu_icon_hover);
     
     // Rename handler
     $('.bh-dir-content-rename-form').unbind().change(handle_rename_form_change);
@@ -438,6 +460,13 @@
         }
      );
     $(this).closest("tr").find(".bh-dir-content-rename-td").find(':input').focus();
+  }; 
+  
+  /*
+   * Onclick handler menu icon hoverin content view
+   */
+  var handle_menu_icon_hover = function(){
+    $(this).dropdown('toggle');
   }; 
   
   /*

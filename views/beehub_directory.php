@@ -90,7 +90,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
   <ul id="bh-dir-tabs" class="nav nav-tabs">
     <li class="active"><a href="#bh-dir-panel-contents" data-toggle="tab">Contents</a>
     </li>
-    <li><a href="#bh-dir-panel-acl" data-toggle="tab">ACL</a></li>
+    <li><a href="#bh-dir-panel-acl" data-toggle="tab">Share</a></li>
   </ul>
 </div>
 <!-- End class fixed tabs -->
@@ -215,10 +215,10 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
     <table id="bh-dir-content-table" class="table table-striped table-hover table-condensed">
       <thead class="bh-dir-content-table-header">
         <tr>
+<!--           Rename icon header -->
+           <th class="bh-dir-small-column"></th> 
 <!--         	Checkbox header -->
           <th class="bh-dir-small-column"><input type="checkbox" class="bh-dir-content-checkboxgroup"></th>
-<!--           Rename icon header -->
-          <th class="bh-dir-small-column"></th>
 <!--           Name header -->
           <th>Name</th>
 <!-- 					Hidden rename column -->
@@ -232,7 +232,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
 <!--           Owner header -->
           <th>Owner</th>
           <!-- share file, not yet implemented -->
-          <!--  <th class="bh-dir-small-column"></th> -->
+          <!--  <th class="bh-dir-small-column"></th> -->          
         </tr>
       </thead>
       <tbody>
@@ -249,23 +249,36 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
           );
           ?>
           <tr id="<?= DAV::xmlescape( DAV::unslashify($member->path) ) ?>">
+            <td>
+            	<div class="dropdown">
+    						<a class="dropdown-toggle bh-dir-content-menu" data-toggle="dropdown" href="#"><i class="icon-th" style="cursor: pointer"></i></a>
+    						<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+    							<li><a class="bh-dir-content-edit" href="#">Rename</a></li>
+    							<li><a class="bh-dir-content-acl" href="#">Share</a></li>
+    						</ul>
+    					</div>
+            	</td>
 <!--             Select checkbox -->
 <td class="bh-dir-small-column"><input type="checkbox" class="bh-dir-content-checkbox" name="<?= DAV::xmlescape( DAV::unslashify( $member->path ) ) ?>"
-                                    value="<?= DAV::xmlescape( $member->user_prop_displayname() ) ?>"></td>
+                                    value="<?= DAV::xmlescape( $member->user_prop_displayname() ) ?>"></td>   
 <!--             Rename icon -->
-            <td class="bh-dir-small-column" data-toggle="tooltip" title="Rename"><i
-                class="icon-edit bh-dir-content-edit" style="cursor: pointer"></i></td>
+             <!--  <td class="bh-dir-small-column" data-toggle="tooltip" title="Rename"> -->
+            
+             <!--  <i class="icon-edit bh-dir-content-edit" style="cursor: pointer"></i> -->
+<!--                 </td> -->
+             
 <!--                 Name -->
 <!--                 Directory -->
             <?php if (substr($member->path, -1) === '/'): ?>
-              <td class="bh-dir-content-name displayname" name="<?= DAV::xmlescape( $member->user_prop_displayname() ) ?>"><a
+              <td class="bh-dir-content-name displayname" name="<?= DAV::xmlescape( $member->user_prop_displayname() ) ?>">
+              	<a
                   href="<?= DAV::xmlescape( DAV::unslashify( $member->path ) ) ?>"><b><?= DAV::xmlescape( $member->user_prop_displayname() ) ?>/</b>
-                </a></td>
+                	</td>
 <!--                 File -->
             <?php else : ?>
               <td class="bh-dir-content-name displayname" name="<?= DAV::xmlescape( $member->user_prop_displayname() ) ?>"><a
                   href="<?= DAV::xmlescape( DAV::unslashify( $member->path ) ) ?>"><?= DAV::xmlescape( $member->user_prop_displayname() ) ?>
-                </a></td>
+               		</td>
             <?php endif; ?>
 <!--             Hidden rename -->
             <td class="bh-dir-content-rename-td" hidden><input 
