@@ -88,6 +88,7 @@ public function method_COPY( $path ) {
       DAV::PROP_GETETAG,
       DAV::PROP_OWNER,
       DAV::PROP_GROUP,
+      BeeHub::PROP_SPONSOR,
       DAV::PROP_ACL,
       DAV::PROP_LOCKDISCOVERY
     ) ) )
@@ -138,13 +139,76 @@ public function method_MKCOL( $name ) {
 
 
 public function method_MOVE( $member, $destination ) {
-  $this->assert(DAVACL::PRIV_WRITE);
-  BeeHub_Registry::inst()->resource(dirname($destination))->assert(DAVACL::PRIV_WRITE);
+  // Get the ACL of the source (including inherited ACE's)
+  $sourceAcl = BeeHub_Registry::inst()->resource( $this->path . $member )->user_prop_acl();
+
+  // Determine if moving is allowed and if so, move the object
+  BeeHub_Registry::inst()->resource( $this->path . $member )->assert(DAVACL::PRIV_WRITE);
+  BeeHub_Registry::inst()->resource( dirname($destination) )->assert(DAVACL::PRIV_WRITE);
   $localDest = BeeHub::localPath($destination);
   rename(
     BeeHub::localPath( $this->path . $member ),
     $localDest
   );
+
+  // We need to make sure that the effective ACL at the destination is the same as at the resource
+  $destinationAcl = array();
+  $inheritedAcl = array();
+  $copyInherited = true;
+  foreach ( $sourceAcl as $ace ) {
+    if ( $ace->protected ) { // Protected ACE's don't require copying; at this moment all resources have the same protected resources
+      continue;
+    }
+    if ( $ace->inherited ) { // Inherited ACE's don't always need to be copied, so let's store them seperately for now
+      $ace->inherited= null;
+      $inheritedAcl[] = $ace;
+    }else{
+      // If there is already a 'deny all to everybody' ACE in the ACL, then no need to copy any inherited ACL's
+      if ( ( $ace->principal === DAVACL::PRINCIPAL_ALL ) &&
+           ! $ace->invert &&
+           in_array( DAVACL::PRIV_ALL, $ace->privileges ) &&
+           $ace->deny
+      ) {
+        $copyInherited = false;
+      }
+      $destinationAcl[] = $ace;
+    }
+  }
+
+  $destinationResource = BeeHub_Registry::inst()->resource( $destination );
+
+  // If the inherited ACE's at the destination are the same as at the source, then no need to copy them (for example when moving within the same directory). The effective ACL will still be the same
+  if ( $copyInherited ) {
+    $oldDestinationAcl = $destinationResource->user_prop_acl();
+    $destinationInheritedAcl = array();
+    $copyInherited = false;
+    foreach ( $oldDestinationAcl as $ace ) {
+      if ( ! $ace->inherited ) {
+        continue;
+      }
+      if ( ( count( $inheritedAcl) > 0 ) &&
+           ( $ace->principal === $inheritedAcl[0]->principal ) &&
+           ( $ace->invert === $inheritedAcl[0]->invert ) &&
+           ( $ace->deny === $inheritedAcl[0]->deny ) &&
+           ( $ace->privileges === $inheritedAcl[0]->privileges )
+      ) {
+        array_shift( $inheritedAcl );
+      }else{
+        $copyInherited = true;
+        break;
+      }
+    }
+  }
+
+  // If needed; copy the inherited ACE's so we have the complete ACL of the source. And end it with a 'deny all to everybody' ACE so inherited ACE's at the destination don't change the effective ACL
+  if ( $copyInherited ) {
+    $destinationAcl = array_merge( $destinationAcl, $inheritedAcl );
+    $destinationAcl[] = new DAVACL_Element_ace( DAVACL::PRINCIPAL_ALL, false, array( DAVACL::PRIV_ALL ), true, false, null );
+  }
+
+  // And store the ACL at the destination
+  $destinationResource->user_set( DAV::PROP_ACL, ( $destinationAcl ? DAVACL_Element_ace::aces2json( $destinationAcl ) : null ) );
+  $destinationResource->storeProperties();
 }
 
 
