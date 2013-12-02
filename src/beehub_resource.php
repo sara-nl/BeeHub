@@ -164,6 +164,9 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
       new DAVACL_Element_ace(
         'DAV: owner', false, array('DAV: all'), false, true, null
       ),
+      new DAVACL_Element_ace(
+        'DAV: all', false, array('DAV: unbind'), false, true, null
+      ),
     );
     if ( ('/' === $this->path) ||
          ('/home/' === $this->path) ){
