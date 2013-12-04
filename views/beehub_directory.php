@@ -238,6 +238,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
       <tbody>
         <?php
         // For all resources, fill table
+        $current_user_privilege_set_collection = $this->user_prop_current_user_privilege_set();
         foreach ($this as $inode) :
           $member = DAV::$REGISTRY->resource($this->path . $inode);
           if (DAV::unslashify($member->path) === '/system') {
@@ -253,7 +254,9 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
             	<div class="dropdown">
     						<a class="dropdown-toggle bh-dir-content-menu" data-toggle="dropdown" href="#"><i class="icon-th" style="cursor: pointer"></i></a>
     						<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
-    							<li><a class="bh-dir-content-edit" href="#">Rename</a></li>
+                  <?php if ( in_array( DAVACL::PRIV_WRITE, $member->user_prop_current_user_privilege_set() ) && in_array( DAVACL::PRIV_UNBIND, $current_user_privilege_set_collection ) ) : ?>
+                    <li><a class="bh-dir-content-edit" href="#">Rename</a></li>
+                  <?php endif; ?>
     							<li><a class="bh-dir-content-acl" href="#">Share</a></li>
     						</ul>
     					</div>
