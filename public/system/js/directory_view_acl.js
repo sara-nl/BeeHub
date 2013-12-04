@@ -4,35 +4,35 @@
  */
 (function() {
   permissions = {
-    'deny read': {
+    'deny read, write, change acl': {
       'class'     : "bh-dir-acl-deny",
       'title'     : "deny read, write, change acl",
-      'dropdown'  : "deny read (read, write, change acl)"
+      'dropdown'  : "deny read, write, change acl"
     },
-    'deny write': {
+    'deny write, change acl': {
       'class'     : "bh-dir-acl-deny",
       'title'     : "deny write, change acl",
-      'dropdown'  : "deny write (write, change acl)"
+      'dropdown'  : "deny write, change acl"
     },
-    'deny manage': {
+    'deny change acl': {
       'class'     : "bh-dir-acl-deny",
       'title'     : "deny change acl",
-      'dropdown'  : "deny manage (change acl)"
+      'dropdown'  : "deny change acl"
     },
     'allow read': {
       'class'     : "bh-dir-acl-allow",
       'title'     : "allow read",
-      'dropdown' : "allow read (read)"
+      'dropdown'  : "allow read"
     },
-    'allow write': {
+    'allow read, write': {
       'class'     : "bh-dir-acl-allow",
       'title'     : "allow read, write",
-      'dropdown'  : "allow write (read, write)"
+      'dropdown'  : "allow read, write"
     },
-    'allow manage': {
+    'allow read, write, change acl': {
       'class'     : "bh-dir-acl-allow",
       'title'     : "allow read, write, change acl",
-      'dropdown'  : "allow manage (read, write, change acl)"
+      'dropdown'  : "allow read, write, change acl"
     } 
   }
 
@@ -166,11 +166,11 @@
     var dropdown = '<td class="bh-dir-acl-permissions-select" hidden>\
                       <select class="bh-dir-acl-table-permissions">\
                         <option value="allow read">'+permissions['allow read'].dropdown+'</option>\
-                        <option value="allow write">'+permissions['allow write'].dropdown+'</option>\
-                        <option value="allow manage">'+permissions['allow manage'].dropdown+'</option>\
-                        <option value="deny read">'+permissions['deny read'].dropdown+'</option>\
-                        <option value="deny write">'+permissions['deny write'].dropdown+'</option>\
-                        <option value="deny manage">'+permissions['deny manage'].dropdown+'</option>\
+                        <option value="allow read, write">'+permissions['allow read, write'].dropdown+'</option>\
+                        <option value="allow read, write, change acl">'+permissions['allow read, write, change acl'].dropdown+'</option>\
+                        <option value="deny read, write, change acl">'+permissions['deny read, write, change acl'].dropdown+'</option>\
+                        <option value="deny write, change acl">'+permissions['deny write, change acl'].dropdown+'</option>\
+                        <option value="deny change acl">'+permissions['deny change acl'].dropdown+'</option>\
                       </select>\
                     </td>';
     row.push(dropdown);
@@ -295,18 +295,18 @@
         
         switch( permissions )
         {
-          case 'deny read':
+          case 'deny read, write, change acl':
             ace.grantdeny = nl.sara.webdav.Ace.DENY;
             ace.addPrivilege(readPriv);
             ace.addPrivilege(writePriv);
             ace.addPrivilege(managePriv);
             break;
-          case 'deny write':
+          case 'deny write, change acl':
             ace.grantdeny = nl.sara.webdav.Ace.DENY;
             ace.addPrivilege(writePriv);
             ace.addPrivilege(managePriv);
             break;
-          case 'deny manage':
+          case 'deny change acl':
             ace.grantdeny = nl.sara.webdav.Ace.DENY;
             ace.addPrivilege(managePriv);
             break;
@@ -318,12 +318,12 @@
             ace.grantdeny = nl.sara.webdav.Ace.GRANT;
             ace.addPrivilege(readPriv);
             break;
-          case 'allow write':
+          case 'allow read, write':
             ace.grantdeny = nl.sara.webdav.Ace.GRANT;
             ace.addPrivilege(readPriv);
             ace.addPrivilege(writePriv);
             break;
-          case 'allow manage':
+          case 'allow read, write, change acl':
             ace.grantdeny = nl.sara.webdav.Ace.GRANT;
             ace.addPrivilege(readPriv);
             ace.addPrivilege(writePriv);
