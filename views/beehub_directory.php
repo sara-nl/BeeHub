@@ -369,12 +369,23 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
       $acl_length = count( $acl );
       for ( $key = 0; $key < $acl_length; $key++ ) :
         $ace = $acl[ $key ];
+
+        // The protected property which grants everybody the 'DAV: unbind' privilege will be omitted from the list
+        if ( $ace->protected &&
+             ( $ace->principal === DAVACL::PRINCIPAL_ALL ) &&
+             ! $ace->deny &&
+             ( count( $ace->privileges ) === 1 ) &&
+             in_array( DAVACL::PRIV_UNBIND, $ace->privileges )
+           )
+        {
+          continue;
+        }
       
-      if  ( $ace->protected  || $ace->inherited ) {
-      	$class = "info";
-      } else {
-				$class = "";
-			};
+        if  ( $ace->protected  || $ace->inherited ) {
+          $class = "info";
+        } else {
+          $class = "";
+        };
         ?>
       	<tr class="bh-dir-acl-row <?= $class ?>">
 <!-- 					Principal -->
