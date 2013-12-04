@@ -47,13 +47,14 @@ function createTree($path, $oldpath = null, $oldmembers = null) {
   );
 }
 $tree = createTree(DAV::slashify(dirname($this->path)));
+$isCollection = $this instanceof DAV_Collection;
 ?>
 
 <!-- Bread crumb -->
 <div class="bh-dir-fixed-path">
     <?php
     // first and last of $crumb are empty
-    $crumb = explode("/", $this->path);
+    $crumb = explode("/", $this->path . ( $isCollection ? '' : '/' ) );
     $pathString = "<ul class=\"breadcrumb bh-dir-breadcrumb \">";
     // Root
     $pathString .= "<li><a href=\"/\">BeeHub root</a><span class=\"divider\">&raquo;</span></li>";
@@ -88,15 +89,15 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
 <!-- Tabs - Content and ACL tab -->
 <div class="bh-dir-fixed-tabs">
   <ul id="bh-dir-tabs" class="nav nav-tabs">
-    <li class="active"><a href="#bh-dir-panel-contents" data-toggle="tab">Contents</a>
-    </li>
-    <li><a href="#bh-dir-panel-acl" data-toggle="tab">Share</a></li>
+    <?= $isCollection ? '<li class="active"><a href="#bh-dir-panel-contents" data-toggle="tab">Contents</a></li>' : '' ?>
+    <li <?= ! $isCollection ? 'class="active"' : '' ?>><a href="#bh-dir-panel-acl" data-toggle="tab">Share</a></li>
   </ul>
 </div>
 <!-- End class fixed tabs -->
 
 <!-- Fixed buttons at the top -->
 <div class="bh-dir-fixed-buttons">
+<?php if ( $isCollection ) : ?>
 <!--   CONTENT VIEW -->
 	<!--  CONTENT: Up button -->
   <?php if (DAV::unslashify($this->collection()->path) != "") : ?>
@@ -156,9 +157,10 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
     <i class="icon-remove"></i> Delete
   </button>
 
+<?php endif; ?>
 <!-- 	ACL VIEW -->
 	<!-- ACL: Add button-->
-  <button data-toggle="tooltip" title="Add rule" class="btn btn-small bh-dir-acl-add hide" >
+  <button data-toggle="tooltip" title="Add rule" class="btn btn-small bh-dir-acl-add <?= $isCollection ? 'hide' : '' ?>" >
     <i class="icon-plus"></i> Add rule
   </button> 
 </div>
@@ -206,6 +208,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
 <!-- Arrow to show the tree -->
 <a class="bh-dir-tree-slide-trigger" href="#"><i class="icon-folder-open"></i></a>
 
+<?php if ( $this instanceof DAV_Collection ) : ?>
 <!-- Tab contents -->
 <div class="tab-content">
   <!-- Fixed divs don't use space -->
@@ -257,7 +260,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
                   <?php if ( in_array( DAVACL::PRIV_WRITE, $member->user_prop_current_user_privilege_set() ) && in_array( DAVACL::PRIV_UNBIND, $current_user_privilege_set_collection ) ) : ?>
                     <li><a class="bh-dir-content-edit" href="#">Rename</a></li>
                   <?php endif; ?>
-    							<li><a class="bh-dir-content-acl" href="#">Share</a></li>
+    							<li><a class="bh-dir-content-acl" href="<?= DAV::xmlescape( $member->path ) ?>?client=1">Details</a></li>
     						</ul>
     					</div>
             	</td>
@@ -342,9 +345,14 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
     </table>
   </div>
   <!-- End contents tab -->
+<?php endif; ?>
 
   <!-- Acl tab -->
-  <div id="bh-dir-panel-acl" class="tab-pane fade">
+  <div id="bh-dir-panel-acl" class="tab-pane <?= $isCollection ? 'fade' : '' ?>">
+  <?php if ( ! $isCollection ) : ?>
+    <!-- Fixed divs don't use space -->
+    <div class="bh-dir-allocate-space"></div>
+  <?php endif; ?>
     <!-- <h4>ACL <?= DAV::xmlescape( $this->path ) ?></h4> -->
     <table id="bh-dir-acl-table" class="table table-striped table-hover table-condensed">
       <thead class="bh-dir-acl-table-header">
@@ -365,7 +373,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
           <th class="bh-dir-small-column"></th>
         </tr>
       </thead>
-      <tbody class="bh-dir-acl-contents" name="<?= DAV::xmlescape( DAV::unslashify($member->path) ) ?>">
+      <tbody class="bh-dir-acl-contents" name="<?= DAV::xmlescape( DAV::unslashify($this->path) ) ?>">
 <!--       Niek -->
       <?php
       $acl = $this->user_prop_acl();

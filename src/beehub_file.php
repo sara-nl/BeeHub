@@ -62,6 +62,9 @@ public function user_prop_getcontentlength() {
 
 
 public function user_prop_getcontenttype() {
+  if ( $_GET['client'] == 1 ) {
+    return parent::user_prop_getcontenttype();
+  }
   $type = $this->user_prop(DAV::PROP_GETCONTENTTYPE);
   if (DAV::determine_client() & DAV::CLIENT_GVFS) {
     $parts = explode(';', $type);
@@ -78,6 +81,9 @@ protected function user_set_getcontenttype($type) {
 
 
 public function user_prop_getetag() {
+  if ( $_GET['client'] == 1 ) {
+    return null;
+  }
   return $this->user_prop(DAV::PROP_GETETAG);
 }
 
@@ -113,7 +119,21 @@ public function method_COPY( $path ) {
 
 
 public function method_GET() {
-  return fopen( $this->localPath , 'r' );
+  if ( $_GET['client'] == 1 ) {
+    $this->assert(DAVACL::PRIV_READ);
+    $this->include_view();
+  }else{
+    return fopen( $this->localPath , 'r' );
+  }
+}
+
+
+public function method_HEAD() {
+  $retval = parent::method_HEAD();
+  if ( $_GET['client'] == 1 ) {
+    $retval['Cache-Control'] = 'no-cache';
+  }
+  return $retval;
 }
 
 
