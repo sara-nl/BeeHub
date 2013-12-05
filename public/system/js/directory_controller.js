@@ -965,6 +965,132 @@
   };
   
   /**
+   * Get acl from server
+   * 
+   */
+  nl.sara.beehub.controller.getAclFromServer = function(path){
+    var webdav = new nl.sara.webdav.Client();
+    var aclProp = new nl.sara.webdav.Property();
+    aclProp.tagname = 'acl';
+    aclProp.namespace='DAV:';
+    var properties = [aclProp];
+
+    // send the request to the server
+    webdav.propfind(path, createGetAclCallback() ,0,properties);
+  };
+  
+  createGetAclCallback = function(){
+    return function(status, data) {
+      // Callback
+      // Something went wrong with status 207, stop then.
+      if (status !== 207) {
+        nl.sara.beehub.view.dialog.showError('Something went wrong at the server.');
+        return;
+      };
+      // TODO return als privilege is niet bekend
+      // put all the retrieved values into the store
+      var value = data.getResponseNames()[0];
+      var propstatus = data.getResponse(value).getProperty('DAV:','acl').status;
+      // Status 403, forbidden, stop
+      if (propstatus == 403) {
+        nl.sara.beehub.view.dialog.showError('You are not allowed to view this acl.');
+        return;
+      };
+      // Something went wrong with status 200, stop then.
+      if (propstatus != 200) {
+        nl.sara.beehub.view.dialog.showError('Something went wrong at the server.');
+        return;
+      };
+      if (data.getResponse(value).getProperty('DAV:','acl') !== undefined) {
+        var aclProp = data.getResponse(value).getProperty('DAV:','acl');
+          var aceObjects = aclPropToObject(aclProp.getParsedValue());
+          nl.sara.beehub.view.dialog.showAcl(aceObjects);
+      };
+    };
+  };
+  
+  /**
+   * Show add acl rule dialog.
+   * 
+   */
+  aclPropToObject = function(acl){
+    var aceObjects = [];
+    for (key in acl.getAces()) {
+      var aceObject = {};
+      var ace = acl.getAces()[key];
+      // check if the ace contains not supported entry's
+      if (ace.invertprincipal) {
+        aceObject['notsupported'] = true;
+      };
+      // set values
+      // TODO change the way to check this
+      if (ace.principal.tagname != undefined) {
+        aceObject['principal_original_name'] =  "DAV: "+ ace.principal.tagname;
+        aceObject['principal_display_name'] = '<'+ ace.principal.tagname + '>';
+      } else {
+        if(typeof ace.principal != 'string'){
+          switch (ace.principal) {
+            case nl.sara.webdav.Ace.ALL :
+              aceObject['principal_display_name'] = '[all]';
+              aceObject['principal_original_name'] = "DAV: all";
+              aceObject['principal_type'] = 'all';
+              break;
+            case nl.sara.webdav.Ace.UNAUTHENTICATED :
+              aceObject['principal_display_name'] = '[unauthenticated]';
+              aceObject['principal_original_name'] = "DAV: unauthenticated";
+              aceObject['principal_type'] = 'unauthenticated';
+              break;
+            case nl.sara.webdav.Ace.AUTHENTICATED :
+              aceObject['principal_display_name'] = '[authenticated]';
+              aceObject['principal_original_name'] = "DAV: authenticated";
+              aceObject['principal_type'] = 'authenticated';
+              break;
+            case nl.sara.webdav.Ace.SELF  :
+              aceObject['principal_display_name'] = '[self]';
+              aceObject['principal_original_name'] = "DAV: self";
+              aceObject['principal_type'] = 'self';
+              break;
+            default :
+              // This should never happen.
+          }
+        } else {
+          aceObject['principal_original_name'] = ace.principal;
+        };
+      }           
+      if (ace.grantdeny == 1) {
+        aceObject['access'] = 'grant';
+      } else {
+        aceObject['access'] = 'deny';
+      }
+      // TODO only DAV: privileges are supported
+      var privileges = [];
+      var supportedPrivileges =  ['all', 'read', 'write', 'read-acl', 'write-acl'];
+      for (key in ace.getPrivilegeNames('DAV:')) {
+        var priv = ace.getPrivilegeNames('DAV:')[key];
+        var supported = false;
+        // TODO probably nicer to make an object and ask value instead of read the list each time.
+        for (key in supportedPrivileges) {
+          var support = supportedPrivileges[key];
+          if (support == priv) {
+            supported = true;
+          };
+        };
+        // remember this ace is not supported
+        if (!supported){
+          aceObject['notsupported'] = true;
+        }
+        privileges['DAV: '+priv]='on';
+        
+      };
+      aceObject['privileges'] = privileges;
+      aceObject['protected'] = ace.isprotected;
+      aceObject['inherited'] = (ace.inherited.length? ace.inherited : '');
+      aceObjects.push(aceObject);
+    };
+    return aceObjects;
+  }
+  
+  /**
    * Show add acl rule dialog.
    * 
    */

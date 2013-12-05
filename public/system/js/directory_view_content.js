@@ -199,7 +199,10 @@
     $('.bh-dir-content-openselected').unbind().click(function() {window.location.href=$(this).attr('name');});
     
     // Edit icon
-    $('.bh-dir-content-edit').unbind().click(handle_edit_icon_click);
+    $('.bh-dir-content-edit').unbind().click(handle_edit_menu_click);
+    
+    // View acl
+    $('.bh-dir-content-acl').unbind().click(handle_acl_menu_click)
   };
   
   /*
@@ -423,7 +426,7 @@
   /*
    * Onclick handler edit icon in content view
    */
-  var handle_edit_icon_click = function(){
+  var handle_edit_menu_click = function(){
     // TODO - instead show and hide, replace to prevent table colums move
     // Search nearest name field and hide
     $(this).closest("tr").find(".bh-dir-content-name").hide();
@@ -463,6 +466,14 @@
    */
   var handle_menu_icon_hover = function(){
     $(this).dropdown('toggle');
+  }; 
+  
+  /*
+   * Onclick handler acl menu in content view
+   */
+  var handle_acl_menu_click = function(){
+    nl.sara.beehub.controller.getAclFromServer($(this).closest('tr').attr('id'));
+    nl.sara.beehub.view.dialog.showAcl($(this).closest('tr').attr('id'));
   }; 
   
   /*

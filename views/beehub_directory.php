@@ -254,7 +254,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
     						<a class="dropdown-toggle bh-dir-content-menu" data-toggle="dropdown" href="#"><i class="icon-th" style="cursor: pointer"></i></a>
     						<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
     							<li><a class="bh-dir-content-edit" href="#">Rename</a></li>
-    							<li><a class="bh-dir-content-acl" href="#">Share</a></li>
+    							<li><a class="bh-dir-content-acl" href="#">Edit share</a></li>
     						</ul>
     					</div>
             	</td>
