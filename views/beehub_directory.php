@@ -273,7 +273,7 @@ require 'views/header.php';
             <?php endif; ?> 
       
             <!-- Date, has to be the same as shown with javascript -->
-            <td class="lastmodified" name="<?= DAV::xmlescape( date( 'r', $member->user_prop_getlastmodified() ) ) ?>">i
+            <td class="lastmodified" name="<?= DAV::xmlescape( date( 'r', $member->user_prop_getlastmodified() ) ) ?>">
               <?= DAV::xmlescape( date('j-n-Y G:i', $member->user_prop_getlastmodified() ) ) ?>
             </td>
       
