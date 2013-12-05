@@ -38,15 +38,17 @@ function createTree($path, $oldpath = null, $oldmembers = null) {
         } else {
           $tmp['isLazy'] = true;
         };
-    $members[] = $tmp;
+    $members[ $member ] = $tmp;
   }
+  uksort( $members, 'strcasecmp');
+  $members = array_values( $members );
   if ('/' === $path)
     return $members;
   return createTree(
           DAV::slashify(dirname($path)), $path, $members
   );
 }
-$tree = createTree(DAV::slashify(dirname($this->path)));
+$tree = createTree( DAV::slashify( $this->path ) );
 ?>
 
 <!-- Bread crumb -->
