@@ -100,7 +100,8 @@ public function method_DELETE( $name )
 {
   $path = $this->path . $name;
   $localpath = BeeHub::localPath( $path );
-  $this->assert(DAVACL::PRIV_WRITE);
+  $resource = DAV::$REGISTRY->resource( $path );
+  $resource->assert(DAVACL::PRIV_WRITE);
   if (is_dir($localpath)) {
     if (!@rmdir($localpath))
       throw new DAV_Status(DAV::HTTP_CONFLICT, 'Unable to DELETE resource: ' . $name);

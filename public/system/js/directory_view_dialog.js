@@ -319,12 +319,12 @@
         <tr>\
           <td class="bh-dir-acl-table-label"><label><b>Permisions</b></label></td>\
           <td><select class="bh-dir-acl-table-permisions">\
-            <option value="allow read">allow read (read)</option>\
-            <option value="allow write">allow write (read, write)</option>\
-            <option value="allow manage">allow manage (read, write, change acl)</option>\
-            <option value="deny read">deny read (read, write, change acl)</option>\
-            <option value="deny write">deny write (write, change acl)</option>\
-            <option value="deny manage">deny manage (change acl)</option>\
+            <option value="allow read">allow read</option>\
+            <option value="allow read, write">allow read, write</option>\
+            <option value="allow read, write, change acl">allow read, write, change acl</option>\
+            <option value="deny read, write, change acl">deny read, write, change acl</option>\
+            <option value="deny write, change acl">deny write, change acl</option>\
+            <option value="deny change acl">deny change acl</option>\
           </select></td>\
         </tr>\
       </table>\
