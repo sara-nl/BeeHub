@@ -262,7 +262,7 @@ require 'views/header.php';
               }
               ?>
             </td>
-            <?php if ( $member->prop_resourcetype() !== DAV_Collection::RESOURCETYPE ) : ?>
+            <?php if ( $member->prop_resourcetype() === DAV_Collection::RESOURCETYPE ) : ?>
               <td class="type" name="collection">
                 <i name="<?= DAV::xmlescape( DAV::unslashify($member->path) ) ?>" class="icon-folder-close bh-dir-content-openselected" style="cursor: pointer"></i>
               </td> 
