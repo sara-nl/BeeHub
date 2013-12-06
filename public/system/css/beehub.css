@@ -51,7 +51,12 @@
 
 /* Align path with tabs */
 .bh-dir-breadcrumb {
-	padding:0 !important;
+  padding: 0 !important;
+  font-size: 16.25px;
+  font-family: inherit;
+  font-weight: bold;
+  margin: 9px 0 18px 0 !important;
+  text-rendering: optimizelegibility;
 }
 
 /* Prevent scrolling for fixed divs*/
