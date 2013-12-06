@@ -23,7 +23,7 @@
  * @author Laura Leistikow (laura.leistikow@surfsara.nl)
  */
 
-(function(){
+(function(){ 
   /*
    * Clear dialog
    * 
@@ -69,8 +69,6 @@
    * @param {String} resource The resource to show
    */
   nl.sara.beehub.view.dialog.showAcl = function(aceObjects) {
-//    console.log("nu");
-//    console.log(aceObjects);
     var html = createHtmlAclView(aceObjects);
     $('#bh-dir-dialog').html(html);
     nl.sara.beehub.view.acl.setTableSorter($('.bh-dir-acldialog-table'));
@@ -335,7 +333,8 @@
    * Create html for acl view in dialpg
    *  
    */
-  createHtmlAclView = function(aces){
+  createHtmlAclView = function(acl){
+
     var html = '<table id="bh-dir-acldialog-table" class="table table-striped table-hover table-condensed">\
         <thead class="bh-dir-acl-table-header">\
           <tr>\
@@ -356,105 +355,158 @@
           </tr>\
         </thead>\
         <tbody class="bh-dir-acl-contents" name="<?= DAV::xmlescape( DAV::unslashify($member->path) ) ?>">';
-    for (key in aces){
-      var ace = aces[key];
-      console.log(ace);
+    for (key in acl.getAces()){
+      var ace = acl.getAces()[key];
+      if (ace.principal.tagname != undefined) {
+        principal =  "DAV: "+ ace.principal.tagname;
+      } else {
+        principal = ace.principal;
+      }  
+            
       var aceclass = "";
-      if  ( ace.protected  || ace.inherited ) {
+      if  ( ace.isprotected  || ace.inherited.length ) {
          aceclass = "info";
       };
+      
       html = html + '<tr class="bh-dir-acl-row '+aceclass+'">';
       // principal
-      // TODO unknown principl
-    //$principal = DAV::$REGISTRY->resource( $ace->principal );
-    //if ( $principal instanceof DAVACL_Principal ) {
-//      $displayname = DAV::xmlescape($principal->user_prop( DAV::PROP_DISPLAYNAME ));
-    //}else{
-//      $displayname = '<em>Unrecognized principal!</em>';
-    //}
+      // TODO unknown principe
       // check user of groep
-    //$icon= '<i class="icon-user"></i><i class="icon-user"></i>';
-    //if ((strpos($ace->principal, BeeHub::USERS_PATH) !== false) || ($ace->principal == 'DAV: owner' )) {
-    //$icon= '<i class="icon-user"></i>';
-    //}
-    //?>
+      
       var icon = '<i class="icon-user"></i>';
-      html = html + '<td class="bh-dir-acl-principal" name="'+ace.principal_original_name+'" data-toggle="tooltip"\
-        title="'+ace.principal_original_name+'" ><b>'+ ( ace.invert ? 'Everybody except ' : '' ) + ace.principal_display_name +' </b>('+ icon +')</td>';
-  //  
-      html = html + '</tbody></table>';
+      
+      // Determine how to show the principal
+      switch ( principal ) {
+        case 'DAV: owner':
+          displayname = '<span style="font-weight: bold">Owner</span>';
+          break;
+        case nl.sara.webdav.Ace.ALL:
+          displayname = '<span style="font-weight: bold">Everybody</span>';
+          break;
+        case nl.sara.webdav.Ace.AUTHENTICATED:
+          displayname = '<span style="font-weight: bold">All BeeHub users</span>';
+          break;
+        case nl.sara.webdav.Ace.UNAUTHENTICATED:
+          displayname = '<span style="font-weight: bold">All unauthenticated users</span>';
+          break;
+        case nl.sara.webdav.Ace.SELF:
+          displayname = '<span style="font-weight: bold">This resource itself</span>';
+          break;
+        default:
+          var display = nl.sara.beehub.controller.getDisplayName(ace.principal);
+          if (display !== ''){
+            displayname = display;
+            if ((principal.indexOf(nl.sara.beehub.groups_path) !== -1)){
+              icon =  '<i class="icon-user"></i><i class="icon-user"></i>';
+            }
+          } else {
+            displayname = '<span style="font-weight: bold">Unrecognized principal!</span>';
+          }
+        break;
+      }
+    var show = (ace.invertprincipal ? "Everybody except " : "" ) + displayname;
+    
+    html = html + '<td class="bh-dir-acl-principal" name="'+principal+'"\
+      data-toggle="tooltip" title="'+principal+'" >\
+      <span style="font-weight: bold">'+show+'\
+      </span>('+icon+')</td>';
+    
+    // Make permissions string
+    var tooltip = "";
+    var aceclass = "";
+    var permissions = "";
+    
+    if (ace.deny) {
+      permissions="deny ";
+      aceclass="bh-dir-acl-deny";
+      if (( ace.getPrivilegeNames('DAV:').length === 1 ) && 
+          ( ace.getPrivilegeNames('DAV:').indexOf(nl.sara.webdav.Ace.PRIV_WRITE_ACL) !== -1) ) {
+        permissions += "manage";
+        tooltip="deny change acl";
+      } else if ( ( ace.getPrivilegeNames('DAV:').length === 2 ) 
+          && ( ace.getPrivilegeNames('DAV:').indexOf(nl.sara.webdav.Ace.PRIV_WRITE) !== -1 )  
+          && ( ace.getPrivilegeNames('DAV:').indexOf(nl.sara.webdav.Ace.PRIV_WRITE_ACL) !== -1) ) {
+        permissions += "write";
+        tooltip="deny write, change acl";
+      } else if ( ( ace.getPrivilegeNames('DAV:').length === 3 ) 
+          && (ace.getPrivilegeNames('DAV:').indexOf(nl.sara.webdav.Ace.PRIV_READ) !== -1 )
+          && (ace.getPrivilegeNames('DAV:').indexOf(nl.sara.webdav.Ace.PRIV_WRITE) !== -1 )
+          && (ace.getPrivilegeNames('DAV:').indexOf(nl.sara.webdav.Ace.PRIV_WRITE_ACL) !== -1 )) {
+        permissions += "read";
+        tooltip="deny read, write, change acl";
+      } else if ( ace.getPrivilegeNames('DAV:').indexOf(nl.sara.webdav.Ace.PRIV_ALL) !== -1 ) {
+        permissions += "read";
+        tooltip="deny read, write, change acl";
+      } else {
+        permissions += "unknown privilege (combination)";
+        tooltip="deny " . implode( '; ', ace.getPrivilegeNames('DAV:') );
+      };
+    } else { 
+      permissions="allow ";
+      aceclass="bh-dir-acl-allow";
+      console.log(ace.getPrivilegeNames('DAV:'));
+      if ( ( ace.getPrivilegeNames('DAV:').length === 1 ) 
+          && (ace.getPrivilegeNames('DAV:').indexOf(nl.sara.webdav.Ace.PRIV_READ) !== -1 ) ) {
+        permissions += "read";
+        tooltip="allow read";
+      } else if ( ( ace.getPrivilegeNames('DAV:').length === 2 ) 
+          && (ace.getPrivilegeNames('DAV:').indexOf(nl.sara.webdav.Ace.PRIV_WRITE) !== -1 )
+          && (ace.getPrivilegeNames('DAV:').indexOf(nl.sara.webdav.Ace.PRIV_READ) !== -1 ) ){
+        permissions += "write";
+        tooltip="allow read, write";
+      } else if ( ( ace.getPrivilegeNames('DAV:').length === 3 ) 
+          && (ace.getPrivilegeNames('DAV:').indexOf(nl.sara.webdav.Ace.PRIV_WRITE_ACL) !== -1  )
+          && (ace.getPrivilegeNames('DAV:').indexOf(nl.sara.webdav.Ace.PRIV_WRITE) !== -1  )
+          && (ace.getPrivilegeNames('DAV:').indexOf(nl.sara.webdav.Ace.PRIV_READ) !== -1 )  ){
+        permissions += "manage";
+        tooltip="allow read, write, change acl";
+      } else if ((ace.getPrivilegeNames('DAV:').indexOf(nl.sara.webdav.Ace.PRIV_ALL) !== -1 ) ){
+        permissions += "manage";
+        tooltip="allow read, write, change acl";
+      } else {
+        permissions += "unknown privilege (combination)";
+        tooltip = "allow " + ace.getPrivilegeNames('DAV:').join('; ');
+      };
+    };
+    
+      
+    var changePermissionsClass = "bh-dir-acl-change-permissions";
+    var style= 'style="cursor: pointer"';
+    if  ( ace.protected  || ace.inherited ) {
+      $changePermissionsClass = "";
+      $style= "";
     }
-//    <td class="bh-dir-acl-principal" name="<?= DAV::xmlescape($ace->principal) ?>" data-toggle="tooltip"
-//    title="<?= DAV::xmlescape($ace->principal)?>" ><b><?= ( $ace->invert ? 'Everybody except ' : '' ) . $displayname ?> </b>(<?= $icon?>)</td>
-//    
-//<?php 
-//// make permissions string
-//$tooltip="";
-//$class="";
-//$permissions=""; 
-//if ( $ace->deny) {
-//$permissions="deny ";
-//$class="bh-dir-acl-deny";
-//if ( ( count( $ace->privileges ) === 1 ) && in_array( DAVACL::PRIV_WRITE_ACL, $ace->privileges ) ) {
-//$permissions .= "manage";
-//$tooltip="deny change acl";
-//} elseif ( ( count( $ace->privileges ) === 2 ) && in_array( DAVACL::PRIV_WRITE, $ace->privileges ) && in_array( DAVACL::PRIV_WRITE_ACL, $ace->privileges) ) {
-//$permissions .= "write";
-//$tooltip="deny write, change acl";
-//} elseif ( ( count( $ace->privileges ) === 3 ) && in_array( DAVACL::PRIV_READ, $ace->privileges ) && in_array( DAVACL::PRIV_WRITE, $ace->privileges ) && in_array( DAVACL::PRIV_WRITE_ACL, $ace->privileges) ) {
-//$permissions .= "read";
-//$tooltip="deny read, write, change acl";
-//} elseif ( in_array( DAVACL::PRIV_ALL, $ace->privileges ) ) {
-//$permissions .= "read";
-//$tooltip="deny read, write, change acl";
-//} else {
-//$permissions .= "unknown privilege (combination)";
-//$tooltip="deny " . implode( '; ', $ace->privileges );
-//}
-//} else { 
-//$permissions="allow ";
-//$class="bh-dir-acl-allow";
-//if ( ( count( $ace->privileges ) === 1 ) && in_array( DAVACL::PRIV_READ, $ace->privileges ) ) {
-//$permissions .= "read";
-//$tooltip="allow read";
-//} elseif ( ( count( $ace->privileges ) === 2 ) && in_array( DAVACL::PRIV_WRITE, $ace->privileges ) && in_array( DAVACL::PRIV_READ, $ace->privileges) ) {
-//$permissions .= "write";
-//$tooltip="allow read, write";
-//} elseif ( ( count( $ace->privileges ) === 3 ) && in_array( DAVACL::PRIV_WRITE_ACL, $ace->privileges ) && in_array( DAVACL::PRIV_WRITE, $ace->privileges ) && in_array( DAVACL::PRIV_READ, $ace->privileges ) ) {
-//$permissions .= "manage";
-//$tooltip="allow read, write, change acl";
-//} elseif ( in_array( DAVACL::PRIV_ALL, $ace->privileges ) ) {
-//$permissions .= "manage";
-//$tooltip="allow read, write, change acl";
-//} else {
-//$permissions .= "unknown privilege (combination)";
-//$tooltip="allow " . implode( '; ', $ace->privileges );
-//}
-//};
-//
-//$changePermissionsClass = "bh-dir-acl-change-permissions";
-//$style= 'style="cursor: pointer"';
-//if  ( $ace->protected  || $ace->inherited ) {
-//$changePermissionsClass = "";
-//$style= "";
-//}
-//?>
-//<td class="bh-dir-acl-permissions-select" hidden>
-//<select class="bh-dir-acl-table-permissions">
-//<option value="allow read" <?= ( $permissions === 'allow read' ) ? 'selected="selected"' : '' ?> >allow read (read)</option>
-//<option value="allow write" <?= ( $permissions === 'allow write' ) ? 'selected="selected"' : '' ?> >allow write (read, write)</option>
-//<option value="allow manage" <?= ( $permissions === 'allow manage' ) ? 'selected="selected"' : '' ?> >allow manage (read, write, change acl)</option>
-//<option value="deny read" <?= ( $permissions === 'deny read' ) ? 'selected="selected"' : '' ?> >deny read (read, write, change acl)</option>
-//<option value="deny write" <?= ( $permissions === 'deny write' ) ? 'selected="selected"' : '' ?> >deny write (write, change acl)</option>
-//<option value="deny manage" <?= ( $permissions === 'deny manage' ) ? 'selected="selected"' : '' ?> >deny manage (change acl)</option>
-//</select>
-//</td>
-//<td class="bh-dir-acl-permissions <?= $changePermissionsClass ?> <?= $class?>" <?= $style ?> data-toggle="tooltip" title="<?= $tooltip?>">
-//<span class="presentation"><?= $permissions ?></span>
-//<?php if ( strpos( $permissions, 'unknown' ) !== false ) : ?>
-//<span class="original" hidden="hidden"><?= implode( ' ', $ace->privileges ) ?></span>
-//<?php endif; ?>
-//</td>
+    
+    html += '<td class="bh-dir-acl-permissions-select" hidden>\
+      <select class="bh-dir-acl-table-permissions">\
+        <option value="allow read" '+ ( permissions === 'allow read' ) ? 'selected="selected"' : '' +' >\
+          allow read (read)</option>\
+        <option value="allow write" '+ ( permissions === 'allow write' ) ? 'selected="selected"' : '' +' >\
+          allow write (read, write)</option>\
+        <option value="allow manage" '+ ( permissions === 'allow manage' ) ? 'selected="selected"' : '' +' >\
+          allow manage (read, write, change acl)</option>\
+        <option value="deny read" '+ ( permissions === 'deny read' ) ? 'selected="selected"' : '' +' >\
+          deny read (read, write, change acl)</option>\
+        <option value="deny write" '+ ( permissions === 'deny write' ) ? 'selected="selected"' : '' +' >\
+          deny write (write, change acl)</option>\
+        <option value="deny manage" '+ ( permissions === 'deny manage' ) ? 'selected="selected"' : '' +' >\
+          deny manage (change acl)</option>\
+        </select>\
+      </td>\
+      <td class="bh-dir-acl-permissions '+ changePermissionsClass +' '+ aceclass+'" '+ style +'\
+          data-toggle="tooltip" title="'+ tooltip+'">\
+          <span class="presentation">'+ permissions +'</span>';
+      if ( ('unknown'.indexOf(permissions)  !== -1 )) {
+        var priv = ace.getPrivilegeNames('DAV:').join(' ');
+        html += '<span class="original" hidden="hidden">'+priv+'</span>';
+      };
+      html += '</td></tr>';
+    };
+    html = html + '</tbody></table>';
+    return html;
+  };
+   
+
 //<!--          Info -->
 //<?php
 //$info = '';
@@ -506,8 +558,7 @@
 //<?php
 //  endfor;
 //?>  
-    return html;
-  };
+ 
   
   /**
    * Initialize autocomplete for searching users and groups
