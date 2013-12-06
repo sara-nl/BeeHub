@@ -300,7 +300,7 @@
       if (status === 201) {
         // Reload tree
         // TODO update tree instead of reloading
-        nl.sara.beehub.view.tree.reload();
+//        nl.sara.beehub.view.tree.reload();
         // Get properties of new directory from server and update view
         getResourcePropsFromServer(callbackpath, function(resource){
           // add resource to view
@@ -564,7 +564,7 @@
       //Succeeded
       case 201: 
       case 204:
-        nl.sara.beehub.view.tree.reload();
+//        nl.sara.beehub.view.tree.reload();
         // Update dialog info
         nl.sara.beehub.view.dialog.updateResourceInfo(resource,"Done");
         // Update view

@@ -85,7 +85,7 @@ require 'views/header.php';
 <div class="bh-dir-fixed-buttons">
   <!--   CONTENT VIEW -->
   <!--  CONTENT: Up button -->
-  <button id="<?= DAV::xmlescape( DAV::unslashify($this->collection()->path) ) ?>" class="btn btn-small bh-dir-content-up" <?= ( DAV::unslashify( $this->collection()->path ) === "" ) ? 'disabled="disabled"' : '' ?> >
+  <button <?= $this->path !== '/' ? 'id="' . DAV::xmlescape( DAV::unslashify( $this->collection()->path ) ) . '"' : '' ?> class="btn btn-small bh-dir-content-up" <?= ( $this->path === "/" ) ? 'disabled="disabled"' : '' ?> >
     <i class="icon-chevron-up"></i> Up
   </button>
 
@@ -98,7 +98,7 @@ require 'views/header.php';
   </button>
 
   <!--	CONTENT: Upload button-->
-  <input class="bh-dir-content-upload-hidden" type="file" name="files[]" multiple hidden />
+  <input class="bh-dir-content-upload-hidden" type="file" name="files[]" multiple="multiple" hidden="hidden" />
 
   <!--   Hidden upload field, this is needed to show the upload button -->
   <button data-toggle="tooltip" title="Upload to current folder" class="btn btn-small bh-dir-content-upload">
@@ -137,43 +137,95 @@ require 'views/header.php';
 <!-- Dialog, for dialog view -->
 <div id="bh-dir-dialog" hidden="hidden"></div>
 
-<!-- Tree slide out, dynatree - tree view -->
-<div id="bh-dir-tree" class="bh-dir-tree-slide">
-  <ul> 
-    <?php
-/*    // Fill the tree nodes
-    $registry = BeeHub_Registry::inst();
-    foreach ($this as $inode) :
-      $member = $registry->resource($this->path . $inode);
-      if (DAV::unslashify($member->path) === '/system') {
-        continue;
-      }
-      if (substr($member->path, -1) === '/'):
-        ?>
-        <li id="<?= DAV::xmlescape( $member->user_prop_displayname() ) ?>" class="folder"><?= DAV::xmlescape( $member->user_prop_displayname() ) ?>
-          <ul>
-            <li></li>
-          </ul> <?php
-        endif;
-        $registry->forget($this->path . $inode);
-      endforeach;
-*/      ?>
-  </ul>
-</div>
-<!-- End tree slide out -->
-
 <!-- Tree header -->
 <div id="bh-dir-tree-header">
   <table>
     <tr>
       <td id="bh-dir-tree-cancel" hidden="hidden"><i class="icon-remove" style="cursor: pointer"></i></td>
-      <td class="bh-dir-tree-header" hidden="hidden">Browse</td>
+      <td class="bh-dir-tree-header" <?= $_COOKIE['beehub-showtree'] === 'false' ? 'hidden="hidden"' : '' ?> >Browse</td>
     </tr>
   </table>
 </div>
 
 <!-- Arrow to show the tree -->
-<a class="bh-dir-tree-slide-trigger" href="#"><i class="icon-folder-open"></i></a>
+<a class="bh-dir-tree-slide-trigger <?= $_COOKIE['beehub-showtree'] !== 'false' ? 'active' : '' ?> " href="#">
+  <i class="icon-folder-<?= $_COOKIE['beehub-showtree'] !== 'false' ? 'open' : 'close' ?>"></i>
+</a>
+
+<!-- Tree slide out, dynatree - tree view -->
+<div id="bh-dir-tree" class="bh-dir-tree-slide" <?= $_COOKIE['beehub-showtree'] === 'false' ? 'hidden="hidden"' : '' ?>>
+  <ul class="dynatree-container">
+    <?php
+    // Fill the tree nodes
+    if ( isset( $_COOKIE[ 'tree_state' ] ) ) {
+      $treeState = json_decode( $_COOKIE[ 'tree_state' ] );
+    }else{
+      $treeState = array();
+    }
+
+    $pathArray = explode( '/', trim( $this->path, '/' ) );
+    $parentPath = '/';
+    foreach ( $pathArray as $parent ) {
+      $parentPath .= $parent . '/';
+      $treeState[ $parentPath ] = true;
+    }
+
+    printTree( '/', $treeState, $this->path );
+
+    function printTree( $path, $treeState, $selectedPath ) {
+      $registry = BeeHub_Registry::inst();
+      $resource = $registry->resource( $path );
+      $members = array();
+      foreach ( $resource as $member ) :
+        $members[] = $member;
+      endforeach;
+      usort( $members, 'strnatcasecmp' );
+      $last = count( $members ) - 1;
+      for ( $counter = 0; $counter <= $last; $counter++ ) :
+        $member = $members[ $counter ];
+        $memberResource = $registry->resource( $path . $member );
+        if ( $memberResource->prop_resourcetype() !== DAV_Collection::RESOURCETYPE ) {
+          $registry->forget( $path . $member );
+          continue;
+        }
+        $hasChildren = false;
+        foreach( $memberResource as $submember ) {
+          if ( $registry->resource( $memberResource->path . $submember )->prop_resourcetype() === DAV_Collection::RESOURCETYPE ) {
+            $hasChildren = true;
+            break;
+          }
+        }
+        $expanded = isset( $treeState[ $memberResource->path ] ) && $hasChildren ? $treeState[ $memberResource->path ] : false;
+        ?>
+        <li <?= ( $counter === $last ) ? 'class="dynatree-lastsib"' : '' ?> >
+          <span class="dynatree-node dynatree-folder
+                       <?= $hasChildren ? 'dynatree-has-children' : '' ?>
+                       <?= $expanded ? 'dynatree-expanded' : ( $hasChildren ? 'dynatree-lazy' : '' ) ?>
+                       dynatree-exp-<?= $expanded ? 'e' : 'cd' ?><?= $counter === $last ? 'l dynatree-lastsib' : '' ?>
+                       dynatree-ico-<?= $expanded ? 'e' : 'c' ?>f
+                       <?= $memberResource->path === $selectedPath ? 'dynatree-focused' : '' ?>
+                "
+          >
+            <span class="dynatree-<?= $hasChildren ? 'expander' : 'connector' ?>"></span>
+            <span class="dynatree-icon"></span>
+            <a class="dynatree-title" href="<?= DAV::xmlescape( $memberResource->path ) ?>">
+              <?= DAV::xmlescape( $memberResource->user_prop_displayname() ) ?>
+            </a>
+          </span>
+          <?php if ( $expanded && $hasChildren ) : ?>
+            <ul>
+              <?= printTree( $memberResource->path, $treeState, $selectedPath ); ?>
+            </ul>
+          <?php endif; ?>
+        </li>
+        <?php
+        $registry->forget( $path . $member );
+      endfor;
+    }
+    ?>
+  </ul>
+</div>
+<!-- End tree slide out -->
 
 <!-- Tab content -->
 <div class="tab-content">
@@ -191,7 +243,7 @@ require 'views/header.php';
           <th class="bh-dir-small-column"><input type="checkbox" class="bh-dir-content-checkboxgroup"></th>
           <th>Name</th>
           <!-- Hidden rename column -->
-          <th hidden></th>
+          <th hidden="hidden"></th>
           <th>Size</th>
           <th>Type</th>
           <th>Modified</th>
@@ -299,7 +351,7 @@ require 'views/header.php';
           <th>Principal</th>
           <th>Permissions</th>
           <!-- Hidden dropdown column -->
-          <th hidden></th>
+          <th hidden="hidden"></th>
           <th>Comment</th>
           <!-- Move up -->
           <th class="bh-dir-small-column"></th>
@@ -309,7 +361,7 @@ require 'views/header.php';
           <th class="bh-dir-small-column"></th>
         </tr>
       </thead>
-      <tbody class="bh-dir-acl-contents" name="<?= DAV::xmlescape( DAV::unslashify($member->path) ) ?>">
+      <tbody class="bh-dir-acl-contents" name="<?= DAV::xmlescape( DAV::unslashify($this->path) ) ?>">
         <?php
         $acl = $this->user_prop_acl();
         $acl_length = count( $acl );
@@ -411,7 +463,7 @@ require 'views/header.php';
               $style = "";
             }
             ?>
-            <td class="bh-dir-acl-permissions-select" hidden>
+            <td class="bh-dir-acl-permissions-select" hidden="hidden">
               <select class="bh-dir-acl-table-permissions">
                 <option value="allow read" <?= ( $permissions === 'allow read' ) ? 'selected="selected"' : '' ?> >allow read</option>
                 <option value="allow read, write" <?= ( $permissions === 'allow read, write' ) ? 'selected="selected"' : '' ?> >allow read, write</option>
@@ -487,81 +539,28 @@ require 'views/header.php';
 <!-- End tab div -->
 
 <!-- Mask input -->
-<div id="bh-dir-mask" hidden></div>
+<div id="bh-dir-mask" hidden="hidden"></div>
 
 <!-- Disable input -->
-<div id="bh-dir-mask-transparant" hidden></div>
+<div id="bh-dir-mask-transparant" hidden="hidden"></div>
 
 <!-- Loading mask -->
-<div id="bh-dir-mask-loading" hidden></div>
+<div id="bh-dir-mask-loading" hidden="hidden"></div>
 
 <?php
-$tree = createTree( DAV::slashify( $this->path ) );
 $footer = '
-  <script type="text/javascript">
-    // For Dynatree
-    var treecontents = ' . json_encode($tree) . ';
-  </script>
-  
-  <script type="text/javascript" src="/system/js/directory.js"></script>
-  	
-  <script type="text/javascript" src="/system/js/directory_controller.js"></script>
-  	
-  <script type="text/javascript" src="/system/js/directory_view.js"></script>
-  	
-  <script type="text/javascript" src="/system/js/directory_view_content.js"></script>
-  	
-  <script type="text/javascript" src="/system/js/directory_view_tree.js"></script>
   <script type="text/javascript" src="/system/js/plugins/dynatree/jquery/jquery.cookie.js"></script>
-  <script type="text/javascript" src="/system/js/plugins/dynatree/src/jquery.dynatree.js"></script>
-  	
-  <script type="text/javascript" src="/system/js/directory_view_dialog.js"></script>
-  	
-  <script type="text/javascript" src="/system/js/directory_view_acl.js"></script>
-  	
-  <script type="text/javascript" src="/system/js/directory_resource.js"></script>
-  	
   <script type="text/javascript" src="/system/js/plugins/tablesorter/js/jquery.tablesorter.js"></script>
   <script type="text/javascript" src="/system/js/plugins/tablesorter/js/jquery.tablesorter.widgets.js"></script>
+  <script type="text/javascript" src="/system/js/directory.js"></script>
+  <script type="text/javascript" src="/system/js/directory_controller.js"></script>
+  <script type="text/javascript" src="/system/js/directory_view.js"></script>
+  <script type="text/javascript" src="/system/js/directory_view_content.js"></script>
+  <script type="text/javascript" src="/system/js/directory_view_tree.js"></script>
+  <script type="text/javascript" src="/system/js/directory_view_dialog.js"></script>
+  <script type="text/javascript" src="/system/js/directory_view_acl.js"></script>
+  <script type="text/javascript" src="/system/js/directory_resource.js"></script>
 ';
 require 'views/footer.php';
-
-/**
- * Create tree for tree view (dynatree plugin)
- * 
- * @param   string  $path        A slashified path to a directory
- * @param   string  $oldpath     The path to the collection containing $oldmembers (is one of the children of the current path)
- * @param   string  $oldmembers  The members of the subcollection which is currently selected
- * @return  array                An array with the following keys: title, id, expand, isFolder, children, isLazy. These are used as parameters for dynatree (see dynatree documentation for more information).
- */
-function createTree($path, $oldpath = null, $oldmembers = null) {
-  $dir = BeeHub_Registry::inst()->resource($path);
-  
-  $members = array();
-  foreach ($dir as $member) { 	
-   if ('/' !== substr($member, -1) ||
-            ( '/' === $path && $member === 'system/' ))
-      continue;
-    $tmp = array(
-        'title' => rawurldecode(DAV::unslashify($member)),
-        'id' => $path . $member,
-        'expand' => ( $oldpath === $path . $member ? true : false ),
-    		'isFolder' => true
-    );
-        if ( $tmp['expand'] === true ) {
-          $tmp['children'] = $oldmembers;
-        } else {
-          $tmp['isLazy'] = true;
-        };
-    $members[ $member ] = $tmp;
-  }
-  uksort( $members, 'strcasecmp');
-  $members = array_values( $members );
-  if ('/' === $path)
-    return $members;
-  return createTree(
-          DAV::slashify(dirname($path)), $path, $members
-  );
-}
 
 // End of file
