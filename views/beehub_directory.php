@@ -252,7 +252,7 @@ $tree = createTree(DAV::slashify(dirname($this->path)));
           <tr id="<?= DAV::xmlescape( DAV::unslashify($member->path) ) ?>">
             <td>
             	<div class="dropdown">
-    						<a class="dropdown-toggle bh-dir-content-menu" data-toggle="dropdown" href="#"><i class="icon-th" style="cursor: pointer"></i></a>
+    						<a class="dropdown-toggle bh-dir-content-menu" data-toggle="dropdown" href="#"><i class="icon-align-justify" style="cursor: pointer"></i></a>
     						<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
                   <?php if ( in_array( DAVACL::PRIV_WRITE, $member->user_prop_current_user_privilege_set() ) && in_array( DAVACL::PRIV_UNBIND, $current_user_privilege_set_collection ) ) : ?>
                     <li><a class="bh-dir-content-edit" href="#">Rename</a></li>

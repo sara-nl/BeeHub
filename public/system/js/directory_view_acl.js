@@ -41,9 +41,24 @@
   
   nl.sara.beehub.view.acl.init = function() {
     // ACL TAB ACTIONS/FUNCTIONS
+    nl.sara.beehub.view.acl.setTableSorter($("#bh-dir-acl-table"));
+    // Add rule handler
+    $('.bh-dir-acl-add').click(nl.sara.beehub.controller.addAclRule);
+    // Add handler on row
+    var rows = $('.bh-dir-acl-row');
+    setRowHandlers(rows); 
+  };
+    
+  /*
+   * Action for all buttons in the fixed view on the top of the acl table
+   * 
+   * @param DOM Object table 
+   * 
+   */
+  nl.sara.beehub.view.acl.setTableSorter = function(table){
     // Use table sorter for sticky headers (not scrolling
     // table header)
-    $("#bh-dir-acl-table").tablesorter({
+    table.tablesorter({
       // which columns are sortable
       headers: { 
         0 : { sorter: false },
@@ -63,13 +78,8 @@
         stickyHeaders_offset : 186,
       }
     });
-    // Add rule handler
-    $('.bh-dir-acl-add').click(nl.sara.beehub.controller.addAclRule);
-    // Add handler on row
-    var rows = $('.bh-dir-acl-row');
-    setRowHandlers(rows); 
   };
-    
+  
   /*
    * Action for all buttons in the fixed view on the top of the acl table
    * 
