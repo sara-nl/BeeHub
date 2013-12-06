@@ -473,7 +473,6 @@
    */
   var handle_acl_menu_click = function(){
     nl.sara.beehub.controller.getAclFromServer($(this).closest('tr').attr('id'));
-    nl.sara.beehub.view.dialog.showAcl($(this).closest('tr').attr('id'));
   }; 
   
   /*
