@@ -248,9 +248,29 @@ require 'views/header.php';
       </thead>
       <tbody>
         <?php
+        // Get up to 250 child resources so we can sort them (for more resources, we won't sort anymore)
+        $subResources = array();
+        $counter = 0;
+        $sortResources = true;
+        foreach ( $this as $resource ) {
+          if ( ++$counter > 250 ) {
+            $sortResources = false;
+            break;
+          }
+          $subResources[] = $resource;
+        }
+
+        // Check whether to sort the sub-resources and sort them if needed
+        if ( $sortResources ) {
+          usort( $subResources, 'strnatcasecmp' );
+        }else{
+          // If we reached the threshold, there are too many resource to sort them.
+          $subResources = $this;
+        }
+
         // For all resources, fill table
         $current_user_privilege_set_collection = $this->user_prop_current_user_privilege_set();
-        foreach ($this as $inode) :
+        foreach ( $subResources as $inode ) :
           $member = DAV::$REGISTRY->resource($this->path . $inode);
           if (DAV::unslashify($member->path) === '/system') {
             continue;
