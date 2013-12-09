@@ -196,28 +196,22 @@ require 'views/header.php';
           }
         }
         $expanded = isset( $treeState[ $memberResource->path ] ) && $hasChildren ? $treeState[ $memberResource->path ] : false;
-        ?>
-        <li <?= ( $counter === $last ) ? 'class="dynatree-lastsib"' : '' ?> >
-          <span class="dynatree-node dynatree-folder
+        ?><li <?= ( $counter === $last ) ? 'class="dynatree-lastsib"' : '' ?>
+          ><span class="dynatree-node dynatree-folder
                        <?= $hasChildren ? 'dynatree-has-children' : '' ?>
                        <?= $expanded ? 'dynatree-expanded' : ( $hasChildren ? 'dynatree-lazy' : '' ) ?>
                        dynatree-exp-<?= $expanded ? 'e' : 'cd' ?><?= $counter === $last ? 'l dynatree-lastsib' : '' ?>
                        dynatree-ico-<?= $expanded ? 'e' : 'c' ?>f
                        <?= $memberResource->path === $selectedPath ? 'dynatree-focused' : '' ?>
                 "
-          >
-            <span class="dynatree-<?= $hasChildren ? 'expander' : 'connector' ?>"></span>
-            <span class="dynatree-icon"></span>
-            <a class="dynatree-title" href="<?= DAV::xmlescape( $memberResource->path ) ?>">
-              <?= DAV::xmlescape( $memberResource->user_prop_displayname() ) ?>
-            </a>
-          </span>
+            ><span class="dynatree-<?= $hasChildren ? 'expander' : 'connector' ?>"></span
+            ><span class="dynatree-icon"></span
+            ><a class="dynatree-title" href="<?= DAV::xmlescape( $memberResource->path ) ?>"><?= DAV::xmlescape( $memberResource->user_prop_displayname() ) ?></a
+          ></span
           <?php if ( $expanded && $hasChildren ) : ?>
-            <ul>
-              <?= printTree( $memberResource->path, $treeState, $selectedPath ); ?>
-            </ul>
+            ><ul><?= printTree( $memberResource->path, $treeState, $selectedPath ); ?></ul
           <?php endif; ?>
-        </li>
+        ></li>
         <?php
         $registry->forget( $path . $member );
       endfor;
