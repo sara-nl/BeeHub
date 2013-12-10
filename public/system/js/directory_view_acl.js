@@ -33,13 +33,21 @@
       'class'     : "bh-dir-acl-allow",
       'title'     : "allow read, write, change acl",
       'dropdown'  : "allow read, write, change acl"
-    } 
+    },
+    'allow unknown privilege (combination)':{
+      // TODO niet goed
+      'class'     : "bh-dir-acl-allow",
+      'title'     : "allow read, write, change acl",
+      'dropdown'  : "allow read, write, change acl"
+    }
   }
 
   // Used for showing the mask after delete, up or down
   var timeout = 500;
   
+  var aclView = {}
   nl.sara.beehub.view.acl.init = function() {
+    nl.sara.beehub.view.acl.setAclView("acltabview");
     // ACL TAB ACTIONS/FUNCTIONS
     nl.sara.beehub.view.acl.setTableSorter($("#bh-dir-acl-table"));
     // Add rule handler
@@ -146,6 +154,8 @@
    * @return String Row string 
    */
   nl.sara.beehub.view.acl.createRow = function(ace){
+    console.log(ace);
+    console.log(ace.permissions);
     var row = [];
     
     row.push('<tr>');
@@ -153,14 +163,28 @@
     var show = '';
     switch(ace.principal)
     {
+      case 'DAV: owner':
+        show = '<span style="font-weight: bold">Owner</span>';
+        break;
       case 'DAV: all':
-        show = '<em>Everybody</em>';
+        show = '<span style="font-weight: bold">Everybody</span>';
         break;
       case 'DAV: authenticated':
-        show = '<em>All BeeHub users</em>'
+        show = '<span style="font-weight: bold">All BeeHub users</span>'
+        break;
+      case 'DAV: unauthenticated':
+        show = '<span style="font-weight: bold">All unauthenticated users</span>'
+        break;
+      case 'DAV: self':
+        show = '<span style="font-weight: bold">This resource itself</span>'
         break;
       default:
-        show = nl.sara.beehub.controller.getDisplayName(ace.principal)
+        var display = nl.sara.beehub.controller.getDisplayName(ace.principal);
+        if (display !== ''){
+          show = display;
+        } else {
+          show = '<span style="font-weight: bold">Unrecognized principal!</span>';
+        }
     };
     // Groups icon unless it's a single user
     var icon = '<i class="icon-user"></i><i class="icon-user"></i>';
@@ -205,7 +229,7 @@
    *  
    */
   var setUpDownButtons = function(){  
-    $.each($('.bh-dir-acl-contents > tr'), function(index, row){
+    $.each(aclView.find('tr'), function(index, row){
       var info = $(row).find('.bh-dir-acl-comment').attr('name');
       if (info !== 'protected' && info !== 'inherited') {
         // Check up button
@@ -379,12 +403,61 @@
    * 
    */
   nl.sara.beehub.view.acl.addRow = function(row, index){
-    $('.bh-dir-acl-contents > tr:eq('+index+')').after(row);
-    $('.bh-dir-acl-contents').trigger("update");
+    if (index === -1) {
+      aclView.append(row);
+    } else {
+      aclView.find('tr:eq('+index+')').after(row);
+    }
+    aclView.trigger("update");
 
     setUpDownButtons();
     // Set handlers again
     setRowHandlers([row]);
+  };
+  
+  // DIALOG ACL VIEW
+  /**
+   * Create html for acl view in dialpg
+   *  
+   */
+  nl.sara.beehub.view.acl.createDialogViewHtml = function(){
+    var html = '<table id="bh-dir-acldialog-table" class="table table-striped table-hover table-condensed">\
+        <thead class="bh-dir-acl-table-header">\
+          <tr>\
+  <!--           Principal -->\
+            <th>Principal</th>\
+  <!--           Permissions -->\
+            <th>Permissions</th>\
+  <!--          Hidden dropdown column -->\
+            <th hidden></th>\
+  <!--           Comments -->\
+            <th>Comment</th>\
+  <!--          Move up -->\
+            <th class="bh-dir-small-column"></th>\
+  <!--           Move down -->\
+            <th class="bh-dir-small-column"></th>\
+  <!--           Delete row -->\
+            <th class="bh-dir-small-column"></th>\
+          </tr>\
+        </thead>\
+        <tbody class="bh-dir-acldialog-contents" name="<?= DAV::xmlescape( DAV::unslashify($member->path) ) ?>">\
+      </tbody></table>';
+    return html;
+  };
+  
+  /**
+   * Return active acl table
+   *  
+   */
+  nl.sara.beehub.view.acl.setAclView = function(view){
+    if (view === "acldialogview") {
+      aclView = $('.bh-dir-acldialog-contents');
+      return;
+    };
+    if (view === "acltabview") {
+      aclView = $('.bh-dir-acl-contents');
+      return;
+    }
   };
   
   /**
@@ -395,8 +468,8 @@
    * @param {Integer} index Index of row to delete
    */
   nl.sara.beehub.view.acl.deleteRowIndex = function(index){
-    $('.bh-dir-acl-contents > tr:eq('+index+')').remove();
-    $('.bh-dir-acl-contents').trigger("update");
+    aclView.find('tr:eq('+index+')').remove();
+    aclView.trigger("update");
     setUpDownButtons();
   }
   
@@ -501,4 +574,5 @@
     // Add rule on server
     nl.sara.beehub.controller.deleteAclRule(row, index, t);
   };
+  
 })();

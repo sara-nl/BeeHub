@@ -1003,12 +1003,100 @@
       };
       if (data.getResponse(value).getProperty('DAV:','acl') !== undefined) {
         var aclProp = data.getResponse(value).getProperty('DAV:','acl');
-//          var aceObjects = aclPropToObject(aclProp.getParsedValue());
-          nl.sara.beehub.view.dialog.showAcl(aclProp.getParsedValue());
+        
+        var html = nl.sara.beehub.view.acl.createDialogViewHtml();
+        nl.sara.beehub.view.dialog.showAcl(html);
+        // Set acl view for dialog
+        nl.sara.beehub.view.acl.setAclView("acldialogview");
+        
+        var acl = aclProp.getParsedValue();
+        var index = -1;
+        for ( key in acl.getAces() ) {
+          var ace = acl.getAces()[key];
+          var aceObject = createAceObject(ace);
+          var row = nl.sara.beehub.view.acl.createRow(aceObject);
+          nl.sara.beehub.view.acl.addRow(row, index);
+          index++;
+        };
       };
     };
   };
   
+  /**
+   * Create ace
+   */
+  createAceObject = function(ace){
+    var aceObject = {
+        "info": "",
+    };
+
+    if (ace.principal.tagname != undefined) {
+      aceObject['principal'] =  "DAV: "+ ace.principal.tagname;
+    } else {
+      // Principal
+      switch ( ace.principal ) {
+        case nl.sara.webdav.Ace.ALL:
+          aceObject['principal'] = 'DAV: all';
+          break;
+        case nl.sara.webdav.Ace.AUTHENTICATED:
+          aceObject['principal'] = 'DAV: authenticated';
+          break;
+        case nl.sara.webdav.Ace.UNAUTHENTICATED:
+          aceObject['principal'] = 'DAV: unauthenticated';
+          break;
+        case nl.sara.webdav.Ace.SELF:
+          aceObject['principal'] = 'DAV: self';
+          break;
+        default:
+          aceObject['principal'] = ace.principal;
+        break;
+      }
+    }  
+    
+    aceObject['protected'] = ace.protected;
+    aceObject['inherited'] = ace.inherited;
+    aceObject['invertprincipal'] = ace.invertprincipal;
+
+    // Make permissions string  
+    if ( ace.deny ) {
+      aceObject['permissions'] = "deny ";
+      if ( ( ace.privileges.length === 1 ) && 
+           ( ace.getPrivilegeNames('DAV:').indexOf('write-acl') !== -1) ) {
+        aceObject['permissions'] += "change acl";
+      } else if ( ( ace.getPrivilegeNames('DAV:').length === 2 ) && 
+                 ( ace.getPrivilegeNames('DAV:').indexOf('write') !== -1 ) && 
+                 ( ace.getPrivilegeNames('DAV:').indexOf('write-acl') !== -1  ) ) {
+        aceObject['permissions'] += "write, change acl";
+      } else if ( ( ( ace.getPrivilegeNames('DAV:').length === 3 ) && 
+                   ( ace.getPrivilegeNames('DAV:').indexOf('read') !== -1 ) && 
+                   ( ace.getPrivilegeNames('DAV:').indexOf('write') !== -1 ) && 
+                   ( ace.getPrivilegeNames('DAV:').indexOf('write-acl') !== -1  ) ) || 
+                 (ace.getPrivilegeNames('DAV:').indexOf('all') !== -1 ) ) {
+        aceObject['permissions'] += "read, write, change acl";
+      } else {
+        aceObject['permissions'] += "unknown privilege (combination)";
+      }
+    } else { 
+      aceObject['permissions'] = "allow ";
+      if ( ( ace.getPrivilegeNames('DAV:').length === 1 ) && 
+           ( ace.getPrivilegeNames('DAV:').indexOf('read') !== -1 ) ) {
+        aceObject['permissions'] += "read";
+      } else if ( ( ace.getPrivilegeNames('DAV:').length === 2 ) && 
+                 (ace.getPrivilegeNames('DAV:').indexOf('write') !== -1 ) && 
+                  ( ace.getPrivilegeNames('DAV:').indexOf('read') ) ) {
+        aceObject['permissions'] += "read, write";
+      } else if ( ( ( ace.getPrivilegeNames('DAV:').length === 3 ) && 
+                   ( ace.getPrivilegeNames('DAV:').indexOf('write-acl') !== -1) && 
+                   ( ace.getPrivilegeNames('DAV:').indexOf('write') !== -1 ) && 
+                   ( ace.getPrivilegeNames('DAV:').indexOf('read') !== -1 ) ) || 
+                 (ace.getPrivilegeNames('DAV:').indexOf('all') !== -1 ) ) {
+        aceObject['permissions'] += "read, write, change acl";
+      } else {
+        aceObject['permissions'] += "unknown privilege (combination)";
+      }
+    }
+    return aceObject;
+  };
 //  /**
 //   * Show add acl rule dialog.
 //   * 
