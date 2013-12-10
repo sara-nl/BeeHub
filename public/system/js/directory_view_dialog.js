@@ -70,7 +70,13 @@
    */
   nl.sara.beehub.view.dialog.showAcl = function(html) {
     $('#bh-dir-dialog').html(html);
-
+    console.log($('#bh-dir-dialog'));
+    // auto complete for searching users and groups
+    setupAutoComplete("dialog");
+ 
+    // radiobutton handlers
+    setAddRadioButtons("dialog");
+    
     nl.sara.beehub.view.acl.setTableSorter($('.bh-dir-acldialog-table'));
     $('#bh-dir-dialog').dialog({
       resizable: false,
@@ -82,13 +88,18 @@
       closeOnEscape: false,
       dialogClass: "custom-dialog",
       buttons: [{
-        text: "Ok",
+        text: "Close",
         click: function() {
+          // Set acl view for dialog
+          nl.sara.beehub.view.acl.setAclView("acltabview");
           $(this).dialog("close");
-          console.log("terugzetten acl view");
         }
       }]
     });
+    console.log($("#bh-dir-aclformdialog-add-button"));
+    $("#bh-dir-aclformdialog-add-button").prop('disabled', true);
+    console.log($("#bh-dir-aclformdialog-add-button"));
+
   };
   
   /*
@@ -288,100 +299,6 @@
     $("#bh-dir-dialog").dialog("close");
   };  
   
-  // ACL
-  /**
-   * Create html for acl form
-   * 
-   * @return {String} html
-   * 
-   */
-  createHtmlAclForm = function() {
-    return '\
-        <table>\
-        <tr>\
-          <td class="bh-dir-acl-table-label"><label><b>Principal</b></label></td>\
-          <td><label class="radio"><input type="radio" name="bh-dir-view-acl-optionRadio" id="bh-dir-acl-add-radio1" value="authenticated" unchecked>All BeeHub users</label></td>\
-        </tr>\
-        <tr>\
-          <td class="bh-dir-acl-table-label"></td>\
-          <td><label class="radio"><input type="radio" name="bh-dir-view-acl-optionRadio" id="bh-dir-acl-add-radio2" value="all" unchecked>Everybody</label></td>\
-        </tr>\
-        <tr>\
-          <td class="bh-dir-acl-table-label"></td>\
-          <td>\
-            <div class="radio">\
-              <input type="radio" name="bh-dir-view-acl-optionRadio" id="bh-dir-acl-add-radio3" value="user_or_group" checked>\
-              <input id="bh-dir-acl-table-autocomplete" class="bh-dir-acl-table-search" type="text"  value="" placeholder="Search user or group...">\
-            </div></td>\
-        </tr>\
-        <tr>\
-          <td class="bh-dir-acl-table-label"><label><b>Permisions</b></label></td>\
-          <td><select class="bh-dir-acl-table-permisions">\
-            <option value="allow read">allow read</option>\
-            <option value="allow read, write">allow read, write</option>\
-            <option value="allow read, write, change acl">allow read, write, change acl</option>\
-            <option value="deny read, write, change acl">deny read, write, change acl</option>\
-            <option value="deny write, change acl">deny write, change acl</option>\
-            <option value="deny change acl">deny change acl</option>\
-          </select></td>\
-        </tr>\
-      </table>\
-    ';
-  };
-  
-
-//<!--          Info -->
-//<?php
-//$info = '';
-//$message = '';
-//$class='';
-//if ( $ace->protected ) {
-//$info = 'protected';
-//$message = 'protected, no changes are possible';
-//$class ='bh-dir-acl-protected';
-//} elseif ( ! is_null( $ace->inherited ) ) {
-//$info = 'inherited';
-//$message = 'inherited from: <a href="' . $ace->inherited . '">' . $ace->inherited . '</a>';
-//$class ='bh-dir-acl-inherited';
-//}
-//?>
-//    <td class="bh-dir-acl-comment <?= $class  ?>" name="<?= $info  ?>" ><?= $message ?></td>
-//<!--        When ace is not protected, inherited and previous ace exists and is not protected  -->
-//  <?php if ( ! $ace->protected &&
-//            ( is_null( $ace->inherited ) ) &&
-//            ($key !== 0) &&
-//            ( ! $acl[$key-1]->protected ) )
-//   :?>
-//<!--          Move up -->
-//    <td class="bh-dir-acl-up"><i title="Move up" class="icon-chevron-up bh-dir-acl-icon-up" style="cursor: pointer"></i></td>
-//  <?php else : ?>
-//<!--          No move up possible -->
-//    <td class="bh-dir-acl-up"></td>
-//  <?php endif; ?>
-//  <!--        When ace is not protected, inherited and next ace exists and is not inherited  -->
-//  <?php if ( ! $ace->protected &&
-//            ( is_null( $ace->inherited ) ) &&
-//            ($key !== $acl_length - 1) &&
-//             is_null( $acl[$key+1]->inherited ) )
-//   :?>
-//<!--          Move down -->
-//    <td class="bh-dir-acl-down"><i title="Move down" class="icon-chevron-down bh-dir-acl-icon-down" style="cursor: pointer"></i></td>
-//  <?php else : ?>
-//<!--          No move down possible -->
-//    <td class="bh-dir-acl-down"></td>
-//  <?php endif; ?>
-//  <?php if ( $ace->protected || ! is_null( $ace->inherited ) ) :?>
-//<!--        no delete possible -->
-//  <td></td>
-//  <?php else : ?>
-//<!--          Delete icon -->
-//    <td><i title="Delete" class="icon-remove bh-dir-acl-icon-remove" style="cursor: pointer"></i></td>
-//  <?php endif; ?>
-//  </tr>  
-//<?php
-//  endfor;
-//?>  
- 
   
   /**
    * Initialize autocomplete for searching users and groups
@@ -407,12 +324,17 @@
       });
     });
 
-    $( "#bh-dir-acl-table-autocomplete" ).autocomplete({
+    $( "#bh-dir-acl"+aclView['view']+"-table-autocomplete" ).autocomplete({
       source:searchList,
       select: function( event, ui ) {
-        $("#bh-dir-acl-table-autocomplete").val(ui.item.label);
-        $("#bh-dir-acl-table-autocomplete").attr('name' ,ui.item.name);
-        $("#bh-dir-aclform-add-button").button('enable');
+        $("#bh-dir-acl"+aclView['view']+"-table-autocomplete").val(ui.item.label);
+        $("#bh-dir-acl"+aclView['view']+"-table-autocomplete").attr('name' ,ui.item.name);
+        // jquery and bootstrap buttons act different
+        if (view === "tab") {
+          $("#bh-dir-aclform"+aclView['view']+"-add-button").button('enable');
+        } else {
+          $("#bh-dir-aclform"+aclView['view']+"-add-button").prop('disabled', false);
+        }
         return false;
       },
       change: function (event, ui) {
@@ -420,8 +342,13 @@
             //http://api.jqueryui.com/autocomplete/#event-change -
             // The item selected from the menu, if any. Otherwise the property is null
             //so clear the item for force selection
-            $("#bh-dir-aclform-add-button").button('disable');
-            $("#bh-dir-acl-table-autocomplete").val("");
+          // jquery and bootstrap buttons act different
+            if (view === "tab") {
+              $("#bh-dir-aclform"+aclView['view']+"-add-button").button('disable');
+            } else {
+              $("#bh-dir-aclform"+aclView['view']+"-add-button").prop('disabled', true);
+            }
+            $("#bh-dir-acl"+aclView['view']+"-table-autocomplete").val("");
         }
 
       }
@@ -438,20 +365,34 @@
    * 
    */
   setAddRadioButtons = function(){
-    $("#bh-dir-acl-add-radio1").click(function(){
-      $("#bh-dir-acl-table-autocomplete").attr("disabled",true);
-      $("#bh-dir-acl-table-autocomplete").val("");
-      $("#bh-dir-aclform-add-button").button('enable');
-
+    $("#bh-dir-acl"+aclView['view']+"-add-radio1").click(function(){
+      $("#bh-dir-acl"+aclView['view']+"-table-autocomplete").attr("disabled",true);
+      $("#bh-dir-acl"+aclView['view']+"-table-autocomplete").val("");
+      // jquery and bootstrap buttons act different
+      if (view === "tab") {
+        $("#bh-dir-aclform"+aclView['view']+"-add-button").button('enable');
+      } else {
+        $("#bh-dir-aclform"+aclView['view']+"-add-button").prop('disabled', false);
+      }
     });
-    $("#bh-dir-acl-add-radio2").click(function(){
-      $("#bh-dir-acl-table-autocomplete").attr("disabled",true);
-      $("#bh-dir-acl-table-autocomplete").val("");
-      $("#bh-dir-aclform-add-button").button('enable');
+    $("#bh-dir-acl"+aclView['view']+"-add-radio2").click(function(){
+      $("#bh-dir-acl"+aclView['view']+"-table-autocomplete").attr("disabled",true);
+      $("#bh-dir-acl"+aclView['view']+"-table-autocomplete").val("");
+      // jquery and bootstrap buttons act different
+      if (view === "tab") {
+        $("#bh-dir-aclform"+aclView['view']+"-add-button").button('enable');
+      } else {
+        $("#bh-dir-aclform"+aclView['view']+"-add-button").prop('disabled', false);
+      }
     });
-    $("#bh-dir-acl-add-radio3").click(function(){
-      $("#bh-dir-acl-table-autocomplete").attr("disabled",false);
-      $("#bh-dir-aclform-add-button").button('disable');
+    $("#bh-dir-acl"+aclView['view']+"-add-radio3").click(function(){
+      $("#bh-dir-acl"+aclView['view']+"-table-autocomplete").attr("disabled",false);
+      // jquery and bootstrap buttons act different
+      if (view === "tab") {
+        $("#bh-dir-aclform"+aclView['view']+"-add-button").button('disable');
+      } else {
+        $("#bh-dir-aclform"+aclView['view']+"-add-button").prop('disabled', true);
+      }
     });
   };
   
@@ -462,7 +403,7 @@
    */
   getFormAce= function(){
     var principal = '';
-    switch($('input[name = "bh-dir-view-acl-optionRadio"]:checked').val())
+    switch($('input[name = "bh-dir-view-acl'+aclView['view']+'-optionRadio"]:checked').val())
     {
     // all
     case "all":
@@ -474,16 +415,15 @@
       break;
     // User or group
     case "user_or_group":
-      principal=$("#bh-dir-acl-table-autocomplete").attr('name');
+      principal=$("#bh-dir-acl"+aclView['view']+"-table-autocomplete").attr('name');
       break;
     default:
       // This should never happen
     }
     var ace = {
         "principal": principal,
-        "permissions": $(".bh-dir-acl-table-permisions option:selected").val(),
+        "permissions": $(".bh-dir-acl"+aclView['view']+"-table-permisions option:selected").val(),
     };
-    
     return ace;
   }
   
@@ -494,16 +434,16 @@
    * 
    * @param {String} error The error to show
    */
-  nl.sara.beehub.view.dialog.showAddRuleDialog = function(addFunction) {
+  nl.sara.beehub.view.dialog.showAddRuleDialog = function(addFunction, html) {
     // createForm
-    $('#bh-dir-dialog').html(createHtmlAclForm());
+    $('#bh-dir-dialog').html(html);
 
-    // auto complete for searching users and groups
-    setupAutoComplete();
- 
     // radiobutton handlers
-    setAddRadioButtons();
-        
+    setAddRadioButtons("tab");
+    
+    // auto complete for searching users and groups
+    setupAutoComplete("tab");
+
     $('#bh-dir-dialog').dialog({
       title: " Add acl rule",
       modal: true,
@@ -519,12 +459,12 @@
         }
       },{
         text: "Add rule",
-        id: "bh-dir-aclform-add-button",
+        id: "bh-dir-aclformtab-add-button",
         click: function() {
-          addFunction(getFormAce());
+          addFunction(getFormAce("tab"));
         }
       }]
     });
-    $("#bh-dir-aclform-add-button").button('disable');
+    $("#bh-dir-aclformtab-add-button").button('disable');
   };
 })();

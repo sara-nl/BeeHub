@@ -979,7 +979,28 @@
     webdav.propfind(path, createGetAclCallback() ,0,properties);
   };
   
-  createGetAclCallback = function(){
+  var addAclRuleDialog = function(userInput){
+    var ace = {
+        principal :   userInput.principal, 
+        permissions:  userInput.permissions, 
+        info:         ""
+    }
+    // Add row in view
+    var row = nl.sara.beehub.view.acl.createRow(ace);
+    nl.sara.beehub.view.acl.addRow(row, nl.sara.beehub.view.acl.getIndexLastProtected());
+    
+    functionSaveAclOk = function(){
+      nl.sara.beehub.view.dialog.clearView();
+    };
+    
+    functionSaveAclError = function(){
+      // Update view
+      nl.sara.beehub.view.acl.deleteRowIndex(nl.sara.beehub.view.acl.getIndexLastProtected() + 1);
+    };
+    nl.sara.beehub.controller.saveAclOnServer(functionSaveAclOk, functionSaveAclError);
+  };
+  
+  var createGetAclCallback = function(){
     return function(status, data) {
       // Callback
       // Something went wrong with status 207, stop then.
@@ -1005,7 +1026,11 @@
         var aclProp = data.getResponse(value).getProperty('DAV:','acl');
         
         var html = nl.sara.beehub.view.acl.createDialogViewHtml();
+        
         nl.sara.beehub.view.dialog.showAcl(html);
+        
+        nl.sara.beehub.view.acl.setAddAclRuleDialogClickHandler(addAclRuleDialog);
+        
         // Set acl view for dialog
         nl.sara.beehub.view.acl.setAclView("acldialogview");
         
@@ -1013,6 +1038,16 @@
         var index = -1;
         for ( key in acl.getAces() ) {
           var ace = acl.getAces()[key];
+          // The protected property which grants everybody the 'DAV: unbind' privilege will be omitted from the list
+          if ( ace.isprotected &&
+              ( ace.principal === nl.sara.webdav.Ace.ALL ) &&
+              ! ace.deny &&
+              ( ace.getPrivilegeNames('DAV:').length === 1 ) &&
+              ( ace.getPrivilegeNames('DAV:').indexOf('unbind') !== -1)
+            )
+          {
+            continue;
+          }
           var aceObject = createAceObject(ace);
           var row = nl.sara.beehub.view.acl.createRow(aceObject);
           nl.sara.beehub.view.acl.addRow(row, index);
@@ -1026,9 +1061,7 @@
    * Create ace
    */
   createAceObject = function(ace){
-    var aceObject = {
-        "info": "",
-    };
+    var aceObject = {};
 
     if (ace.principal.tagname != undefined) {
       aceObject['principal'] =  "DAV: "+ ace.principal.tagname;
@@ -1052,11 +1085,14 @@
         break;
       }
     }  
-    
-    aceObject['protected'] = ace.protected;
+    aceObject['protected'] = ace.isprotected;
     aceObject['inherited'] = ace.inherited;
     aceObject['invertprincipal'] = ace.invertprincipal;
 
+    if (ace.getPrivilegeNames('DAV:').indexOf('unbind') !== -1) {
+      aceObject['unbind'] = true;
+    };
+    
     // Make permissions string  
     if ( ace.deny ) {
       aceObject['permissions'] = "deny ";
@@ -1174,7 +1210,7 @@
         nl.sara.beehub.view.acl.deleteRowIndex(nl.sara.beehub.view.acl.getIndexLastProtected() + 1);
       };
       nl.sara.beehub.controller.saveAclOnServer(functionSaveAclOk, functionSaveAclError);
-    });
+    }, nl.sara.beehub.view.acl.createHtmlAclForm("tab"));
   };
   
   /**

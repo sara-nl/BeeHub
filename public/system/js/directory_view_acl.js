@@ -36,16 +36,17 @@
     },
     'allow unknown privilege (combination)':{
       // TODO niet goed
-      'class'     : "bh-dir-acl-allow",
-      'title'     : "allow read, write, change acl",
-      'dropdown'  : "allow read, write, change acl"
+//      'class'     : "bh-dir-acl-allow",
+//      'title'     : "allow read, write, change acl",
+//      'dropdown'  : "allow read, write, change acl"
     }
   }
 
   // Used for showing the mask after delete, up or down
   var timeout = 500;
   
-  var aclView = {}
+  var aclView = {};
+  
   nl.sara.beehub.view.acl.init = function() {
     nl.sara.beehub.view.acl.setAclView("acltabview");
     // ACL TAB ACTIONS/FUNCTIONS
@@ -154,11 +155,9 @@
    * @return String Row string 
    */
   nl.sara.beehub.view.acl.createRow = function(ace){
-    console.log(ace);
-    console.log(ace.permissions);
     var row = [];
-    
-    row.push('<tr>');
+    var info = ((ace['protected'] || ace['inherited'] ) ? 'info' : '' );
+    row.push('<tr class="bh-dir-acl-row '+info+'">');
     // Principal
     var show = '';
     switch(ace.principal)
@@ -211,15 +210,32 @@
     
     row.push('<td class="bh-dir-acl-permissions bh-dir-acl-change-permissions '+permissions[ace.permissions].class+'" style="cursor: pointer" data-toggle="tooltip" title="'+permissions[ace.permissions].title+'" ><span class="presentation">'+ace.permissions+'</span></td>');
     
+    var info = '';
+    var message = '';
+    var aceClass = '';
+  
+    if ( ace['protected'] ) {
+      info = 'protected';
+      message = 'protected, no changes are possible';
+      aceClass ='bh-dir-acl-protected';
+    } else if ( ace['inherited'] !== undefined ) {
+      info = 'inherited';
+      message = 'inherited from: <a href="' + ace['inherited'] + '">' + ace['inherited'] + '</a>';
+      aceClass ='bh-dir-acl-inherited';
+    }
+
     // Comment, not changable by user
-    row.push('<td class="bh-dir-acl-comment" name=""></td>');
+    row.push('</td><td class="bh-dir-acl-comment '+aceClass+'" name="'+info+'" >'+message+'</td>');
     // Up
     row.push('<td class="bh-dir-acl-up"></td>');
     // Down 
     row.push('<td class="bh-dir-acl-down"></td>');
     // Delete 
-    row.push('<td><i title="Delete" class="icon-remove bh-dir-acl-icon-remove" style="cursor: pointer"></i></td>');
-    
+    if ( ace['protected'] || ace['inherited'] ) {
+      row.push('<td></td>');
+    } else {
+      row.push('<td><i title="Delete" class="icon-remove bh-dir-acl-icon-remove" style="cursor: pointer"></i></td>');
+    }
     row.push('</tr>');
     return row.join("");
   };
@@ -269,7 +285,7 @@
    */
   var getIndexFirstInherited = function(){
     // Count of all items
-    var all = $('.bh-dir-acl-contents > tr').length;
+    var all = aclView.find('tr').length;
     // Count of all inherited items
     var allInherited = $('.bh-dir-acl-inherited').length;
     // Index
@@ -285,7 +301,7 @@
   nl.sara.beehub.view.acl.getAcl = function() {
     var acl = new nl.sara.webdav.Acl();
     // put each item acl table in the created webdav acl
-    $.each($('.bh-dir-acl-contents > tr'), function(index, row){
+    $.each(aclView.find('tr'), function(index, row){
       var principal = $(row).find('.bh-dir-acl-principal').attr('name');
       var permissions = $(row).find('.bh-dir-acl-permissions span.presentation').text();
       var info = $(row).find('.bh-dir-acl-comment').attr('name');
@@ -416,13 +432,28 @@
   };
   
   // DIALOG ACL VIEW
+  nl.sara.beehub.view.acl.setAddAclRuleDialogClickHandler = function(addFunction){
+    $('#bh-dir-aclformdialog-add-button').click(function(){
+      addFunction(getFormAce("dialog"));
+    })
+  }
+  
   /**
    * Create html for acl view in dialpg
    *  
    */
   nl.sara.beehub.view.acl.createDialogViewHtml = function(){
-    var html = '<table id="bh-dir-acldialog-table" class="table table-striped table-hover table-condensed">\
-        <thead class="bh-dir-acl-table-header">\
+    var html = nl.sara.beehub.view.acl.createHtmlAclForm("dialog");
+    console.log(html);
+    html+= '<button class="btn btn-small" id="bh-dir-aclformdialog-add-button" title="Add rule"\
+      data-toggle="tooltip" style="display: inline-block;">\
+       <i class="icon-plus"></i> Add rule\
+      </button><br><br>';
+//    html += '<button type="button" id="bh-dir-aclformdialog-add-button"\
+//      class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only"\
+//      role="button" aria-disabled="false" disabled><span class="ui-button-text">Add rule</span></button><br><br>';
+    html += '<table id="bh-dir-acldialog-table" class="table table-striped table-hover table-condensed">\
+        <thead class="bh-dir-dialog-table-header">\
           <tr>\
   <!--           Principal -->\
             <th>Principal</th>\
@@ -451,11 +482,13 @@
    */
   nl.sara.beehub.view.acl.setAclView = function(view){
     if (view === "acldialogview") {
-      aclView = $('.bh-dir-acldialog-contents');
+      aclView['contents'] = $('.bh-dir-acldialog-contents');
+      aclview['view'] = "dialog";
       return;
     };
     if (view === "acltabview") {
-      aclView = $('.bh-dir-acl-contents');
+      aclView['contents'] = $('.bh-dir-acl-contents');
+      aclview['view'] = "tab";
       return;
     }
   };
@@ -573,6 +606,46 @@
    
     // Add rule on server
     nl.sara.beehub.controller.deleteAclRule(row, index, t);
+  };
+  
+  /**
+   * Create html for acl form
+   * 
+   * @return {String} html
+   * 
+   */
+  nl.sara.beehub.view.acl.createHtmlAclForm = function() {
+    return '\
+        <table>\
+        <tr>\
+          <td class="bh-dir-acl'+aclView['view']+'-table-label"><label><b>Principal</b></label></td>\
+          <td><label class="radio"><input type="radio" name="bh-dir-view-acl'+aclView['view']+'-optionRadio" id="bh-dir-acl'+aclView['view']+'-add-radio1" value="authenticated" unchecked>All BeeHub users</label></td>\
+        </tr>\
+        <tr>\
+          <td class="bh-dir-acl'+aclView['view']+'-table-label"></td>\
+          <td><label class="radio"><input type="radio" name="bh-dir-view-acl'+aclView['view']+'-optionRadio" id="bh-dir-acl'+aclView['view']+'-add-radio2" value="all" unchecked>Everybody</label></td>\
+        </tr>\
+        <tr>\
+          <td class="bh-dir-acl'+aclView['view']+'-table-label"></td>\
+          <td>\
+            <div class="radio">\
+              <input type="radio" name="bh-dir-view-acl'+aclView['view']+'-optionRadio" id="bh-dir-acl'+aclView['view']+'-add-radio3" value="user_or_group" checked>\
+              <input id="bh-dir-acl'+aclView['view']+'-table-autocomplete" class="bh-dir-acl'+aclView['view']+'-table-search" type="text"  value="" placeholder="Search user or group...">\
+            </div></td>\
+        </tr>\
+        <tr>\
+          <td class="bh-dir-acl'+aclView['view']+'-table-label"><label><b>Permisions</b></label></td>\
+          <td><select class="bh-dir-acl'+aclView['view']+'-table-permisions">\
+            <option value="allow read">allow read</option>\
+            <option value="allow read, write">allow read, write</option>\
+            <option value="allow read, write, change acl">allow read, write, change acl</option>\
+            <option value="deny read, write, change acl">deny read, write, change acl</option>\
+            <option value="deny write, change acl">deny write, change acl</option>\
+            <option value="deny change acl">deny change acl</option>\
+          </select></td>\
+        </tr>\
+      </table>\
+    ';
   };
   
 })();
