@@ -29,7 +29,7 @@
 
 (function(){
 
-  var treeNode = $( "#bh-dir-tree" );
+  var treeNode = $( "#bh-dir-tree ul.dynatree-container" );
 
 
   /*
@@ -83,7 +83,7 @@
     links.on( 'click', directoryClickHandler );
   };
 
-  function treeExpandHandler( expander ) {
+  function treeExpandHandler( expander, callback ) {
     var parent = expander.parent();
     if ( parent.hasClass( 'dynatree-expanded' ) ) {
       // The subtree is expanded, so we need to collapse it
@@ -101,6 +101,9 @@
         parent.addClass( 'dynatree-exp-c' );
       }
       parent.addClass( 'dynatree-ico-cf' );
+      if ( callback !== undefined ) {
+        callback();
+      }
     }else if ( parent.hasClass( 'dynatree-has-children' ) ) {
       // The subtree is collapsed, so we need to expand it
       var list = parent.siblings( 'ul' );
@@ -121,6 +124,10 @@
         }
         parent.addClass( 'dynatree-ico-ef' );
         parent.addClass( 'dynatree-expanded' );
+
+        if ( callback !== undefined ) {
+          callback();
+        }
       }else{
         // If there is no list loaded yet; load one now!
         var url = expander.siblings( 'a' ).attr( 'href' );
@@ -138,8 +145,8 @@
 
             // We only want to add children and only if they are directories
             if ( ( url !== path) &&
-                 ( data.getResponse(path).getProperty('DAV:','resourcetype') !== null ) &&
-                 ( nl.sara.webdav.codec.ResourcetypeCodec.COLLECTION === data.getResponse(path).getProperty('DAV:','resourcetype').getParsedValue() )
+                 ( data.getResponse( path ).getProperty( 'DAV:','resourcetype' ) !== null ) &&
+                 ( nl.sara.webdav.codec.ResourcetypeCodec.COLLECTION === data.getResponse( path ).getProperty( 'DAV:','resourcetype' ).getParsedValue() )
                )
             {
               childArray.push( path.toLowerCase() );
@@ -159,12 +166,16 @@
           parent.removeClass( 'dynatree-lazy' );
           if ( list.children().length > 0 ) {
             parent.after( list );
-            treeExpandHandler( expander );
+            treeExpandHandler( expander, callback );
           }else{
             parent.removeClass( 'dynatree-has-children' );
             expander.removeClass( 'dynatree-expander' );
             expander.addClass( 'dynatree-connector' );
             expander.off( 'click' );
+
+            if ( callback !== undefined ) {
+              callback();
+            }
           }
         } );
       }
@@ -331,43 +342,175 @@
       path += '/';
     }
 
-    // Determine which parent does exist in the tree
-    var existingParent = path;
-    while ( $( 'a[href="' + existingParent + '"]', treeNode ).length === 0 ) {
-      existingParent = existingParent.substr( 0, existingParent.length - 1 );
-      existingParent = existingParent.substr( 0, existingParent.lastIndexOf( '/' ) + 1 );
-      if ( existingParent === '/' ) {
-        break;
-      }
+    // Determine all parents
+    var parents;
+    var parentPath = path.substr( 1, path.substr( 0, path.length - 1 ).lastIndexOf( '/' ) - 1 );
+    if ( parentPath !== '' ) {
+      parents = parentPath.split( '/' );
+    }else{
+      parents = [];
     }
-    if ( existingParent === path ) {
-      // The new path is already known in the tree, so nothing to do!
+
+    // Open all parents and when that's done; add the directory
+    expandRecursive( parents, '/', function() {
+      addDirectory( path );
+    } );
+  };
+  
+  
+  function expandRecursive( parents, expandedPath, callback ) {
+    // If we have nothing to open anymore; call the callback!
+    if ( parents.length === 0 ) {
+      if ( callback !== undefined ) {
+        callback();
+      }
       return;
     }
 
-    // Then add all parents that don't exist
-    var parentsToAdd = path.substr( existingParent.length ).split( '/' );
-    var parentSpan = $( 'a[href="' + existingParent + '"]', treeNode ).parent( 'span' );
-    var parent = parentSpan.parent( 'li' );
-    if ( parentSpan.hasClass( 'dynatree-expanded' ) ) {
-      $( '.dynatree-expander', parent ).click();
+    // Determine which path we want to extend now
+    expandedPath += parents.shift() + '/';
+    var parentLink = $( 'a[href="' + encodeURI( expandedPath ) + '"]', treeNode );
+    if ( parentLink.length === 0 ) {
+      throw "Unable to add directory to the tree: parent directory does not exist";
     }
-    for ( var index in parentsToAdd ) {
-      // First get the list
-      var list = parent.children( 'ul' );
-      var last = false;
+
+    // It exists, let's expand this directory if it is not expanded already
+    var parentSpan = parentLink.parent('span');
+    if ( ! parentSpan.hasClass( 'dynatree-expanded' ) ) {
+      treeExpandHandler( $( '.dynatree-expander', parentSpan ), function() {
+        expandRecursive( parents, expandedPath, callback );
+      } );
+    }else{
+      expandRecursive( parents, expandedPath, callback );
+    }
+  }
+
+
+  function addDirectory( path ) {
+    var parentPath = path.substr( 0, path.substr( 0, path.length - 1 ).lastIndexOf( '/' ) + 1 );
+    var parentLi;
+    var parentSpan;
+    var list;
+    if ( parentPath !== '/' ) {
+      parentSpan = $( 'a[href="' + encodeURI( parentPath ) + '"]', treeNode ).parent('span');
+      parentLi = parentSpan.parent( 'li' );
+
+      // Get the list
+      list = parentLi.children( 'ul' );
       if ( list.length === 0 ) {
         list = $( '<ul></ul>' );
-        parent.append( list );
-        last = true;
-      }else{
-        // TODO put the new directory in the right (sorted) place in the list
+        parentLi.append( list );
       }
+    }else{
+      list = treeNode;
+    }
 
-      // Then add the current parent and update 'existingParent' and 'parent' variables
-      existingParent += parentsToAdd[ index ] + '/';
-      parent = createTreeElement( existingParent, last );
-      list.append( parent );
+    // Put the new directory in the right (sorted) place in the list
+    var directoryToAdd = path.substring( parentPath.length, path.length - 1 );
+    var listElements = $( 'li', list );
+    var nextElement = undefined;
+    listElements.each( function() {
+      if ( ( nextElement === undefined ) && ( $( 'a', this ).text() > directoryToAdd ) ) {
+        nextElement = $( this );
+      }
+    } );
+
+    // Then insert the new element at the right location
+    if ( nextElement === undefined ) {
+      // It is the last element, so make the current last element not a 'last element' (huh? well, it works)
+      if ( listElements.length > 0 ) {
+        var lastElement = listElements.last();
+        lastElement.removeClass( 'dynatree-lastsib' );
+        var lastElementSpan = lastElement.children( 'span' );
+        lastElementSpan.removeClass( 'dynatree-lastsib' );
+        if ( lastElementSpan.hasClass( 'dynatree-exp-el' ) ) {
+          lastElementSpan.removeClass( 'dynatree-exp-el' );
+          lastElementSpan.addClass( 'dynatree-exp-e' );
+        }else if ( lastElementSpan.hasClass( 'dynatree-exp-cl' ) ) {
+          lastElementSpan.removeClass( 'dynatree-exp-cl' );
+          lastElementSpan.addClass( 'dynatree-exp-c' );
+        }else{
+          lastElementSpan.removeClass( 'dynatree-exp-cdl' );
+          lastElementSpan.addClass( 'dynatree-exp-cd' );
+        }
+      }else if ( parentPath !== '/' ) { // The parent didn't have any children before, but does have one now!
+        var expander = $( '.dynatree-connector', parentSpan );
+        expander.removeClass( 'dynatree-connector' );
+        expander.addClass( 'dynatree-expander' );
+        parentSpan.removeClass( 'dynatree-lazy' );
+        parentSpan.removeClass( 'dynatree-exp-cl' );
+        parentSpan.removeClass( 'dynatree-exp-cdl' );
+        parentSpan.removeClass( 'dynatree-exp-c' );
+        parentSpan.removeClass( 'dynatree-exp-cd' );
+        parentSpan.removeClass( 'dynatree-exp-el' );
+        parentSpan.removeClass( 'dynatree-exp-e' );
+        parentSpan.removeClass( 'dynatree-ico-cf' );
+        if ( parentSpan.hasClass( 'dynatree-lastsib' ) ) {
+          parentSpan.addClass( 'dynatree-exp-el' );
+        }else{
+          parentSpan.addClass( 'dynatree-exp-e' );
+        }
+        parentSpan.addClass( 'dynatree-ico-ef' );
+        parentSpan.addClass( 'dynatree-expanded' );
+        parentSpan.addClass( 'dynatree-has-children' );
+        nl.sara.beehub.view.tree.attachEvents( parentLi );
+      }
+      list.append( createTreeElement( encodeURI( path ), true ) );
+    }else{
+      nextElement.before( createTreeElement( encodeURI( path ), false ) );
+    }
+  }
+
+
+  nl.sara.beehub.view.tree.removePath = function( path ) {
+    // Normalize the path
+    if ( path.substr( 0, 1 ) !== '/' ) {
+      path = '/' + path;
+    }
+    if ( path.substr( -1 ) !== '/' ) {
+      path += '/';
+    }
+
+    // Remove the list element representing the path to be deleted
+    var pathLink = $( 'a[href="' + encodeURI( path ) + '"]', treeNode );
+    if ( pathLink.length === 0 ) {
+      // This path doesn't exist, so we're done without doing anything :)
+      return;
+    }
+    var pathLi = pathLink.parent('span').parent( 'li' );
+    var parentUl = pathLi.parent( 'ul' );
+    pathLi.remove();
+
+    // Then check if the parent is still correct
+    var siblingsLi = $( 'li', parentUl );
+    if ( ( siblingsLi.length === 0 ) && ( path !== '/' ) ) {
+      // No more subdirectories for the parent, so make sure it uses the right icons
+      var parentSpan = parentUl.siblings( 'span' );
+      // Collapse the parent tree
+      if ( parentSpan.hasClass( 'dynatree-expanded' ) ) {
+        treeExpandHandler( $( '.dynatree-expander', parentSpan ) );
+      }
+      parentSpan.removeClass( 'dynatree-has-children' );
+      var expander = $( '.dynatree-expander', parentSpan );
+      expander.removeClass( 'dynatree-expander' );
+      expander.addClass( 'dynatree-connector' );
+      expander.off( 'click' );
+    }else{
+      // There still are some subdirectories, so let's just make sure the last one knows it is the last one
+      var lastSibling = siblingsLi.last();
+      lastSibling.addClass( 'dynatree-lastsib' );
+      var elementSpan = $( '.dynatree-node', lastSibling );
+      elementSpan.addClass( 'dynatree-lastsib' );
+      if ( elementSpan.hasClass( 'dynatree-exp-cd' ) ) {
+        elementSpan.removeClass( 'dynatree-exp-cd' );
+        elementSpan.addClass( 'dynatree-exp-cdl' );
+      }else if ( elementSpan.hasClass( 'dynatree-exp-c' ) ) {
+        elementSpan.removeClass( 'dynatree-exp-c' );
+        elementSpan.addClass( 'dynatree-exp-cl' );
+      }else if ( elementSpan.hasClass( 'dynatree-exp-e' ) ) {
+        elementSpan.removeClass( 'dynatree-exp-e' );
+        elementSpan.addClass( 'dynatree-exp-el' );
+      }
     }
   };
 

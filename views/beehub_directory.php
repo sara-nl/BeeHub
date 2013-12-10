@@ -196,28 +196,22 @@ require 'views/header.php';
           }
         }
         $expanded = isset( $treeState[ $memberResource->path ] ) && $hasChildren ? $treeState[ $memberResource->path ] : false;
-        ?>
-        <li <?= ( $counter === $last ) ? 'class="dynatree-lastsib"' : '' ?> >
-          <span class="dynatree-node dynatree-folder
+        ?><li <?= ( $counter === $last ) ? 'class="dynatree-lastsib"' : '' ?>
+          ><span class="dynatree-node dynatree-folder
                        <?= $hasChildren ? 'dynatree-has-children' : '' ?>
                        <?= $expanded ? 'dynatree-expanded' : ( $hasChildren ? 'dynatree-lazy' : '' ) ?>
                        dynatree-exp-<?= $expanded ? 'e' : 'cd' ?><?= $counter === $last ? 'l dynatree-lastsib' : '' ?>
                        dynatree-ico-<?= $expanded ? 'e' : 'c' ?>f
                        <?= $memberResource->path === $selectedPath ? 'dynatree-focused' : '' ?>
                 "
-          >
-            <span class="dynatree-<?= $hasChildren ? 'expander' : 'connector' ?>"></span>
-            <span class="dynatree-icon"></span>
-            <a class="dynatree-title" href="<?= DAV::xmlescape( $memberResource->path ) ?>">
-              <?= DAV::xmlescape( $memberResource->user_prop_displayname() ) ?>
-            </a>
-          </span>
+            ><span class="dynatree-<?= $hasChildren ? 'expander' : 'connector' ?>"></span
+            ><span class="dynatree-icon"></span
+            ><a class="dynatree-title" href="<?= DAV::xmlescape( $memberResource->path ) ?>"><?= DAV::xmlescape( $memberResource->user_prop_displayname() ) ?></a
+          ></span
           <?php if ( $expanded && $hasChildren ) : ?>
-            <ul>
-              <?= printTree( $memberResource->path, $treeState, $selectedPath ); ?>
-            </ul>
+            ><ul><?= printTree( $memberResource->path, $treeState, $selectedPath ); ?></ul
           <?php endif; ?>
-        </li>
+        ></li>
         <?php
         $registry->forget( $path . $member );
       endfor;
@@ -254,9 +248,29 @@ require 'views/header.php';
       </thead>
       <tbody>
         <?php
+        // Get up to 250 child resources so we can sort them (for more resources, we won't sort anymore)
+        $subResources = array();
+        $counter = 0;
+        $sortResources = true;
+        foreach ( $this as $resource ) {
+          if ( ++$counter > 250 ) {
+            $sortResources = false;
+            break;
+          }
+          $subResources[] = $resource;
+        }
+
+        // Check whether to sort the sub-resources and sort them if needed
+        if ( $sortResources ) {
+          usort( $subResources, 'strnatcasecmp' );
+        }else{
+          // If we reached the threshold, there are too many resource to sort them.
+          $subResources = $this;
+        }
+
         // For all resources, fill table
         $current_user_privilege_set_collection = $this->user_prop_current_user_privilege_set();
-        foreach ($this as $inode) :
+        foreach ( $subResources as $inode ) :
           $member = DAV::$REGISTRY->resource($this->path . $inode);
           if (DAV::unslashify($member->path) === '/system') {
             continue;
