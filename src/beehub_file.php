@@ -92,6 +92,23 @@ public function method_COPY( $path ) {
   exec( 'cp --preserve=all ' . BeeHub::escapeshellarg($this->localPath) . ' ' . BeeHub::escapeshellarg($localPath) );
   xattr_remove( $localPath, rawurlencode(DAV::PROP_ACL) );
   xattr_remove( $localPath, rawurlencode(DAV::PROP_LOCKDISCOVERY) );
+
+  // Determine the sponsor
+  $user = BeeHub_Auth::inst()->current_user();
+  $user_sponsors = $user->prop(BeeHub::PROP_SPONSOR_MEMBERSHIP);
+  if (count($user_sponsors) == 0) { // If the user doesn't have any sponsors, he/she can't create files and directories
+    throw DAV::forbidden();
+  }
+  $parent = BeeHub_Registry::inst()->resource(dirname($this->path));
+  $sponsor = $parent->prop(BeeHub::PROP_SPONSOR); // The default is the directory sponsor
+  if (!in_array($sponsor, $user_sponsors)) { //But a user can only create files sponsored by his own sponsors
+    $sponsor = $user->user_prop(BeeHub::PROP_SPONSOR);
+  }
+
+  // And set the xattributes
+  xattr_set( $localPath, rawurlencode( DAV::PROP_GETETAG), BeeHub_DB::ETag() );
+  xattr_set( $localPath, rawurlencode( DAV::PROP_OWNER  ), $this->user_prop_current_user_principal() );
+  xattr_set( $localPath, rawurlencode( BeeHub::PROP_SPONSOR ), $sponsor );
 }
 
 

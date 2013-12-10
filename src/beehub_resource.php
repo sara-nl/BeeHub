@@ -198,7 +198,11 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
     if ( ('/' === $this->path) ||
          ('/home/' === $this->path) ){
       $protected[] = new DAVACL_Element_ace(
-        'DAV: all', false, array('DAV: read', 'DAV: read-acl'), false, true, null
+        'DAV: all', false, array( 'DAV: read' ), false, true, null
+      );
+    }else{
+      $protected[] = new DAVACL_Element_ace(
+        'DAV: all', false, array('DAV: unbind'), false, true, null
       );
     }
     $parent = $this->collection();
