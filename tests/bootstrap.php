@@ -88,6 +88,7 @@ if ( !\file_exists( \dirname( __FILE__ ) . \DIRECTORY_SEPARATOR . 'config.ini' )
 }
 
 // Load dependencies
+require_once( \dirname( \dirname( __FILE__ ) ) . \DIRECTORY_SEPARATOR . 'vendor' . \DIRECTORY_SEPARATOR . 'autoload.php' );
 require_once( \dirname( __FILE__ ) . \DIRECTORY_SEPARATOR . 'dbtests_data' . \DIRECTORY_SEPARATOR . 'db_testcase.php' );
 require_once( \dirname( \dirname( __FILE__ ) ) . \DIRECTORY_SEPARATOR . 'webdav-php' . \DIRECTORY_SEPARATOR . 'tests' . \DIRECTORY_SEPARATOR . 'mocks' . \DIRECTORY_SEPARATOR . 'dav_cache.php' );
 \spl_autoload_register('\spl_autoload');
