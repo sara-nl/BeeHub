@@ -27,7 +27,7 @@ declare( encoding = 'UTF-8' );
 */
 
 // Load the default page header
-$header = '<link href="/system/js/plugins/dynatree/src/skin/ui.dynatree.css" rel="stylesheet" type="text/css" />';
+$header = '<link href="/system/css/dynatree/ui.dynatree.css" rel="stylesheet" type="text/css" />';
 require 'views/header.php';
 ?>
 
