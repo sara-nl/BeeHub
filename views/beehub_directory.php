@@ -177,6 +177,12 @@ require 'views/header.php';
       $resource = $registry->resource( $path );
       $members = array();
       foreach ( $resource as $member ) :
+        // Skip the /system/ directory, as there is no need to see this
+        if ( ( $path === '/' ) &&
+             ( $member === 'system/' )
+        ) {
+          continue;
+        }
         $members[] = $member;
       endforeach;
       usort( $members, 'strnatcasecmp' );
