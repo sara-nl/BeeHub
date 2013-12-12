@@ -29,6 +29,7 @@ namespace BeeHub\tests;
 class BeeHub_ResourceTest extends \PHPUnit_Framework_TestCase {
 
   public function setUp() {
+    parent::setUp();
     reset_SERVER();
   }
 

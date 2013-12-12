@@ -86,14 +86,6 @@ public function getlock($path) {
       xattr_remove(BeeHub::localPath($path), self::PROPNAME);
     else
       return new DAV_Element_activelock( $value );
-#  do {
-#    $path = dirname($path);
-#    if ($value = json_decode(@xattr_get(BeeHub::localPath($path), self::PROPNAME), true))
-#      if ($value['timeout'] && $value['timeout'] < time())
-#        xattr_remove(BeeHub::localPath($path), self::PROPNAME);
-#      elseif( DAV::DEPTH_INF === $value['depth'] )
-#        return new DAV_Element_activelock( $value );
-#  } while ('/' != $path);
   return null;
 }
 
@@ -104,8 +96,6 @@ public function setlock($lockroot, $depth, $owner, $timeout) {
       DAV::HTTP_NOT_IMPLEMENTED,
       'Locks of depth infinity are not implemented.'
     );
-//   if (preg_match("@^(?:{BeeHub::$USERS_PATH}|{BeeHub::$GROUPS_PATH}).+\$@", $lockroot))
-//     throw new DAV_Status(DAV::HTTP_FORBIDDEN);
   $timeout = self::timeout($timeout);
   $stmt = BeeHub_DB::execute('SELECT UUID()');
   $row = $stmt->fetch_row();
