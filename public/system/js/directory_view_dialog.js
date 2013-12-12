@@ -402,8 +402,8 @@
    */
   getFormAce= function(){
     var principal = '';
-    var aclView = nl.sara.beehub.view.acl.getAclView();
-    switch($('input[name = "bh-dir-view-acl'+aclView['view']+'-optionRadio"]:checked').val())
+    var aclForm = nl.sara.beehub.view.acl.getFormView();
+    switch(aclForm.find('input[name = "bh-dir-view-acl-optionRadio"]:checked').val())
     {
     // all
     case "all":
@@ -415,14 +415,14 @@
       break;
     // User or group
     case "user_or_group":
-      principal=$("#bh-dir-acl"+aclView['view']+"-table-autocomplete").attr('name');
+      principal=aclForm.find(".bh-dir-acl-table-search").attr('name');
       break;
     default:
       // This should never happen
     }
     var ace = {
         "principal": principal,
-        "permissions": $(".bh-dir-acl"+aclView['view']+"-table-permisions option:selected").val(),
+        "permissions": aclForm.find(".bh-dir-acl-table-permisions option:selected").val(),
     };
     return ace;
   }
@@ -459,7 +459,7 @@
         }
       },{
         text: "Add rule",
-        id: "bh-dir-aclformtab-add-button",
+        id: "bh-dir-aclform-add-button",
         click: function() {
           addFunction(getFormAce("tab"));
         }

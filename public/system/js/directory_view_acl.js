@@ -251,12 +251,12 @@
     var info = '';
     var message = '';
     var aceClass = '';
-  
+
     if ( ace['protected'] ) {
       info = 'protected';
       message = 'protected, no changes are possible';
       aceClass ='bh-dir-acl-protected';
-    } else if ( ace['inherited'] !== undefined ) {
+    } else if ( (ace['inherited'] !== undefined) ) {
       info = 'inherited';
       message = 'inherited from: <a href="' + ace['inherited'] + '">' + ace['inherited'] + '</a>';
       aceClass ='bh-dir-acl-inherited';
@@ -339,11 +339,10 @@
   nl.sara.beehub.view.acl.getAcl = function() {
     var acl = new nl.sara.webdav.Acl();
     // put each item acl table in the created webdav acl
-    $.each(nl.sara.beehub.view.acl.getAclView().find('tr'), function(index, row){
+    $.each(nl.sara.beehub.view.acl.getAclView().find('.bh-dir-acl-contents').find('tr'), function(index, row){
       var principal = $(row).find('.bh-dir-acl-principal').attr('name');
       var permissions = $(row).find('.bh-dir-acl-permissions span.presentation').text();
       var info = $(row).find('.bh-dir-acl-comment').attr('name');
-      
       if (info !== 'protected' && info !== 'inherited') {
         // create ace according the webdavlib specifications
         var ace = new nl.sara.webdav.Ace();
@@ -471,9 +470,9 @@
   };
   
   // DIALOG ACL VIEW
-  nl.sara.beehub.view.acl.setAddAclRuleDialogClickHandler = function(addFunction){
+  nl.sara.beehub.view.acl.setAddAclRuleDialogClickHandler = function(addFunction, resourcePath){
     nl.sara.beehub.view.acl.getAddAclButton().click(function(){
-      addFunction(getFormAce());
+      addFunction(getFormAce(), resourcePath);
     })
   }
   
