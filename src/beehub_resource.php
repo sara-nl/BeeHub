@@ -96,13 +96,6 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
       $this->assert(DAVACL::PRIV_READ);
     } catch (DAV_Status $e) {
       return false;
-      #if (!( $collection = $this->collection() ))
-      #  return false;
-      #try {
-      #  $collection->assert(DAVACL::PRIV_READ);
-      #} catch (DAV_Status $f) {
-      #  return false;
-      #}
     }
     return true;
   }
@@ -117,28 +110,6 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
   public function user_prop($name) {
     $this->init_props();
     return @$this->stored_props[$name];
-  }
-
-
-  /**
-   * Returns an array with all sponsors of the current user
-   *
-   * @return  array  An array of principals (either paths or properties), indexed by their own value
-   */
-  final public function current_user_sponsors() {
-    $retval = array();
-    $user = $this->user_prop_current_user_principal();
-    if (null === $user)
-      return $retval;
-    $retval = array(DAVACL::PRINCIPAL_ALL => DAVACL::PRINCIPAL_ALL);
-    if ( $current_user_principal = $this->user_prop_current_user_principal() ) {
-      $retval = array_merge($retval, self::current_user_principals_recursive($current_user_principal));
-      $retval[DAVACL::PRINCIPAL_AUTHENTICATED] = DAVACL::PRINCIPAL_AUTHENTICATED;
-    }
-    else {
-      $retval[DAVACL::PRINCIPAL_UNAUTHENTICATED] = DAVACL::PRINCIPAL_UNAUTHENTICATED;
-    }
-    return $retval;
   }
 
 
