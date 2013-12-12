@@ -359,193 +359,195 @@ require 'views/header.php';
 
   <!-- Acl tab -->
   <div id="bh-dir-panel-acl" class="tab-pane fade">
-    <table id="bh-dir-acl-table" class="table table-striped table-hover table-condensed">
-      <thead class="bh-dir-acl-table-header">
-        <tr>
-          <th>Principal</th>
-          <th>Permissions</th>
-          <!-- Hidden dropdown column -->
-          <th hidden="hidden"></th>
-          <th>Comment</th>
-          <!-- Move up -->
-          <th class="bh-dir-small-column"></th>
-          <!-- Move down -->
-          <th class="bh-dir-small-column"></th>
-          <!-- Delete row -->
-          <th class="bh-dir-small-column"></th>
-        </tr>
-      </thead>
-      <tbody class="bh-dir-acl-contents" name="<?= DAV::xmlescape( DAV::unslashify($this->path) ) ?>">
-        <?php
-        $acl = $this->user_prop_acl();
-        $acl_length = count( $acl );
-        for ( $key = 0; $key < $acl_length; $key++ ) :
-          $ace = $acl[ $key ];
-        
-          // The protected property which grants everybody the 'DAV: unbind' privilege will be omitted from the list
-          if ( $ace->protected &&
-               ( $ace->principal === DAVACL::PRINCIPAL_ALL ) &&
-               ! $ace->deny &&
-               ( count( $ace->privileges ) === 1 ) &&
-               in_array( DAVACL::PRIV_UNBIND, $ace->privileges )
-             )
-          {
-            continue;
-          }
-          ?>
-          <tr class="bh-dir-acl-row <?= ( $ace->protected || $ace->inherited ) ? 'info' : '' ?>">
-            <!-- Principal -->
-            <?php
-            // Determine how to show the principal
-            switch ( $ace->principal ) {
-              case 'DAV: owner':
-                $displayname = '<span style="font-weight: bold">Owner</span>';
-                break;
-              case DAVACL::PRINCIPAL_ALL:
-                $displayname = '<span style="font-weight: bold">Everybody</span>';
-                break;
-              case DAVACL::PRINCIPAL_AUTHENTICATED:
-                $displayname = '<span style="font-weight: bold">All BeeHub users</span>';
-                break;
-              case DAVACL::PRINCIPAL_UNAUTHENTICATED:
-                $displayname = '<span style="font-weight: bold">All unauthenticated users</span>';
-                break;
-              case DAVACL::PRINCIPAL_SELF:
-                $displayname = '<span style="font-weight: bold">This resource itself</span>';
-                break;
-              default:
-                $principal = DAV::$REGISTRY->resource( $ace->principal );
-                if ( $principal instanceof DAVACL_Principal ) {
-                  $displayname = DAV::xmlescape($principal->user_prop( DAV::PROP_DISPLAYNAME ));
-                }else{
-                  $displayname = '<span style="font-weight: bold">Unrecognized principal!</span>';
-                }
-              break;
-            }
-            $icon= '<i class="icon-user"></i><i class="icon-user"></i>';
-            if ( ( strpos( $ace->principal, BeeHub::USERS_PATH ) !== false ) || ( $ace->principal == 'DAV: owner' ) ) {
-              $icon= '<i class="icon-user"></i>';
-            }
-            ?>
-            <td class="bh-dir-acl-principal" name="<?= DAV::xmlescape($ace->principal) ?>" data-toggle="tooltip" title="<?= DAV::xmlescape($ace->principal)?>" >
-              <span style="font-weight: bold"><?= ( $ace->invert ? 'Everybody except ' : '' ) . $displayname ?> </span>(<?= $icon?>)
-            </td>
-            				
-            <?php 
-            // make permissions string
-            $tooltip = "";
-            $class = "";
-            $permissions = ""; 
-            if ( $ace->deny ) {
-              $permissions = "deny ";
-              $class = "bh-dir-acl-deny";
-              if ( ( count( $ace->privileges ) === 1 ) && in_array( DAVACL::PRIV_WRITE_ACL, $ace->privileges ) ) {
-                $permissions .= "change acl";
-                $tooltip = "deny change acl";
-              } elseif ( ( count( $ace->privileges ) === 2 ) && in_array( DAVACL::PRIV_WRITE, $ace->privileges ) && in_array( DAVACL::PRIV_WRITE_ACL, $ace->privileges) ) {
-                $permissions .= "write, change acl";
-                $tooltip = "deny write, change acl";
-              } elseif ( ( ( count( $ace->privileges ) === 3 ) && in_array( DAVACL::PRIV_READ, $ace->privileges ) && in_array( DAVACL::PRIV_WRITE, $ace->privileges ) && in_array( DAVACL::PRIV_WRITE_ACL, $ace->privileges) ) || ( in_array( DAVACL::PRIV_ALL, $ace->privileges ) ) ) {
-                $permissions .= "read, write, change acl";
-                $tooltip = "deny read, write, change acl";
-              } else {
-                $permissions .= "unknown privilege (combination)";
-                $tooltip = "deny " . implode( '; ', $ace->privileges );
-              }
-            } else { 
-              $permissions = "allow ";
-              $class = "bh-dir-acl-allow";
-              if ( ( count( $ace->privileges ) === 1 ) && in_array( DAVACL::PRIV_READ, $ace->privileges ) ) {
-                $permissions .= "read";
-                $tooltip="allow read";
-              } elseif ( ( count( $ace->privileges ) === 2 ) && in_array( DAVACL::PRIV_WRITE, $ace->privileges ) && in_array( DAVACL::PRIV_READ, $ace->privileges) ) {
-                $permissions .= "read, write";
-                $tooltip="allow read, write";
-              } elseif ( ( ( count( $ace->privileges ) === 3 ) && in_array( DAVACL::PRIV_WRITE_ACL, $ace->privileges ) && in_array( DAVACL::PRIV_WRITE, $ace->privileges ) && in_array( DAVACL::PRIV_READ, $ace->privileges ) ) || ( in_array( DAVACL::PRIV_ALL, $ace->privileges ) ) ) {
-                $permissions .= "read, write, change acl";
-                $tooltip="allow read, write, change acl";
-              } else {
-                $permissions .= "unknown privilege (combination)";
-                $tooltip="allow " . implode( '; ', $ace->privileges );
-              }
-            }
-            
-            $changePermissionsClass = "bh-dir-acl-change-permissions";
-            $style = 'style="cursor: pointer"';
-            if  ( $ace->protected  || $ace->inherited ) {
-              $changePermissionsClass = "";
-              $style = "";
-            }
-            ?>
-            <td class="bh-dir-acl-permissions-select" hidden="hidden">
-              <select class="bh-dir-acl-table-permissions">
-                <option value="allow read" <?= ( $permissions === 'allow read' ) ? 'selected="selected"' : '' ?> >allow read</option>
-                <option value="allow read, write" <?= ( $permissions === 'allow read, write' ) ? 'selected="selected"' : '' ?> >allow read, write</option>
-                <option value="allow read, write, change acl" <?= ( $permissions === 'allow read, write, change acl' ) ? 'selected="selected"' : '' ?> >allow read, write, change acl</option>
-                <option value="deny read, write, change acl" <?= ( $permissions === 'deny read, write, change acl' ) ? 'selected="selected"' : '' ?> >deny read, write, change acl</option>
-                <option value="deny write, change acl" <?= ( $permissions === 'deny write, change acl' ) ? 'selected="selected"' : '' ?> >deny write, change acl</option>
-                <option value="deny change acl" <?= ( $permissions === 'deny change acl' ) ? 'selected="selected"' : '' ?> >deny change acl</option>
-              </select>
-            </td>
-            <td class="bh-dir-acl-permissions <?= $changePermissionsClass ?> <?= $class?>" <?= $style ?> data-toggle="tooltip" title="<?= $tooltip?>">
-              <span class="presentation"><?= $permissions ?></span>
-              <?php if ( strpos( $permissions, 'unknown' ) !== false ) : ?>
-                <span class="original" hidden="hidden"><?= implode( ' ', $ace->privileges ) ?></span>
-              <?php endif; ?>
-            </td>
-            <!-- Info -->
-            <?php
-            $info = '';
-            $message = '';
-            $class = '';
-            if ( $ace->protected ) {
-              $info = 'protected';
-              $message = 'protected, no changes are possible';
-              $class ='bh-dir-acl-protected';
-            } elseif ( ! is_null( $ace->inherited ) ) {
-              $info = 'inherited';
-              $message = 'inherited from: <a href="' . $ace->inherited . '">' . $ace->inherited . '</a>';
-              $class ='bh-dir-acl-inherited';
-            }
-            ?>
-            <td class="bh-dir-acl-comment <?= $class ?>" name="<?= $info ?>" ><?= $message ?></td>
-            <!-- When ace is not protected, inherited and previous ace exists and is not protected  -->
-            <?php if ( ! $ace->protected &&
-                       ( is_null( $ace->inherited ) ) &&
-                       ( $key !== 0 ) &&
-                       ( ! $acl[$key-1]->protected ) )
-            :?>
-              <!-- Move up -->
-              <td class="bh-dir-acl-up"><i title="Move up" class="icon-chevron-up bh-dir-acl-icon-up" style="cursor: pointer"></i></td>
-            <?php else : ?>
-              <!-- No move up possible -->
-              <td class="bh-dir-acl-up"></td>
-            <?php endif; ?>
-            <!-- When ace is not protected, inherited and next ace exists and is not inherited  -->
-            <?php if ( ! $ace->protected &&
-                       ( is_null( $ace->inherited ) ) &&
-                       ( $key !== $acl_length - 1) &&
-                       is_null( $acl[$key+1]->inherited ) )
-            : ?>
-              <!-- Move down -->
-              <td class="bh-dir-acl-down"><i title="Move down" class="icon-chevron-down bh-dir-acl-icon-down" style="cursor: pointer"></i></td>
-            <?php else : ?>
-              <!-- No move down possible -->
-              <td class="bh-dir-acl-down"></td>
-            <?php endif; ?>
-            <?php if ( $ace->protected || ! is_null( $ace->inherited ) ) :?>
-              <!-- no delete possible -->
-              <td></td>
-            <?php else : ?>
-              <!-- Delete icon -->
-              <td><i title="Delete" class="icon-remove bh-dir-acl-icon-remove" style="cursor: pointer"></i></td>
-            <?php endif; ?>
-          </tr>  
-          <?php
-        endfor;
-      ?>  	
-      </tbody>
-    </table>
+  	<div id="bh-dir-acl-directory-acl">
+	    <table id="bh-dir-acl-table" class="table table-striped table-hover table-condensed">
+	      <thead class="bh-dir-acl-table-header">
+	        <tr>
+	          <th>Principal</th>
+	          <th>Permissions</th>
+	          <!-- Hidden dropdown column -->
+	          <th hidden="hidden"></th>
+	          <th>Comment</th>
+	          <!-- Move up -->
+	          <th class="bh-dir-small-column"></th>
+	          <!-- Move down -->
+	          <th class="bh-dir-small-column"></th>
+	          <!-- Delete row -->
+	          <th class="bh-dir-small-column"></th>
+	        </tr>
+	      </thead>
+	      <tbody class="bh-dir-acl-contents" name="<?= DAV::xmlescape( DAV::unslashify($this->path) ) ?>">
+	        <?php
+	        $acl = $this->user_prop_acl();
+	        $acl_length = count( $acl );
+	        for ( $key = 0; $key < $acl_length; $key++ ) :
+	          $ace = $acl[ $key ];
+	        
+	          // The protected property which grants everybody the 'DAV: unbind' privilege will be omitted from the list
+	          if ( $ace->protected &&
+	               ( $ace->principal === DAVACL::PRINCIPAL_ALL ) &&
+	               ! $ace->deny &&
+	               ( count( $ace->privileges ) === 1 ) &&
+	               in_array( DAVACL::PRIV_UNBIND, $ace->privileges )
+	             )
+	          {
+	            continue;
+	          }
+	          ?>
+	          <tr class="bh-dir-acl-row <?= ( $ace->protected || $ace->inherited ) ? 'info' : '' ?>">
+	            <!-- Principal -->
+	            <?php
+	            // Determine how to show the principal
+	            switch ( $ace->principal ) {
+	              case 'DAV: owner':
+	                $displayname = '<span style="font-weight: bold">Owner</span>';
+	                break;
+	              case DAVACL::PRINCIPAL_ALL:
+	                $displayname = '<span style="font-weight: bold">Everybody</span>';
+	                break;
+	              case DAVACL::PRINCIPAL_AUTHENTICATED:
+	                $displayname = '<span style="font-weight: bold">All BeeHub users</span>';
+	                break;
+	              case DAVACL::PRINCIPAL_UNAUTHENTICATED:
+	                $displayname = '<span style="font-weight: bold">All unauthenticated users</span>';
+	                break;
+	              case DAVACL::PRINCIPAL_SELF:
+	                $displayname = '<span style="font-weight: bold">This resource itself</span>';
+	                break;
+	              default:
+	                $principal = DAV::$REGISTRY->resource( $ace->principal );
+	                if ( $principal instanceof DAVACL_Principal ) {
+	                  $displayname = DAV::xmlescape($principal->user_prop( DAV::PROP_DISPLAYNAME ));
+	                }else{
+	                  $displayname = '<span style="font-weight: bold">Unrecognized principal!</span>';
+	                }
+	              break;
+	            }
+	            $icon= '<i class="icon-user"></i><i class="icon-user"></i>';
+	            if ( ( strpos( $ace->principal, BeeHub::USERS_PATH ) !== false ) || ( $ace->principal == 'DAV: owner' ) ) {
+	              $icon= '<i class="icon-user"></i>';
+	            }
+	            ?>
+	            <td class="bh-dir-acl-principal" name="<?= DAV::xmlescape($ace->principal) ?>" data-toggle="tooltip" title="<?= DAV::xmlescape($ace->principal)?>" >
+	              <span style="font-weight: bold"><?= ( $ace->invert ? 'Everybody except ' : '' ) . $displayname ?> </span>(<?= $icon?>)
+	            </td>
+	            				
+	            <?php 
+	            // make permissions string
+	            $tooltip = "";
+	            $class = "";
+	            $permissions = ""; 
+	            if ( $ace->deny ) {
+	              $permissions = "deny ";
+	              $class = "bh-dir-acl-deny";
+	              if ( ( count( $ace->privileges ) === 1 ) && in_array( DAVACL::PRIV_WRITE_ACL, $ace->privileges ) ) {
+	                $permissions .= "change acl";
+	                $tooltip = "deny change acl";
+	              } elseif ( ( count( $ace->privileges ) === 2 ) && in_array( DAVACL::PRIV_WRITE, $ace->privileges ) && in_array( DAVACL::PRIV_WRITE_ACL, $ace->privileges) ) {
+	                $permissions .= "write, change acl";
+	                $tooltip = "deny write, change acl";
+	              } elseif ( ( ( count( $ace->privileges ) === 3 ) && in_array( DAVACL::PRIV_READ, $ace->privileges ) && in_array( DAVACL::PRIV_WRITE, $ace->privileges ) && in_array( DAVACL::PRIV_WRITE_ACL, $ace->privileges) ) || ( in_array( DAVACL::PRIV_ALL, $ace->privileges ) ) ) {
+	                $permissions .= "read, write, change acl";
+	                $tooltip = "deny read, write, change acl";
+	              } else {
+	                $permissions .= "unknown privilege (combination)";
+	                $tooltip = "deny " . implode( '; ', $ace->privileges );
+	              }
+	            } else { 
+	              $permissions = "allow ";
+	              $class = "bh-dir-acl-allow";
+	              if ( ( count( $ace->privileges ) === 1 ) && in_array( DAVACL::PRIV_READ, $ace->privileges ) ) {
+	                $permissions .= "read";
+	                $tooltip="allow read";
+	              } elseif ( ( count( $ace->privileges ) === 2 ) && in_array( DAVACL::PRIV_WRITE, $ace->privileges ) && in_array( DAVACL::PRIV_READ, $ace->privileges) ) {
+	                $permissions .= "read, write";
+	                $tooltip="allow read, write";
+	              } elseif ( ( ( count( $ace->privileges ) === 3 ) && in_array( DAVACL::PRIV_WRITE_ACL, $ace->privileges ) && in_array( DAVACL::PRIV_WRITE, $ace->privileges ) && in_array( DAVACL::PRIV_READ, $ace->privileges ) ) || ( in_array( DAVACL::PRIV_ALL, $ace->privileges ) ) ) {
+	                $permissions .= "read, write, change acl";
+	                $tooltip="allow read, write, change acl";
+	              } else {
+	                $permissions .= "unknown privilege (combination)";
+	                $tooltip="allow " . implode( '; ', $ace->privileges );
+	              }
+	            }
+	            
+	            $changePermissionsClass = "bh-dir-acl-change-permissions";
+	            $style = 'style="cursor: pointer"';
+	            if  ( $ace->protected  || $ace->inherited ) {
+	              $changePermissionsClass = "";
+	              $style = "";
+	            }
+	            ?>
+	            <td class="bh-dir-acl-permissions-select" hidden="hidden">
+	              <select class="bh-dir-acl-table-permissions">
+	                <option value="allow read" <?= ( $permissions === 'allow read' ) ? 'selected="selected"' : '' ?> >allow read</option>
+	                <option value="allow read, write" <?= ( $permissions === 'allow read, write' ) ? 'selected="selected"' : '' ?> >allow read, write</option>
+	                <option value="allow read, write, change acl" <?= ( $permissions === 'allow read, write, change acl' ) ? 'selected="selected"' : '' ?> >allow read, write, change acl</option>
+	                <option value="deny read, write, change acl" <?= ( $permissions === 'deny read, write, change acl' ) ? 'selected="selected"' : '' ?> >deny read, write, change acl</option>
+	                <option value="deny write, change acl" <?= ( $permissions === 'deny write, change acl' ) ? 'selected="selected"' : '' ?> >deny write, change acl</option>
+	                <option value="deny change acl" <?= ( $permissions === 'deny change acl' ) ? 'selected="selected"' : '' ?> >deny change acl</option>
+	              </select>
+	            </td>
+	            <td class="bh-dir-acl-permissions <?= $changePermissionsClass ?> <?= $class?>" <?= $style ?> data-toggle="tooltip" title="<?= $tooltip?>">
+	              <span class="presentation"><?= $permissions ?></span>
+	              <?php if ( strpos( $permissions, 'unknown' ) !== false ) : ?>
+	                <span class="original" hidden="hidden"><?= implode( ' ', $ace->privileges ) ?></span>
+	              <?php endif; ?>
+	            </td>
+	            <!-- Info -->
+	            <?php
+	            $info = '';
+	            $message = '';
+	            $class = '';
+	            if ( $ace->protected ) {
+	              $info = 'protected';
+	              $message = 'protected, no changes are possible';
+	              $class ='bh-dir-acl-protected';
+	            } elseif ( ! is_null( $ace->inherited ) ) {
+	              $info = 'inherited';
+	              $message = 'inherited from: <a href="' . $ace->inherited . '">' . $ace->inherited . '</a>';
+	              $class ='bh-dir-acl-inherited';
+	            }
+	            ?>
+	            <td class="bh-dir-acl-comment <?= $class ?>" name="<?= $info ?>" ><?= $message ?></td>
+	            <!-- When ace is not protected, inherited and previous ace exists and is not protected  -->
+	            <?php if ( ! $ace->protected &&
+	                       ( is_null( $ace->inherited ) ) &&
+	                       ( $key !== 0 ) &&
+	                       ( ! $acl[$key-1]->protected ) )
+	            :?>
+	              <!-- Move up -->
+	              <td class="bh-dir-acl-up"><i title="Move up" class="icon-chevron-up bh-dir-acl-icon-up" style="cursor: pointer"></i></td>
+	            <?php else : ?>
+	              <!-- No move up possible -->
+	              <td class="bh-dir-acl-up"></td>
+	            <?php endif; ?>
+	            <!-- When ace is not protected, inherited and next ace exists and is not inherited  -->
+	            <?php if ( ! $ace->protected &&
+	                       ( is_null( $ace->inherited ) ) &&
+	                       ( $key !== $acl_length - 1) &&
+	                       is_null( $acl[$key+1]->inherited ) )
+	            : ?>
+	              <!-- Move down -->
+	              <td class="bh-dir-acl-down"><i title="Move down" class="icon-chevron-down bh-dir-acl-icon-down" style="cursor: pointer"></i></td>
+	            <?php else : ?>
+	              <!-- No move down possible -->
+	              <td class="bh-dir-acl-down"></td>
+	            <?php endif; ?>
+	            <?php if ( $ace->protected || ! is_null( $ace->inherited ) ) :?>
+	              <!-- no delete possible -->
+	              <td></td>
+	            <?php else : ?>
+	              <!-- Delete icon -->
+	              <td><i title="Delete" class="icon-remove bh-dir-acl-icon-remove" style="cursor: pointer"></i></td>
+	            <?php endif; ?>
+	          </tr>  
+	          <?php
+	        endfor;
+	      ?>  	
+	      </tbody>
+	    </table>
+	  </div>
   </div>
   <!-- End Acl tab -->
 

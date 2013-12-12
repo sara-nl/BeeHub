@@ -1023,16 +1023,16 @@
         return;
       };
       if (data.getResponse(value).getProperty('DAV:','acl') !== undefined) {
+        // Set acl view for dialog
+        nl.sara.beehub.view.acl.setView("resource");
+        
         var aclProp = data.getResponse(value).getProperty('DAV:','acl');
         
-        var html = nl.sara.beehub.view.acl.createDialogViewHtml();
+        var html = nl.sara.beehub.view.acl.createDialogViewHtml("testpath");
         
         nl.sara.beehub.view.dialog.showAcl(html);
         
         nl.sara.beehub.view.acl.setAddAclRuleDialogClickHandler(addAclRuleDialog);
-        
-        // Set acl view for dialog
-        nl.sara.beehub.view.acl.setAclView("acldialogview");
         
         var acl = aclProp.getParsedValue();
         var index = -1;

@@ -45,19 +45,58 @@
   // Used for showing the mask after delete, up or down
   var timeout = 500;
   
-  var aclView = {};
+  var aclView = "directory";
   
   nl.sara.beehub.view.acl.init = function() {
-    nl.sara.beehub.view.acl.setAclView("acltabview");
     // ACL TAB ACTIONS/FUNCTIONS
-    nl.sara.beehub.view.acl.setTableSorter($("#bh-dir-acl-table"));
+    nl.sara.beehub.view.acl.setTableSorter(nl.sara.beehub.view.acl.getAclView().find("#bh-dir-acl-table"));
     // Add rule handler
     $('.bh-dir-acl-add').click(nl.sara.beehub.controller.addAclRule);
     // Add handler on row
-    var rows = $('.bh-dir-acl-row');
+    var rows = nl.sara.beehub.view.acl.getAclView().find('.bh-dir-acl-row');
     setRowHandlers(rows); 
   };
-    
+  
+  /**
+   * Set view
+   *  
+   */
+  nl.sara.beehub.view.acl.setView = function(view){
+    aclView = view;
+  };
+  
+  /**
+   * Return active acl table
+   *  
+   */
+  nl.sara.beehub.view.acl.getView = function(){
+    return aclView;
+  };
+  
+  /**
+   * Return acl view DOM
+   *  
+   */
+  nl.sara.beehub.view.acl.getAclView = function(){
+    return $('#bh-dir-acl-'+aclView+'-acl');
+  };
+  
+  /**
+   * Return acl add button DOM
+   *  
+   */
+  nl.sara.beehub.view.acl.getAddAclButton = function(){
+    return $('#bh-dir-acl-'+aclView+'-button');
+  };
+  
+  /**
+   * Return acl form DOM
+   *  
+   */
+  nl.sara.beehub.view.acl.getFormView = function(){
+    return $('#bh-dir-acl-'+aclView+'-form');
+  };
+  
   /*
    * Action for all buttons in the fixed view on the top of the acl table
    * 
@@ -207,7 +246,6 @@
                       </select>\
                     </td>';
     row.push(dropdown);
-    
     row.push('<td class="bh-dir-acl-permissions bh-dir-acl-change-permissions '+permissions[ace.permissions].class+'" style="cursor: pointer" data-toggle="tooltip" title="'+permissions[ace.permissions].title+'" ><span class="presentation">'+ace.permissions+'</span></td>');
     
     var info = '';
@@ -244,8 +282,8 @@
    * Checks if up or down is possible and show arrows
    *  
    */
-  var setUpDownButtons = function(){  
-    $.each(aclView.find('tr'), function(index, row){
+  var setUpDownButtons = function(){
+    $.each(nl.sara.beehub.view.acl.getAclView().find('tr'), function(index, row){
       var info = $(row).find('.bh-dir-acl-comment').attr('name');
       if (info !== 'protected' && info !== 'inherited') {
         // Check up button
@@ -275,7 +313,7 @@
    */
   nl.sara.beehub.view.acl.getIndexLastProtected = function(){
     // Get protected items. length -1 is index
-    return $('.bh-dir-acl-protected').length-1;
+    return nl.sara.beehub.view.acl.getAclView().find('.bh-dir-acl-protected').length-1;
   }
   
   /**
@@ -285,9 +323,9 @@
    */
   var getIndexFirstInherited = function(){
     // Count of all items
-    var all = aclView.find('tr').length;
+    var all = nl.sara.beehub.view.acl.getAclView().find('tr').length;
     // Count of all inherited items
-    var allInherited = $('.bh-dir-acl-inherited').length;
+    var allInherited = nl.sara.beehub.view.acl.getAclView().find('.bh-dir-acl-inherited').length;
     // Index
     var index = all - allInherited;
     return index;
@@ -301,7 +339,7 @@
   nl.sara.beehub.view.acl.getAcl = function() {
     var acl = new nl.sara.webdav.Acl();
     // put each item acl table in the created webdav acl
-    $.each(aclView.find('tr'), function(index, row){
+    $.each(nl.sara.beehub.view.acl.getAclView().find('tr'), function(index, row){
       var principal = $(row).find('.bh-dir-acl-principal').attr('name');
       var permissions = $(row).find('.bh-dir-acl-permissions span.presentation').text();
       var info = $(row).find('.bh-dir-acl-comment').attr('name');
@@ -419,12 +457,13 @@
    * 
    */
   nl.sara.beehub.view.acl.addRow = function(row, index){
+    var table = nl.sara.beehub.view.acl.getAclView().find('.bh-dir-acl-contents');
     if (index === -1) {
-      aclView.append(row);
+      table.append(row);
     } else {
-      aclView.find('tr:eq('+index+')').after(row);
+      table.find('tr:eq('+index+')').after(row);
     }
-    aclView.trigger("update");
+    table.trigger("update");
 
     setUpDownButtons();
     // Set handlers again
@@ -433,8 +472,8 @@
   
   // DIALOG ACL VIEW
   nl.sara.beehub.view.acl.setAddAclRuleDialogClickHandler = function(addFunction){
-    $('#bh-dir-aclformdialog-add-button').click(function(){
-      addFunction(getFormAce("dialog"));
+    nl.sara.beehub.view.acl.getAddAclButton().click(function(){
+      addFunction(getFormAce());
     })
   }
   
@@ -442,18 +481,15 @@
    * Create html for acl view in dialpg
    *  
    */
-  nl.sara.beehub.view.acl.createDialogViewHtml = function(){
-    var html = nl.sara.beehub.view.acl.createHtmlAclForm("dialog");
-    console.log(html);
-    html+= '<button class="btn btn-small" id="bh-dir-aclformdialog-add-button" title="Add rule"\
+  nl.sara.beehub.view.acl.createDialogViewHtml = function(resource){
+    var html = nl.sara.beehub.view.acl.createHtmlAclForm();
+    html+= '<button class="btn btn-small" id="bh-dir-acl-resource-button" title="Add rule"\
       data-toggle="tooltip" style="display: inline-block;">\
        <i class="icon-plus"></i> Add rule\
       </button><br><br>';
-//    html += '<button type="button" id="bh-dir-aclformdialog-add-button"\
-//      class="ui-button ui-widget ui-state-default ui-corner-all ui-button-text-only"\
-//      role="button" aria-disabled="false" disabled><span class="ui-button-text">Add rule</span></button><br><br>';
-    html += '<table id="bh-dir-acldialog-table" class="table table-striped table-hover table-condensed">\
-        <thead class="bh-dir-dialog-table-header">\
+    html += '<div id="bh-dir-acl-resource-acl">';
+    html += '<table id="bh-dir-acl-table" class="table table-striped table-hover table-condensed">\
+        <thead class="bh-dir-acl-table-header">\
           <tr>\
   <!--           Principal -->\
             <th>Principal</th>\
@@ -471,27 +507,23 @@
             <th class="bh-dir-small-column"></th>\
           </tr>\
         </thead>\
-        <tbody class="bh-dir-acldialog-contents" name="<?= DAV::xmlescape( DAV::unslashify($member->path) ) ?>">\
+        <tbody class="bh-dir-acl-contents" name="'+resource+'">\
       </tbody></table>';
+    html += '</div>';
     return html;
   };
   
-  /**
-   * Return active acl table
-   *  
-   */
-  nl.sara.beehub.view.acl.setAclView = function(view){
-    if (view === "acldialogview") {
-      aclView['contents'] = $('.bh-dir-acldialog-contents');
-      aclview['view'] = "dialog";
-      return;
-    };
-    if (view === "acltabview") {
-      aclView['contents'] = $('.bh-dir-acl-contents');
-      aclview['view'] = "tab";
-      return;
-    }
-  };
+
+  
+//  /**
+//   * Return active acl table 
+//   *  
+//   */
+//  nl.sara.beehub.view.acl.nl.sara.beehub.view.acl.getAclView = function(){
+//    return aclView;
+//  }
+  
+  
   
   /**
    * Delete row at certain index
@@ -501,8 +533,8 @@
    * @param {Integer} index Index of row to delete
    */
   nl.sara.beehub.view.acl.deleteRowIndex = function(index){
-    aclView.find('tr:eq('+index+')').remove();
-    aclView.trigger("update");
+    nl.sara.beehub.view.acl.getAclView().find('tr:eq('+index+')').remove();
+    nl.sara.beehub.view.acl.getAclView().trigger("update");
     setUpDownButtons();
   }
   
@@ -616,26 +648,27 @@
    */
   nl.sara.beehub.view.acl.createHtmlAclForm = function() {
     return '\
+    <div id="bh-dir-acl-'+aclView+'-form">\
         <table>\
         <tr>\
-          <td class="bh-dir-acl'+aclView['view']+'-table-label"><label><b>Principal</b></label></td>\
-          <td><label class="radio"><input type="radio" name="bh-dir-view-acl'+aclView['view']+'-optionRadio" id="bh-dir-acl'+aclView['view']+'-add-radio1" value="authenticated" unchecked>All BeeHub users</label></td>\
+          <td class="bh-dir-acl-table-label"><label><b>Principal</b></label></td>\
+          <td><label class="radio"><input type="radio" class="bh-dir-view-acl-optionRadio bh-dir-acl-add-radio1" name="bh-dir-view-acl-optionRadio" value="authenticated" unchecked>All BeeHub users</label></td>\
         </tr>\
         <tr>\
-          <td class="bh-dir-acl'+aclView['view']+'-table-label"></td>\
-          <td><label class="radio"><input type="radio" name="bh-dir-view-acl'+aclView['view']+'-optionRadio" id="bh-dir-acl'+aclView['view']+'-add-radio2" value="all" unchecked>Everybody</label></td>\
+          <td class="bh-dir-acl-table-label"></td>\
+          <td><label class="radio"><input type="radio" class="bh-dir-view-acl-optionRadio bh-dir-acl-add-radio2" name="bh-dir-view-acl-optionRadio" value="all" unchecked>Everybody</label></td>\
         </tr>\
         <tr>\
-          <td class="bh-dir-acl'+aclView['view']+'-table-label"></td>\
+          <td class="bh-dir-acl-table-label"></td>\
           <td>\
             <div class="radio">\
-              <input type="radio" name="bh-dir-view-acl'+aclView['view']+'-optionRadio" id="bh-dir-acl'+aclView['view']+'-add-radio3" value="user_or_group" checked>\
-              <input id="bh-dir-acl'+aclView['view']+'-table-autocomplete" class="bh-dir-acl'+aclView['view']+'-table-search" type="text"  value="" placeholder="Search user or group...">\
+              <input type="radio" class="bh-dir-view-acl-optionRadio bh-dir-acl-add-radio3" name="bh-dir-view-acl-optionRadio" value="user_or_group" checked>\
+              <input class="bh-dir-acl-table-search" type="text"  value="" placeholder="Search user or group...">\
             </div></td>\
         </tr>\
         <tr>\
-          <td class="bh-dir-acl'+aclView['view']+'-table-label"><label><b>Permisions</b></label></td>\
-          <td><select class="bh-dir-acl'+aclView['view']+'-table-permisions">\
+          <td class="bh-dir-acl-table-label"><label><b>Permisions</b></label></td>\
+          <td><select class="bh-dir-acl-table-permisions">\
             <option value="allow read">allow read</option>\
             <option value="allow read, write">allow read, write</option>\
             <option value="allow read, write, change acl">allow read, write, change acl</option>\
@@ -645,6 +678,7 @@
           </select></td>\
         </tr>\
       </table>\
+    </div>\
     ';
   };
   

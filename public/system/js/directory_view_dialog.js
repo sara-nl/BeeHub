@@ -70,14 +70,13 @@
    */
   nl.sara.beehub.view.dialog.showAcl = function(html) {
     $('#bh-dir-dialog').html(html);
-    console.log($('#bh-dir-dialog'));
     // auto complete for searching users and groups
-    setupAutoComplete("dialog");
+    setupAutoComplete();
  
     // radiobutton handlers
-    setAddRadioButtons("dialog");
+    setAddRadioButtons();
     
-    nl.sara.beehub.view.acl.setTableSorter($('.bh-dir-acldialog-table'));
+    nl.sara.beehub.view.acl.setTableSorter(nl.sara.beehub.view.acl.getAclView().find('.bh-dir-acl-table'));
     $('#bh-dir-dialog').dialog({
       resizable: false,
       title: " ACL",
@@ -91,15 +90,12 @@
         text: "Close",
         click: function() {
           // Set acl view for dialog
-          nl.sara.beehub.view.acl.setAclView("acltabview");
+          nl.sara.beehub.view.acl.setView("directory");
           $(this).dialog("close");
         }
       }]
     });
-    console.log($("#bh-dir-aclformdialog-add-button"));
-    $("#bh-dir-aclformdialog-add-button").prop('disabled', true);
-    console.log($("#bh-dir-aclformdialog-add-button"));
-
+    nl.sara.beehub.view.acl.getAddAclButton().prop('disabled', true);
   };
   
   /*
@@ -305,7 +301,8 @@
    */
   setupAutoComplete = function(){
     var searchList = [];
-    
+    var formView = nl.sara.beehub.view.acl.getFormView();
+        
     $.each(nl.sara.beehub.principals.groups, function (groupname, displayname) {
       searchList.push({
          "label"        : displayname+' ('+groupname+') ',
@@ -323,17 +320,17 @@
          "icon"         : '<i class="icon-user"></i>'
       });
     });
-
-    $( "#bh-dir-acl"+aclView['view']+"-table-autocomplete" ).autocomplete({
+    
+    formView.find( ".bh-dir-acl-table-search" ).autocomplete({
       source:searchList,
       select: function( event, ui ) {
-        $("#bh-dir-acl"+aclView['view']+"-table-autocomplete").val(ui.item.label);
-        $("#bh-dir-acl"+aclView['view']+"-table-autocomplete").attr('name' ,ui.item.name);
+        formView.find(".bh-dir-acl-table-search").val(ui.item.label);
+        formView.find(".bh-dir-acl-table-search").attr('name' ,ui.item.name);
         // jquery and bootstrap buttons act different
-        if (view === "tab") {
-          $("#bh-dir-aclform"+aclView['view']+"-add-button").button('enable');
+        if (nl.sara.beehub.view.acl.getView() === "directory") {
+          nl.sara.beehub.view.acl.getAddAclButton().button('enable');
         } else {
-          $("#bh-dir-aclform"+aclView['view']+"-add-button").prop('disabled', false);
+          nl.sara.beehub.view.acl.getAddAclButton().prop('disabled', false);
         }
         return false;
       },
@@ -343,12 +340,12 @@
             // The item selected from the menu, if any. Otherwise the property is null
             //so clear the item for force selection
           // jquery and bootstrap buttons act different
-            if (view === "tab") {
-              $("#bh-dir-aclform"+aclView['view']+"-add-button").button('disable');
+            if (nl.sara.beehub.view.acl.getView() === "directory") {
+              nl.sara.beehub.view.acl.getAddAclButton().button('disable');
             } else {
-              $("#bh-dir-aclform"+aclView['view']+"-add-button").prop('disabled', true);
+              nl.sara.beehub.view.acl.getAddAclButton().prop('disabled', true);
             }
-            $("#bh-dir-acl"+aclView['view']+"-table-autocomplete").val("");
+            formView.find(".bh-dir-acl-table-search").val("");
         }
 
       }
@@ -365,33 +362,35 @@
    * 
    */
   setAddRadioButtons = function(){
-    $("#bh-dir-acl"+aclView['view']+"-add-radio1").click(function(){
-      $("#bh-dir-acl"+aclView['view']+"-table-autocomplete").attr("disabled",true);
-      $("#bh-dir-acl"+aclView['view']+"-table-autocomplete").val("");
+    var aclForm = nl.sara.beehub.view.acl.getFormView();
+    aclForm.find(".bh-dir-acl-add-radio1").click(function(){
+      aclForm.find(".bh-dir-acl-table-search").attr("disabled",true);
+      aclForm.find(".bh-dir-acl-table-search").val("");
       // jquery and bootstrap buttons act different
-      if (view === "tab") {
-        $("#bh-dir-aclform"+aclView['view']+"-add-button").button('enable');
+      if (nl.sara.beehub.view.acl.getView() === "directory") {
+        nl.sara.beehub.view.acl.getAddAclButton().button('enable');
       } else {
-        $("#bh-dir-aclform"+aclView['view']+"-add-button").prop('disabled', false);
+        nl.sara.beehub.view.acl.getAddAclButton().prop('disabled', false);
       }
     });
-    $("#bh-dir-acl"+aclView['view']+"-add-radio2").click(function(){
-      $("#bh-dir-acl"+aclView['view']+"-table-autocomplete").attr("disabled",true);
-      $("#bh-dir-acl"+aclView['view']+"-table-autocomplete").val("");
+    aclForm.find(".bh-dir-acl-add-radio2").click(function(){
+      aclForm.find(".bh-dir-acl-table-search").attr("disabled",true);
+      aclForm.find(".bh-dir-acl-table-search").val("");
       // jquery and bootstrap buttons act different
-      if (view === "tab") {
-        $("#bh-dir-aclform"+aclView['view']+"-add-button").button('enable');
+      if (nl.sara.beehub.view.acl.getView() === "directory") {
+        nl.sara.beehub.view.acl.getAddAclButton().button('enable');
       } else {
-        $("#bh-dir-aclform"+aclView['view']+"-add-button").prop('disabled', false);
+        nl.sara.beehub.view.acl.getAddAclButton().prop('disabled', false);
       }
     });
-    $("#bh-dir-acl"+aclView['view']+"-add-radio3").click(function(){
-      $("#bh-dir-acl"+aclView['view']+"-table-autocomplete").attr("disabled",false);
+    aclForm.find(".bh-dir-acl-add-radio3").click(function(){
+      aclForm.find(".bh-dir-acl-table-search").attr("disabled",false);
+      aclForm.find(".bh-dir-acl-table-search").val("");
       // jquery and bootstrap buttons act different
-      if (view === "tab") {
-        $("#bh-dir-aclform"+aclView['view']+"-add-button").button('disable');
+      if (nl.sara.beehub.view.acl.getView() === "directory") {
+        nl.sara.beehub.view.acl.getAddAclButton().button('disable');
       } else {
-        $("#bh-dir-aclform"+aclView['view']+"-add-button").prop('disabled', true);
+        nl.sara.beehub.view.acl.getAddAclButton().prop('disabled', true);
       }
     });
   };
@@ -403,6 +402,7 @@
    */
   getFormAce= function(){
     var principal = '';
+    var aclView = nl.sara.beehub.view.acl.getAclView();
     switch($('input[name = "bh-dir-view-acl'+aclView['view']+'-optionRadio"]:checked').val())
     {
     // all
