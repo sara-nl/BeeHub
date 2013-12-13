@@ -45,15 +45,18 @@
   // Used for showing the mask after delete, up or down
   var timeout = 500;
   
-  var aclView = "directory";
+  aclView = "";
+  resourcePath = "";
   
   nl.sara.beehub.view.acl.init = function() {
+    // Set view
+    nl.sara.beehub.view.acl.setView("directory", nl.sara.beehub.controller.getPath());
     // ACL TAB ACTIONS/FUNCTIONS
-    nl.sara.beehub.view.acl.setTableSorter(nl.sara.beehub.view.acl.getAclView().find("#bh-dir-acl-table"));
+    nl.sara.beehub.view.acl.setTableSorter(nl.sara.beehub.view.acl.getAclView().find('.bh-dir-acl-contents').find("#bh-dir-acl-table"));
     // Add rule handler
     $('.bh-dir-acl-add').click(nl.sara.beehub.controller.addAclRule);
     // Add handler on row
-    var rows = nl.sara.beehub.view.acl.getAclView().find('.bh-dir-acl-row');
+    var rows = nl.sara.beehub.view.acl.getAclView().find('.bh-dir-acl-contents').find('.bh-dir-acl-row');
     setRowHandlers(rows); 
   };
   
@@ -61,9 +64,17 @@
    * Set view
    *  
    */
-  nl.sara.beehub.view.acl.setView = function(view){
+  nl.sara.beehub.view.acl.setView = function(view, path){
     aclView = view;
+    resourcePath = path;
   };
+  
+  /**
+   * Return View path
+   */
+  nl.sara.beehub.view.acl.getViewPath = function(){
+    return resourcePath;    
+  }
   
   /**
    * Return active acl table
@@ -155,32 +166,32 @@
    */
   var setRowHandlers = function(rows){   
     $.each(rows, function (key, row){
-      // Permissions 
-      $(row).find('.bh-dir-acl-change-permissions').unbind().click(handle_permissions_click);
-      
-      $(row).find('.bh-dir-acl-permissions-select').unbind().change(function(){
-        var row = $(this).closest('tr');
-        var oldVal = $(row).find(".bh-dir-acl-permissions").html();
-        var val = $(row).find(".bh-dir-acl-table-permissions option:selected").val();
-        nl.sara.beehub.view.acl.showChangePermissions(row, false);
-        nl.sara.beehub.view.acl.changePermissions(row, val);
-        nl.sara.beehub.controller.changePermissions(row, oldVal);
-      });
-      
-      // Blur handler
-      $(row).find('.bh-dir-acl-table-permissions').unbind().blur(function(){
-        var row = $(this).closest('tr');
-        nl.sara.beehub.view.acl.showChangePermissions(row, false);
-      });
-      
-      // Up icon
-      $(row).find('.bh-dir-acl-icon-up').unbind().click(handle_up_click);
-      
-      // Down icon
-      $(row).find('.bh-dir-acl-icon-down').unbind().click(handle_down_click);
-      
-      // Delete icon
-      $(row).find('.bh-dir-acl-icon-remove').unbind().click(handle_remove_click);
+      // Permissions
+      var info = $(row).find('.bh-dir-acl-comment').attr('name');
+      if (info !== 'protected' && info !== 'inherited') {
+        $(row).find('.bh-dir-acl-change-permissions').unbind().click(handle_permissions_click);
+        $(row).find('.bh-dir-acl-permissions-select').unbind().change(function(){
+          var row = $(this).closest('tr');
+          var oldVal = $(row).find(".bh-dir-acl-permissions").html();
+          var val = $(row).find(".bh-dir-acl-table-permissions option:selected").val();
+          nl.sara.beehub.view.acl.showChangePermissions(row, false);
+          nl.sara.beehub.view.acl.changePermissions(row, val);
+          nl.sara.beehub.controller.changePermissions(row, oldVal);
+        });
+        // Blur handler
+        $(row).find('.bh-dir-acl-table-permissions').unbind().blur(function(){
+          var row = $(this).closest('tr');
+          nl.sara.beehub.view.acl.showChangePermissions(row, false);
+        });
+        // Up icon
+        $(row).find('.bh-dir-acl-icon-up').unbind().click(handle_up_click);
+        
+        // Down icon
+        $(row).find('.bh-dir-acl-icon-down').unbind().click(handle_down_click);
+        
+        // Delete icon
+        $(row).find('.bh-dir-acl-icon-remove').unbind().click(handle_remove_click);
+      };
     }) 
   };
   
@@ -234,17 +245,18 @@
     // Permissions
     var aceClass= '';
     var tooltip = '';
-
+    
     var dropdown = '<td class="bh-dir-acl-permissions-select" hidden>\
-                      <select class="bh-dir-acl-table-permissions">\
-                        <option value="allow read">'+permissions['allow read'].dropdown+'</option>\
-                        <option value="allow read, write">'+permissions['allow read, write'].dropdown+'</option>\
-                        <option value="allow read, write, change acl">'+permissions['allow read, write, change acl'].dropdown+'</option>\
-                        <option value="deny read, write, change acl">'+permissions['deny read, write, change acl'].dropdown+'</option>\
-                        <option value="deny write, change acl">'+permissions['deny write, change acl'].dropdown+'</option>\
-                        <option value="deny change acl">'+permissions['deny change acl'].dropdown+'</option>\
-                      </select>\
-                    </td>';
+                      <select class="bh-dir-acl-table-permissions">';
+    dropdown += '<option '+(ace.permissions === 'allow read'?"selected":"")+' value="allow read">'+permissions['allow read'].dropdown+'</option>';
+    dropdown += '<option '+(ace.permissions === 'allow read, write'?"selected":"")+' value="allow read, write">'+permissions['allow read, write'].dropdown+'</option>';
+    dropdown += '<option '+(ace.permissions === 'allow read, write, change acl'?"selected":"")+' value="allow read, write, change acl">\
+                    '+permissions['allow read, write, change acl'].dropdown+'</option>';
+    dropdown += '<option '+(ace.permissions === 'deny read, write, change acl'?"selected":"")+' value="deny read, write, change acl">\
+                    '+permissions['deny read, write, change acl'].dropdown+'</option>';
+    dropdown += '<option '+(ace.permissions === 'deny write, change acl'?"selected":"")+' value="deny write, change acl">'+permissions['deny write, change acl'].dropdown+'</option>';
+    dropdown += '<option '+(ace.permissions === 'deny change acl'?"selected":"")+' value="deny change acl">'+permissions['deny change acl'].dropdown+'</option>';
+    dropdown += '</select></td>';
     row.push(dropdown);
     row.push('<td class="bh-dir-acl-permissions bh-dir-acl-change-permissions '+permissions[ace.permissions].class+'" style="cursor: pointer" data-toggle="tooltip" title="'+permissions[ace.permissions].title+'" ><span class="presentation">'+ace.permissions+'</span></td>');
     
@@ -283,11 +295,11 @@
    *  
    */
   var setUpDownButtons = function(){
-    $.each(nl.sara.beehub.view.acl.getAclView().find('tr'), function(index, row){
+    $.each(nl.sara.beehub.view.acl.getAclView().find('.bh-dir-acl-contents').find('tr'), function(index, row){
       var info = $(row).find('.bh-dir-acl-comment').attr('name');
       if (info !== 'protected' && info !== 'inherited') {
         // Check up button
-        if ( index - 1 !== nl.sara.beehub.view.acl.getIndexLastProtected() ) {
+        if ( index -1 !== nl.sara.beehub.view.acl.getIndexLastProtected() ) {
           $(row).find('.bh-dir-acl-up').html('<i title="Move up" class="icon-chevron-up bh-dir-acl-icon-up" style="cursor: pointer"></i>');
         } else {
           $(row).find('.bh-dir-acl-up').html('');
@@ -313,7 +325,7 @@
    */
   nl.sara.beehub.view.acl.getIndexLastProtected = function(){
     // Get protected items. length -1 is index
-    return nl.sara.beehub.view.acl.getAclView().find('.bh-dir-acl-protected').length-1;
+    return nl.sara.beehub.view.acl.getAclView().find('.bh-dir-acl-contents').find('.bh-dir-acl-protected').length-1;
   }
   
   /**
@@ -323,9 +335,9 @@
    */
   var getIndexFirstInherited = function(){
     // Count of all items
-    var all = nl.sara.beehub.view.acl.getAclView().find('tr').length;
+    var all = nl.sara.beehub.view.acl.getAclView().find('.bh-dir-acl-contents').find('tr').length;
     // Count of all inherited items
-    var allInherited = nl.sara.beehub.view.acl.getAclView().find('.bh-dir-acl-inherited').length;
+    var allInherited = nl.sara.beehub.view.acl.getAclView().find('.bh-dir-acl-contents').find('.bh-dir-acl-inherited').length;
     // Index
     var index = all - allInherited;
     return index;
@@ -470,9 +482,9 @@
   };
   
   // DIALOG ACL VIEW
-  nl.sara.beehub.view.acl.setAddAclRuleDialogClickHandler = function(addFunction, resourcePath){
+  nl.sara.beehub.view.acl.setAddAclRuleDialogClickHandler = function(addFunction){
     nl.sara.beehub.view.acl.getAddAclButton().click(function(){
-      addFunction(getFormAce(), resourcePath);
+      addFunction(getFormAce());
     })
   }
   
@@ -532,8 +544,8 @@
    * @param {Integer} index Index of row to delete
    */
   nl.sara.beehub.view.acl.deleteRowIndex = function(index){
-    nl.sara.beehub.view.acl.getAclView().find('tr:eq('+index+')').remove();
-    nl.sara.beehub.view.acl.getAclView().trigger("update");
+    nl.sara.beehub.view.acl.getAclView().find('.bh-dir-acl-contents').find('tr:eq('+index+')').remove();
+    nl.sara.beehub.view.acl.getAclView().find('.bh-dir-acl-contents').trigger("update");
     setUpDownButtons();
   }
   

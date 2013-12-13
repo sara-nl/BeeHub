@@ -90,7 +90,7 @@
         text: "Close",
         click: function() {
           // Set acl view for dialog
-          nl.sara.beehub.view.acl.setView("directory");
+          nl.sara.beehub.view.acl.setView("directory", nl.sara.beehub.controller.getPath());
           $(this).dialog("close");
         }
       }]

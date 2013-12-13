@@ -38,6 +38,10 @@
   // Needed for copy, move, delete and upload
   var actionCounter = 0;
   
+  nl.sara.beehub.controller.getPath = function(){
+    return path;
+  }
+ 
   /**
    * Escape html characters
    * 
@@ -941,12 +945,12 @@
    * Save acl on server
    * 
    */
-  nl.sara.beehub.controller.saveAclOnServer = function(resourcePath, functionSaveAclOk, functionSaveAclError){
+  nl.sara.beehub.controller.saveAclOnServer = function(functionSaveAclOk, functionSaveAclError){
     var acl = nl.sara.beehub.view.acl.getAcl();
     // create webdav client object
     var webdav = new nl.sara.webdav.Client();
     // send acl request to the server
-    webdav.acl(resourcePath,function(status,data){
+    webdav.acl(nl.sara.beehub.view.acl.getViewPath(),function(status,data){
       // Delete dialog
       if (status === 200){
         functionSaveAclOk();
@@ -979,7 +983,7 @@
     webdav.propfind(resourcePath, createGetAclCallback(resourcePath) ,0,properties);
   };
   
-  var addAclRuleDialog = function(userInput, resourcePath){
+  var addAclRuleDialog = function(userInput){
     var ace = {
         principal :   userInput.principal, 
         permissions:  userInput.permissions, 
@@ -990,14 +994,14 @@
     nl.sara.beehub.view.acl.addRow(row, nl.sara.beehub.view.acl.getIndexLastProtected());
     
     functionSaveAclOk = function(){
-//      nl.sara.beehub.view.dialog.clearView();
+      // Do Nothing;
     };
     
     functionSaveAclError = function(){
       // Update view
       nl.sara.beehub.view.acl.deleteRowIndex(nl.sara.beehub.view.acl.getIndexLastProtected() + 1);
     };
-    nl.sara.beehub.controller.saveAclOnServer(resourcePath, functionSaveAclOk, functionSaveAclError);
+    nl.sara.beehub.controller.saveAclOnServer(functionSaveAclOk, functionSaveAclError);
   };
   
   var createGetAclCallback = function(resourcePath){
@@ -1024,15 +1028,15 @@
       };
       if (data.getResponse(value).getProperty('DAV:','acl') !== undefined) {
         // Set acl view for dialog
-        nl.sara.beehub.view.acl.setView("resource");
+        nl.sara.beehub.view.acl.setView("resource", resourcePath);
         
         var aclProp = data.getResponse(value).getProperty('DAV:','acl');
         
-        var html = nl.sara.beehub.view.acl.createDialogViewHtml(resourcePath);
+        var html = nl.sara.beehub.view.acl.createDialogViewHtml();
         
         nl.sara.beehub.view.dialog.showAcl(html);
         
-        nl.sara.beehub.view.acl.setAddAclRuleDialogClickHandler(addAclRuleDialog, resourcePath);
+        nl.sara.beehub.view.acl.setAddAclRuleDialogClickHandler(addAclRuleDialog);
         
         var acl = aclProp.getParsedValue();
         var index = -1;
@@ -1097,9 +1101,9 @@
     };
     
     // Make permissions string  
-    if ( ace.deny ) {
+    if ( ace.grantdeny === 2 ) {
       aceObject['permissions'] = "deny ";
-      if ( ( ace.privileges.length === 1 ) && 
+      if ( ( ace.getPrivilegeNames('DAV:').length === 1 ) && 
            ( ace.getPrivilegeNames('DAV:').indexOf('write-acl') !== -1) ) {
         aceObject['permissions'] += "change acl";
       } else if ( ( ace.getPrivilegeNames('DAV:').length === 2 ) && 
@@ -1212,7 +1216,7 @@
         // Update view
         nl.sara.beehub.view.acl.deleteRowIndex(nl.sara.beehub.view.acl.getIndexLastProtected() + 1);
       };
-      nl.sara.beehub.controller.saveAclOnServer(path, functionSaveAclOk, functionSaveAclError);
+      nl.sara.beehub.controller.saveAclOnServer(functionSaveAclOk, functionSaveAclError);
     }, nl.sara.beehub.view.acl.createHtmlAclForm("tab"));
   };
   
@@ -1230,7 +1234,7 @@
       nl.sara.beehub.view.acl.changePermissions(row, oldVal);
       // Do nothing
     };
-    nl.sara.beehub.controller.saveAclOnServer(path, functionSaveAclOk, functionSaveAclError);
+    nl.sara.beehub.controller.saveAclOnServer(functionSaveAclOk, functionSaveAclError);
   };
   
   /**
@@ -1249,7 +1253,7 @@
       nl.sara.beehub.view.hideMasks();
       nl.sara.beehub.view.acl.addRow(row, index -1);
     };
-    nl.sara.beehub.controller.saveAclOnServer(path, functionSaveAclOk, functionSaveAclError);
+    nl.sara.beehub.controller.saveAclOnServer(functionSaveAclOk, functionSaveAclError);
   };
   
   /**
@@ -1268,7 +1272,7 @@
       nl.sara.beehub.view.hideMasks();
       nl.sara.beehub.view.acl.moveUpAclRule(row);
     };
-    nl.sara.beehub.controller.saveAclOnServer(path, functionSaveAclOk, functionSaveAclError);
+    nl.sara.beehub.controller.saveAclOnServer(functionSaveAclOk, functionSaveAclError);
   };
   
   /**
@@ -1287,7 +1291,7 @@
       nl.sara.beehub.view.hideMasks();
       nl.sara.beehub.view.acl.moveDownAclRule(row);
     };
-    nl.sara.beehub.controller.saveAclOnServer(path, functionSaveAclOk, functionSaveAclError);
+    nl.sara.beehub.controller.saveAclOnServer(functionSaveAclOk, functionSaveAclError);
   };
   
 })();
