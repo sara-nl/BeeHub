@@ -228,7 +228,7 @@ require 'views/header.php';
 <!-- End tree slide out -->
 
 <!-- Tab content -->
-<div class="tab-content">
+<div class="tab-content bh-dir-tab-content">
 
   <!-- Fixed divs don't use space -->
   <div class="bh-dir-allocate-space"></div>
@@ -287,7 +287,7 @@ require 'views/header.php';
             <td>
             	<div class="dropdown">
     						<a class="dropdown-toggle bh-dir-content-menu" data-toggle="dropdown" href="#"><i class="icon-align-justify" style="cursor: pointer"></i></a>
-    						<ul class="dropdown-menu" role="menu" aria-labelledby="dLabel">
+    						<ul class="dropdown-menu bh-dir-contents-menu" role="menu" aria-labelledby="dLabel">
                   <?php if ( in_array( DAVACL::PRIV_WRITE, $member->user_prop_current_user_privilege_set() ) && in_array( DAVACL::PRIV_UNBIND, $current_user_privilege_set_collection ) ) : ?>
                     <li><a class="bh-dir-content-edit" href="#">Rename</a></li>
                   <?php endif; ?>
@@ -434,7 +434,7 @@ require 'views/header.php';
 	              $icon= '<i class="icon-user"></i>';
 	            }
 	            ?>
-	            <td class="bh-dir-acl-principal" name="<?= DAV::xmlescape($ace->principal) ?>" data-toggle="tooltip" title="<?= DAV::xmlescape($ace->principal)?>" >
+	            <td class="bh-dir-acl-principal" name="<?= DAV::xmlescape($ace->principal) ?>" data-invert="<?= $ace->invert?>" data-toggle="tooltip" title="<?= DAV::xmlescape($ace->principal)?>" >
 	              <span style="font-weight: bold"><?= ( $ace->invert ? 'Everybody except ' : '' ) . $displayname ?> </span>(<?= $icon?>)
 	            </td>
 	            				
@@ -571,7 +571,7 @@ require 'views/header.php';
 
 <?php
 $footer = '
-  <script type="text/javascript" src="/system/js/plugins/dynatree/jquery/jquery.cookie.js"></script>
+  <script type="text/javascript" src="/system/js/plugins/jquery.cookie.js"></script>
   <script type="text/javascript" src="/system/js/plugins/tablesorter/js/jquery.tablesorter.js"></script>
   <script type="text/javascript" src="/system/js/plugins/tablesorter/js/jquery.tablesorter.widgets.js"></script>
   <script type="text/javascript" src="/system/js/directory.js"></script>

@@ -228,12 +228,20 @@
     
     row.push('<tr id="'+nl.sara.beehub.controller.htmlEscape(resource.path)+'">');
     
+    // Dropdown menu
+    row.push('<td>\
+      <div class="dropdown">\
+        <a class="dropdown-toggle bh-dir-content-menu" data-toggle="dropdown" href="#">\
+          <i class="icon-align-justify" style="cursor: pointer"></i></a>\
+        <ul class="dropdown-menu  bh-dir-contents-menu" role="menu" aria-labelledby="dLabel">\
+          <li><a class="bh-dir-content-edit" href="#">Rename</a></li>\
+          <li><a class="bh-dir-content-acl" href="#">Share</a></li>\
+        </ul>\
+      </div>\
+     </td>');
+    
     // Checkbox
     row.push('<td width="10px"><input type="checkbox" class="bh-dir-content-checkbox" name="'+nl.sara.beehub.controller.htmlEscape(resource.path)+'" value="'+nl.sara.beehub.controller.htmlEscape(resource.displayname)+'"></td>');
-    
-    // Edit column
-    row.push('<td width="10px" data-toggle="tooltip" title="Rename">');
-    row.push('<i class="icon-edit bh-dir-content-edit" style="cursor: pointer"></i></td>');
     
     // Name
     if (resource.type==='collection') {

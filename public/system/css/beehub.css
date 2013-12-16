@@ -44,6 +44,10 @@
   left: 50px;
 }
 
+/* Prevent menu disappearing in table*/
+.bh-dir-tab-content {
+	overflow: visible !important;
+}
 /* Position content table */
 #bh-dir-content-table {
 	top: 185px;
@@ -207,6 +211,10 @@ ul.dynatree-container{
 }
 .long_text {
   max-width: 900px;
+}
+
+.bh-dir-contents-menu{
+	background-color: white !important;
 }
 
 /* ACL view */

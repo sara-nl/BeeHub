@@ -205,6 +205,7 @@
    * @return String Row string 
    */
   nl.sara.beehub.view.acl.createRow = function(ace){
+    var invert =  (ace['invert'] ? 'Everybody except ' : '');
     var row = [];
     var info = ((ace['protected'] || ace['inherited'] ) ? 'info' : '' );
     row.push('<tr class="bh-dir-acl-row '+info+'">');
@@ -213,26 +214,26 @@
     switch(ace.principal)
     {
       case 'DAV: owner':
-        show = '<span style="font-weight: bold">Owner</span>';
+        show = '<span style="font-weight: bold">'+invert+'Owner</span>';
         break;
       case 'DAV: all':
-        show = '<span style="font-weight: bold">Everybody</span>';
+        show = '<span style="font-weight: bold">'+invert+'Everybody</span>';
         break;
       case 'DAV: authenticated':
-        show = '<span style="font-weight: bold">All BeeHub users</span>'
+        show = '<span style="font-weight: bold">'+invert+'All BeeHub users</span>'
         break;
       case 'DAV: unauthenticated':
-        show = '<span style="font-weight: bold">All unauthenticated users</span>'
+        show = '<span style="font-weight: bold">'+invert+'All unauthenticated users</span>'
         break;
       case 'DAV: self':
-        show = '<span style="font-weight: bold">This resource itself</span>'
+        show = '<span style="font-weight: bold">'+invert+'This resource itself</span>'
         break;
       default:
         var display = nl.sara.beehub.controller.getDisplayName(ace.principal);
         if (display !== ''){
-          show = display;
+          show = invert+display;
         } else {
-          show = '<span style="font-weight: bold">Unrecognized principal!</span>';
+          show = '<span style="font-weight: bold">'+invert+'Unrecognized principal!</span>';
         }
     };
     // Groups icon unless it's a single user
@@ -240,7 +241,7 @@
     if (ace.principal.indexOf(nl.sara.beehub.users_path) !== -1) {
       icon = '<i class="icon-user"></i>';
     }
-    row.push('<td class="bh-dir-acl-principal" name="'+ace.principal+'" data-toggle="tooltip" title="'+ace.principal+'" ></i><b>'+show+'</b> ('+icon+')</td>');
+    row.push('<td class="bh-dir-acl-principal" name="'+ace.principal+'" data-invert="'+ace['invert']+'" data-toggle="tooltip" title="'+ace.principal+'" ></i><b>'+show+'</b> ('+icon+')</td>');
     
     // Permissions
     var aceClass= '';
@@ -355,9 +356,16 @@
       var principal = $(row).find('.bh-dir-acl-principal').attr('name');
       var permissions = $(row).find('.bh-dir-acl-permissions span.presentation').text();
       var info = $(row).find('.bh-dir-acl-comment').attr('name');
+      var invert = $(row).find('.bh-dir-acl-principal').attr('data-invert'); 
+      
       if (info !== 'protected' && info !== 'inherited') {
         // create ace according the webdavlib specifications
         var ace = new nl.sara.webdav.Ace();
+        
+        if (invert === "true") {
+          ace.invertprincipal=invert;
+        };
+        
         // put all values from rec in ace
         switch ( principal ) {
           case 'all':

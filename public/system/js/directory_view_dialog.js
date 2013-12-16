@@ -78,12 +78,12 @@
     
     nl.sara.beehub.view.acl.setTableSorter(nl.sara.beehub.view.acl.getAclView().find('.bh-dir-acl-table'));
     $('#bh-dir-dialog').dialog({
-      resizable: false,
+      resizable: true,
       title: " ACL",
       dialogClass: "custom_dialog",
       modal: true,
       minWidth:800,
-      maxHeight: 400,
+//      maxHeight: 400,
       closeOnEscape: false,
       dialogClass: "custom-dialog",
       buttons: [{
@@ -347,7 +347,6 @@
             }
             formView.find(".bh-dir-acl-table-search").val("");
         }
-
       }
     }).data( "ui-autocomplete" )._renderItem = function( ul, item ) {
       return $( "<li></li>" )

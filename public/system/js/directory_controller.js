@@ -1089,6 +1089,8 @@
         break;
       }
     }  
+    aceObject['invert'] = ace.invertprincipal;
+
     aceObject['protected'] = ace.isprotected;
     
     if (ace.inherited) {
