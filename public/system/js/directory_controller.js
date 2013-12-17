@@ -1133,7 +1133,7 @@
         aceObject['permissions'] += "read";
       } else if ( ( ace.getPrivilegeNames('DAV:').length === 2 ) && 
                  (ace.getPrivilegeNames('DAV:').indexOf('write') !== -1 ) && 
-                  ( ace.getPrivilegeNames('DAV:').indexOf('read') ) ) {
+                  ( ace.getPrivilegeNames('DAV:').indexOf('read') !== -1 ) ) {
         aceObject['permissions'] += "read, write";
       } else if ( ( ( ace.getPrivilegeNames('DAV:').length === 3 ) && 
                    ( ace.getPrivilegeNames('DAV:').indexOf('write-acl') !== -1) && 
