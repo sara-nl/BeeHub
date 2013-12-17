@@ -33,12 +33,6 @@
       'class'     : "bh-dir-acl-allow",
       'title'     : "allow read, write, change acl",
       'dropdown'  : "allow read, write, change acl"
-    },
-    'allow unknown privilege (combination)':{
-      // TODO niet goed
-//      'class'     : "bh-dir-acl-allow",
-//      'title'     : "allow read, write, change acl",
-//      'dropdown'  : "allow read, write, change acl"
     }
   }
 
@@ -259,7 +253,19 @@
     dropdown += '<option '+(ace.permissions === 'deny change acl'?"selected":"")+' value="deny change acl">'+permissions['deny change acl'].dropdown+'</option>';
     dropdown += '</select></td>';
     row.push(dropdown);
-    row.push('<td class="bh-dir-acl-permissions bh-dir-acl-change-permissions '+permissions[ace.permissions].class+'" style="cursor: pointer" data-toggle="tooltip" title="'+permissions[ace.permissions].title+'" ><span class="presentation">'+ace.permissions+'</span></td>');
+    if (permissions[ace.permissions] !== undefined) {
+      row.push('<td class="bh-dir-acl-permissions bh-dir-acl-change-permissions '+permissions[ace.permissions].class+'" style="cursor: pointer" data-toggle="tooltip" title="'+permissions[ace.permissions].title+'" ><span class="presentation">'+ace.permissions+'</span>');
+    } else {
+      var aceClass = 'bh-dir-acl-allow';
+      if (ace.permissions.indexOf('deny') !== -1) {
+        aceClass = 'bh-dir-acl-deny';
+      }
+      row.push('<td class="bh-dir-acl-permissions bh-dir-acl-change-permissions '+aceClass+'" style="cursor: pointer" data-toggle="tooltip" title="'+ace.permissions+'" ><span class="presentation">'+ace.permissions+'</span>');
+    }
+    if (ace.permissions.indexOf('unknown') !== -1) {
+      row.push('<span class="original" hidden="hidden">'+ace.privileges+'</span>');
+    };
+    row.push('</td>');
     
     var info = '';
     var message = '';
@@ -349,7 +355,7 @@
    * 
    * @return {nl.sara.webdav.Acl} Acl
    */
-  nl.sara.beehub.view.acl.getAcl = function() {
+  nl.sara.beehub.view.acl.getAcl = function() { 
     var acl = new nl.sara.webdav.Acl();
     // put each item acl table in the created webdav acl
     $.each(nl.sara.beehub.view.acl.getAclView().find('.bh-dir-acl-contents').find('tr'), function(index, row){

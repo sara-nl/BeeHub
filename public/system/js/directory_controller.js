@@ -1120,6 +1120,11 @@
         aceObject['permissions'] += "read, write, change acl";
       } else {
         aceObject['permissions'] += "unknown privilege (combination)";
+        var array = [];
+        for (key in ace.getPrivilegeNames('DAV:')) {
+          array.push("DAV: "+ace.getPrivilegeNames('DAV:')[key]);
+        };
+        aceObject['privileges'] = array.join(" ");
       }
     } else { 
       aceObject['permissions'] = "allow ";
@@ -1138,6 +1143,11 @@
         aceObject['permissions'] += "read, write, change acl";
       } else {
         aceObject['permissions'] += "unknown privilege (combination)";
+        var array = [];
+        for (key in ace.getPrivilegeNames('DAV:')) {
+          array.push("DAV: "+ace.getPrivilegeNames('DAV:')[key]);
+        };
+        aceObject['privileges'] = array.join(" ");
       }
     }
     return aceObject;
