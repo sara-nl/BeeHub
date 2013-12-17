@@ -25,7 +25,10 @@
  * @author Laura Leistikow (laura.leistikow@surfsara.nl)
  */
 
-
+//var nl = {};
+//nl.sara = {};
+//nl.sara.beehub = {};
+//nl.sara.controller = {};
 (function() {
   /*
    * Add slash to the end of the path
@@ -433,6 +436,7 @@
       $.each(items, function(i, item){
         var resource = new nl.sara.beehub.ClientResource(path + item.name);
         resource.displayname = item.name;
+        resource.file = item;
         nl.sara.beehub.controller.actionResources.push(resource);
         actionFiles[path + item.name] = item;
       });
@@ -751,7 +755,7 @@
         }
         // Put empty file on server to check if upload is allowed. This prevent waiting for a long time (large files) 
         // while the upload is forbidden
-        webdav.put(destination, createUploadEmptyFileCallback(resource, destination, renameCounter, false, single),"");
+        webdav.put(destination, createUploadEmptyFileCallback(resource, destination, renameCounter, false, single),"", resource.file.type);
         break;
       default:
         // Something went wrong, a new action should start
@@ -785,7 +789,7 @@
       case 204:
         // Upload file, this will overwrite the empty file
           var headers = {
-            'Content-Type': 'application/octet-stream'
+            'Content-Type': resource.file.type
           };
           
           // To have more control (progressbar) the webdav library is not used here
@@ -916,7 +920,7 @@
       case "upload":
         var overwrite = function() {
           // start upload flow but skip head and set overwrite true and renameCounter=1
-          webdav.put(resource.path, createUploadEmptyFileCallback(resource, resource.path, 1, true, true), "");
+          webdav.put(resource.path, createUploadEmptyFileCallback(resource, resource.path, 1, true, true), "", resource.file.type);
         };
         
         var rename = function() {
