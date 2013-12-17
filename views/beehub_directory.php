@@ -178,8 +178,12 @@ require 'views/header.php';
       $members = array();
       foreach ( $resource as $member ) :
         // Skip the /system/ directory, as there is no need to see this
-        if ( ( $path === '/' ) &&
-             ( $member === 'system/' )
+        if ( (
+               ( $path === '/' ) &&
+               ( $member === 'system/' )
+             ) || (
+               substr( $member, -1 ) !== '/'
+             )
         ) {
           continue;
         }
@@ -190,10 +194,6 @@ require 'views/header.php';
       for ( $counter = 0; $counter <= $last; $counter++ ) :
         $member = $members[ $counter ];
         $memberResource = $registry->resource( $path . $member );
-        if ( $memberResource->prop_resourcetype() !== DAV_Collection::RESOURCETYPE ) {
-          $registry->forget( $path . $member );
-          continue;
-        }
         $hasChildren = false;
         foreach( $memberResource as $submember ) {
           if ( $registry->resource( $memberResource->path . $submember )->prop_resourcetype() === DAV_Collection::RESOURCETYPE ) {
@@ -202,7 +202,7 @@ require 'views/header.php';
           }
         }
         $expanded = isset( $treeState[ $memberResource->path ] ) && $hasChildren ? $treeState[ $memberResource->path ] : false;
-        ?><li <?= ( $counter === $last ) ? 'class="dynatree-lastsib"' : '' ?>
+        ?><li <?= ( $counter === $last ) ? 'class="dynatree-lastsib"' : 'data-counter="' . $counter . ' - ' . $last . '"' ?>
           ><span class="dynatree-node dynatree-folder
                        <?= $hasChildren ? 'dynatree-has-children' : '' ?>
                        <?= $expanded ? 'dynatree-expanded' : ( $hasChildren ? 'dynatree-lazy' : '' ) ?>
