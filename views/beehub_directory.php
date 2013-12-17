@@ -196,8 +196,9 @@ require 'views/header.php';
         $memberResource = $registry->resource( $path . $member );
         $hasChildren = false;
         foreach( $memberResource as $submember ) {
-          if ( $registry->resource( $memberResource->path . $submember )->prop_resourcetype() === DAV_Collection::RESOURCETYPE ) {
-            $hasChildren = true;
+          $hasChildren = ( $registry->resource( $memberResource->path . $submember )->prop_resourcetype() === DAV_Collection::RESOURCETYPE );
+          $registry->forget( $memberResource->path . $submember );
+          if ( $hasChildren ) {
             break;
           }
         }
