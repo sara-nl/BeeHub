@@ -286,8 +286,9 @@
    * 
    */
   nl.sara.beehub.view.tree.closeTree = function(){
-    $.cookie("beehub-showtree", "false", { path: '/' });
-    $(".bh-dir-tree-slide").hide();
+    $('.bh-dir-tree-slide-trigger').removeClass("active");
+    $('.bh-dir-tree-slide-trigger i').removeClass('icon-folder-open').addClass(' icon-folder-close');
+    $(".bh-dir-tree-slide").slideUp('slow');
     $(".bh-dir-tree-header").hide();
   };
   
@@ -298,7 +299,8 @@
    * 
    */
   nl.sara.beehub.view.tree.showTree = function(){
-    $.cookie("beehub-showtree", "true", { path: '/' });
+    $('.bh-dir-tree-slide-trigger').addClass("active");
+    $('.bh-dir-tree-slide-trigger i').toggleClass('icon-folder-open icon-folder-close');
     $(".bh-dir-tree-slide").slideDown('slow');
     $(".bh-dir-tree-header").show();
   };
@@ -322,13 +324,13 @@
    * Open or close tree view
    */
   var handle_tree_slide_click = function() {
-    $(".bh-dir-tree-slide").slideToggle("slow");
-    $(".bh-dir-tree-header").toggle();
-    var obj = $(this);
-    obj.toggleClass("active");
-    $.cookie( "beehub-showtree", ( ( obj.hasClass( 'active' ) ) ? 'true' : 'false' ), { path: '/' } );
-    $('.bh-dir-tree-slide-trigger i').toggleClass('icon-folder-open icon-folder-close');
-
+    if ( $( this ).hasClass( 'active' ) ) {
+      $.cookie( "beehub-showtree", "false" , { path: '/' } );
+      nl.sara.beehub.view.tree.closeTree();
+    }else{
+      $.cookie( "beehub-showtree", "true" , { path: '/' } );
+      nl.sara.beehub.view.tree.showTree();
+    }
     return false;
   };
 

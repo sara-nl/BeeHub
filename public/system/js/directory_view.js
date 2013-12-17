@@ -42,10 +42,14 @@ nl.sara.beehub.view.init = function() {
   // Change tab listeners
   // Content tab
   $('a[href="#bh-dir-panel-contents"]').on('shown', function(e){
+    if ( $.cookie( "beehub-showtree" ) === "true" ) {
+      nl.sara.beehub.view.tree.showTree();
+    }
     nl.sara.beehub.view.showFixedButtons('content');
   });
   // Acl tab
   $('a[href="#bh-dir-panel-acl"]').on('shown', function(e){
+    nl.sara.beehub.view.tree.closeTree();
     nl.sara.beehub.view.showFixedButtons('acl');
   });
 };
