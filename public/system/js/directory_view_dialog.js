@@ -70,6 +70,10 @@
    * @param  {String}  resourcePath  The path of the resource
    */
   nl.sara.beehub.view.dialog.showAcl = function(html, resourcePath) {
+    if ( resourcePath.substr( -1 ) === '/' ) {
+      resourcePath = resourcePath.substr( 0, resourcePath.length -1 );
+    }
+    
     $('#bh-dir-dialog').html(html);
     // auto complete for searching users and groups
     setupAutoComplete();
@@ -90,6 +94,41 @@
       buttons: [{
         text: "Close",
         click: function() {
+          // Check whether there is a resource specific ACL set
+          var webdavClient = new nl.sara.webdav.Client();
+          var aclProp = new nl.sara.webdav.Property();
+          aclProp.namespace = 'DAV:';
+          aclProp.tagname = 'acl';
+          webdavClient.propfind( resourcePath, function( status, data ) {
+            if ( status === 207 ) {
+              var response = data.getResponse( resourcePath );
+              if ( response === undefined ) {
+                response = data.getResponse( resourcePath + '/' );
+              }
+              var aces = response.getProperty( 'DAV:', 'acl' ).getParsedValue().getAces();
+              
+              // Determine if there are non-inherited and non-protected ACE's
+              var ownACL = false;
+              for ( var counter in aces ) {
+                var ace = aces[counter];
+                if ( ( aces[ counter ].inherited === false ) &&
+                     ( aces[ counter ].isprotected === false ) ) {
+                  ownACL = true;
+                  break;
+                }
+              }
+              
+              // If the resource has it's own ACE, set the view appropriately
+              var resourceDiv = $( 'tr[id="' + resourcePath + '"]' ).find( 'td:first-child div' );
+              var exclamation = resourceDiv.find( '.bh-resource-specific-acl' );
+              if ( ownACL && ( exclamation.length === 0 ) ) {
+                resourceDiv.append( '<span class="bh-resource-specific-acl" title="Resource specific ACL set!">!</span>' );
+              }else if ( ! ownACL ) {
+                exclamation.remove();
+              }
+            }
+          }, 0, [ aclProp ] );
+          
           // Set acl view for dialog
           nl.sara.beehub.view.acl.setView("directory", nl.sara.beehub.controller.getPath());
           $(this).dialog("close");

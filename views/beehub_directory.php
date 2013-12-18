@@ -303,14 +303,11 @@ require 'views/header.php';
                   <li>
                     <a class="bh-dir-content-acl" href="#">
                       Share
-                      <?php if ( count( $member->user_prop_acl_internal() ) > 0 ) : ?>
-                        <span title="Resource specific ACL set!">!</span>
-                      <?php endif; ?>
                     </a>
                   </li>
                 </ul>
                 <?php if ( count( $member->user_prop_acl_internal() ) > 0 ) : ?>
-                  <span title="Resource specific ACL set!">!</span>
+                  <span class="bh-resource-specific-acl" title="Resource specific ACL set!">!</span>
                 <?php endif; ?>
               </div>
             </td>
