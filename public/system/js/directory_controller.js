@@ -25,10 +25,6 @@
  * @author Laura Leistikow (laura.leistikow@surfsara.nl)
  */
 
-//var nl = {};
-//nl.sara = {};
-//nl.sara.beehub = {};
-//nl.sara.controller = {};
 (function() {
   /*
    * Add slash to the end of the path
@@ -572,7 +568,6 @@
       //Succeeded
       case 201: 
       case 204:
-//        nl.sara.beehub.view.tree.reload();
         // Update dialog info
         nl.sara.beehub.view.dialog.updateResourceInfo(resource,"Done");
         // Update view
@@ -607,8 +602,8 @@
         // Not the first time means the user has choosen to rename but the new name also already exist on the server
         } else {
           // create new name
+          renameCounter++;
           var resourceDestination = nl.sara.beehub.controller.actionDestination + resource.displayname+"_"+renameCounter;
-          renameCounter = renameCounter + 1;
           // start copy or move with new name
           if (nl.sara.beehub.controller.actionAction === "copy") {
             // Update dialog info
@@ -688,21 +683,20 @@
         nl.sara.beehub.view.deleteResource(resource);
         break; 
       case "move":
-        // delete resource from current view
-        nl.sara.beehub.view.deleteResource(resource);  
-        break;
-      case  "copy":
-        if (nl.sara.beehub.controller.actionDestination === path) {
-          // Flow of copy to same dir with automatically rename is different. This if statement solves this
-          if (renameCounter === 1) {
-            var resourceDestination = nl.sara.beehub.controller.actionDestination + resource.displayname+"_"+renameCounter;
-          } else {
-            var resourceDestination = nl.sara.beehub.controller.actionDestination + resource.displayname+"_"+(renameCounter -1);
+      case "copy":
+        // Flow of copy to same dir with automatically rename is different. This if statement solves this
+        var resourceDestination = nl.sara.beehub.controller.actionDestination + resource.displayname;
+        if (renameCounter > 0) {
+          resourceDestination += "_" + renameCounter;
+        }
+        getResourcePropsFromServer(resourceDestination, function( resourceNew ) {
+          if ( nl.sara.beehub.controller.actionAction === 'copy' ) {
+            nl.sara.beehub.view.addResource( resourceNew );
+          }else{
+            resource.type = resourceNew.type;
+            nl.sara.beehub.view.updateResource( resource, resourceNew );
           }
-          getResourcePropsFromServer(resourceDestination, function(resource) {
-            nl.sara.beehub.view.addResource(resource);
-          }); 
-        };
+        }); 
         break;
       default:
         // This should never happen

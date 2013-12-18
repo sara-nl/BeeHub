@@ -346,6 +346,15 @@
    * @param {Object} resource Resource object
    */
   nl.sara.beehub.view.content.addResource = function(resource){
+    var collection = resource.path.substr( 0, resource.path.lastIndexOf( '/', resource.path.length - 2 ) + 1 );
+    var currentPath = location.pathname;
+    if ( currentPath.substr( -1 ) !== '/' ) {
+      currentPath += '/';
+    }
+    if ( collection !== currentPath ) {
+      return;
+    }
+
     var row = createRow(resource);
     $("#bh-dir-content-table").append(row);
     $("#bh-dir-content-table").trigger("update");
@@ -373,10 +382,22 @@
    * @param {Object} resourceOrg New resource object
    */
   nl.sara.beehub.view.content.updateResource = function(resourceOrg, resourceNew){
-    // delete current row
-    nl.sara.beehub.view.content.deleteResource(resourceOrg);
-    // add new row
-    nl.sara.beehub.view.content.addResource(resourceNew);
+    var collectionOrg = resourceOrg.path.substr( 0, resourceOrg.path.lastIndexOf( '/', resourceOrg.path.length - 2 ) + 1 );
+    var collectionNew = resourceNew.path.substr( 0, resourceNew.path.lastIndexOf( '/', resourceNew.path.length - 2 ) + 1 );
+    var currentPath = location.pathname;
+    if ( currentPath.substr( -1 ) !== '/' ) {
+      currentPath += '/';
+    }
+
+    if ( collectionOrg === currentPath ) {
+      // delete current row
+      nl.sara.beehub.view.content.deleteResource(resourceOrg);
+    }
+
+    if ( collectionNew === currentPath ) {
+      // add new row
+      nl.sara.beehub.view.content.addResource(resourceNew);
+    }
   };
   
   

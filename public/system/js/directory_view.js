@@ -138,6 +138,9 @@ nl.sara.beehub.view.showFixedButtons = function(action){
  */
 nl.sara.beehub.view.addResource = function(resource){
   nl.sara.beehub.view.content.addResource(resource);
+  if ( resource.type === 'collection' ) {
+    nl.sara.beehub.view.tree.addPath( decodeURI( resource.path ) );
+  }
 };
 
 /*
@@ -147,6 +150,7 @@ nl.sara.beehub.view.addResource = function(resource){
  */
 nl.sara.beehub.view.updateResource = function(resourceOrg, resourceNew){
   nl.sara.beehub.view.content.updateResource(resourceOrg, resourceNew);
+  nl.sara.beehub.view.tree.updateResource( resourceOrg, resourceNew );
 };
 
 /*
@@ -156,5 +160,6 @@ nl.sara.beehub.view.updateResource = function(resourceOrg, resourceNew){
  */
 nl.sara.beehub.view.deleteResource = function(resource){
   nl.sara.beehub.view.content.deleteResource(resource);
+  nl.sara.beehub.view.tree.removePath( decodeURI( resource.path ) );
 };
 

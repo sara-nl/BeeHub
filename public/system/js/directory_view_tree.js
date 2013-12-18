@@ -315,8 +315,9 @@
     // original onactivate
     nl.sara.beehub.view.tree.setOnActivate( "Browse" );
     // close tree
-    nl.sara.beehub.view.tree.slideTrigger('left');
-    nl.sara.beehub.view.tree.closeTree();
+    if ( $.cookie( 'beehub-showtree' ) === "false" ) {
+      nl.sara.beehub.view.tree.closeTree();
+    }
   };
   
   /*
@@ -389,6 +390,11 @@
 
 
   function addDirectory( path ) {
+    // Start with checking if the path doesn't exist yet (now all parents are expanded)
+    if ( $( 'a[href="' + encodeURI( path ) + '"]', treeNode ).length > 0 ) {
+      return;
+    }
+
     var parentPath = path.substr( 0, path.substr( 0, path.length - 1 ).lastIndexOf( '/' ) + 1 );
     var parentLi;
     var parentSpan;
@@ -513,6 +519,26 @@
         elementSpan.removeClass( 'dynatree-exp-e' );
         elementSpan.addClass( 'dynatree-exp-el' );
       }
+    }
+  };
+ 
+
+  /*
+   * Update resource from content view
+   * 
+   * Public function
+   * 
+   * @param {Object} resourceOrg Original resource object
+   * @param {Object} resourceOrg New resource object
+   */
+  nl.sara.beehub.view.tree.updateResource = function(resourceOrg, resourceNew){
+    if ( resourceOrg.type === 'collection' ) {
+      // delete current row
+      nl.sara.beehub.view.tree.removePath( decodeURI( resourceOrg.path ) );
+    }
+    if ( resourceNew.type === 'collection' ) {
+      // add new row
+      nl.sara.beehub.view.tree.addPath( decodeURI( resourceNew.path ) );
     }
   };
 

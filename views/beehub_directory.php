@@ -105,8 +105,16 @@ require 'views/header.php';
     <i class="icon-upload"></i> Upload
   </button>
 
+  <?php
+  try {
+    $this->assert( DAVACL::PRIV_WRITE );
+    $mkcolButtonDisabled = false;
+  } catch ( DAV_Status $e) {
+    $mkcolButtonDisabled = true;
+  }
+  ?>
   <!-- CONTENT: New folder button-->
-  <button data-toggle="tooltip" title="Create new folder in current folder" class="btn btn-small bh-dir-content-newfolder">
+  <button data-toggle="tooltip" title="Create new folder in current folder" class="btn btn-small bh-dir-content-newfolder" <?= $mkcolButtonDisabled ? 'disabled="disabled"' : '' ?>>
     <i class="icon-folder-close"></i> New
   </button>
 
@@ -203,7 +211,7 @@ require 'views/header.php';
           }
         }
         $expanded = isset( $treeState[ $memberResource->path ] ) && $hasChildren ? $treeState[ $memberResource->path ] : false;
-        ?><li <?= ( $counter === $last ) ? 'class="dynatree-lastsib"' : 'data-counter="' . $counter . ' - ' . $last . '"' ?>
+        ?><li <?= ( $counter === $last ) ? 'class="dynatree-lastsib"' : '' ?>
           ><span class="dynatree-node dynatree-folder
                        <?= $hasChildren ? 'dynatree-has-children' : '' ?>
                        <?= $expanded ? 'dynatree-expanded' : ( $hasChildren ? 'dynatree-lazy' : '' ) ?>
