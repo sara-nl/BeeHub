@@ -1034,7 +1034,7 @@
         
         var html = nl.sara.beehub.view.acl.createDialogViewHtml();
         
-        nl.sara.beehub.view.dialog.showAcl(html);
+        nl.sara.beehub.view.dialog.showAcl(html, resourcePath);
         
         nl.sara.beehub.view.acl.setAddAclRuleDialogClickHandler(addAclRuleDialog);
         

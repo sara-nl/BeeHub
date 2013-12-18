@@ -300,8 +300,18 @@ require 'views/header.php';
                   <?php if ( in_array( DAVACL::PRIV_WRITE, $member->user_prop_current_user_privilege_set() ) && in_array( DAVACL::PRIV_UNBIND, $current_user_privilege_set_collection ) ) : ?>
                     <li><a class="bh-dir-content-edit" href="#">Rename</a></li>
                   <?php endif; ?>
-                  <li><a class="bh-dir-content-acl" href="#">Share</a></li>
+                  <li>
+                    <a class="bh-dir-content-acl" href="#">
+                      Share
+                      <?php if ( count( $member->user_prop_acl_internal() ) > 0 ) : ?>
+                        <span title="Resource specific ACL set!">!</span>
+                      <?php endif; ?>
+                    </a>
+                  </li>
                 </ul>
+                <?php if ( count( $member->user_prop_acl_internal() ) > 0 ) : ?>
+                  <span title="Resource specific ACL set!">!</span>
+                <?php endif; ?>
               </div>
             </td>
             <!-- Select checkbox -->

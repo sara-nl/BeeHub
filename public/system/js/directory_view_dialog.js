@@ -66,9 +66,10 @@
    * 
    * Public function
    * 
-   * @param {String} resource The resource to show
+   * @param  {String}  html          The html to show in the dialog
+   * @param  {String}  resourcePath  The path of the resource
    */
-  nl.sara.beehub.view.dialog.showAcl = function(html) {
+  nl.sara.beehub.view.dialog.showAcl = function(html, resourcePath) {
     $('#bh-dir-dialog').html(html);
     // auto complete for searching users and groups
     setupAutoComplete();
@@ -79,7 +80,7 @@
     nl.sara.beehub.view.acl.setTableSorter(nl.sara.beehub.view.acl.getAclView().find('.bh-dir-acl-table'));
     $('#bh-dir-dialog').dialog({
       resizable: true,
-      title: " ACL",
+      title: " ACL: " + resourcePath.replace( /\//g, ' / '),
       dialogClass: "custom_dialog",
       modal: true,
       minWidth:800,
