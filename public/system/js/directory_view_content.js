@@ -97,6 +97,7 @@
       widgets : ['stickyHeaders'],
       // Start with sort asc
       sortRestart: true,
+      sortList: [ [ 2, 0 ] ],
       widgetOptions : {
         // apply sticky header top below the top of the browser window
         stickyHeaders_offset : 186
@@ -104,7 +105,7 @@
     });
 
    // Remember previous sort columns and use it for second sort column
-    $("#bh-dir-content-table").unbind().bind("sortStart",function(sorter) {
+    $("#bh-dir-content-table").unbind( 'sortStart' ).bind("sortStart",function(sorter) {
      sorter.target.config.sortAppend = sorter.target.config.sortList;
     });
 
@@ -190,19 +191,19 @@
   */
   var setRowHandlers = function(){
     // Checkbox select all handler: select or deselect all checkboxes
-    $('.bh-dir-content-checkboxgroup').unbind().click(handle_checkall_checkbox_click);
+    $('.bh-dir-content-checkboxgroup').unbind( 'click' ).click(handle_checkall_checkbox_click);
     
     // Checkbox handler: select or deselect checkbox
-    $('.bh-dir-content-checkbox').unbind().click(handle_checkbox_click);
+    $('.bh-dir-content-checkbox').unbind( 'click' ).click(handle_checkbox_click);
     
     // Open selected handler: this can be a file or a directory
-    $('.bh-dir-content-openselected').unbind().click(function() {window.location.href=$(this).attr('name');});
+    $('.bh-dir-content-openselected').unbind( 'click' ).click(function() {window.location.href=$(this).attr('name');});
     
     // Edit icon
-    $('.bh-dir-content-edit').unbind().click(handle_edit_menu_click);
+    $('.bh-dir-content-edit').unbind( 'click' ).click(handle_edit_menu_click);
     
     // View acl
-    $('.bh-dir-content-acl').unbind().click(handle_acl_menu_click)
+    $('.bh-dir-content-acl').unbind( 'click' ).click(handle_acl_menu_click)
   };
   
   /*
@@ -348,8 +349,6 @@
     var row = createRow(resource);
     $("#bh-dir-content-table").append(row);
     $("#bh-dir-content-table").trigger("update");
-    // Sort again
-    $("#bh-dir-content-table").trigger("sorton", [$("#bh-dir-content-table")[0].config.sortList]);
     // Set handlers again
     setRowHandlers();
   };
@@ -455,7 +454,7 @@
     $(this).closest("tr").find(".bh-dir-content-rename-td").find(':input').focus();
 
     // Set rename handler
-    $(this).closest("tr").find(".bh-dir-content-rename-td").find(':input').unbind().change(handle_rename_form_change);
+    $(this).closest("tr").find(".bh-dir-content-rename-td").find(':input').unbind( 'change' ).change(handle_rename_form_change);
     $(this).closest("tr").find(".bh-dir-content-rename-td").find(':input').keypress(function(e) {
       if(e.which === 13) {
         e.preventDefault();

@@ -163,8 +163,9 @@
       // Permissions
       var info = $(row).find('.bh-dir-acl-comment').attr('name');
       if (info !== 'protected' && info !== 'inherited') {
-        $(row).find('.bh-dir-acl-change-permissions').unbind().click(handle_permissions_click);
-        $(row).find('.bh-dir-acl-permissions-select').unbind().change(function(){
+        var rowObject = $( row );
+        rowObject.find('.bh-dir-acl-change-permissions').unbind( 'click' ).click(handle_permissions_click);
+        rowObject.find('.bh-dir-acl-permissions-select').unbind( 'change' ).change(function(){
           var row = $(this).closest('tr');
           var oldVal = $(row).find(".bh-dir-acl-permissions").html();
           var val = $(row).find(".bh-dir-acl-table-permissions option:selected").val();
@@ -173,18 +174,18 @@
           nl.sara.beehub.controller.changePermissions(row, oldVal);
         });
         // Blur handler
-        $(row).find('.bh-dir-acl-table-permissions').unbind().blur(function(){
+        rowObject.find('.bh-dir-acl-table-permissions').unbind( 'blur' ).blur(function(){
           var row = $(this).closest('tr');
           nl.sara.beehub.view.acl.showChangePermissions(row, false);
         });
         // Up icon
-        $(row).find('.bh-dir-acl-icon-up').unbind().click(handle_up_click);
+        rowObject.find('.bh-dir-acl-icon-up').unbind( 'click' ).click(handle_up_click);
         
         // Down icon
-        $(row).find('.bh-dir-acl-icon-down').unbind().click(handle_down_click);
+        rowObject.find('.bh-dir-acl-icon-down').unbind( 'click' ).click(handle_down_click);
         
         // Delete icon
-        $(row).find('.bh-dir-acl-icon-remove').unbind().click(handle_remove_click);
+        rowObject.find('.bh-dir-acl-icon-remove').unbind( 'click' ).click(handle_remove_click);
       };
     }) 
   };
