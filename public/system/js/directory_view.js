@@ -42,7 +42,7 @@ nl.sara.beehub.view.init = function() {
   // Change tab listeners
   // Content tab
   $('a[href="#bh-dir-panel-contents"]').on('shown', function(e){
-    if ( $.cookie( "beehub-showtree" ) === "true" ) {
+    if ( $.cookie( "beehub-showtree" ) !== "false" ) {
       nl.sara.beehub.view.tree.showTree();
     }
     nl.sara.beehub.view.showFixedButtons('content');
