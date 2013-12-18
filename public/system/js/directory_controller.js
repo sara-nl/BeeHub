@@ -448,6 +448,7 @@
         // Original view
         nl.sara.beehub.controller.setCopyMoveView(false);
         // Original handlers
+        nl.sara.beehub.view.tree.setModal( false );
         nl.sara.beehub.view.tree.clearView();
         // Show dialog with all resources
         nl.sara.beehub.view.dialog.showResourcesDialog(function() {
@@ -457,6 +458,7 @@
       });
       // show tree
       nl.sara.beehub.view.tree.showTree();
+      nl.sara.beehub.view.tree.setModal( true );
     } else {
       // show dialog with all resources
       nl.sara.beehub.view.dialog.showResourcesDialog(function() {
@@ -886,8 +888,8 @@
       case "copy":
         var overwrite = function() {
           var resourceDestination = nl.sara.beehub.controller.actionDestination + resource.displayname;
-          // start copy with SILENT OVERWRITE and renameCounter=1
-          webdav.copy(resource.path, createActionCallback(resource, 1, false), resourceDestination, nl.sara.webdav.Client.SILENT_OVERWRITE);
+          // start copy with SILENT OVERWRITE and renameCounter=0
+          webdav.copy(resource.path, createActionCallback(resource, 0, false), resourceDestination, nl.sara.webdav.Client.SILENT_OVERWRITE);
         };
         
         var rename = function() {
@@ -900,8 +902,8 @@
       case "move": 
         var overwrite = function() {
           var resourceDestination = nl.sara.beehub.controller.actionDestination + resource.displayname;
-          // start move with SILENT OVERWRITE and renameCounter=1
-          webdav.move(resource.path, createActionCallback(resource, 1, false), resourceDestination, nl.sara.webdav.Client.SILENT_OVERWRITE);
+          // start move with SILENT OVERWRITE and renameCounter=0
+          webdav.move(resource.path, createActionCallback(resource, 0, false), resourceDestination, nl.sara.webdav.Client.SILENT_OVERWRITE);
         };
         
         var rename = function() {

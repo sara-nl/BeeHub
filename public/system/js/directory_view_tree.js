@@ -267,6 +267,7 @@
   nl.sara.beehub.view.tree.cancelButton = function(action){
     if (action === 'show') {
       $('#bh-dir-tree-cancel').click(function(){
+        nl.sara.beehub.view.tree.setModal( false );
         nl.sara.beehub.controller.setCopyMoveView(false);
         nl.sara.beehub.view.tree.clearView();
       }); 
@@ -541,5 +542,25 @@
       nl.sara.beehub.view.tree.addPath( decodeURI( resourceNew.path ) );
     }
   };
+  
+  
+  /**
+   * Change whether the directory tree is modal
+   * 
+   * @param {Boolean} modal  If set to true, the directory tree will be modal
+   */
+  nl.sara.beehub.view.tree.setModal = function ( modal ) {
+    var treeHeader = $( '#bh-dir-tree-header' );
+    var treeElements = treeHeader
+            .add( 'a.bh-dir-tree-slide-trigger' )
+            .add ( '#bh-dir-tree' );
+    if ( modal ) {
+      treeElements.addClass( 'ui-front' );
+      treeHeader.before( '<div class="bh-tree-overlay ui-widget-overlay ui-front"></div>' );
+    }else{
+      $( 'div.bh-tree-overlay').remove();
+      treeElements.removeClass( 'ui-front' );
+    }
+  }
 
 })();
