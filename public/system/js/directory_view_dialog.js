@@ -1,4 +1,4 @@
-/*
+/**
  * Copyright ©2013 SARA bv, The Netherlands
  *
  * This file is part of the beehub client
@@ -69,7 +69,7 @@
    * @param  {String}  html          The html to show in the dialog
    * @param  {String}  resourcePath  The path of the resource
    */
-  nl.sara.beehub.view.dialog.showAcl = function(html, resourcePath) {
+  nl.sara.beehub.view.dialog.showAcl = function(html, resourcePath, closeFunction) {
     if ( resourcePath.substr( -1 ) === '/' ) {
       resourcePath = resourcePath.substr( 0, resourcePath.length -1 );
     }
@@ -93,45 +93,8 @@
       dialogClass: "custom-dialog",
       buttons: [{
         text: "Close",
-        click: function() {
-          // Check whether there is a resource specific ACL set
-          var webdavClient = new nl.sara.webdav.Client();
-          var aclProp = new nl.sara.webdav.Property();
-          aclProp.namespace = 'DAV:';
-          aclProp.tagname = 'acl';
-          webdavClient.propfind( resourcePath, function( status, data ) {
-            if ( status === 207 ) {
-              var response = data.getResponse( resourcePath );
-              if ( response === undefined ) {
-                response = data.getResponse( resourcePath + '/' );
-              }
-              var aces = response.getProperty( 'DAV:', 'acl' ).getParsedValue().getAces();
-              
-              // Determine if there are non-inherited and non-protected ACE's
-              var ownACL = false;
-              for ( var counter in aces ) {
-                var ace = aces[counter];
-                if ( ( aces[ counter ].inherited === false ) &&
-                     ( aces[ counter ].isprotected === false ) ) {
-                  ownACL = true;
-                  break;
-                }
-              }
-              
-              // If the resource has it's own ACE, set the view appropriately
-              var resourceDiv = $( 'tr[id="' + resourcePath + '"]' );
-              var exclamation = resourceDiv.find( '.bh-resource-specific-acl' );
-              if ( ownACL && ( exclamation.html() === "" )) {
-                exclamation.replaceWith( '<td title="Resource specific ACL set!" class="bh-resource-specific-acl"><i class="icon-star-empty"></i></td>' );
-              }else if ( ! ownACL ) {
-                exclamation.replaceWith( '<td class="bh-resource-specific-acl"></td>');
-              }
-            }
-          }, 0, [ aclProp ] );
-          
-          // Set acl view for dialog
-          nl.sara.beehub.view.acl.setView("directory", nl.sara.beehub.controller.getPath());
-          $(this).dialog("close");
+        click: function(){
+          closeFunction();
         }
       }]
     });

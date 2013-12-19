@@ -163,3 +163,12 @@ nl.sara.beehub.view.deleteResource = function(resource){
   nl.sara.beehub.view.tree.removePath( decodeURI( resource.path ) );
 };
 
+/*
+ * Set Custom acl on resource on or off
+ * 
+ * @param {Boolean} ownAcl True or false
+ */
+nl.sara.beehub.view.setCustomAclOnResource = function(ownACL, resourcePath){
+  nl.sara.beehub.view.acl.setCustomAclOnResource(ownACL, resourcePath);
+};
+

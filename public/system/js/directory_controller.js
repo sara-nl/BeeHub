@@ -1038,7 +1038,7 @@
         
         var html = nl.sara.beehub.view.acl.createDialogViewHtml();
         
-        nl.sara.beehub.view.dialog.showAcl(html, resourcePath);
+        nl.sara.beehub.view.dialog.showAcl(html, resourcePath, createCloseAclDialogFunction(resourcePath));
         
         nl.sara.beehub.view.acl.setAddAclRuleDialogClickHandler(addAclRuleDialog);
         
@@ -1208,6 +1208,40 @@
 //    };
 //    return aceObjects;
 //  }
+  var createCloseAclDialogFunction = function(resourcePath) {
+    return function(){
+      // Check whether there is a resource specific ACL set
+      var webdavClient = new nl.sara.webdav.Client();
+      var aclProp = new nl.sara.webdav.Property();
+      aclProp.namespace = 'DAV:';
+      aclProp.tagname = 'acl';
+      webdavClient.propfind( resourcePath, function( status, data ) {
+        if ( status === 207 ) {
+          var response = data.getResponse( resourcePath );
+          if ( response === undefined ) {
+            response = data.getResponse( resourcePath + '/' );
+          }
+          var aces = response.getProperty( 'DAV:', 'acl' ).getParsedValue().getAces();
+          
+          // Determine if there are non-inherited and non-protected ACE's
+          var ownACL = false;
+          for ( var counter in aces ) {
+            var ace = aces[counter];
+            if ( ( aces[ counter ].inherited === false ) &&
+                 ( aces[ counter ].isprotected === false ) ) {
+              ownACL = true;
+              break;
+            }
+          }        
+          nl.sara.beehub.view.setCustomAclOnResource(ownACL, resourcePath);    
+        }
+      }, 0, [ aclProp ] );
+      
+      // Set acl view for dialog
+      nl.sara.beehub.view.acl.setView("directory", nl.sara.beehub.controller.getPath());
+      nl.sara.beehub.view.dialog.clearView();
+    };
+  }
   
   /**
    * Show add acl rule dialog.

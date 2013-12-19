@@ -473,6 +473,24 @@
     return acl;
   };
   
+  /**
+   * Set acl on resource on or of
+   * 
+   * @param {Boolean}   ownACL        true or false
+   * @param {String}    resourcePath  Path of resource
+   * 
+   */
+  nl.sara.beehub.view.acl.setCustomAclOnResource = function(ownACL, resourcePath){
+    // If the resource has it's own ACE, set the view appropriately
+    var resourceDiv = $( 'tr[id="' + resourcePath + '"]' );
+    var exclamation = resourceDiv.find( '.bh-resource-specific-acl' );
+    if ( ownACL && ( exclamation.html() === "" )) {
+      exclamation.replaceWith( '<td title="Resource specific ACL set!" class="bh-resource-specific-acl"><i class="icon-star-empty"></i></td>' );
+    } else if ( ! ownACL ) {
+      exclamation.replaceWith( '<td class="bh-resource-specific-acl"></td>');
+    }
+  }
+  
   /*
    * Add ace to Acl view
    * 

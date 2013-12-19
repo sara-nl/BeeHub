@@ -279,6 +279,8 @@
     // Owner
     row.push('<td class="owner" name="'+nl.sara.beehub.controller.htmlEscape(resource.owner)+'">'+nl.sara.beehub.controller.htmlEscape(nl.sara.beehub.controller.getDisplayName(resource.owner))+'</td>');
     
+    // ACL on resource row
+    row.push('<td class="bh-resource-specific-acl"></td>');
     // TODO Share link, not implemented yet
   //  row.push('<td></td>');
     
