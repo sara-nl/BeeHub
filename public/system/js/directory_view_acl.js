@@ -261,7 +261,7 @@
       if (ace.permissions.indexOf('deny') !== -1) {
         aceClass = 'bh-dir-acl-deny';
       }
-      row.push('<td class="bh-dir-acl-permissions bh-dir-acl-change-permissions '+aceClass+'" style="cursor: pointer" data-toggle="tooltip" title="'+ace.permissions+'" ><span class="presentation">'+ace.permissions+'</span>');
+      row.push('<td class="bh-dir-acl-permissions bh-dir-acl-change-permissions '+aceClass+'" style="cursor: pointer" data-toggle="tooltip" title="'+ace.privileges+'" ><span class="presentation">'+ace.permissions+'</span>');
     }
     if (ace.permissions.indexOf('unknown') !== -1) {
       row.push('<span class="original" hidden="hidden">'+ace.privileges+'</span>');

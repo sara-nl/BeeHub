@@ -651,22 +651,26 @@
       // start action
       startAction();
     } else {
-      var stop = false;
-      // Check if there were errors, overwrites or renames
-      $.each(summary, function(key,value) {
-        if (value !== 0) {
-          stop = true; 
-        }
-      });
-      // If there were errors, overwrites or renames, set dialog ready
-      if (stop) {
-        nl.sara.beehub.view.dialog.setDialogReady(function(){
-          nl.sara.beehub.view.clearAllViews(); 
-        });
-      // else ready and clear all views
-      } else {
+      nl.sara.beehub.view.dialog.setDialogReady(function(){
         nl.sara.beehub.view.clearAllViews(); 
-      }
+      });
+// TODO show action was succesfull and close dialog when no errors where found
+//      var stop = false;
+//      // Check if there were errors, overwrites or renames
+//      $.each(summary, function(key,value) {
+//        if (value !== 0) {
+//          stop = true; 
+//        }
+//      });
+//      // If there were errors, overwrites or renames, set dialog ready
+//      if (stop) {
+//        nl.sara.beehub.view.dialog.setDialogReady(function(){
+//          nl.sara.beehub.view.clearAllViews(); 
+//        });
+//      // else ready and clear all views
+//      } else {
+//        nl.sara.beehub.view.clearAllViews(); 
+//      }
     };
   };
   

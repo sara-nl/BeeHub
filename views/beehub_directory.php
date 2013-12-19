@@ -257,6 +257,7 @@ require 'views/header.php';
           <th>Type</th>
           <th>Modified</th>
           <th>Owner</th>
+          <th class="bh-dir-small-column"></th>     
           <!-- share file, not yet implemented -->
           <!--  <th class="bh-dir-small-column"></th> -->          
         </tr>
@@ -306,9 +307,6 @@ require 'views/header.php';
                     </a>
                   </li>
                 </ul>
-                <?php if ( count( $member->user_prop_acl_internal() ) > 0 ) : ?>
-                  <span class="bh-resource-specific-acl" title="Resource specific ACL set!">!</span>
-                <?php endif; ?>
               </div>
             </td>
             <!-- Select checkbox -->
@@ -369,6 +367,11 @@ require 'views/header.php';
             <td class="owner" name="<?= DAV::xmlescape( $owner->path ) ?>">
               <?= DAV::xmlescape( $owner->user_prop_displayname() ) ?>
             </td>
+            <?php if ( count( $member->user_prop_acl_internal() ) > 0 ) : ?>
+              <td class="bh-resource-specific-acl" title="Resource specific ACL set!"><i class="icon-star-empty"></i></td>
+            <?php else : ?>
+            	<td class="bh-resource-specific-acl"></td>
+            <?php endif; ?>
           </tr>
           <?php
           DAV::$REGISTRY->forget( $this->path . $inode );

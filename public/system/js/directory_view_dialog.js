@@ -119,12 +119,12 @@
               }
               
               // If the resource has it's own ACE, set the view appropriately
-              var resourceDiv = $( 'tr[id="' + resourcePath + '"]' ).find( 'td:first-child div' );
+              var resourceDiv = $( 'tr[id="' + resourcePath + '"]' );
               var exclamation = resourceDiv.find( '.bh-resource-specific-acl' );
-              if ( ownACL && ( exclamation.length === 0 ) ) {
-                resourceDiv.append( '<span class="bh-resource-specific-acl" title="Resource specific ACL set!">!</span>' );
+              if ( ownACL && ( exclamation.html() === "" )) {
+                exclamation.replaceWith( '<td title="Resource specific ACL set!" class="bh-resource-specific-acl"><i class="icon-star-empty"></i></td>' );
               }else if ( ! ownACL ) {
-                exclamation.remove();
+                exclamation.replaceWith( '<td class="bh-resource-specific-acl"></td>');
               }
             }
           }, 0, [ aclProp ] );
