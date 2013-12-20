@@ -25,7 +25,6 @@
  * @author Laura Leistikow (laura.leistikow@surfsara.nl)
  */
 
-
 (function() {
   /*
    * Add slash to the end of the path
@@ -38,6 +37,10 @@
   // Needed for copy, move, delete and upload
   var actionCounter = 0;
   
+  nl.sara.beehub.controller.getPath = function(){
+    return path;
+  }
+ 
   /**
    * Escape html characters
    * 
@@ -300,7 +303,7 @@
       if (status === 201) {
         // Reload tree
         // TODO update tree instead of reloading
-        nl.sara.beehub.view.tree.reload();
+//        nl.sara.beehub.view.tree.reload();
         // Get properties of new directory from server and update view
         getResourcePropsFromServer(callbackpath, function(resource){
           // add resource to view
@@ -429,6 +432,7 @@
       $.each(items, function(i, item){
         var resource = new nl.sara.beehub.ClientResource(path + item.name);
         resource.displayname = item.name;
+        resource.file = item;
         nl.sara.beehub.controller.actionResources.push(resource);
         actionFiles[path + item.name] = item;
       });
@@ -444,6 +448,7 @@
         // Original view
         nl.sara.beehub.controller.setCopyMoveView(false);
         // Original handlers
+        nl.sara.beehub.view.tree.setModal( false );
         nl.sara.beehub.view.tree.clearView();
         // Show dialog with all resources
         nl.sara.beehub.view.dialog.showResourcesDialog(function() {
@@ -453,6 +458,7 @@
       });
       // show tree
       nl.sara.beehub.view.tree.showTree();
+      nl.sara.beehub.view.tree.setModal( true );
     } else {
       // show dialog with all resources
       nl.sara.beehub.view.dialog.showResourcesDialog(function() {
@@ -564,7 +570,6 @@
       //Succeeded
       case 201: 
       case 204:
-        nl.sara.beehub.view.tree.reload();
         // Update dialog info
         nl.sara.beehub.view.dialog.updateResourceInfo(resource,"Done");
         // Update view
@@ -599,8 +604,8 @@
         // Not the first time means the user has choosen to rename but the new name also already exist on the server
         } else {
           // create new name
+          renameCounter++;
           var resourceDestination = nl.sara.beehub.controller.actionDestination + resource.displayname+"_"+renameCounter;
-          renameCounter = renameCounter + 1;
           // start copy or move with new name
           if (nl.sara.beehub.controller.actionAction === "copy") {
             // Update dialog info
@@ -646,22 +651,26 @@
       // start action
       startAction();
     } else {
-      var stop = false;
-      // Check if there were errors, overwrites or renames
-      $.each(summary, function(key,value) {
-        if (value !== 0) {
-          stop = true; 
-        }
-      });
-      // If there were errors, overwrites or renames, set dialog ready
-      if (stop) {
-        nl.sara.beehub.view.dialog.setDialogReady(function(){
-          nl.sara.beehub.view.clearAllViews(); 
-        });
-      // else ready and clear all views
-      } else {
+      nl.sara.beehub.view.dialog.setDialogReady(function(){
         nl.sara.beehub.view.clearAllViews(); 
-      }
+      });
+// TODO show action was succesfull and close dialog when no errors where found
+//      var stop = false;
+//      // Check if there were errors, overwrites or renames
+//      $.each(summary, function(key,value) {
+//        if (value !== 0) {
+//          stop = true; 
+//        }
+//      });
+//      // If there were errors, overwrites or renames, set dialog ready
+//      if (stop) {
+//        nl.sara.beehub.view.dialog.setDialogReady(function(){
+//          nl.sara.beehub.view.clearAllViews(); 
+//        });
+//      // else ready and clear all views
+//      } else {
+//        nl.sara.beehub.view.clearAllViews(); 
+//      }
     };
   };
   
@@ -680,21 +689,20 @@
         nl.sara.beehub.view.deleteResource(resource);
         break; 
       case "move":
-        // delete resource from current view
-        nl.sara.beehub.view.deleteResource(resource);  
-        break;
-      case  "copy":
-        if (nl.sara.beehub.controller.actionDestination === path) {
-          // Flow of copy to same dir with automatically rename is different. This if statement solves this
-          if (renameCounter === 1) {
-            var resourceDestination = nl.sara.beehub.controller.actionDestination + resource.displayname+"_"+renameCounter;
-          } else {
-            var resourceDestination = nl.sara.beehub.controller.actionDestination + resource.displayname+"_"+(renameCounter -1);
+      case "copy":
+        // Flow of copy to same dir with automatically rename is different. This if statement solves this
+        var resourceDestination = nl.sara.beehub.controller.actionDestination + resource.displayname;
+        if (renameCounter > 0) {
+          resourceDestination += "_" + renameCounter;
+        }
+        getResourcePropsFromServer(resourceDestination, function( resourceNew ) {
+          if ( nl.sara.beehub.controller.actionAction === 'copy' ) {
+            nl.sara.beehub.view.addResource( resourceNew );
+          }else{
+            resource.type = resourceNew.type;
+            nl.sara.beehub.view.updateResource( resource, resourceNew );
           }
-          getResourcePropsFromServer(resourceDestination, function(resource) {
-            nl.sara.beehub.view.addResource(resource);
-          }); 
-        };
+        }); 
         break;
       default:
         // This should never happen
@@ -747,7 +755,7 @@
         }
         // Put empty file on server to check if upload is allowed. This prevent waiting for a long time (large files) 
         // while the upload is forbidden
-        webdav.put(destination, createUploadEmptyFileCallback(resource, destination, renameCounter, false, single),"");
+        webdav.put(destination, createUploadEmptyFileCallback(resource, destination, renameCounter, false, single),"", resource.file.type);
         break;
       default:
         // Something went wrong, a new action should start
@@ -781,7 +789,7 @@
       case 204:
         // Upload file, this will overwrite the empty file
           var headers = {
-            'Content-Type': 'application/octet-stream'
+            'Content-Type': resource.file.type
           };
           
           // To have more control (progressbar) the webdav library is not used here
@@ -884,8 +892,8 @@
       case "copy":
         var overwrite = function() {
           var resourceDestination = nl.sara.beehub.controller.actionDestination + resource.displayname;
-          // start copy with SILENT OVERWRITE and renameCounter=1
-          webdav.copy(resource.path, createActionCallback(resource, 1, false), resourceDestination, nl.sara.webdav.Client.SILENT_OVERWRITE);
+          // start copy with SILENT OVERWRITE and renameCounter=0
+          webdav.copy(resource.path, createActionCallback(resource, 0, false), resourceDestination, nl.sara.webdav.Client.SILENT_OVERWRITE);
         };
         
         var rename = function() {
@@ -898,8 +906,8 @@
       case "move": 
         var overwrite = function() {
           var resourceDestination = nl.sara.beehub.controller.actionDestination + resource.displayname;
-          // start move with SILENT OVERWRITE and renameCounter=1
-          webdav.move(resource.path, createActionCallback(resource, 1, false), resourceDestination, nl.sara.webdav.Client.SILENT_OVERWRITE);
+          // start move with SILENT OVERWRITE and renameCounter=0
+          webdav.move(resource.path, createActionCallback(resource, 0, false), resourceDestination, nl.sara.webdav.Client.SILENT_OVERWRITE);
         };
         
         var rename = function() {
@@ -912,7 +920,7 @@
       case "upload":
         var overwrite = function() {
           // start upload flow but skip head and set overwrite true and renameCounter=1
-          webdav.put(resource.path, createUploadEmptyFileCallback(resource, resource.path, 1, true, true), "");
+          webdav.put(resource.path, createUploadEmptyFileCallback(resource, resource.path, 1, true, true), "", resource.file.type);
         };
         
         var rename = function() {
@@ -946,7 +954,7 @@
     // create webdav client object
     var webdav = new nl.sara.webdav.Client();
     // send acl request to the server
-    webdav.acl(path,function(status,data){
+    webdav.acl(nl.sara.beehub.view.acl.getViewPath(),function(status,data){
       // Delete dialog
       if (status === 200){
         functionSaveAclOk();
@@ -963,6 +971,277 @@
       };
     }, acl);
   };
+  
+  /**
+   * Get acl from server
+   * 
+   */
+  nl.sara.beehub.controller.getAclFromServer = function(resourcePath){
+    var webdav = new nl.sara.webdav.Client();
+    var aclProp = new nl.sara.webdav.Property();
+    aclProp.tagname = 'acl';
+    aclProp.namespace='DAV:';
+    var properties = [aclProp];
+
+    // send the request to the server
+    webdav.propfind(resourcePath, createGetAclCallback(resourcePath) ,0,properties);
+  };
+  
+  var addAclRuleDialog = function(userInput){
+    var ace = {
+        principal :   userInput.principal, 
+        permissions:  userInput.permissions, 
+        info:         ""
+    }
+    // Add row in view
+    var row = nl.sara.beehub.view.acl.createRow(ace);
+    nl.sara.beehub.view.acl.addRow(row, nl.sara.beehub.view.acl.getIndexLastProtected());
+    
+    functionSaveAclOk = function(){
+      // Do Nothing;
+    };
+    
+    functionSaveAclError = function(){
+      // Update view
+      nl.sara.beehub.view.acl.deleteRowIndex(nl.sara.beehub.view.acl.getIndexLastProtected() + 1);
+    };
+    nl.sara.beehub.controller.saveAclOnServer(functionSaveAclOk, functionSaveAclError);
+  };
+  
+  var createGetAclCallback = function(resourcePath){
+    return function(status, data) {
+      // Callback
+      // Something went wrong with status 207, stop then.
+      if (status !== 207) {
+        nl.sara.beehub.view.dialog.showError('Something went wrong at the server.');
+        return;
+      };
+      // TODO return als privilege is niet bekend
+      // put all the retrieved values into the store
+      var value = data.getResponseNames()[0];
+      var propstatus = data.getResponse(value).getProperty('DAV:','acl').status;
+      // Status 403, forbidden, stop
+      if (propstatus == 403) {
+        nl.sara.beehub.view.dialog.showError('You are not allowed to view this acl.');
+        return;
+      };
+      // Something went wrong with status 200, stop then.
+      if (propstatus != 200) {
+        nl.sara.beehub.view.dialog.showError('Something went wrong at the server.');
+        return;
+      };
+      if (data.getResponse(value).getProperty('DAV:','acl') !== undefined) {
+        // Set acl view for dialog
+        nl.sara.beehub.view.acl.setView("resource", resourcePath);
+        
+        var aclProp = data.getResponse(value).getProperty('DAV:','acl');
+        
+        var html = nl.sara.beehub.view.acl.createDialogViewHtml();
+        
+        nl.sara.beehub.view.dialog.showAcl(html, resourcePath, createCloseAclDialogFunction(resourcePath));
+        
+        nl.sara.beehub.view.acl.setAddAclRuleDialogClickHandler(addAclRuleDialog);
+        
+        var acl = aclProp.getParsedValue();
+        var index = -1;
+        for ( key in acl.getAces() ) {
+          var ace = acl.getAces()[key];
+          // The protected property which grants everybody the 'DAV: unbind' privilege will be omitted from the list
+          if ( ace.isprotected &&
+              ( ace.principal === nl.sara.webdav.Ace.ALL ) &&
+              ! ace.deny &&
+              ( ace.getPrivilegeNames('DAV:').length === 1 ) &&
+              ( ace.getPrivilegeNames('DAV:').indexOf('unbind') !== -1)
+            )
+          {
+            continue;
+          }
+          var aceObject = createAceObject(ace);
+          var row = nl.sara.beehub.view.acl.createRow(aceObject);
+          nl.sara.beehub.view.acl.addRow(row, index);
+          index++;
+        };
+      };
+    };
+  };
+  
+  /**
+   * Create ace
+   */
+  createAceObject = function(ace){
+    var aceObject = {};
+
+    if (ace.principal.tagname != undefined) {
+      aceObject['principal'] =  "DAV: "+ ace.principal.tagname;
+    } else {
+      // Principal
+      switch ( ace.principal ) {
+        case nl.sara.webdav.Ace.ALL:
+          aceObject['principal'] = 'DAV: all';
+          break;
+        case nl.sara.webdav.Ace.AUTHENTICATED:
+          aceObject['principal'] = 'DAV: authenticated';
+          break;
+        case nl.sara.webdav.Ace.UNAUTHENTICATED:
+          aceObject['principal'] = 'DAV: unauthenticated';
+          break;
+        case nl.sara.webdav.Ace.SELF:
+          aceObject['principal'] = 'DAV: self';
+          break;
+        default:
+          aceObject['principal'] = ace.principal;
+        break;
+      }
+    }  
+    aceObject['invert'] = ace.invertprincipal;
+
+    aceObject['protected'] = ace.isprotected;
+    
+    if (ace.inherited) {
+      aceObject['inherited'] = ace.inherited;
+    };
+    aceObject['invertprincipal'] = ace.invertprincipal;
+
+    if (ace.getPrivilegeNames('DAV:').indexOf('unbind') !== -1) {
+      aceObject['unbind'] = true;
+    };
+    
+    // Make permissions string  
+    if ( ace.grantdeny === 2 ) {
+      aceObject['permissions'] = "deny ";
+      if ( ( ace.getPrivilegeNames('DAV:').length === 1 ) && 
+           ( ace.getPrivilegeNames('DAV:').indexOf('write-acl') !== -1) ) {
+        aceObject['permissions'] += "change acl";
+      } else if ( ( ace.getPrivilegeNames('DAV:').length === 2 ) && 
+                 ( ace.getPrivilegeNames('DAV:').indexOf('write') !== -1 ) && 
+                 ( ace.getPrivilegeNames('DAV:').indexOf('write-acl') !== -1  ) ) {
+        aceObject['permissions'] += "write, change acl";
+      } else if ( ( ( ace.getPrivilegeNames('DAV:').length === 3 ) && 
+                   ( ace.getPrivilegeNames('DAV:').indexOf('read') !== -1 ) && 
+                   ( ace.getPrivilegeNames('DAV:').indexOf('write') !== -1 ) && 
+                   ( ace.getPrivilegeNames('DAV:').indexOf('write-acl') !== -1  ) ) || 
+                 (ace.getPrivilegeNames('DAV:').indexOf('all') !== -1 ) ) {
+        aceObject['permissions'] += "read, write, change acl";
+      } else {
+        aceObject['permissions'] += "unknown privilege (combination)";
+        var array = [];
+        for (key in ace.getPrivilegeNames('DAV:')) {
+          array.push("DAV: "+ace.getPrivilegeNames('DAV:')[key]);
+        };
+        aceObject['privileges'] = array.join(" ");
+      }
+    } else { 
+      aceObject['permissions'] = "allow ";
+      if ( ( ace.getPrivilegeNames('DAV:').length === 1 ) && 
+           ( ace.getPrivilegeNames('DAV:').indexOf('read') !== -1 ) ) {
+        aceObject['permissions'] += "read";
+      } else if ( ( ace.getPrivilegeNames('DAV:').length === 2 ) && 
+                 (ace.getPrivilegeNames('DAV:').indexOf('write') !== -1 ) && 
+                  ( ace.getPrivilegeNames('DAV:').indexOf('read') !== -1 ) ) {
+        aceObject['permissions'] += "read, write";
+      } else if ( ( ( ace.getPrivilegeNames('DAV:').length === 3 ) && 
+                   ( ace.getPrivilegeNames('DAV:').indexOf('write-acl') !== -1) && 
+                   ( ace.getPrivilegeNames('DAV:').indexOf('write') !== -1 ) && 
+                   ( ace.getPrivilegeNames('DAV:').indexOf('read') !== -1 ) ) || 
+                 (ace.getPrivilegeNames('DAV:').indexOf('all') !== -1 ) ) {
+        aceObject['permissions'] += "read, write, change acl";
+      } else {
+        aceObject['permissions'] += "unknown privilege (combination)";
+        var array = [];
+        for (key in ace.getPrivilegeNames('DAV:')) {
+          array.push("DAV: "+ace.getPrivilegeNames('DAV:')[key]);
+        };
+        aceObject['privileges'] = array.join(" ");
+      }
+    }
+    return aceObject;
+  };
+//  /**
+//   * Show add acl rule dialog.
+//   * 
+//   */
+//  aclPropToObject = function(acl){
+//    var aceObjects = [];
+//    for (key in acl.getAces()) {
+//      var aceObject = {};
+//      var ace = acl.getAces()[key];
+//      // check if the ace contains not supported entry's
+//      if (ace.invertprincipal) {
+//        aceObject['notsupported'] = true;
+//      };
+//      // set values
+//      // TODO change the way to check this
+//      if (ace.principal.tagname != undefined) {
+//        aceObject['principal'] =  "DAV: "+ ace.principal.tagname;
+//      } else {
+//        aceObject['principal'] = ace.principal;
+//      }           
+//      if (ace.grantdeny == 1) {
+//        aceObject['access'] = 'grant';
+//      } else {
+//        aceObject['access'] = 'deny';
+//      }
+//      // TODO only DAV: privileges are supported
+//      var privileges = [];
+//      var supportedPrivileges =  ['all', 'read', 'write', 'read-acl', 'write-acl'];
+//      for (key in ace.getPrivilegeNames('DAV:')) {
+//        var priv = ace.getPrivilegeNames('DAV:')[key];
+//        var supported = false;
+//        // TODO probably nicer to make an object and ask value instead of read the list each time.
+//        for (key in supportedPrivileges) {
+//          var support = supportedPrivileges[key];
+//          if (support == priv) {
+//            supported = true;
+//          };
+//        };
+//        // remember this ace is not supported
+//        if (!supported){
+//          aceObject['notsupported'] = true;
+//        }
+//        privileges['DAV: '+priv]='on';
+//        
+//      };
+//      aceObject['privileges'] = privileges;
+//      aceObject['protected'] = ace.isprotected;
+//      aceObject['inherited'] = (ace.inherited.length? ace.inherited : '');
+//      aceObjects.push(aceObject);
+//    };
+//    return aceObjects;
+//  }
+  var createCloseAclDialogFunction = function(resourcePath) {
+    return function(){
+      // Check whether there is a resource specific ACL set
+      var webdavClient = new nl.sara.webdav.Client();
+      var aclProp = new nl.sara.webdav.Property();
+      aclProp.namespace = 'DAV:';
+      aclProp.tagname = 'acl';
+      webdavClient.propfind( resourcePath, function( status, data ) {
+        if ( status === 207 ) {
+          var response = data.getResponse( resourcePath );
+          if ( response === undefined ) {
+            response = data.getResponse( resourcePath + '/' );
+          }
+          var aces = response.getProperty( 'DAV:', 'acl' ).getParsedValue().getAces();
+          
+          // Determine if there are non-inherited and non-protected ACE's
+          var ownACL = false;
+          for ( var counter in aces ) {
+            var ace = aces[counter];
+            if ( ( aces[ counter ].inherited === false ) &&
+                 ( aces[ counter ].isprotected === false ) ) {
+              ownACL = true;
+              break;
+            }
+          }        
+          nl.sara.beehub.view.setCustomAclOnResource(ownACL, resourcePath);    
+        }
+      }, 0, [ aclProp ] );
+      
+      // Set acl view for dialog
+      nl.sara.beehub.view.acl.setView("directory", nl.sara.beehub.controller.getPath());
+      nl.sara.beehub.view.dialog.clearView();
+    };
+  }
   
   /**
    * Show add acl rule dialog.
@@ -988,7 +1267,7 @@
         nl.sara.beehub.view.acl.deleteRowIndex(nl.sara.beehub.view.acl.getIndexLastProtected() + 1);
       };
       nl.sara.beehub.controller.saveAclOnServer(functionSaveAclOk, functionSaveAclError);
-    });
+    }, nl.sara.beehub.view.acl.createHtmlAclForm("tab"));
   };
   
   /**

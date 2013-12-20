@@ -17,6 +17,8 @@
  * along with beehub.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+"use strict";
+
 /**
  * Beehub Client Tree
  * 
@@ -26,99 +28,191 @@
  */
 
 (function(){
+
+  var treeNode = $( "#bh-dir-tree ul.dynatree-container" );
+
+
   /*
    * Init tree
    * 
    * Public function
    */
   nl.sara.beehub.view.tree.init = function() {
-    // Directory tree in tree panel
-    $("#bh-dir-tree").dynatree({
-      onActivate: function(node) {
-        // First close tree to prevent you see a load error in the treeview
-        nl.sara.beehub.view.tree.closeTree();
-        // Load node
-        window.location.href = node.data.id;
-      },
-      persist: false,
-      // from beehub_directory.php
-      children: treecontents,
-      // collapse
-      onLazyRead: function(node){
-        nl.sara.beehub.controller.getTreeNode(node.data.id, getTreeNodeCallback(node));
-      },
-      debugLevel: 0
-    });
-    // Decided to implement this later
-//     Tree slide handler
-//    $(".bh-dir-tree-slide-trigger").hover(function() {
-//      console.log($(this).data('timeout'));
-//      clearTimeout($(this).data('timeout'));
-//      handle_tree_slide_click();
-//  }, function() {
-//      var t = setTimeout(function() {
-//        handle_tree_slide_click();
-//      }, 60000);
-//      $(this).data('timeout', t);
-//  });
-//    $(".bh-dir-tree-slide-trigger").hover(handle_tree_slide_click, function(){
-////      No action;
-//    });
+    nl.sara.beehub.view.tree.attachEvents( treeNode );
     $(".bh-dir-tree-slide-trigger").click(handle_tree_slide_click);
-    if ($.cookie("beehub-showtree") !== "done") {
-      $.cookie("beehub-showtree", "done", { path: '/' });
-      $(".bh-dir-tree-slide").toggle();
-      $(".bh-dir-tree-header").toggle();
-      $(this).toggleClass("active");
-      $('.bh-dir-tree-slide-trigger i').toggleClass('icon-folder-open icon-folder-close');
-      setTimeout(function(){$(".bh-dir-tree-slide-trigger").trigger('click');},1000);
-    };
   };
-  
+
+  var directoryClickHandlerAlternative = null;
+
+  function directoryClickHandler() {
+    var link = $( this );
+
+    // If there is an alter handler has been defined, use call that one
+    if ( directoryClickHandlerAlternative !== null ) {
+      directoryClickHandlerAlternative( link.attr( 'href' ) );
+      return false;
+    }
+
+    // Else the default action will be called; follow the link!
+  }
+
   /*
-   * Return callback function for getTreeNode
-   * 
-   * @param Object  node  Node from tree
-   * 
+   * Set onActivate
+   *
+   * Public function
+   *
+   * @param String    header              Header to show
+   * @param Function  activationFunction  Activate function
+   *
    */
-  var getTreeNodeCallback = function(node){
-    return function(status, data) {
-      // Callback
-      if (status !== 207) {
-        // Server returned an error condition: set node status accordingly
-        node.setLazyNodeStatus(DTNodeStatus_Error, {
-          tooltip: data.faultDetails,
-          info: data.faultString
-        });
-      };
-      var res = [];
-      $.each(data.getResponseNames(), function(pathindex){
-        var path = data.getResponseNames()[pathindex];
-        
-        // put response in array
-        if (node.data.id !== path) {
-          if ((data.getResponse(path).getProperty('DAV:','resourcetype') !== null) && 
-              (nl.sara.webdav.codec.ResourcetypeCodec.COLLECTION === data.getResponse(path).getProperty('DAV:','resourcetype').getParsedValue())){
-            var name = path;
-            while (name.substring(name.length-1) === '/') {
-              name = name.substr(0, name.length-1);
-            };
-            name = decodeURIComponent(name.substr(name.lastIndexOf('/')+1));
-            res.push({
-              'title': nl.sara.beehub.controller.htmlEscape(name),
-              'id' : nl.sara.beehub.controller.htmlEscape(path),
-              'isFolder': 'true',
-              'isLazy' : 'true'
-            });
-          };
-        };
-      });
-      // PWS status OK
-      node.setLazyNodeStatus(DTNodeStatus_Ok);
-      node.addChild(res);
-      // end callback
-    };
+  nl.sara.beehub.view.tree.setOnActivate = function(header, activateFunction){
+    $(".bh-dir-tree-header").html(header);
+    if (activateFunction !== undefined) {
+      directoryClickHandlerAlternative = activateFunction;
+    }else{
+      directoryClickHandlerAlternative = null;
+    }
   };
+
+  nl.sara.beehub.view.tree.attachEvents = function( list ) {
+    var expanders = $( '.dynatree-expander', list );
+    expanders.off( 'click' );
+    expanders.on( 'click', function() { treeExpandHandler( $( this ) ); } );
+    var links = $( 'a', list );
+    links.off( 'click' );
+    links.on( 'click', directoryClickHandler );
+  };
+
+  function treeExpandHandler( expander, callback ) {
+    var parent = expander.parent();
+    if ( parent.hasClass( 'dynatree-expanded' ) ) {
+      // The subtree is expanded, so we need to collapse it
+      // Hide the sub list
+      parent.siblings( 'ul' ).hide();
+
+      //And change some classes so the right icons are shown
+      parent.removeClass( 'dynatree-exp-el' );
+      parent.removeClass( 'dynatree-exp-e' );
+      parent.removeClass( 'dynatree-ico-ef' );
+      parent.removeClass( 'dynatree-expanded' );
+      if ( parent.hasClass( 'dynatree-lastsib' ) ) {
+        parent.addClass( 'dynatree-exp-cl' );
+      }else{
+        parent.addClass( 'dynatree-exp-c' );
+      }
+      parent.addClass( 'dynatree-ico-cf' );
+      if ( callback !== undefined ) {
+        callback();
+      }
+    }else if ( parent.hasClass( 'dynatree-has-children' ) ) {
+      // The subtree is collapsed, so we need to expand it
+      var list = parent.siblings( 'ul' );
+      if ( list.length > 0 ) {
+        // If there is already a list loaded; just use that one
+        list.show();
+
+        // Change some classes so the right icons are shown
+        parent.removeClass( 'dynatree-exp-cl' );
+        parent.removeClass( 'dynatree-exp-cdl' );
+        parent.removeClass( 'dynatree-exp-c' );
+        parent.removeClass( 'dynatree-exp-cd' );
+        parent.removeClass( 'dynatree-ico-cf' );
+        if ( parent.hasClass( 'dynatree-lastsib' ) ) {
+          parent.addClass( 'dynatree-exp-el' );
+        }else{
+          parent.addClass( 'dynatree-exp-e' );
+        }
+        parent.addClass( 'dynatree-ico-ef' );
+        parent.addClass( 'dynatree-expanded' );
+
+        if ( callback !== undefined ) {
+          callback();
+        }
+      }else{
+        // If there is no list loaded yet; load one now!
+        var url = expander.siblings( 'a' ).attr( 'href' );
+        nl.sara.beehub.controller.getTreeNode( url, function( status, data ) {
+          // Callback
+          if (status !== 207) {
+            alert( 'Could not load the subdirectories' );
+            return;
+          };
+
+          var childArray = [];
+          var childCollections = {};
+          for ( var pathindex in data.getResponseNames() ) {
+            var path = data.getResponseNames()[pathindex];
+
+            // We only want to add children and only if they are directories
+            if ( ( url !== path) &&
+                 ( data.getResponse( path ).getProperty( 'DAV:','resourcetype' ) !== null ) &&
+                 ( nl.sara.webdav.codec.ResourcetypeCodec.COLLECTION === data.getResponse( path ).getProperty( 'DAV:','resourcetype' ).getParsedValue() )
+               )
+            {
+              childArray.push( path.toLowerCase() );
+              childCollections[ path.toLowerCase() ] = path;
+            }
+          }
+
+          childArray.sort();
+          var list = $( '<ul></ul>' );
+          for ( var index in childArray ) {
+            var path = childCollections[ childArray[ index ] ];
+            var element = createTreeElement( path, ( parseInt( index ) === ( childArray.length - 1 ) ) );
+            list.append( element );
+          }
+
+          // Once expanded, some attribute will never apply anymore
+          parent.removeClass( 'dynatree-lazy' );
+          if ( list.children().length > 0 ) {
+            parent.after( list );
+            treeExpandHandler( expander, callback );
+          }else{
+            parent.removeClass( 'dynatree-has-children' );
+            expander.removeClass( 'dynatree-expander' );
+            expander.addClass( 'dynatree-connector' );
+            expander.off( 'click' );
+
+            if ( callback !== undefined ) {
+              callback();
+            }
+          }
+        } );
+      }
+    }
+  }
+
+  function createTreeElement( path, last ) {
+    var name = path;
+    while (name.substring(name.length-1) === '/') {
+      name = name.substr(0, name.length-1);
+    };
+    name = decodeURIComponent( name.substr( name.lastIndexOf( '/' ) + 1 ) );
+    
+    var element = $( '<li></li>' );
+    if ( last)  {
+      element.addClass( 'dynatree-lastsib' );
+    }
+    var elementSpan = $( '<span class="dynatree-node dynatree-folder dynatree-has-children dynatree-lazy dynatree-ico-cf"></span>' );
+    if ( last ) {
+      elementSpan.addClass( 'dynatree-exp-cdl' );
+      elementSpan.addClass( 'dynatree-lastsib' );
+    }else{
+      elementSpan.addClass( 'dynatree-exp-cd' );
+    }
+    var expanderSpan = $( '<span class="dynatree-expander"></span>' );
+    var iconSpan = $( '<span class="dynatree-icon"></span>' );
+    var link = $( '<a class="dynatree-title"></a>' );
+    link.attr( 'href', path );
+    link.text( name );
+    elementSpan.append( expanderSpan );
+    elementSpan.append( iconSpan );
+    elementSpan.append( link );
+    element.append( elementSpan );
+    nl.sara.beehub.view.tree.attachEvents( element );
+
+    return element;
+  }
   
   /*
    * Action slide trigger
@@ -173,6 +267,7 @@
   nl.sara.beehub.view.tree.cancelButton = function(action){
     if (action === 'show') {
       $('#bh-dir-tree-cancel').click(function(){
+        nl.sara.beehub.view.tree.setModal( false );
         nl.sara.beehub.controller.setCopyMoveView(false);
         nl.sara.beehub.view.tree.clearView();
       }); 
@@ -192,7 +287,9 @@
    * 
    */
   nl.sara.beehub.view.tree.closeTree = function(){
-    $(".bh-dir-tree-slide").hide();
+    $('.bh-dir-tree-slide-trigger').removeClass("active");
+    $('.bh-dir-tree-slide-trigger i').removeClass('icon-folder-open').addClass(' icon-folder-close');
+    $(".bh-dir-tree-slide").slideUp('slow');
     $(".bh-dir-tree-header").hide();
   };
   
@@ -203,6 +300,8 @@
    * 
    */
   nl.sara.beehub.view.tree.showTree = function(){
+    $('.bh-dir-tree-slide-trigger').addClass("active");
+    $('.bh-dir-tree-slide-trigger i').toggleClass('icon-folder-open icon-folder-close');
     $(".bh-dir-tree-slide").slideDown('slow');
     $(".bh-dir-tree-header").show();
   };
@@ -215,14 +314,11 @@
    */
   nl.sara.beehub.view.tree.clearView = function(){
     // original onactivate
-    nl.sara.beehub.view.tree.setOnActivate("Browse", function(node){
-      // Close tree otherwise a load error is shown
-      nl.sara.beehub.view.tree.closeTree();
-      window.location.href = node;
-    });
+    nl.sara.beehub.view.tree.setOnActivate( "Browse" );
     // close tree
-    nl.sara.beehub.view.tree.slideTrigger('left');
-    nl.sara.beehub.view.tree.closeTree();
+    if ( $.cookie( 'beehub-showtree' ) === "false" ) {
+      nl.sara.beehub.view.tree.closeTree();
+    }
   };
   
   /*
@@ -230,41 +326,241 @@
    * Open or close tree view
    */
   var handle_tree_slide_click = function() {
-    $(".bh-dir-tree-slide").slideToggle("slow");
-    $(".bh-dir-tree-header").toggle();
-    $(this).toggleClass("active");
-    $('.bh-dir-tree-slide-trigger i').toggleClass('icon-folder-open icon-folder-close');
+    if ( $( this ).hasClass( 'active' ) ) {
+      $.cookie( "beehub-showtree", "false" , { path: '/' } );
+      nl.sara.beehub.view.tree.closeTree();
+    }else{
+      $.cookie( "beehub-showtree", "true" , { path: '/' } );
+      nl.sara.beehub.view.tree.showTree();
+    }
     return false;
   };
-  
-  /*
-   * Reload tree 
-   * 
-   * Public function
-   * 
-   */
-  nl.sara.beehub.view.tree.reload = function(){
-    $("#bh-dir-tree").dynatree("getTree").reload();
+
+
+  nl.sara.beehub.view.tree.addPath = function( path ){
+    // Normalize the path
+    if ( path.substr( 0, 1 ) !== '/' ) {
+      path = '/' + path;
+    }
+    if ( path.substr( -1 ) !== '/' ) {
+      path += '/';
+    }
+
+    // Determine all parents
+    var parents;
+    var parentPath = path.substr( 1, path.substr( 0, path.length - 1 ).lastIndexOf( '/' ) - 1 );
+    if ( parentPath !== '' ) {
+      parents = parentPath.split( '/' );
+    }else{
+      parents = [];
+    }
+
+    // Open all parents and when that's done; add the directory
+    expandRecursive( parents, '/', function() {
+      addDirectory( path );
+    } );
   };
   
-  /*
-   * Set onActivate
-   * 
-   * Public function
-   *  
-   * @param String    header              Header to show
-   * @param Function  activationFunction  Activate function
-   * 
-   */
-  nl.sara.beehub.view.tree.setOnActivate = function(header, activateFunction){
-    $(".bh-dir-tree-header").html(header);
-    $("#bh-dir-tree").dynatree({
-      onActivate: function(node) {
-        if (activateFunction !== undefined) {
-          activateFunction(node.data.id);
-        }
+  
+  function expandRecursive( parents, expandedPath, callback ) {
+    // If we have nothing to open anymore; call the callback!
+    if ( parents.length === 0 ) {
+      if ( callback !== undefined ) {
+        callback();
       }
-    });
-    nl.sara.beehub.view.tree.reload();
+      return;
+    }
+
+    // Determine which path we want to extend now
+    expandedPath += parents.shift() + '/';
+    var parentLink = $( 'a[href="' + encodeURI( expandedPath ) + '"]', treeNode );
+    if ( parentLink.length === 0 ) {
+      throw "Unable to add directory to the tree: parent directory does not exist";
+    }
+
+    // It exists, let's expand this directory if it is not expanded already
+    var parentSpan = parentLink.parent('span');
+    if ( ! parentSpan.hasClass( 'dynatree-expanded' ) ) {
+      treeExpandHandler( $( '.dynatree-expander', parentSpan ), function() {
+        expandRecursive( parents, expandedPath, callback );
+      } );
+    }else{
+      expandRecursive( parents, expandedPath, callback );
+    }
+  }
+
+
+  function addDirectory( path ) {
+    // Start with checking if the path doesn't exist yet (now all parents are expanded)
+    if ( $( 'a[href="' + encodeURI( path ) + '"]', treeNode ).length > 0 ) {
+      return;
+    }
+
+    var parentPath = path.substr( 0, path.substr( 0, path.length - 1 ).lastIndexOf( '/' ) + 1 );
+    var parentLi;
+    var parentSpan;
+    var list;
+    if ( parentPath !== '/' ) {
+      parentSpan = $( 'a[href="' + encodeURI( parentPath ) + '"]', treeNode ).parent('span');
+      parentLi = parentSpan.parent( 'li' );
+
+      // Get the list
+      list = parentLi.children( 'ul' );
+      if ( list.length === 0 ) {
+        list = $( '<ul></ul>' );
+        parentLi.append( list );
+      }
+    }else{
+      list = treeNode;
+    }
+
+    // Put the new directory in the right (sorted) place in the list
+    var directoryToAdd = path.substring( parentPath.length, path.length - 1 );
+    var listElements = $( 'li', list );
+    var nextElement = undefined;
+    listElements.each( function() {
+      if ( ( nextElement === undefined ) && ( $( 'a', this ).text() > directoryToAdd ) ) {
+        nextElement = $( this );
+      }
+    } );
+
+    // Then insert the new element at the right location
+    if ( nextElement === undefined ) {
+      // It is the last element, so make the current last element not a 'last element' (huh? well, it works)
+      if ( listElements.length > 0 ) {
+        var lastElement = listElements.last();
+        lastElement.removeClass( 'dynatree-lastsib' );
+        var lastElementSpan = lastElement.children( 'span' );
+        lastElementSpan.removeClass( 'dynatree-lastsib' );
+        if ( lastElementSpan.hasClass( 'dynatree-exp-el' ) ) {
+          lastElementSpan.removeClass( 'dynatree-exp-el' );
+          lastElementSpan.addClass( 'dynatree-exp-e' );
+        }else if ( lastElementSpan.hasClass( 'dynatree-exp-cl' ) ) {
+          lastElementSpan.removeClass( 'dynatree-exp-cl' );
+          lastElementSpan.addClass( 'dynatree-exp-c' );
+        }else{
+          lastElementSpan.removeClass( 'dynatree-exp-cdl' );
+          lastElementSpan.addClass( 'dynatree-exp-cd' );
+        }
+      }else if ( parentPath !== '/' ) { // The parent didn't have any children before, but does have one now!
+        var expander = $( '.dynatree-connector', parentSpan );
+        expander.removeClass( 'dynatree-connector' );
+        expander.addClass( 'dynatree-expander' );
+        parentSpan.removeClass( 'dynatree-lazy' );
+        parentSpan.removeClass( 'dynatree-exp-cl' );
+        parentSpan.removeClass( 'dynatree-exp-cdl' );
+        parentSpan.removeClass( 'dynatree-exp-c' );
+        parentSpan.removeClass( 'dynatree-exp-cd' );
+        parentSpan.removeClass( 'dynatree-exp-el' );
+        parentSpan.removeClass( 'dynatree-exp-e' );
+        parentSpan.removeClass( 'dynatree-ico-cf' );
+        if ( parentSpan.hasClass( 'dynatree-lastsib' ) ) {
+          parentSpan.addClass( 'dynatree-exp-el' );
+        }else{
+          parentSpan.addClass( 'dynatree-exp-e' );
+        }
+        parentSpan.addClass( 'dynatree-ico-ef' );
+        parentSpan.addClass( 'dynatree-expanded' );
+        parentSpan.addClass( 'dynatree-has-children' );
+        nl.sara.beehub.view.tree.attachEvents( parentLi );
+      }
+      list.append( createTreeElement( encodeURI( path ), true ) );
+    }else{
+      nextElement.before( createTreeElement( encodeURI( path ), false ) );
+    }
+  }
+
+
+  nl.sara.beehub.view.tree.removePath = function( path ) {
+    // Normalize the path
+    if ( path.substr( 0, 1 ) !== '/' ) {
+      path = '/' + path;
+    }
+    if ( path.substr( -1 ) !== '/' ) {
+      path += '/';
+    }
+
+    // Remove the list element representing the path to be deleted
+    var pathLink = $( 'a[href="' + encodeURI( path ) + '"]', treeNode );
+    if ( pathLink.length === 0 ) {
+      // This path doesn't exist, so we're done without doing anything :)
+      return;
+    }
+    var pathLi = pathLink.parent('span').parent( 'li' );
+    var parentUl = pathLi.parent( 'ul' );
+    pathLi.remove();
+
+    // Then check if the parent is still correct
+    var siblingsLi = $( 'li', parentUl );
+    if ( ( siblingsLi.length === 0 ) && ( path !== '/' ) ) {
+      // No more subdirectories for the parent, so make sure it uses the right icons
+      var parentSpan = parentUl.siblings( 'span' );
+      // Collapse the parent tree
+      if ( parentSpan.hasClass( 'dynatree-expanded' ) ) {
+        treeExpandHandler( $( '.dynatree-expander', parentSpan ) );
+      }
+      parentSpan.removeClass( 'dynatree-has-children' );
+      var expander = $( '.dynatree-expander', parentSpan );
+      expander.removeClass( 'dynatree-expander' );
+      expander.addClass( 'dynatree-connector' );
+      expander.off( 'click' );
+    }else{
+      // There still are some subdirectories, so let's just make sure the last one knows it is the last one
+      var lastSibling = siblingsLi.last();
+      lastSibling.addClass( 'dynatree-lastsib' );
+      var elementSpan = $( '.dynatree-node', lastSibling );
+      elementSpan.addClass( 'dynatree-lastsib' );
+      if ( elementSpan.hasClass( 'dynatree-exp-cd' ) ) {
+        elementSpan.removeClass( 'dynatree-exp-cd' );
+        elementSpan.addClass( 'dynatree-exp-cdl' );
+      }else if ( elementSpan.hasClass( 'dynatree-exp-c' ) ) {
+        elementSpan.removeClass( 'dynatree-exp-c' );
+        elementSpan.addClass( 'dynatree-exp-cl' );
+      }else if ( elementSpan.hasClass( 'dynatree-exp-e' ) ) {
+        elementSpan.removeClass( 'dynatree-exp-e' );
+        elementSpan.addClass( 'dynatree-exp-el' );
+      }
+    }
   };
+ 
+
+  /*
+   * Update resource from content view
+   * 
+   * Public function
+   * 
+   * @param {Object} resourceOrg Original resource object
+   * @param {Object} resourceOrg New resource object
+   */
+  nl.sara.beehub.view.tree.updateResource = function(resourceOrg, resourceNew){
+    if ( resourceOrg.type === 'collection' ) {
+      // delete current row
+      nl.sara.beehub.view.tree.removePath( decodeURI( resourceOrg.path ) );
+    }
+    if ( resourceNew.type === 'collection' ) {
+      // add new row
+      nl.sara.beehub.view.tree.addPath( decodeURI( resourceNew.path ) );
+    }
+  };
+  
+  
+  /**
+   * Change whether the directory tree is modal
+   * 
+   * @param {Boolean} modal  If set to true, the directory tree will be modal
+   */
+  nl.sara.beehub.view.tree.setModal = function ( modal ) {
+    var treeHeader = $( '#bh-dir-tree-header' );
+    var treeElements = treeHeader
+            .add( 'a.bh-dir-tree-slide-trigger' )
+            .add ( '#bh-dir-tree' );
+    if ( modal ) {
+      treeElements.addClass( 'ui-front' );
+      treeHeader.before( '<div class="bh-tree-overlay ui-widget-overlay ui-front"></div>' );
+    }else{
+      $( 'div.bh-tree-overlay').remove();
+      treeElements.removeClass( 'ui-front' );
+    }
+  }
+
 })();
