@@ -538,7 +538,7 @@
         // start move
         webdav.move(resource.path,createActionCallback(resource, 0, false), resourceDestination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
       } else {
-        nl.sara.beehub.view.dialog.showError("Moving items to the current directory is not possible. Use rename icon for renaming the resource(s).");
+        nl.sara.beehub.view.dialog.showError("Moving an item to itself is not possible. Use rename icon for renaming the resource(s).");
       }
       break;
     // delete settings
