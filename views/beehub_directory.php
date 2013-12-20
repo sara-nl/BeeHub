@@ -285,6 +285,7 @@ require 'views/header.php';
         }
 
         // For all resources, fill table
+        $writableFiles = false;
         $current_user_privilege_set_collection = $this->user_prop_current_user_privilege_set();
         foreach ( $subResources as $inode ) :
           $member = DAV::$REGISTRY->resource($this->path . $inode);
@@ -292,6 +293,14 @@ require 'views/header.php';
             continue;
           }
           $owner = BeeHub_Registry::inst()->resource( $member->user_prop_owner() );
+          
+          // Determine if it is a file and is writable. If so, we'll want to keep the upload button enabled
+          if ( ! $writableFiles && ( $member->prop_resourcetype() !== DAV_Collection::RESOURCETYPE ) ) {
+            try {
+              $member->assert( DAVACL::PRIV_WRITE );
+              $writableFiles = true;
+            }catch ( DAV_Status $e ) {}
+          }
           ?>
           <tr id="<?= DAV::xmlescape( DAV::unslashify($member->path) ) ?>">
             <td>
@@ -602,6 +611,26 @@ $footer = '
   <script type="text/javascript" src="/system/js/directory_view_acl.js"></script>
   <script type="text/javascript" src="/system/js/directory_resource.js"></script>
 ';
+
+// If the directory ($this) is not writable nor any of the files in it, then you
+// won't be able to upload anything to this directory. So disable the button.
+try {
+  $this->assert( DAVACL::PRIV_WRITE );
+}catch ( DAV_Status $e ) {
+  if ( ! $writableFiles ) {
+    $footer .= '
+      <script type="text/javascript">
+        $( function() {
+          $( \'.bh-dir-content-upload\' )
+            .unbind( \'click\' )
+            .removeClass( \'bh-dir-content-upload\' )
+            .attr( \'disabled\', \'disabled\' );
+        } );
+      </script>
+    ';
+  }
+}
+
 require 'views/footer.php';
 
 // End of file
