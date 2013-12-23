@@ -457,7 +457,8 @@
   /*
    * Onclick handler edit icon in content view
    */
-  var handle_edit_menu_click = function(){
+  var handle_edit_menu_click = function(e){
+    e.preventDefault();
     // TODO - instead show and hide, replace to prevent table colums move
     // Search nearest name field and hide
     $(this).closest("tr").find(".bh-dir-content-name").hide();
@@ -502,7 +503,8 @@
   /*
    * Onclick handler acl menu in content view
    */
-  var handle_acl_menu_click = function(){
+  var handle_acl_menu_click = function(e){
+    e.preventDefault();
     nl.sara.beehub.controller.getAclFromServer($(this).closest('tr').attr('id'));
   }; 
   

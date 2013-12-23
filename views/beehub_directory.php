@@ -156,7 +156,7 @@ require 'views/header.php';
 </div>
 
 <!-- Arrow to show the tree -->
-<a class="bh-dir-tree-slide-trigger <?= $_COOKIE['beehub-showtree'] !== 'false' ? 'active' : '' ?> " href="#">
+<a class="bh-dir-tree-slide-trigger <?= $_COOKIE['beehub-showtree'] !== 'false' ? 'active' : '' ?> ">
   <i class="icon-folder-<?= $_COOKIE['beehub-showtree'] !== 'false' ? 'open' : 'close' ?>"></i>
 </a>
 
