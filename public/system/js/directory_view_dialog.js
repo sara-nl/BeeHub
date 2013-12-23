@@ -441,10 +441,10 @@
     $('#bh-dir-dialog').html(html);
 
     // radiobutton handlers
-    setAddRadioButtons("tab");
+    setAddRadioButtons();
     
     // auto complete for searching users and groups
-    setupAutoComplete("tab");
+    setupAutoComplete();
 
     $('#bh-dir-dialog').dialog({
       title: " Add acl rule",
@@ -461,12 +461,12 @@
         }
       },{
         text: "Add rule",
-        id: "bh-dir-aclform-add-button",
+        id: "bh-dir-acl-directory-button",
         click: function() {
-          addFunction(getFormAce("tab"));
+          addFunction(getFormAce());
         }
       }]
     });
-    $("#bh-dir-aclformtab-add-button").button('disable');
+    nl.sara.beehub.view.acl.getAddAclButton().button('disable');
   };
 })();
