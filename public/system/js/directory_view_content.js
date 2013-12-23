@@ -1,5 +1,5 @@
-/*
- * Copyright ©2013 SARA bv, The Netherlands
+/**
+ * Copyright ©2013 SURFsara bv, The Netherlands
  *
  * This file is part of the beehub client
  *
@@ -17,6 +17,8 @@
  * along with beehub.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+"use strict";
+
 /** 
  * Beehub Client Content
  * 
@@ -24,13 +26,12 @@
  * 
  * @author Laura Leistikow (laura.leistikow@surfsara.nl)
  */
-/*
- * Initialize content view
- * 
- * Public function
- * 
- */
 (function(){
+  /**
+   * Initialize content view
+   *
+   * Public function
+   */
   nl.sara.beehub.view.content.init = function() {
     // This is needed to sort the size table on the right way
     $.tablesorter.addParser({
@@ -203,7 +204,7 @@
     $('.bh-dir-content-edit').unbind( 'click' ).click(handle_edit_menu_click);
     
     // View acl
-    $('.bh-dir-content-acl').unbind( 'click' ).click(handle_acl_menu_click)
+    $('.bh-dir-content-acl').unbind( 'click' ).click(handle_acl_menu_click);
   };
   
   /*

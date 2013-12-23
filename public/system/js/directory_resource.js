@@ -1,5 +1,5 @@
-/*
- * Copyright ©2013 SARA bv, The Netherlands
+/**
+ * Copyright ©2013 SURFsara bv, The Netherlands
  *
  * This file is part of the beehub client
  *
@@ -16,6 +16,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with beehub.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+"use strict";
 
 /**
  * @class Webdav Resource

@@ -1,5 +1,5 @@
-/*
- * Copyright ©2013 SARA bv, The Netherlands
+/**
+ * Copyright ©2013 SURFsara bv, The Netherlands
  *
  * This file is part of the beehub client
  *
@@ -23,8 +23,9 @@
  * Beehub Client Tree
  * 
  * Directory tree
- * 
+ *
  * @author Laura Leistikow (laura.leistikow@surfsara.nl)
+ * @author Niek Bosch (niek.bosch@surfsara.nl)
  */
 
 (function(){
@@ -561,6 +562,6 @@
       $( 'div.bh-tree-overlay').remove();
       treeElements.removeClass( 'ui-front' );
     }
-  }
+  };
 
 })();

@@ -1,5 +1,5 @@
 /**
- * Copyright ©2013 SARA bv, The Netherlands
+ * Copyright ©2013 SURFsara bv, The Netherlands
  *
  * This file is part of the beehub client
  *
@@ -16,6 +16,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with beehub.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+"use strict";
 
 /** 
  * Beehub Client dialogs
@@ -51,7 +53,6 @@
       modal: true,
       maxHeight: 400,
       closeOnEscape: false,
-      dialogClass: "custom-dialog",
       buttons: [{
         text: "Ok",
         click: function() {
@@ -90,7 +91,6 @@
       minWidth:800,
 //      maxHeight: 400,
       closeOnEscape: false,
-      dialogClass: "custom-dialog",
       buttons: [{
         text: "Close",
         click: function(){
@@ -129,7 +129,12 @@
   * @param Integer  progress Progress of action
   */
   nl.sara.beehub.view.dialog.showProgressBar = function(resource, progress){
-    $("tr[id='dialog_tr_"+resource.path+"']").find('.info').html("<div class='progress progress-success progress-striped'><div class='bar' style='width: "+progress+"%;'>"+progress+"%</div></div>");
+    var innerDiv = $( '<div class="bar"></div>' );
+    innerDiv.attr( 'style', 'width: ' + progress + '%' );
+    innerDiv.text( progress + '%' );
+    var outerDiv = $( '<div class="progress progress-success progress-striped"></div>' );
+    outerDiv.append( innerDiv );
+    $( "tr[id='dialog_tr_" + resource.path + "']" ).find( '.info' ).empty().append( outerDiv );
   };
   
   /*
@@ -141,7 +146,9 @@
   * @param String   info     Information for dialog
   */
   nl.sara.beehub.view.dialog.updateResourceInfo = function(resource, info){
-    $("tr[id='dialog_tr_"+resource.path+"']").find('.info').html("<b>"+info+"</b>");
+    var bold = $( "<b></b>" );
+    bold.text( info );
+    $( "tr[id='dialog_tr_" + resource.path + "']" ).find( '.info' ).empty().append( bold );
   };
   
   /*
@@ -302,7 +309,7 @@
   /**
    * Initialize autocomplete for searching users and groups
    */
-  setupAutoComplete = function(){
+  var setupAutoComplete = function(){
     var searchList = [];
     var formView = nl.sara.beehub.view.acl.getFormView();
         
@@ -363,7 +370,7 @@
    * Add radio buttons handlers in Add acl rule form
    * 
    */
-  setAddRadioButtons = function(){
+  var setAddRadioButtons = function(){
     var aclForm = nl.sara.beehub.view.acl.getFormView();
     aclForm.find(".bh-dir-acl-add-radio1").click(function(){
       aclForm.find(".bh-dir-acl-table-search").attr("disabled",true);
@@ -402,7 +409,7 @@
    * 
    * @return {Object} Principal and permissions
    */
-  getFormAce= function(){
+  nl.sara.beehub.view.dialog.getFormAce = function(){
     var principal = '';
     var aclForm = nl.sara.beehub.view.acl.getFormView();
     switch(aclForm.find('input[name = "bh-dir-view-acl-optionRadio"]:checked').val())
@@ -424,10 +431,10 @@
     }
     var ace = {
         "principal": principal,
-        "permissions": aclForm.find(".bh-dir-acl-table-permisions option:selected").val(),
+        "permissions": aclForm.find(".bh-dir-acl-table-permisions option:selected").val()
     };
     return ace;
-  }
+  };
   
   /*
    * Show add rule dialog
@@ -463,7 +470,7 @@
         text: "Add rule",
         id: "bh-dir-aclform-add-button",
         click: function() {
-          addFunction(getFormAce("tab"));
+          addFunction( nl.sara.beehub.view.dialog.getFormAce( "tab" ) );
         }
       }]
     });

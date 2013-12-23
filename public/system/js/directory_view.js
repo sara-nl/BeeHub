@@ -1,5 +1,7 @@
-/*
- * Copyright ©2013 SARA bv, The Netherlands
+/**
+ * Beehub Client View
+ *
+ * Copyright ©2013 SURFsara bv, The Netherlands
  *
  * This file is part of the beehub client
  *
@@ -15,17 +17,13 @@
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with beehub.  If not, see <http://www.gnu.org/licenses/>.
- */
-
-/** 
- * Beehub Client View
- * 
- * All views
  * 
  * @author Laura Leistikow (laura.leistikow@surfsara.nl)
  */
 
-/*
+"use strict";
+
+/**
  * Initialize all views
  * 
  */
@@ -107,7 +105,7 @@ nl.sara.beehub.view.hideMasks = function(){
   $("#bh-dir-mask").hide();
   $("#bh-dir-mask-transparant").hide();
   $("#bh-dir-mask-loading").hide();
-}
+};
 
 /*
  * Show buttons that belong to a tab, acl or content

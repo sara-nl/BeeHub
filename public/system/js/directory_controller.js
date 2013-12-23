@@ -1,5 +1,5 @@
-/*
- * Copyright ©2013 SARA bv, The Netherlands
+/**
+ * Copyright ©2013 SURFsara bv, The Netherlands
  *
  * This file is part of the beehub client
  *
@@ -17,6 +17,8 @@
  * along with beehub.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+"use strict";
+
 /** 
  * Beehub Client Controller
  * 
@@ -33,20 +35,26 @@
   if (!path.match(/\/$/)) {
     path=path+'/'; 
   };
+
+  // The summary of the current pending actions
+  var summary;
+
+  // The file to perform an action upon
+  var actionFiles;
   
   // Needed for copy, move, delete and upload
   var actionCounter = 0;
   
   nl.sara.beehub.controller.getPath = function(){
     return path;
-  }
+  };
  
   /**
    * Escape html characters
    * 
    * Public function
    * 
-   * @param {String} String to escape
+   * @param  {String}  str  String to escape
    */
   nl.sara.beehub.controller.htmlEscape = function(str) {
     return String(str)
@@ -67,7 +75,7 @@
     nl.sara.beehub.view.clearAllViews();
   };
   
-  /**
+  /*
    * Set mask on view
    * 
    */
@@ -75,7 +83,7 @@
     nl.sara.beehub.view.maskView(type, boolean);
   };
   
-  /**
+  /*
    * Set input disable mask (transparant) on view
    * 
    */
@@ -673,7 +681,7 @@
 //      }
     };
   };
-  
+
   
   /*
    * Update view after a succesfull action (copy, move, delete)
@@ -945,7 +953,7 @@
   
   
   // ACL
-  /**
+  /*
    * Save acl on server
    * 
    */
@@ -972,7 +980,7 @@
     }, acl);
   };
   
-  /**
+  /*
    * Get acl from server
    * 
    */
@@ -992,16 +1000,16 @@
         principal :   userInput.principal, 
         permissions:  userInput.permissions, 
         info:         ""
-    }
+    };
     // Add row in view
     var row = nl.sara.beehub.view.acl.createRow(ace);
     nl.sara.beehub.view.acl.addRow(row, nl.sara.beehub.view.acl.getIndexLastProtected());
     
-    functionSaveAclOk = function(){
+    var functionSaveAclOk = function(){
       // Do Nothing;
     };
     
-    functionSaveAclError = function(){
+    var functionSaveAclError = function(){
       // Update view
       nl.sara.beehub.view.acl.deleteRowIndex(nl.sara.beehub.view.acl.getIndexLastProtected() + 1);
     };
@@ -1021,12 +1029,12 @@
       var value = data.getResponseNames()[0];
       var propstatus = data.getResponse(value).getProperty('DAV:','acl').status;
       // Status 403, forbidden, stop
-      if (propstatus == 403) {
+      if (propstatus === 403) {
         nl.sara.beehub.view.dialog.showError('You are not allowed to view this acl.');
         return;
       };
       // Something went wrong with status 200, stop then.
-      if (propstatus != 200) {
+      if (propstatus !== 200) {
         nl.sara.beehub.view.dialog.showError('Something went wrong at the server.');
         return;
       };
@@ -1044,7 +1052,7 @@
         
         var acl = aclProp.getParsedValue();
         var index = -1;
-        for ( key in acl.getAces() ) {
+        for ( var key in acl.getAces() ) {
           var ace = acl.getAces()[key];
           // The protected property which grants everybody the 'DAV: unbind' privilege will be omitted from the list
           if ( ace.isprotected &&
@@ -1065,13 +1073,13 @@
     };
   };
   
-  /**
+  /*
    * Create ace
    */
-  createAceObject = function(ace){
+  var createAceObject = function(ace){
     var aceObject = {};
 
-    if (ace.principal.tagname != undefined) {
+    if (ace.principal.tagname !== undefined) {
       aceObject['principal'] =  "DAV: "+ ace.principal.tagname;
     } else {
       // Principal
@@ -1241,7 +1249,7 @@
       nl.sara.beehub.view.acl.setView("directory", nl.sara.beehub.controller.getPath());
       nl.sara.beehub.view.dialog.clearView();
     };
-  }
+  };
   
   /**
    * Show add acl rule dialog.
@@ -1253,16 +1261,16 @@
           principal :   userInput.principal, 
           permissions:  userInput.permissions, 
           info:         ""
-      }
+      };
       // Add row in view
       var row = nl.sara.beehub.view.acl.createRow(ace);
       nl.sara.beehub.view.acl.addRow(row, nl.sara.beehub.view.acl.getIndexLastProtected());
       
-      functionSaveAclOk = function(){
+      var functionSaveAclOk = function(){
         nl.sara.beehub.view.dialog.clearView();
       };
       
-      functionSaveAclError = function(){
+      var functionSaveAclError = function(){
         // Update view
         nl.sara.beehub.view.acl.deleteRowIndex(nl.sara.beehub.view.acl.getIndexLastProtected() + 1);
       };
@@ -1270,16 +1278,16 @@
     }, nl.sara.beehub.view.acl.createHtmlAclForm("tab"));
   };
   
-  /**
+  /*
    * Change permissions of a row
    * 
    */
   nl.sara.beehub.controller.changePermissions = function(row, oldVal, callback){
-    functionSaveAclOk = function(){
+    var functionSaveAclOk = function(){
       // Do nothing
     };
     
-    functionSaveAclError = function(){
+    var functionSaveAclError = function(){
       // Put back old value
       nl.sara.beehub.view.acl.changePermissions(row, oldVal);
       // Do nothing
@@ -1287,17 +1295,17 @@
     nl.sara.beehub.controller.saveAclOnServer(functionSaveAclOk, functionSaveAclError);
   };
   
-  /**
+  /*
    * Delete acl rule
    * 
    */
   nl.sara.beehub.controller.deleteAclRule = function(row, index, t){
-    functionSaveAclOk = function(){
+    var functionSaveAclOk = function(){
       clearTimeout(t);
       nl.sara.beehub.view.hideMasks();
     };
     
-    functionSaveAclError = function(){
+    var functionSaveAclError = function(){
       // Update view
       clearTimeout(t);
       nl.sara.beehub.view.hideMasks();
@@ -1306,17 +1314,17 @@
     nl.sara.beehub.controller.saveAclOnServer(functionSaveAclOk, functionSaveAclError);
   };
   
-  /**
+  /*
    * Move down acl rule
    * 
    */
   nl.sara.beehub.controller.moveDownAclRule = function(row, t){
-    functionSaveAclOk = function(){
+    var functionSaveAclOk = function(){
       clearTimeout(t);
       nl.sara.beehub.view.hideMasks();
     };
     
-    functionSaveAclError = function(){
+    var functionSaveAclError = function(){
       // Update view
       clearTimeout(t);
       nl.sara.beehub.view.hideMasks();
@@ -1325,17 +1333,17 @@
     nl.sara.beehub.controller.saveAclOnServer(functionSaveAclOk, functionSaveAclError);
   };
   
-  /**
+  /*
    * Move up acl rule
    * 
    */
   nl.sara.beehub.controller.moveUpAclRule = function(row,t){
-    functionSaveAclOk = function(){
+    var functionSaveAclOk = function(){
       clearTimeout(t);
       nl.sara.beehub.view.hideMasks();
     };
     
-    functionSaveAclError = function(){
+    var functionSaveAclError = function(){
       // Update view
       clearTimeout(t);
       nl.sara.beehub.view.hideMasks();

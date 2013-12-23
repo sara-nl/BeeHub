@@ -1,9 +1,32 @@
+/**
+ * Copyright ©2013 SURFsara bv, The Netherlands
+ *
+ * This file is part of the beehub client
+ *
+ * beehub client is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * beehub-client is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with beehub.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @author Laura Leistikow (laura.leistikow@surfsara.nl)
+ */
+
+"use strict";
+
  /*
  * Initialize acl view
  * 
  */
 (function() {
-  permissions = {
+  var permissions = {
     'deny read, write, change acl': {
       'class'     : "bh-dir-acl-deny",
       'title'     : "deny read, write, change acl",
@@ -34,13 +57,13 @@
       'title'     : "allow read, write, change acl",
       'dropdown'  : "allow read, write, change acl"
     }
-  }
+  };
 
   // Used for showing the mask after delete, up or down
   var timeout = 500;
   
-  aclView = "";
-  resourcePath = "";
+  var aclView = "";
+  var resourcePath = "";
   
   nl.sara.beehub.view.acl.init = function() {
     // Set view
@@ -54,7 +77,7 @@
     setRowHandlers(rows); 
   };
   
-  /**
+  /*
    * Set view
    *  
    */
@@ -63,12 +86,12 @@
     resourcePath = path;
   };
   
-  /**
+  /*
    * Return View path
    */
   nl.sara.beehub.view.acl.getViewPath = function(){
     return resourcePath;    
-  }
+  };
   
   /**
    * Return active acl table
@@ -128,7 +151,7 @@
       widgets : ['stickyHeaders'],
       widgetOptions : {
         // apply sticky header top below the top of the browser window
-        stickyHeaders_offset : 186,
+        stickyHeaders_offset : 186
       }
     });
   };
@@ -187,7 +210,7 @@
         // Delete icon
         rowObject.find('.bh-dir-acl-icon-remove').unbind( 'click' ).click(handle_remove_click);
       };
-    }) 
+    });
   };
   
   /*
@@ -215,18 +238,18 @@
         show = '<span style="font-weight: bold">'+invert+'Everybody</span>';
         break;
       case 'DAV: authenticated':
-        show = '<span style="font-weight: bold">'+invert+'All BeeHub users</span>'
+        show = '<span style="font-weight: bold">'+invert+'All BeeHub users</span>';
         break;
       case 'DAV: unauthenticated':
-        show = '<span style="font-weight: bold">'+invert+'All unauthenticated users</span>'
+        show = '<span style="font-weight: bold">'+invert+'All unauthenticated users</span>';
         break;
       case 'DAV: self':
-        show = '<span style="font-weight: bold">'+invert+'This resource itself</span>'
+        show = '<span style="font-weight: bold">'+invert+'This resource itself</span>';
         break;
       default:
         var display = nl.sara.beehub.controller.getDisplayName(ace.principal);
         if (display !== ''){
-          show = invert+display;
+          show = invert + nl.sara.beehub.controller.htmlEscape( display );
         } else {
           show = '<span style="font-weight: bold">'+invert+'Unrecognized principal!</span>';
         }
@@ -236,7 +259,7 @@
     if (ace.principal.indexOf(nl.sara.beehub.users_path) !== -1) {
       icon = '<i class="icon-user"></i>';
     }
-    row.push('<td class="bh-dir-acl-principal" name="'+ace.principal+'" data-invert="'+ace['invert']+'" data-toggle="tooltip" title="'+ace.principal+'" ></i><b>'+show+'</b> ('+icon+')</td>');
+    row.push('<td class="bh-dir-acl-principal" name="' + nl.sara.beehub.controller.htmlEscape( ace.principal ) + '" data-invert="' + nl.sara.beehub.controller.htmlEscape( ace['invert'] ) + '" data-toggle="tooltip" title="' + nl.sara.beehub.controller.htmlEscape( ace.principal ) + '" ></i><b>'+show+'</b> ('+icon+')</td>');
     
     // Permissions
     var aceClass= '';
@@ -334,7 +357,7 @@
   nl.sara.beehub.view.acl.getIndexLastProtected = function(){
     // Get protected items. length -1 is index
     return nl.sara.beehub.view.acl.getAclView().find('.bh-dir-acl-contents').find('.bh-dir-acl-protected').length-1;
-  }
+  };
   
   /**
    * Returns index of the last protected rule
@@ -349,7 +372,7 @@
     // Index
     var index = all - allInherited;
     return index;
-  }
+  };
   
   /**
    * Create acl from acl table in acl view
@@ -489,7 +512,7 @@
     } else if ( ! ownACL ) {
       exclamation.replaceWith( '<td class="bh-resource-specific-acl"></td>');
     }
-  }
+  };
   
   /*
    * Add ace to Acl view
@@ -517,11 +540,11 @@
   // DIALOG ACL VIEW
   nl.sara.beehub.view.acl.setAddAclRuleDialogClickHandler = function(addFunction){
     nl.sara.beehub.view.acl.getAddAclButton().click(function(){
-      addFunction(getFormAce());
-    })
-  }
+      addFunction( nl.sara.beehub.view.dialog.getFormAce() );
+    });
+  };
   
-  /**
+  /*
    * Create html for acl view in dialpg
    *  
    */
@@ -580,7 +603,7 @@
     nl.sara.beehub.view.acl.getAclView().find('.bh-dir-acl-contents').find('tr:eq('+index+')').remove();
     nl.sara.beehub.view.acl.getAclView().find('.bh-dir-acl-contents').trigger("update");
     setUpDownButtons();
-  }
+  };
   
   /**
    * Move down acl rule
@@ -615,7 +638,7 @@
   nl.sara.beehub.view.acl.changePermissions = function(row, val){
     var td = '<td class="bh-dir-acl-permissions bh-dir-acl-change-permissions '+permissions[val].class+'"\
     title="'+permissions[val].title+'" data-toggle="tooltip" \
-    style="cursor: pointer; display: table-cell;"><span class="presentation">'+val+'</span></td>';
+    style="cursor: pointer; display: table-cell;"><span class="presentation">' + nl.sara.beehub.controller.htmlEscape( val ) + '</span></td>';
     $(row).find(".bh-dir-acl-permissions").replaceWith(td);
   };
   
@@ -628,7 +651,7 @@
       $(row).find(".bh-dir-acl-permissions").show();
     }
     setRowHandlers([row]);   
-  }
+  };
   
   /**
    * Onclick handler permissions acl view
