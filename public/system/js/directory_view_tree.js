@@ -105,7 +105,7 @@
       if ( callback !== undefined ) {
         callback();
       }
-    }else if ( parent.hasClass( 'dynatree-has-children' ) ) {
+    }else{// if ( parent.hasClass( 'dynatree-has-children' ) ) {
       // The subtree is collapsed, so we need to expand it
       var list = parent.siblings( 'ul' );
       if ( list.length > 0 ) {
@@ -167,6 +167,10 @@
           parent.removeClass( 'dynatree-lazy' );
           if ( list.children().length > 0 ) {
             parent.after( list );
+            parent.addClass( 'dynatree-has-children' );
+            expander.addClass( 'dynatree-expander' );
+            expander.removeClass( 'dynatree-connector' );
+            nl.sara.beehub.view.tree.attachEvents( parent );
             treeExpandHandler( expander, callback );
           }else{
             parent.removeClass( 'dynatree-has-children' );
@@ -382,7 +386,11 @@
     // It exists, let's expand this directory if it is not expanded already
     var parentSpan = parentLink.parent('span');
     if ( ! parentSpan.hasClass( 'dynatree-expanded' ) ) {
-      treeExpandHandler( $( '.dynatree-expander', parentSpan ), function() {
+      var expander = $( '.dynatree-expander', parentSpan );
+      if ( expander.length === 0 ) {
+        expander = $( '.dynatree-connector', parentSpan );
+      }
+      treeExpandHandler( expander, function() {
         expandRecursive( parents, expandedPath, callback );
       } );
     }else{
