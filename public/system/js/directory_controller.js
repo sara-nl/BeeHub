@@ -1133,7 +1133,7 @@
       } else {
         aceObject['permissions'] += "unknown privilege (combination)";
         var array = [];
-        for (key in ace.getPrivilegeNames('DAV:')) {
+        for (var key in ace.getPrivilegeNames('DAV:')) {
           array.push("DAV: "+ace.getPrivilegeNames('DAV:')[key]);
         };
         aceObject['privileges'] = array.join(" ");
@@ -1156,7 +1156,7 @@
       } else {
         aceObject['permissions'] += "unknown privilege (combination)";
         var array = [];
-        for (key in ace.getPrivilegeNames('DAV:')) {
+        for (var key in ace.getPrivilegeNames('DAV:')) {
           array.push("DAV: "+ace.getPrivilegeNames('DAV:')[key]);
         };
         aceObject['privileges'] = array.join(" ");
