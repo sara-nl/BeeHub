@@ -44,6 +44,10 @@
   left: 50px;
 }
 
+/* Prevent menu disappearing in table*/
+.bh-dir-tab-content {
+	overflow: visible !important;
+}
 /* Position content table */
 #bh-dir-content-table {
 	top: 185px;
@@ -51,7 +55,12 @@
 
 /* Align path with tabs */
 .bh-dir-breadcrumb {
-	padding:0 !important;
+  padding: 0 !important;
+  font-size: 16.25px;
+  font-family: inherit;
+  font-weight: bold;
+  margin: 9px 0 18px 0 !important;
+  text-rendering: optimizelegibility;
 }
 
 /* Prevent scrolling for fixed divs*/
@@ -107,7 +116,7 @@
     vertical-align: middle;
 }
 .bh-dir-small-column {
-	width: 10px
+	width: 12px
 }
 
 /* Tree settings */
@@ -116,7 +125,6 @@
   top: 187px;
   bottom: 50px !important;
   right: 0;
-  display: none;
   z-index: 100; 
 }
 
@@ -203,6 +211,10 @@ ul.dynatree-container{
 }
 .long_text {
   max-width: 900px;
+}
+
+.bh-dir-contents-menu{
+	background-color: white !important;
 }
 
 /* ACL view */
