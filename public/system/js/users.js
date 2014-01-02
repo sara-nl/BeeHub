@@ -1,12 +1,36 @@
+/**
+ * Copyright ©2013 SURFsara bv, The Netherlands
+ *
+ * This file is part of the beehub client
+ *
+ * beehub client is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * beehub-client is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with beehub.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @author Laura Leistikow (laura.leistikow@surfsara.nl)
+ */
+
+"use strict";
+
 $(function() {
 	// TODO function are almost the same as groups.js functions.
 	// better to merge this
 	var userNameListener = function(userNameField){
 	 var showError = function(error){
 		 userNameField.parent().parent().addClass('error');
-		 var error = $('<span class="help-inline">'+error+'</span>');
-		 userNameField.parent().append(error);
-	 }
+		 var errorSpan = $( '<span class="help-inline"></span>' );
+     errorSpan.text( error );
+		 userNameField.parent().append( errorSpan );
+	 };
 	 
 	 // TODO make tooltip with field specifications
 	 // This is included in bootstrap with patern
@@ -44,7 +68,7 @@ $(function() {
 	*/
 	$('#username').change(function () {
 		 userNameListener($(this));
-	})
+	});
 	
 	var passwordListener = function(passwordConfirmationField){
 		// clear error
@@ -53,9 +77,10 @@ $(function() {
 		
 		var showError = function(error){
 			passwordConfirmationField.parent().parent().addClass('error');
-			var error = $('<span class="help-inline">'+error+'</span>');
-			passwordConfirmationField.parent().append(error);
-		}
+			var errorSpan = $( '<span class="help-inline"></span>' );
+      errorSpan.text( error );
+			passwordConfirmationField.parent().append( errorSpan );
+		};
 		
 		if(passwordConfirmationField.val() !== $('#username_password').val()) {
 			showError('Password mismatch.');
@@ -69,7 +94,7 @@ $(function() {
 	*/
 	$('#username_password_confirmation').change(function () {
 		 passwordListener($(this));
-	})
+	});
 	
 	/*
 	* Action when the Create user button is clicked

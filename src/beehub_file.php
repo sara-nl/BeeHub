@@ -106,6 +106,23 @@ public function method_COPY( $path ) {
       $new_resource->user_set( $prop, $value );
     }
   }
+
+  // Determine the sponsor
+  $user = BeeHub_Auth::inst()->current_user();
+  $user_sponsors = $user->prop(BeeHub::PROP_SPONSOR_MEMBERSHIP);
+  if (count($user_sponsors) == 0) { // If the user doesn't have any sponsors, he/she can't create files and directories
+    throw DAV::forbidden();
+  }
+  $sponsor = $parent->prop(BeeHub::PROP_SPONSOR); // The default is the directory sponsor
+  if (!in_array($sponsor, $user_sponsors)) { //But a user can only create files sponsored by his own sponsors
+    $sponsor = $user->user_prop(BeeHub::PROP_SPONSOR);
+  }
+
+  // And set the new properties
+  $new_resource->user_set( DAV::PROP_GETETAG, BeeHub_DB::ETag() );
+  $new_resource->user_set( DAV::PROP_OWNER, $this->user_prop_current_user_principal() );
+  $new_resource->user_set( BeeHub::PROP_SPONSOR, $sponsor );
+
   $new_resource->storeProperties();
 }
 

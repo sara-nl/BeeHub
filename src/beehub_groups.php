@@ -91,7 +91,7 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
     $groupdir_resource = BeeHub_Registry::inst()->resource( '/' . $group_name );
     $groupdir_resource->user_set( DAV::PROP_OWNER, BeeHub::$CONFIG['namespace']['wheel_path'] );
     $groupdir_resource->user_set( BeeHub::PROP_SPONSOR, $user_sponsor );
-    $groupdir_resource->user_set( DAV::PROP_ACL, '[["' . BeeHub::GROUPS_PATH . rawurlencode($group->name) . '",false,["DAV: read", "DAV: write", "DAV: read-acl"],false]]' );
+    $groupdir_resource->user_set( DAV::PROP_ACL, '[["' . BeeHub::GROUPS_PATH . rawurlencode($group->name) . '",false,["DAV: read", "DAV: write"],false]]' );
     $groupdir_resource->storeProperties();
 
     // Group created, redirect to the group page

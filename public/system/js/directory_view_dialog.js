@@ -1,5 +1,5 @@
-/*
- * Copyright ©2013 SARA bv, The Netherlands
+/**
+ * Copyright ©2013 SURFsara bv, The Netherlands
  *
  * This file is part of the beehub client
  *
@@ -17,13 +17,15 @@
  * along with beehub.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+"use strict";
+
 /** 
  * Beehub Client dialogs
  * 
  * @author Laura Leistikow (laura.leistikow@surfsara.nl)
  */
 
-(function(){
+(function(){ 
   /*
    * Clear dialog
    * 
@@ -51,7 +53,6 @@
       modal: true,
       maxHeight: 400,
       closeOnEscape: false,
-      dialogClass: "custom-dialog",
       buttons: [{
         text: "Ok",
         click: function() {
@@ -60,7 +61,45 @@
       }]
     });
   };
-
+  
+  /*
+   * Show acl dialog
+   * 
+   * Public function
+   * 
+   * @param  {String}  html          The html to show in the dialog
+   * @param  {String}  resourcePath  The path of the resource
+   */
+  nl.sara.beehub.view.dialog.showAcl = function(html, resourcePath, closeFunction) {
+    if ( resourcePath.substr( -1 ) === '/' ) {
+      resourcePath = resourcePath.substr( 0, resourcePath.length -1 );
+    }
+    
+    $('#bh-dir-dialog').html(html);
+    // auto complete for searching users and groups
+    setupAutoComplete();
+ 
+    // radiobutton handlers
+    setAddRadioButtons();
+    
+    nl.sara.beehub.view.acl.setTableSorter(nl.sara.beehub.view.acl.getAclView().find('.bh-dir-acl-table'));
+    $('#bh-dir-dialog').dialog({
+      resizable: true,
+      title: " ACL: " + resourcePath.replace( /\//g, ' / '),
+      dialogClass: "custom_dialog",
+      modal: true,
+      minWidth:800,
+//      maxHeight: 400,
+      closeOnEscape: false,
+      buttons: [{
+        text: "Close",
+        click: function(){
+          closeFunction();
+        }
+      }]
+    });
+    nl.sara.beehub.view.acl.getAddAclButton().prop('disabled', true);
+  };
   
   /*
    * Show dialog with ready buttons
@@ -90,7 +129,12 @@
   * @param Integer  progress Progress of action
   */
   nl.sara.beehub.view.dialog.showProgressBar = function(resource, progress){
-    $("tr[id='dialog_tr_"+resource.path+"']").find('.info').html("<div class='progress progress-success progress-striped'><div class='bar' style='width: "+progress+"%;'>"+progress+"%</div></div>");
+    var innerDiv = $( '<div class="bar"></div>' );
+    innerDiv.attr( 'style', 'width: ' + progress + '%' );
+    innerDiv.text( progress + '%' );
+    var outerDiv = $( '<div class="progress progress-success progress-striped"></div>' );
+    outerDiv.append( innerDiv );
+    $( "tr[id='dialog_tr_" + resource.path + "']" ).find( '.info' ).empty().append( outerDiv );
   };
   
   /*
@@ -102,7 +146,9 @@
   * @param String   info     Information for dialog
   */
   nl.sara.beehub.view.dialog.updateResourceInfo = function(resource, info){
-    $("tr[id='dialog_tr_"+resource.path+"']").find('.info').html("<b>"+info+"</b>");
+    var bold = $( "<b></b>" );
+    bold.text( info );
+    $( "tr[id='dialog_tr_" + resource.path + "']" ).find( '.info' ).empty().append( bold );
   };
   
   /*
@@ -259,53 +305,14 @@
     $("#bh-dir-dialog").dialog("close");
   };  
   
-  // ACL
-  /**
-   * Create html for acl form
-   * 
-   * @return {String} html
-   * 
-   */
-  createHtmlAclForm = function() {
-    return '\
-        <table>\
-        <tr>\
-          <td class="bh-dir-acl-table-label"><label><b>Principal</b></label></td>\
-          <td><label class="radio"><input type="radio" name="bh-dir-view-acl-optionRadio" id="bh-dir-acl-add-radio1" value="authenticated" unchecked>All BeeHub users</label></td>\
-        </tr>\
-        <tr>\
-          <td class="bh-dir-acl-table-label"></td>\
-          <td><label class="radio"><input type="radio" name="bh-dir-view-acl-optionRadio" id="bh-dir-acl-add-radio2" value="all" unchecked>Everybody</label></td>\
-        </tr>\
-        <tr>\
-          <td class="bh-dir-acl-table-label"></td>\
-          <td>\
-            <div class="radio">\
-              <input type="radio" name="bh-dir-view-acl-optionRadio" id="bh-dir-acl-add-radio3" value="user_or_group" checked>\
-              <input id="bh-dir-acl-table-autocomplete" class="bh-dir-acl-table-search" type="text"  value="" placeholder="Search user or group...">\
-            </div></td>\
-        </tr>\
-        <tr>\
-          <td class="bh-dir-acl-table-label"><label><b>Permisions</b></label></td>\
-          <td><select class="bh-dir-acl-table-permisions">\
-            <option value="allow read">allow read (read)</option>\
-            <option value="allow write">allow write (read, write)</option>\
-            <option value="allow manage">allow manage (read, write, change acl)</option>\
-            <option value="deny read">deny read (read, write, change acl)</option>\
-            <option value="deny write">deny write (write, change acl)</option>\
-            <option value="deny manage">deny manage (change acl)</option>\
-          </select></td>\
-        </tr>\
-      </table>\
-    ';
-  };
   
   /**
    * Initialize autocomplete for searching users and groups
    */
-  setupAutoComplete = function(){
+  var setupAutoComplete = function(){
     var searchList = [];
-    
+    var formView = nl.sara.beehub.view.acl.getFormView();
+        
     $.each(nl.sara.beehub.principals.groups, function (groupname, displayname) {
       searchList.push({
          "label"        : displayname+' ('+groupname+') ',
@@ -323,13 +330,18 @@
          "icon"         : '<i class="icon-user"></i>'
       });
     });
-
-    $( "#bh-dir-acl-table-autocomplete" ).autocomplete({
+    
+    formView.find( ".bh-dir-acl-table-search" ).autocomplete({
       source:searchList,
       select: function( event, ui ) {
-        $("#bh-dir-acl-table-autocomplete").val(ui.item.label);
-        $("#bh-dir-acl-table-autocomplete").attr('name' ,ui.item.name);
-        $("#bh-dir-aclform-add-button").button('enable');
+        formView.find(".bh-dir-acl-table-search").val(ui.item.label);
+        formView.find(".bh-dir-acl-table-search").attr('name' ,ui.item.name);
+        // jquery and bootstrap buttons act different
+        if (nl.sara.beehub.view.acl.getView() === "directory") {
+          nl.sara.beehub.view.acl.getAddAclButton().button('enable');
+        } else {
+          nl.sara.beehub.view.acl.getAddAclButton().prop('disabled', false);
+        }
         return false;
       },
       change: function (event, ui) {
@@ -337,10 +349,14 @@
             //http://api.jqueryui.com/autocomplete/#event-change -
             // The item selected from the menu, if any. Otherwise the property is null
             //so clear the item for force selection
-            $("#bh-dir-aclform-add-button").button('disable');
-            $("#bh-dir-acl-table-autocomplete").val("");
+          // jquery and bootstrap buttons act different
+            if (nl.sara.beehub.view.acl.getView() === "directory") {
+              nl.sara.beehub.view.acl.getAddAclButton().button('disable');
+            } else {
+              nl.sara.beehub.view.acl.getAddAclButton().prop('disabled', true);
+            }
+            formView.find(".bh-dir-acl-table-search").val("");
         }
-
       }
     }).data( "ui-autocomplete" )._renderItem = function( ul, item ) {
       return $( "<li></li>" )
@@ -354,21 +370,37 @@
    * Add radio buttons handlers in Add acl rule form
    * 
    */
-  setAddRadioButtons = function(){
-    $("#bh-dir-acl-add-radio1").click(function(){
-      $("#bh-dir-acl-table-autocomplete").attr("disabled",true);
-      $("#bh-dir-acl-table-autocomplete").val("");
-      $("#bh-dir-aclform-add-button").button('enable');
-
+  var setAddRadioButtons = function(){
+    var aclForm = nl.sara.beehub.view.acl.getFormView();
+    aclForm.find(".bh-dir-acl-add-radio1").click(function(){
+      aclForm.find(".bh-dir-acl-table-search").attr("disabled",true);
+      aclForm.find(".bh-dir-acl-table-search").val("");
+      // jquery and bootstrap buttons act different
+      if (nl.sara.beehub.view.acl.getView() === "directory") {
+        nl.sara.beehub.view.acl.getAddAclButton().button('enable');
+      } else {
+        nl.sara.beehub.view.acl.getAddAclButton().prop('disabled', false);
+      }
     });
-    $("#bh-dir-acl-add-radio2").click(function(){
-      $("#bh-dir-acl-table-autocomplete").attr("disabled",true);
-      $("#bh-dir-acl-table-autocomplete").val("");
-      $("#bh-dir-aclform-add-button").button('enable');
+    aclForm.find(".bh-dir-acl-add-radio2").click(function(){
+      aclForm.find(".bh-dir-acl-table-search").attr("disabled",true);
+      aclForm.find(".bh-dir-acl-table-search").val("");
+      // jquery and bootstrap buttons act different
+      if (nl.sara.beehub.view.acl.getView() === "directory") {
+        nl.sara.beehub.view.acl.getAddAclButton().button('enable');
+      } else {
+        nl.sara.beehub.view.acl.getAddAclButton().prop('disabled', false);
+      }
     });
-    $("#bh-dir-acl-add-radio3").click(function(){
-      $("#bh-dir-acl-table-autocomplete").attr("disabled",false);
-      $("#bh-dir-aclform-add-button").button('disable');
+    aclForm.find(".bh-dir-acl-add-radio3").click(function(){
+      aclForm.find(".bh-dir-acl-table-search").attr("disabled",false);
+      aclForm.find(".bh-dir-acl-table-search").val("");
+      // jquery and bootstrap buttons act different
+      if (nl.sara.beehub.view.acl.getView() === "directory") {
+        nl.sara.beehub.view.acl.getAddAclButton().button('disable');
+      } else {
+        nl.sara.beehub.view.acl.getAddAclButton().prop('disabled', true);
+      }
     });
   };
   
@@ -377,9 +409,10 @@
    * 
    * @return {Object} Principal and permissions
    */
-  getFormAce= function(){
+  nl.sara.beehub.view.dialog.getFormAce = function(){
     var principal = '';
-    switch($('input[name = "bh-dir-view-acl-optionRadio"]:checked').val())
+    var aclForm = nl.sara.beehub.view.acl.getFormView();
+    switch(aclForm.find('input[name = "bh-dir-view-acl-optionRadio"]:checked').val())
     {
     // all
     case "all":
@@ -391,18 +424,17 @@
       break;
     // User or group
     case "user_or_group":
-      principal=$("#bh-dir-acl-table-autocomplete").attr('name');
+      principal=aclForm.find(".bh-dir-acl-table-search").attr('name');
       break;
     default:
       // This should never happen
     }
     var ace = {
         "principal": principal,
-        "permissions": $(".bh-dir-acl-table-permisions option:selected").val(),
+        "permissions": aclForm.find(".bh-dir-acl-table-permisions option:selected").val()
     };
-    
     return ace;
-  }
+  };
   
   /*
    * Show add rule dialog
@@ -411,16 +443,16 @@
    * 
    * @param {String} error The error to show
    */
-  nl.sara.beehub.view.dialog.showAddRuleDialog = function(addFunction) {
+  nl.sara.beehub.view.dialog.showAddRuleDialog = function(addFunction, html) {
     // createForm
-    $('#bh-dir-dialog').html(createHtmlAclForm());
+    $('#bh-dir-dialog').html(html);
 
-    // auto complete for searching users and groups
-    setupAutoComplete();
- 
     // radiobutton handlers
     setAddRadioButtons();
-        
+    
+    // auto complete for searching users and groups
+    setupAutoComplete();
+
     $('#bh-dir-dialog').dialog({
       title: " Add acl rule",
       modal: true,
@@ -436,12 +468,12 @@
         }
       },{
         text: "Add rule",
-        id: "bh-dir-aclform-add-button",
+        id: "bh-dir-acl-directory-button",
         click: function() {
-          addFunction(getFormAce());
+          addFunction( nl.sara.beehub.view.dialog.getFormAce() );
         }
       }]
     });
-    $("#bh-dir-aclform-add-button").button('disable');
+    nl.sara.beehub.view.acl.getAddAclButton().button('disable');
   };
 })();
