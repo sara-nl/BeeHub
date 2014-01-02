@@ -39,7 +39,7 @@ class BeeHub_ACL_Provider implements DAVACL_ACL_Provider {
    */
   public function __construct( BeeHub_Auth $auth = null ) {
     if ( is_null( $auth ) ) {
-      $this->auth = BeeHub_Auth::inst();
+      $this->auth = BeeHub::getAuth();
     }else{
       $this->auth = $auth;
     }

@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>>
+  <table name="beehub_group_members">
+    <column>group_name</column>
+    <column>user_name</column>
+    <column>is_admin</column>
+    <column>is_invited</column>
+    <column>is_requested</column>
+    <row>
+      <value>foo</value>
+      <value>john</value>
+      <value>1</value>
+      <value>1</value>
+      <value>1</value>
+    </row>
+    <row>
+      <value>foo</value>
+      <value>jane</value>
+      <value>1</value>
+      <value>1</value>
+      <value>1</value>
+    </row>
+    <row>
+      <value>bar</value>
+      <value>john</value>
+      <value>1</value>
+      <value>1</value>
+      <value>1</value>
+    </row>
+    <row>
+      <value>bar</value>
+      <value>jane</value>
+      <value>0</value>
+      <value>0</value>
+      <value>1</value>
+    </row>
+  </table>
+</dataset>

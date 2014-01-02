@@ -46,6 +46,6 @@ BeeHub::handle_method_spoofing();
 DAV::$REGISTRY     = BeeHub_Registry::inst();
 DAV::$LOCKPROVIDER = BeeHub_Lock_Provider::inst();
 DAV::$ACLPROVIDER  = BeeHub_ACL_Provider::inst();
-DAV::$UNAUTHORIZED = array( BeeHub_Auth::inst(), 'unauthorized' );
+DAV::$UNAUTHORIZED = array( BeeHub::getAuth(), 'unauthorized' );
 
 // End of file

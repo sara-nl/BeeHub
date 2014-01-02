@@ -345,6 +345,22 @@ class BeeHub {
     }
     mail($recipients, $subject, $message, 'From: ' . BeeHub::$CONFIG['email']['sender_name'] . ' <' . BeeHub::$CONFIG['email']['sender_address'] . '>', '-f ' . BeeHub::$CONFIG['email']['sender_address']);
   }
+  
+  
+  private static $auth = null;
+
+
+  public static function getAuth() {
+    if ( is_null( self::$auth ) ) {
+      self::$auth = BeeHub_Auth::inst();
+    }
+    return self::$auth;
+  }
+
+
+  public static function setAuth( BeeHub_Auth $auth ) {
+    self::$auth = $auth;
+  }
 
 
   /**

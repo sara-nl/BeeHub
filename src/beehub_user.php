@@ -388,7 +388,7 @@ BeeHub';
 
 
   public function is_admin() {
-    return BeeHub_ACL_Provider::inst()->wheel() ||
+    return DAV::$ACLPROVIDER->wheel() ||
       ( $this->path === $this->user_prop_current_user_principal() );
   }
 

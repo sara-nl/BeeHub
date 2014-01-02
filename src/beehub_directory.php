@@ -50,7 +50,7 @@ private function internal_create_member( $name, $collection = false ) {
   $cups = $this->current_user_principals();
 
   // Determine the sponsor
-  $user = BeeHub_Auth::inst()->current_user();
+  $user = BeeHub::getAuth()->current_user();
   $user_sponsors = $user->prop(BeeHub::PROP_SPONSOR_MEMBERSHIP);
   if (count($user_sponsors) == 0) { // If the user doesn't have any sponsors, he/she can't create files and directories
     throw DAV::forbidden();

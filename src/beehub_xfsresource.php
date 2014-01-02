@@ -117,9 +117,9 @@ class BeeHub_XFSResource extends BeeHub_Resource {
       );
     if ( $this->user_prop_owner() !==
            $this->user_prop_current_user_principal() &&
-         ! BeeHub_ACL_Provider::inst()->wheel() )
+         ! DAV::$ACLPROVIDER->wheel() )
       throw DAV::forbidden( 'Only the owner can change the sponsor of a resource.' );
-    if ( !in_array( $sponsor->path, BeeHub_Auth::inst()->current_user()->current_user_sponsors() ) )
+    if ( !in_array( $sponsor->path, BeeHub::getAuth()->current_user()->current_user_sponsors() ) )
       throw DAV::forbidden( "You're not sponsored by {$sponsor->path}" );
     return $this->user_set( BeeHub::PROP_SPONSOR, $sponsor->path);
   }
@@ -151,9 +151,9 @@ class BeeHub_XFSResource extends BeeHub_Resource {
            $this->collection() &&
            $this->collection()->assert(DAVACL::PRIV_WRITE) ) ) {
       if ( !in_array( $this->user_prop_sponsor(),
-                      BeeHub_Auth::inst()->current_user()->current_user_sponsors() ) ) {
+                      BeeHub::getAuth()->current_user()->current_user_sponsors() ) ) {
         if ( !in_array( $this->collection()->user_prop_sponsor(),
-                        BeeHub_Auth::inst()->current_user()->current_user_sponsors() ) ) {
+                        BeeHub::getAuth()->current_user()->current_user_sponsors() ) ) {
           if ( !$cup->user_prop_sponsor() ) {
             throw DAV::forbidden();
           } else {

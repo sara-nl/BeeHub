@@ -57,7 +57,7 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
    * @throws  DAV_Status               FORBIDDEN  When the user doesn't have the privileges
    */
   public function assert($privileges) {
-    if (BeeHub_ACL_Provider::inst()->wheel())
+    if ( DAV::$ACLPROVIDER->wheel() )
       return;
     return parent::assert($privileges);
   }

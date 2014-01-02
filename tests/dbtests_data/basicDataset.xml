@@ -133,6 +133,21 @@
       <value>someothersecretcode</value>
       <value>2013-11-30 23:59:59</value>
     </row>
+    <row>
+      <value>johny</value>
+      <value>Johny Doe</value>
+      <value>johny.doe@mailservice.com</value>
+      <null />
+      <value>$6$rounds=5000$126b519331f5189c$cvGKahLo6.q/TSTeLMxGC8qpwHC6QIA37NCdn6xKpBJVCU3vBzwJkK3HS7.d4RwJcCG.oXMHBiv06oMnZCwjM0</value>
+      <null />
+      <null />
+      <null />
+      <value>sponsor_a</value>
+      <null />
+      <null />
+      <null />
+      <null />
+    </row>
   </table>
   <table name="Locks">
     <column>lock_token</column>

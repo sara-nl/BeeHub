@@ -47,11 +47,16 @@ abstract class BeeHub_Tests_Db_Test_Case extends \PHPUnit_Extensions_Database_Te
 
 
   public function getDataSet() {
-    if ( \file_exists( \dirname( __FILE__ ) . \DIRECTORY_SEPARATOR . 'basicDataset.xml' ) ) {
-      return $this->createXMLDataSet( \dirname( __FILE__ ) . \DIRECTORY_SEPARATOR . 'basicDataset.xml' );
+    if ( \file_exists( $this->getDatasetPath() . 'basicDataset.xml' ) ) {
+      return $this->createXMLDataSet( $this->getDatasetPath() . 'basicDataset.xml' );
     }else{
       return new PHPUnit_Extensions_Database_DataSet_DefaultDataSet();
     }
+  }
+
+
+  protected function getDatasetPath() {
+    return \dirname( __FILE__ ) . \DIRECTORY_SEPARATOR;
   }
 
 } // Class BeeHub_Tests_Db_Test_Case

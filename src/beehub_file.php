@@ -94,7 +94,7 @@ public function method_COPY( $path ) {
   xattr_remove( $localPath, rawurlencode(DAV::PROP_LOCKDISCOVERY) );
 
   // Determine the sponsor
-  $user = BeeHub_Auth::inst()->current_user();
+  $user = BeeHub::getAuth()->current_user();
   $user_sponsors = $user->prop(BeeHub::PROP_SPONSOR_MEMBERSHIP);
   if (count($user_sponsors) == 0) { // If the user doesn't have any sponsors, he/she can't create files and directories
     throw DAV::forbidden();

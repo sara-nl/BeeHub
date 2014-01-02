@@ -80,7 +80,7 @@ EOS;
 
 
   public function method_POST ( &$headers ) {
-    $auth = BeeHub_Auth::inst();
+    $auth = BeeHub::getAuth();
     if (!$auth->is_authenticated()) {
       throw DAV::forbidden();
     }
@@ -365,9 +365,9 @@ BeeHub';
    * @return  boolean  True if the currently logged in user is an administrator of this sponsor, false otherwise
    */
   public function is_admin() {
-    if ( BeeHub_ACL_Provider::inst()->wheel() ) return true;
+    if ( DAV::$ACLPROVIDER->wheel() ) return true;
     $this->init_props();
-    return ( $current_user = BeeHub_Auth::inst()->current_user() ) &&
+    return ( $current_user = BeeHub::getAuth()->current_user() ) &&
            ( $tmp = @$this->users[$current_user->path] ) &&
            $tmp['is_admin'];
   }
@@ -375,7 +375,7 @@ BeeHub';
 
   public function is_member() {
     $this->init_props();
-    return ( $current_user = BeeHub_Auth::inst()->current_user() ) &&
+    return ( $current_user = BeeHub::getAuth()->current_user() ) &&
            ( $tmp = @$this->users[$current_user->path] ) &&
            $tmp['is_accepted'];
   }
@@ -383,7 +383,7 @@ BeeHub';
 
   public function is_requested() {
     $this->init_props();
-    return ( $current_user = BeeHub_Auth::inst()->current_user() ) &&
+    return ( $current_user = BeeHub::getAuth()->current_user() ) &&
            ( $tmp = @$this->users[$current_user->path] ) &&
            !$tmp['is_accepted'];
   }

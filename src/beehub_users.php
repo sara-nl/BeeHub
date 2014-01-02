@@ -39,8 +39,8 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
     }
     $display_name = '';
     $email_address = '';
-    if (BeeHub_Auth::inst()->simpleSaml()->isAuthenticated()) {
-      $as = BeeHub_Auth::inst()->simpleSaml();
+    if (BeeHub::getAuth()->simpleSaml()->isAuthenticated()) {
+      $as = BeeHub::getAuth()->simpleSaml();
       $attrs = $as->getAttributes();
       $display_name = @$attrs['urn:mace:dir:attribute-def:displayName'][0];
       $email_address = @$attrs['urn:mace:dir:attribute-def:mail'][0];
@@ -103,7 +103,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
       'sii', $user_name, 1, 0
     );
     // Just to be clear: the above lines will have to be deleted somewhere in the future, but the lines below should stay
-    $auth = BeeHub_Auth::inst();
+    $auth = BeeHub::getAuth();
     if ($auth->simpleSaml()->isAuthenticated()) {
       $surfId = $auth->simpleSaml()->getAuthData("saml:sp:NameID");
       $surfId = $surfId['Value'];
