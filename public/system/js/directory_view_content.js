@@ -1,5 +1,5 @@
-/*
- * Copyright ©2013 SARA bv, The Netherlands
+/**
+ * Copyright ©2013 SURFsara bv, The Netherlands
  *
  * This file is part of the beehub client
  *
@@ -17,6 +17,8 @@
  * along with beehub.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+"use strict";
+
 /** 
  * Beehub Client Content
  * 
@@ -24,13 +26,12 @@
  * 
  * @author Laura Leistikow (laura.leistikow@surfsara.nl)
  */
-/*
- * Initialize content view
- * 
- * Public function
- * 
- */
 (function(){
+  /**
+   * Initialize content view
+   *
+   * Public function
+   */
   nl.sara.beehub.view.content.init = function() {
     // This is needed to sort the size table on the right way
     $.tablesorter.addParser({
@@ -63,6 +64,23 @@
       }, 
       type: 'numeric' 
     }); 
+    
+    // Sort on name attribute
+    $.tablesorter.addParser({ 
+      // set a unique id 
+      id: 'name', 
+      is: function(s) { 
+        // return false so this parser is not auto detected 
+        return false; 
+      }, 
+      format: function(s, table, cell, cellIndex) { 
+        // get data attributes from $(cell).attr('data-something');
+        // check specific column using cellIndex
+        return $(cell).attr('name');
+      }, 
+      // set type, either numeric or text 
+      type: 'text' 
+    }); 
   
   //make table sortable with tablesorter plugin
     $("#bh-dir-content-table").tablesorter({
@@ -71,17 +89,27 @@
         0 : { sorter: false },
         1 : { sorter: false },
         4 : { sorter: 'filesize'},
-        8: { sorter:false }
+        5 : { sorter: 'name'},
+        8 : { sorter:false }
       },
+      dateFormat : "ddmmyyyy", // set the default date format
       widthFixed: false,
       // Fixed header on top of the table
       widgets : ['stickyHeaders'],
+      // Start with sort asc
+      sortRestart: true,
+      sortList: [ [ 2, 0 ] ],
       widgetOptions : {
         // apply sticky header top below the top of the browser window
         stickyHeaders_offset : 186
       }
     });
-   
+
+   // Remember previous sort columns and use it for second sort column
+    $("#bh-dir-content-table").unbind( 'sortStart' ).bind("sortStart",function(sorter) {
+     sorter.target.config.sortAppend = sorter.target.config.sortList;
+    });
+
     // Add listeners
     // Go to users homedirectory handler
     $('.bh-dir-content-gohome').click(function() { window.location.href=$(this).attr("id");});
@@ -106,7 +134,7 @@
     
     // Move button click handler
     $('.bh-dir-content-move').click(handle_move_button_click);
-    
+  
     // All handlers that belong to a row
     setRowHandlers();
   };
@@ -164,16 +192,19 @@
   */
   var setRowHandlers = function(){
     // Checkbox select all handler: select or deselect all checkboxes
-    $('.bh-dir-content-checkboxgroup').unbind().click(handle_checkall_checkbox_click);
+    $('.bh-dir-content-checkboxgroup').unbind( 'click' ).click(handle_checkall_checkbox_click);
     
     // Checkbox handler: select or deselect checkbox
-    $('.bh-dir-content-checkbox').unbind().click(handle_checkbox_click);
+    $('.bh-dir-content-checkbox').unbind( 'click' ).click(handle_checkbox_click);
     
     // Open selected handler: this can be a file or a directory
-    $('.bh-dir-content-openselected').unbind().click(function() {window.location.href=$(this).attr('name');});
+    $('.bh-dir-content-openselected').unbind( 'click' ).click(function() {window.location.href=$(this).attr('name');});
     
     // Edit icon
-    $('.bh-dir-content-edit').unbind().click(handle_edit_icon_click);
+    $('.bh-dir-content-edit').unbind( 'click' ).click(handle_edit_menu_click);
+    
+    // View acl
+    $('.bh-dir-content-acl').unbind( 'click' ).click(handle_acl_menu_click);
   };
   
   /*
@@ -199,12 +230,20 @@
     
     row.push('<tr id="'+nl.sara.beehub.controller.htmlEscape(resource.path)+'">');
     
+    // Dropdown menu
+    row.push('<td>\
+      <div class="dropdown">\
+        <a class="dropdown-toggle bh-dir-content-menu" data-toggle="dropdown" href="#">\
+          <i class="icon-align-justify" style="cursor: pointer"></i></a>\
+        <ul class="dropdown-menu  bh-dir-contents-menu" role="menu" aria-labelledby="dLabel">\
+          <li><a class="bh-dir-content-edit" href="#">Rename</a></li>\
+          <li><a class="bh-dir-content-acl" href="#">Share</a></li>\
+        </ul>\
+      </div>\
+     </td>');
+    
     // Checkbox
     row.push('<td width="10px"><input type="checkbox" class="bh-dir-content-checkbox" name="'+nl.sara.beehub.controller.htmlEscape(resource.path)+'" value="'+nl.sara.beehub.controller.htmlEscape(resource.displayname)+'"></td>');
-    
-    // Edit column
-    row.push('<td width="10px" data-toggle="tooltip" title="Rename">');
-    row.push('<i class="icon-edit bh-dir-content-edit" style="cursor: pointer"></i></td>');
     
     // Name
     if (resource.type==='collection') {
@@ -241,6 +280,8 @@
     // Owner
     row.push('<td class="owner" name="'+nl.sara.beehub.controller.htmlEscape(resource.owner)+'">'+nl.sara.beehub.controller.htmlEscape(nl.sara.beehub.controller.getDisplayName(resource.owner))+'</td>');
     
+    // ACL on resource row
+    row.push('<td class="bh-resource-specific-acl"></td>');
     // TODO Share link, not implemented yet
   //  row.push('<td></td>');
     
@@ -308,11 +349,18 @@
    * @param {Object} resource Resource object
    */
   nl.sara.beehub.view.content.addResource = function(resource){
+    var collection = resource.path.substr( 0, resource.path.lastIndexOf( '/', resource.path.length - 2 ) + 1 );
+    var currentPath = location.pathname;
+    if ( currentPath.substr( -1 ) !== '/' ) {
+      currentPath += '/';
+    }
+    if ( collection !== currentPath ) {
+      return;
+    }
+
     var row = createRow(resource);
     $("#bh-dir-content-table").append(row);
     $("#bh-dir-content-table").trigger("update");
-    // Sort again
-    $("#bh-dir-content-table").trigger("sorton", [$("#bh-dir-content-table")[0].config.sortList]);
     // Set handlers again
     setRowHandlers();
   };
@@ -337,10 +385,22 @@
    * @param {Object} resourceOrg New resource object
    */
   nl.sara.beehub.view.content.updateResource = function(resourceOrg, resourceNew){
-    // delete current row
-    nl.sara.beehub.view.content.deleteResource(resourceOrg);
-    // add new row
-    nl.sara.beehub.view.content.addResource(resourceNew);
+    var collectionOrg = resourceOrg.path.substr( 0, resourceOrg.path.lastIndexOf( '/', resourceOrg.path.length - 2 ) + 1 );
+    var collectionNew = resourceNew.path.substr( 0, resourceNew.path.lastIndexOf( '/', resourceNew.path.length - 2 ) + 1 );
+    var currentPath = location.pathname;
+    if ( currentPath.substr( -1 ) !== '/' ) {
+      currentPath += '/';
+    }
+
+    if ( collectionOrg === currentPath ) {
+      // delete current row
+      nl.sara.beehub.view.content.deleteResource(resourceOrg);
+    }
+
+    if ( collectionNew === currentPath ) {
+      // add new row
+      nl.sara.beehub.view.content.addResource(resourceNew);
+    }
   };
   
   
@@ -397,7 +457,8 @@
   /*
    * Onclick handler edit icon in content view
    */
-  var handle_edit_icon_click = function(){
+  var handle_edit_menu_click = function(e){
+    e.preventDefault();
     // TODO - instead show and hide, replace to prevent table colums move
     // Search nearest name field and hide
     $(this).closest("tr").find(".bh-dir-content-name").hide();
@@ -410,10 +471,15 @@
     $(this).closest("tr").find(".bh-dir-content-rename-td").find(':input').val(name);
     
     // Focus mouse
+    $(this).closest("tr").find(".bh-dir-content-rename-td").find(':input').focus(
+      function() {
+        $(this).select();
+        }
+     );
     $(this).closest("tr").find(".bh-dir-content-rename-td").find(':input').focus();
 
     // Set rename handler
-    $(this).closest("tr").find(".bh-dir-content-rename-td").find(':input').unbind().change(handle_rename_form_change);
+    $(this).closest("tr").find(".bh-dir-content-rename-td").find(':input').unbind( 'change' ).change(handle_rename_form_change);
     $(this).closest("tr").find(".bh-dir-content-rename-td").find(':input').keypress(function(e) {
       if(e.which === 13) {
         e.preventDefault();
@@ -425,6 +491,21 @@
       $(this).closest("tr").find(".bh-dir-content-name").show();
       $(this).closest("tr").find(".bh-dir-content-rename-td").hide();
     });
+  }; 
+  
+  /*
+   * Onclick handler menu icon hoverin content view
+   */
+  var handle_menu_icon_hover = function(){
+    $(this).dropdown('toggle');
+  }; 
+  
+  /*
+   * Onclick handler acl menu in content view
+   */
+  var handle_acl_menu_click = function(e){
+    e.preventDefault();
+    nl.sara.beehub.controller.getAclFromServer($(this).closest('tr').attr('id'));
   }; 
   
   /*
