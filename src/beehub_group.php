@@ -1,7 +1,7 @@
 <?php
 
 /*·************************************************************************
- * Copyright ©2007-2012 SARA b.v., Amsterdam, The Netherlands
+ * Copyright ©2007-2014 SARA b.v., Amsterdam, The Netherlands
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -255,6 +255,25 @@ BeeHub';
         $this->name, $user_name, $newInvited,
         $newRequested, $newAdmin
       );
+
+      // And change local cache
+      if ( isset( $this->users[ BeeHub::USERS_PATH . $user_name ] ) ) {
+        if ( $existingInvited !== "`is_invited`" ) {
+          $this->users[ BeeHub::USERS_PATH . $user_name ]['is_invited'] = (bool) $existingInvited;
+        }
+        if ( $existingRequested !== "`is_requested`" ) {
+          $this->users[ BeeHub::USERS_PATH . $user_name ]['is_requested'] = (bool) $existingRequested;
+        }
+        if ( $existingAdmin !== "`is_admin`" ) {
+          $this->users[ BeeHub::USERS_PATH . $user_name ]['is_admin'] = (bool) $existingAdmin;
+        }
+      }else{
+        $this->users[ BeeHub::USERS_PATH . $user_name ] = array(
+            'is_invited' => (bool) $newInvited,
+            'is_requested' => (bool) $newRequested,
+            'is_admin' => (bool) $newAdmin
+        );
+      }
     }
   }
 
@@ -278,6 +297,10 @@ BeeHub';
            AND `user_name`  = ?',
         'ss', $this->name, $user_name
       );
+
+      if ( isset( $this->users[ BeeHub::USERS_PATH . $user_name ] ) ) {
+        unset( $this->users[ BeeHub::USERS_PATH . $user_name ] );
+      }
     }
   }
 

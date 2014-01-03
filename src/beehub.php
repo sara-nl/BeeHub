@@ -330,6 +330,14 @@ class BeeHub {
     } // end if ($auth->is_authenticated())
     return $notifications;
   }
+  
+  
+  private static $emailer = null;
+
+
+  public static function setEmailer( BeeHub_Emailer $emailer ) {
+    self::$emailer = $emailer;
+  }
 
 
   /**
@@ -340,10 +348,10 @@ class BeeHub {
    * @return  void
    */
   public static function email($recipients, $subject, $message) {
-    if (is_array($recipients)) {
-      $recipients = implode(',', $recipients);
+    if ( is_null( self::$emailer ) ) {
+      self::$emailer = new BeeHub_Emailer();
     }
-    mail($recipients, $subject, $message, 'From: ' . BeeHub::$CONFIG['email']['sender_name'] . ' <' . BeeHub::$CONFIG['email']['sender_address'] . '>', '-f ' . BeeHub::$CONFIG['email']['sender_address']);
+    self::$emailer->email($recipients, $subject, $message);
   }
   
   

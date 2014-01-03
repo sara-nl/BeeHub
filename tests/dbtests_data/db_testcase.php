@@ -30,9 +30,18 @@ abstract class BeeHub_Tests_Db_Test_Case extends \PHPUnit_Extensions_Database_Te
 
   static private $connection = null;
 
+
   private $dbUnitConnection = null;
 
 
+  public function setUp() {
+    parent::setUp();
+    reset_SERVER();
+    \DAV::$REGISTRY = \BeeHub_Registry::inst();
+    \BeeHub::setAuth( BeeHub_Auth::inst() );
+  }
+
+  
   final public function getConnection() {
     if ( \is_null( $this->dbUnitConnection ) ) {
       $config = getConfig();
@@ -57,6 +66,22 @@ abstract class BeeHub_Tests_Db_Test_Case extends \PHPUnit_Extensions_Database_Te
 
   protected function getDatasetPath() {
     return \dirname( __FILE__ ) . \DIRECTORY_SEPARATOR;
+  }
+
+
+  /**
+   * Mocks BeeHub_Auth to make it show as if a certain user is logged in
+   *
+   * @param   string  $path  The path to the user
+   * @return  void
+   */
+  protected function setCurrentUser( $path ) {
+    $user = new \BeeHub_User( $path );
+    $auth = $this->getMock( '\BeeHub\tests\BeeHub_Auth', array( 'current_user' ), array( new \SimpleSAML_Auth_Simple( 'BeeHub' ) ) );
+    $auth->expects( $this->any() )
+         ->method( 'current_user' )
+         ->will( $this->returnValue( $user ) );
+    \BeeHub::setAuth( $auth );
   }
 
 } // Class BeeHub_Tests_Db_Test_Case
