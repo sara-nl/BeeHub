@@ -29,7 +29,7 @@ namespace BeeHub\tests;
 class BeeHub_GroupsTest extends BeeHub_Tests_Db_Test_Case {
 
   /**
-   * @var  BeeHub_Groups  The unit under test
+   * @var  \BeeHub_Groups  The unit under test
    */
   private $obj;
 
