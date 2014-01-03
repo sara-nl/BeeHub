@@ -1,6 +1,10 @@
 {
     "name": "SURFsara/BeeHub",
     "description": "The webDAV server for BeeHub",
+    "require" : {
+        "php": "5.3.*",
+        "ext-xattr": "*"
+    },
     "require-dev": {
         "phpunit/phpunit": "3.7.*",
         "phpunit/dbunit": "1.3.*",

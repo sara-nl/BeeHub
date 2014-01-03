@@ -129,9 +129,9 @@
       <value>CN=Jane Doe</value>
       <null />
       <value>somesecretcode</value>
-      <value>2013-12-31 23:59:59</value>
+      <value>2038-01-19 03:14:07</value>
       <value>someothersecretcode</value>
-      <value>2013-11-30 23:59:59</value>
+      <value>2038-01-19 03:14:07</value>
     </row>
     <row>
       <value>johny</value>

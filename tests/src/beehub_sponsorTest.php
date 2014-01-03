@@ -309,7 +309,7 @@ class BeeHub_SponsorTest extends BeeHub_Tests_Db_Test_Case {
     $sponsor->method_PROPPATCH( \BeeHub::PROP_DESCRIPTION, $description );
     $sponsor->storeProperties();
 
-    // Now, if I create a new instance of BeeHub_Group for the same group, it should have the properties set
+    // Now, if I create a new instance of BeeHub_Sponsor for the same sponsor, it should have the properties set
     $sponsorReloaded = new \BeeHub_Sponsor( '/system/sponsors/sponsor_a' );
     $this->assertSame( $displayname, $sponsorReloaded->user_prop( \DAV::PROP_DISPLAYNAME ) );
     $this->assertSame( $description, $sponsorReloaded->user_prop( \BeeHub::PROP_DESCRIPTION ) );
