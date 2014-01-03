@@ -1,7 +1,6 @@
 <?php
-
 /*·************************************************************************
- * Copyright ©2007-2012 SARA b.v., Amsterdam, The Netherlands
+ * Copyright ©2007-2014 SARA b.v., Amsterdam, The Netherlands
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -234,6 +233,21 @@ BeeHub';
         $newAccepted,
         $newAdmin
       );
+
+      // And change local cache
+      if ( isset( $this->users[ BeeHub::USERS_PATH . $user_name ] ) ) {
+        if ( $existingAccepted !== "`is_accepted`" ) {
+          $this->users[ BeeHub::USERS_PATH . $user_name ]['is_accepted'] = (bool) $existingAccepted;
+        }
+        if ( $existingAdmin !== "`is_admin`" ) {
+          $this->users[ BeeHub::USERS_PATH . $user_name ]['is_admin'] = (bool) $existingAdmin;
+        }
+      }else{
+        $this->users[ BeeHub::USERS_PATH . $user_name ] = array(
+            'is_accepted' => (bool) $newAccepted,
+            'is_admin' => (bool) $newAdmin
+        );
+      }
     }
   }
 
@@ -257,6 +271,10 @@ BeeHub';
            AND `user_name` = ?',
         'ss', $this->name, $user_name
       );
+
+      if ( isset( $this->users[ BeeHub::USERS_PATH . $user_name ] ) ) {
+        unset( $this->users[ BeeHub::USERS_PATH . $user_name ] );
+      }
     }
   }
 
