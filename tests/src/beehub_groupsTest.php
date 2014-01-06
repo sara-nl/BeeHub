@@ -83,7 +83,7 @@ class BeeHub_GroupsTest extends BeeHub_Tests_Db_Test_Case {
     $_POST['description'] = "This is the description of John's test group";
     $_POST['group_name'] = 'foo';
 
-    $this->setExpectedException( '\DAV_Status', null, \DAV::HTTP_BAD_REQUEST );
+    $this->setExpectedException( '\DAV_Status', null, \DAV::HTTP_CONFLICT );
     $this->obj->method_POST();
   }
 

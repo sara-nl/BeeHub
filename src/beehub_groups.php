@@ -68,7 +68,7 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
       );
     }catch (Exception $exception) {
       if ($exception->getCode() === 1062) { // Duplicate key: bad request!
-        throw new DAV_Status(DAV::HTTP_BAD_REQUEST);
+        throw new DAV_Status(DAV::HTTP_CONFLICT, "Group name already exists, please choose a different group name!" );
       }else{
         throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
       }
