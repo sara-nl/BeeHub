@@ -67,7 +67,6 @@ $(function() {
 	// conflict bootstrap and jquery
 	var btn = $.fn.button.noConflict(); // reverts $.fn.button to jqueryui btn
 	$.fn.btn = btn; // assigns bootstrap button functionality to $.fn.btn
-	
 	// Init all views
 	nl.sara.beehub.view.init();
 });

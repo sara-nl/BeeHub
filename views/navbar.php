@@ -19,7 +19,7 @@
                 <li id="navbar-li-groups"><a href="<?= DAV::xmlescape(BeeHub::GROUPS_PATH) ?>">Groups</a></li>
 								<li id="navbar-li-sponsors"><a href="<?= DAV::xmlescape(BeeHub::SPONSORS_PATH) ?>">Sponsors</a></li>
               <?php endif; ?>
-              <li id="navbar-li-docs"><a href="/system/docs.php">Docs</a></li>
+              <li id="navbar-li-docs"><a href="https://www.surfsara.nl/systems/beehub/usage">Docs</a></li>
             </ul>
             <ul class="nav pull-right">
               <?php if (BeeHub_Auth::inst()->is_authenticated()) : ?>
@@ -64,4 +64,4 @@
       </div>
     </div>
     <div class="beehub-spacer-navbar-fixed-top visible-desktop"></div>
-    <a href="http://www.surfsara.nl/"><img src="/system/img/surfsara.png" class="surfsara-logo visible-desktop" /></a>
+    <a href="http://www.surfsara.nl/"><img src="/system/img/surfsara.png" class="surfsara-logo visible-desktop" alt="A service by SURFsara" /></a>

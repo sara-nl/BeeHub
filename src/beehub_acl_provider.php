@@ -75,6 +75,9 @@ public function user_prop_supported_privilege_set() {
     true, 'Read current user privilege set'
   );
 
+  $unbind    = new DAVACL_Element_supported_privilege(
+    DAVACL::PRIV_UNBIND, false, 'Remove child resources from collections (this also requires write privilege on resource itself)'
+  );
   $read        = new DAVACL_Element_supported_privilege(
     DAVACL::PRIV_READ, false, 'Read'
   );
@@ -92,6 +95,7 @@ public function user_prop_supported_privilege_set() {
 
   $read->add_supported_privilege($read_acl);
   $read->add_supported_privilege($read_cups);
+  $write->add_supported_privilege($unbind);
   $retval->add_supported_privilege($read)
          ->add_supported_privilege($write)
          ->add_supported_privilege($read_acl)

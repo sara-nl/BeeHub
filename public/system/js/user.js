@@ -1,3 +1,26 @@
+/**
+ * Copyright ©2013 SURFsara bv, The Netherlands
+ *
+ * This file is part of the beehub client
+ *
+ * beehub client is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * beehub-client is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with beehub.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @author Laura Leistikow (laura.leistikow@surfsara.nl)
+ */
+
+"use strict";
+
 $(function (){
 	/*
 	 * Action when submit button in profile tab is clicked.
@@ -32,12 +55,12 @@ $(function (){
 	    client.proppatch(location.pathname, function(status, data) {
 	    	//TODO check voor elke property
 	    	if (status === 207) {
-	    		alert("Your profile is changed!")
+	    		alert( "Your profile is changed!" );
 	    		$('#verify_password').val("");
 	    		$('#verification_code').val("");
           location.reload();
 	    	} else {
-	    		alert("Something went wrong. Your profile is not updated!")
+	    		alert( "Something went wrong. Your profile is not updated!" );
 	    	}
 	    }, setProps);
 	   
@@ -50,9 +73,10 @@ $(function (){
 		
 		var showError = function(error){
 			passwordConfirmationField.parent().parent().addClass('error');
-			var error = $('<span class="help-inline">'+error+'</span>');
-			passwordConfirmationField.parent().append(error);
-		}
+			var errorSpan = $('<span class="help-inline"></span>');
+      errorSpan.text( error );
+			passwordConfirmationField.parent().append( errorSpan );
+		};
 		
 		if(passwordConfirmationField.val() !== $('#new_password').val()) {
 			showError('Password mismatch.');
@@ -93,7 +117,8 @@ $(function (){
 		    	}
 		    	if (status===403) {
 		    		$("#password").parent().parent().addClass('error');
-					var error = $('<span class="help-inline">Wrong password.</span>');
+					var error = $( '<span class="help-inline"></span>' );
+          error.text( 'Wrong password.' );
 					$("#password").parent().append(error);
 		    	};
 		    }, $("#change-password").serialize());
@@ -137,9 +162,9 @@ $(function (){
 		    	if (status===200) {
 			    	location.reload();
 		    	}else if (status===403) {
-		    		alert("Wrong verification code or password mismatch!")
+		    		alert( "Wrong verification code or password mismatch!" );
 		    	} else {
-		    		alert("Something went wrong. Your email is not verified.!")
+		    		alert( "Something went wrong. Your email is not verified.!" );
 		    	};
 		    }, $("#verify_email").serialize());
 	});
