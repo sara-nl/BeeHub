@@ -87,32 +87,12 @@
     </tr>\
     </tbody>\
   </table>';
-       
-//    return '<table id="bh-dir-content-table"><tbody><tr id="/home/testuser/testfolder">\
-//      <td title="Rename"><i class="icon-edit bh-dir-content-edit"></i></td>\
-//      <td name="testfolder" class="bh-dir-content-name displayname">\
-//        <a href="/home/testuser/testfolder"><b>testfolder/</b></a>\
-//      </td>\
-//      <td hidden="" class="bh-dir-content-rename-td">\
-//        <input value="testfolder" name="testfolder" class="bh-dir-content-rename-form">\
-//      </td>\
-//      <td name="text/plain; charset=UTF-8" class="type">text/plain; charset=UTF-8</td>\
-//      <td name="/system/users/testuser" class="owner">Test User</td>\
-//      <td name="39424" class="contentlength">38.50 KB</td>\
-//      <td name="Thu Nov 21 2013 11:29:25 GMT+0100 (CET)" class="lastmodified">21-11-2013 11:29</td>\
-//    </tr></tbody></table>';
   };
   
   var checkCheckboxes = function(length) {    
     $("#qunit-fixture").append('<button class="bh-dir-content-copy"></button>');
     $("#qunit-fixture").append('<button class="bh-dir-content-move"></button>');
     $("#qunit-fixture").append('<button class="bh-dir-content-delete"></button>');
-    
-//    $("#qunit-fixture").append('<input type="checkbox" value="testfolder1" name="/home/testuser/testfolder1" class="bh-dir-content-checkbox" checked>');
-//    $("#qunit-fixture").append('<input type="checkbox" value="testfile1" name="/home/testuser/testfile1" class="bh-dir-content-checkbox" checked>');
-//    $("#qunit-fixture").append('<input type="checkbox" value="testfile2" name="/home/testuser/testfile2" class="bh-dir-content-checkbox">');
-//    
-//    $("#qunit-fixture").append('<input class="bh-dir-content-checkboxgroup" type="checkbox">');
     
     // Call init function
     nl.sara.beehub.view.content.init();
@@ -157,8 +137,6 @@
     nl.sara.beehub.view.content.init();
     
     // Call click handlers
-    // Buttons
-    
     row.find('.bh-dir-content-openselected').click();
     
     // Original environment
@@ -166,12 +144,11 @@
     nl.sara.beehub.view.content.init();
   };
   
-  var checkEditIcon = function(check , displayname){   
+  var checkEditMenu = function(check , displayname){    
     // Call init function
     nl.sara.beehub.view.content.init();
     
     var rememberRenameResource = nl.sara.beehub.controller.renameResource;
-    
     nl.sara.beehub.controller.renameResource = function(resource, value, overwrite){
       deepEqual(resource.path, check , "Location should be "+check );
       deepEqual(value, "newFolderName", "Value should be newFolderName" );
@@ -212,7 +189,7 @@
   var checkSetRowHandlers = function(length, check , displayname){
     checkCheckboxes( length );
     checkOpenSelected( check );
-    checkEditIcon( check, displayname );
+    checkEditMenu( check, displayname );
   };
   
   module("view content")
@@ -364,12 +341,12 @@
   /**
    * Test edit icon
    */
-  test( 'nl.sara.beehub.view.content.init: Edit icon', function() {
+  test( 'nl.sara.beehub.view.content.init: Edit menu', function() {
     expect( 10 );
     
     $("#qunit-fixture").append(getTable());
     
-    checkEditIcon("/home/testuser/testfolder/", "testfolder");
+    checkEditMenu("/home/testuser/testfolder/", "testfolder");
   });
   
   /**
@@ -460,7 +437,7 @@
     
     var resource = new nl.sara.beehub.ClientResource("/home/testuser/testfile/");
     resource = nl.sara.beehub.view.content.getUnknownResourceValues(resource);
-    
+
     deepEqual(resource.displayname, "testfile", "Displayname should be testfile");
     deepEqual(resource.type, "text/plain; charset=UTF-8", "Type should be text/plain; charset=UTF-8");
     deepEqual(resource.owner, "/system/users/testuser", "Owner should be /system/users/testuser");
@@ -472,7 +449,7 @@
    * Test add resource
    */
   test('nl.sara.beehub.view.content.addResource', function(){
-    expect( 28 );
+    expect( 38 );
     
     $("#qunit-fixture").append(getTable());
     
@@ -485,40 +462,121 @@
     resource.contentlength = "undefined";
     resource.lastmodified = "Thu Nov 21 2013 14:27:03 GMT+0100 (CET)";
     resource.owner = 'Test User'
+
+    var testresource1 = new nl.sara.beehub.ClientResource("/home/testuser/newfolder/");
+    testresource1 = nl.sara.beehub.view.content.getUnknownResourceValues(testresource1);
+    
+    deepEqual(testresource1.displayname, undefined, "Displayname should be undefined");
+    deepEqual(testresource1.type, undefined, "Type should be undefined");
+    deepEqual(testresource1.contentlength, undefined, "Contentlength should be undefined");
+    deepEqual(testresource1.lastmodified, undefined, "Lastmodified should be undefined");
+    deepEqual(testresource1.owner, undefined, "Owner should be undefined");
     
     nl.sara.beehub.view.content.addResource(resource);
-  
-    var row = $("tr[id='/home/testuser/newfolder/']");
-//    console.log(row.html());
     
-//    var resource2 = new nl.sara.beehub.ClientResource("/home/testuser/newfolder/");
-//    resource2 = nl.sara.beehub.view.content.getUnknownResourceValues(resource2);
-//    
-//    deepEqual(resource2, resource, "Path should be "+resource.path);
-    var expected = '\
-      <td width="10px">\
-        <input type="checkbox" value="newfolder" name="/home/testuser/newfolder" class="bh-dir-content-checkbox">\
-      </td>\
-      <td width="10px" title="Rename" data-toggle="tooltip">\
-        <i style="cursor: pointer" class="icon-edit bh-dir-content-edit"></i>\
-      </td>\
-      <td name="newfolder" class="bh-dir-content-name displayname">\
-        <a href="/home/testuser/newfolder"><b>newfolder/</b></a>\
-      </td>\
-      <td hidden="true" class="bh-dir-content-rename-td">\
-        <input value="newfolder" name="newfolder" class="bh-dir-content-rename-form">\
-      </td>\
-      <td name="undefined" class="contentlength"></td>\
-      <td name="collection" class="type">\
-        <i style="cursor: pointer" class="icon-folder-close bh-dir-content-openselected" name="/home/testuser/newfolder">&gt;</i>\
-      </td>\
-      <td name="Fri Nov 22 2013 13:56:37 GMT+0100 (CET)" class="lastmodified">22-11-2013 13:56</td>\
-      <td name="/system/users/testuser" class="owner">Test User</td>';
-    deepEqual(row.html(), expected, "Path should be "+resource.path);
+    var testresource2 = new nl.sara.beehub.ClientResource("/home/testuser/newfolder/");
+    testresource2 = nl.sara.beehub.view.content.getUnknownResourceValues(testresource2);
 
-    // TODO
-    // Hele object testen of is dat visueel al getest? Nu alleen waardes getest.
+    deepEqual(testresource2.path, resource.path, "Path should be "+resource.path);
+    deepEqual(testresource2.displayname, resource.displayname, "Displayname should be "+resource.displayname);
+    deepEqual(testresource2.type, resource.type, "Type should be "+resource.type);
+    deepEqual(testresource2.contentlength, resource.contentlength, "Contentlength should be "+resource.contentlength);
+    deepEqual(testresource2.lastmodified, resource.lastmodified, "Lastmodified should be "+resource.lastmodified);
+    deepEqual(testresource2.owner, resource.owner, "Owner should be "+resource.owner);
+
     checkSetRowHandlers( 3, resource.path , resource.displayname );
   })
+  
+   /**
+   * Test delete resource
+   */
+  test('nl.sara.beehub.view.content.deleteResource', function(){
+    expect( 10 );
+    
+    $("#qunit-fixture").append(getTable());
+    
+    // Init for initializing table
+    nl.sara.beehub.view.content.init();
+    
+    var resource = new nl.sara.beehub.ClientResource("/home/testuser/testfile/");
+    
+    var testresource1 = new nl.sara.beehub.ClientResource("/home/testuser/testfile/");
+    testresource1 = nl.sara.beehub.view.content.getUnknownResourceValues(testresource1);
+    
+    deepEqual(testresource1.displayname, "testfile", "Displayname should be testfile");
+    deepEqual(testresource1.type, "text/plain; charset=UTF-8", "Type should be text/plain; charset=UTF-8");
+    deepEqual(testresource1.contentlength, "39424", "Contentlength should be 39424");
+    deepEqual(testresource1.lastmodified, "Thu Nov 21 2013 14:27:03 GMT+0100 (CET)", "Lastmodified should be Thu Nov 21 2013 14:27:03 GMT+0100 (CET)");
+    deepEqual(testresource1.owner, "/system/users/testuser", "Owner should be /system/users/testuser");
+    
+    nl.sara.beehub.view.content.deleteResource(resource);
+    
+    var testresource2 = new nl.sara.beehub.ClientResource("/home/testuser/testfile/");
+    testresource2 = nl.sara.beehub.view.content.getUnknownResourceValues(testresource2);
+    
+    deepEqual(testresource2.displayname, undefined, "Displayname should be undefined");
+    deepEqual(testresource2.type, undefined, "Type should be undefined");
+    deepEqual(testresource2.contentlength, undefined, "Contentlength should be undefined");
+    deepEqual(testresource2.lastmodified, undefined, "Lastmodified should be undefined");
+    deepEqual(testresource2.owner, undefined, "Owner should be undefined");
+  })
+  
+     /**
+   * Test delete resource
+   */
+  test('nl.sara.beehub.view.content.updateResource', function(){
+    expect( 46 );
+    
+    $("#qunit-fixture").append(getTable());
+    
+    // Init for initializing table
+    nl.sara.beehub.view.content.init();
+    
+    var testresource1 = new nl.sara.beehub.ClientResource("/home/testuser/testfile/");
+    testresource1 = nl.sara.beehub.view.content.getUnknownResourceValues(testresource1);
+    
+    deepEqual(testresource1.displayname, "testfile", "Displayname should be testfile");
+    deepEqual(testresource1.type, "text/plain; charset=UTF-8", "Type should be text/plain; charset=UTF-8");
+    deepEqual(testresource1.contentlength, "39424", "Contentlength should be 39424");
+    deepEqual(testresource1.lastmodified, "Thu Nov 21 2013 14:27:03 GMT+0100 (CET)", "Lastmodified should be Thu Nov 21 2013 14:27:03 GMT+0100 (CET)");
+    deepEqual(testresource1.owner, "/system/users/testuser", "Owner should be /system/users/testuser");
+    
+    var resourcenew = new nl.sara.beehub.ClientResource("/home/testuser/testfile2/");
+    resourcenew = nl.sara.beehub.view.content.getUnknownResourceValues(resourcenew);
+    
+    deepEqual(resourcenew.displayname, undefined, "Displayname should be undefined");
+    deepEqual(resourcenew.type, undefined, "Type should be undefined");
+    deepEqual(resourcenew.contentlength, undefined, "Contentlength should be undefined");
+    deepEqual(resourcenew.lastmodified, undefined, "Lastmodified should be undefined");
+    deepEqual(resourcenew.owner, undefined, "Owner should be undefined");
+    
+    resourcenew.displayname = "testfile2";
+    resourcenew.type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    resourcenew.contentlength = "40000";
+    resourcenew.lastmodified = "Thu Nov 22 2013 14:27:03 GMT+0100 (CET)";
+    resourcenew.owner = "/system/users/testuser2";
+      
+    nl.sara.beehub.view.content.updateResource(testresource1, resourcenew);
+   
+    var testresource2 = new nl.sara.beehub.ClientResource("/home/testuser/testfile/");
+    testresource2 = nl.sara.beehub.view.content.getUnknownResourceValues(testresource2);
+    
+    deepEqual(testresource2.displayname, undefined, "Displayname should be undefined");
+    deepEqual(testresource2.type, undefined, "Type should be undefined");
+    deepEqual(testresource2.contentlength, undefined, "Contentlength should be undefined");
+    deepEqual(testresource2.lastmodified, undefined, "Lastmodified should be undefined");
+    deepEqual(testresource2.owner, undefined, "Owner should be undefined");
+    
+    var testresource3 = new nl.sara.beehub.ClientResource("/home/testuser/testfile2/");
+    testresource3 = nl.sara.beehub.view.content.getUnknownResourceValues(testresource3);
+    
+    deepEqual(testresource3.displayname, "testfile2", "Displayname should be testfile2");
+    deepEqual(testresource3.type, "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "Type should be application/vnd.openxmlformats-officedocument.wordprocessingml.document");
+    deepEqual(testresource3.contentlength, "40000", "Contentlength should be 40000");
+    deepEqual(testresource3.lastmodified, "Thu Nov 22 2013 14:27:03 GMT+0100 (CET)", "Lastmodified should be Thu Nov 22 2013 14:27:03 GMT+0100 (CET)");
+    deepEqual(testresource3.owner, "/system/users/testuser2", "Owner should be /system/users/testuser2");
+    
+    checkSetRowHandlers( 2, resourcenew.path , resourcenew.displayname );
+  }) 
 })();
 // End of file

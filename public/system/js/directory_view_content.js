@@ -201,30 +201,11 @@
     $('.bh-dir-content-openselected').unbind('click').click(function(){nl.sara.beehub.controller.goToPage($(this).attr("name"))});
 
     // Edit icon
-    $('.bh-dir-content-edit').unbind().click(handle_edit_icon_click);
-||||||| merged common ancestors
-    $('.bh-dir-content-edit').unbind().click(handle_edit_icon_click);
-    
-    // Rename handler
-    $('.bh-dir-content-rename-form').unbind().change(handle_rename_form_change);
-    $('.bh-dir-content-rename-form').keypress(function(e) {
-      if(e.which === 13) {
-        e.preventDefault();
-        $('.bh-dir-content-rename-form').trigger('change');
-      }
-    });
-    
-    // Blur: erase rename form field
-    $('.bh-dir-content-rename-form').blur(function(){
-      $(this).closest("tr").find(".bh-dir-content-name").show();
-      $(this).closest("tr").find(".bh-dir-content-rename-td").hide();
-    });
-=======
-    $('.bh-dir-content-edit').unbind( 'click' ).click(handle_edit_menu_click);
-    
+    $('.bh-dir-content-edit').unbind('click').click(handle_edit_menu_click);
+   
     // View acl
     $('.bh-dir-content-acl').unbind( 'click' ).click(handle_acl_menu_click);
->>>>>>> origin/master
+    
   };
   
   /*
@@ -357,7 +338,6 @@
     if (resource.lastmodified === undefined) {
       resource.lastmodified = $("tr[id='"+resource.path+"']").find('.lastmodified').attr('name');
     }
-    
     return resource;
   };
   
@@ -374,11 +354,13 @@
     if ( currentPath.substr( -1 ) !== '/' ) {
       currentPath += '/';
     }
-    if ( collection !== currentPath ) {
-      return;
-    }
+// TODO weer terugzetten
+//    if ( collection !== currentPath ) {
+//      return;
+//    }
 
     var row = createRow(resource);
+
     $("#bh-dir-content-table").append(row);
     $("#bh-dir-content-table").trigger("update");
     // Set handlers again
@@ -411,16 +393,16 @@
     if ( currentPath.substr( -1 ) !== '/' ) {
       currentPath += '/';
     }
-
-    if ( collectionOrg === currentPath ) {
+// TODO WEER TERUGZETTEN!!!!
+//    if ( collectionOrg === currentPath ) {
       // delete current row
       nl.sara.beehub.view.content.deleteResource(resourceOrg);
-    }
+//    }
 
-    if ( collectionNew === currentPath ) {
+//    if ( collectionNew === currentPath ) {
       // add new row
       nl.sara.beehub.view.content.addResource(resourceNew);
-    }
+//    }
   };
   
   

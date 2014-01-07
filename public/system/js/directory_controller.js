@@ -1125,6 +1125,8 @@
       aceObject['unbind'] = true;
     };
     
+    console.log(ace.principal);
+    console.log(ace.getPrivilegeNames('DAV:'));
     // Make permissions string  
     if ( ace.grantdeny === 2 ) {
       aceObject['permissions'] = "deny ";
