@@ -26,32 +26,27 @@ namespace BeeHub\tests;
  * @package     BeeHub
  * @subpackage  tests
  */
-class BeeHub_RegistryTest extends BeeHub_Tests_Db_Test_Case {
+class BeeHub_RegistryTest extends \PHPUnit_Framework_TestCase {
 
   public function setUp() {
     parent::setUp();
-    reset_SERVER();
-    $dirStructure = array(
-        'directory' => array(
-            'file.txt' => 'file contents'
-        ),
-        'system' => array(
-            'groups' => array( 'foo' => '' ),
-            'sponsors' => array( 'sponsor_a' => '' ),
-            'users' => array( 'john' => '' ),
-        )
-    );
-    \org\bovigo\vfs\vfsStream::setup( 'registry_test', null, $dirStructure );
-    \BeeHub::$CONFIG['environment']['datadir'] = \org\bovigo\vfs\vfsStream::url( 'registry_test/' );
+    setUp();
+    $config = \BeeHub::config();
+    if ( empty( $config['environment']['datadir'] ) ) {
+      $this->markTestSkipped( 'No data directory specified; all tests depending on XFS are skipped' );
+      return;
+    }
+
+    setUpStorageBackend();
   }
 
 
   public function testResource() {
     $registry = \BeeHub_Registry::inst();
-    $resourceFile = $registry->resource( '/directory/file.txt' );
+    $resourceFile = $registry->resource( '/foo/file.txt' );
     $this->assertInstanceOf( '\BeeHub_File', $resourceFile );
 
-    $resourceDir = $registry->resource( '/directory/' );
+    $resourceDir = $registry->resource( '/foo/' );
     $this->assertInstanceOf( '\BeeHub_Directory', $resourceDir );
 
     $resourceSystem = $registry->resource( '/system/' );
@@ -80,3 +75,5 @@ class BeeHub_RegistryTest extends BeeHub_Tests_Db_Test_Case {
   // TODO: To test shallow locks, we need a multi threaded test
 
 } // class BeeHub_RegistryTest
+
+// End of file

@@ -26,7 +26,7 @@ namespace BeeHub\tests;
  * @package     BeeHub
  * @subpackage  tests
  */
-class BeeHub_Principal_CollectionTest extends BeeHub_Tests_Db_Test_Case {
+class BeeHub_Principal_CollectionTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @var  BeeHub_Principal_Collection  The unit under test
@@ -36,6 +36,7 @@ class BeeHub_Principal_CollectionTest extends BeeHub_Tests_Db_Test_Case {
 
   public function setUp() {
     parent::setUp();
+    setUp();
     $this->obj = $this->getMock( '\BeeHub_Principal_Collection', array( 'init_members', 'report_principal_property_search' ), array( '/system/users' ) );
     $this->obj->expects( $this->any() )
               ->method( 'init_members' );

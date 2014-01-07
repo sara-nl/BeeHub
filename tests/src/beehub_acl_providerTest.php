@@ -29,8 +29,7 @@ namespace BeeHub\tests;
 class BeeHub_ACL_ProviderTest extends \PHPUnit_Framework_TestCase {
 
   public function setUp() {
-    parent::setUp();
-    reset_SERVER();
+    setUp();
   }
 
 
@@ -65,16 +64,17 @@ class BeeHub_ACL_ProviderTest extends \PHPUnit_Framework_TestCase {
 
 
   public function testWheel() {
+    $config = \BeeHub::config();
     $authJohn = $this->getMock( '\BeeHub\tests\BeeHub_Auth', array( 'is_authenticated', 'current_user' ), array( new \SimpleSAML_Auth_Simple( 'BeeHub' ) ) );
     $authJohn->expects( $this->any() )
              ->method( 'is_authenticated' )
              ->will( $this->returnValue( true ) );
     $authJohn->expects( $this->any() )
              ->method( 'current_user' )
-             ->will( $this->returnValue( new \DAV_Resource( '/system/users/john' ) ) );
+             ->will( $this->returnValue( new \DAV_Resource( $config['namespace']['wheel_path'] ) ) );
 
     $obj = new \BeeHub_ACL_Provider( $authJohn );
-    $this->assertTrue( $obj->wheel(), 'BeeHub_ACL_Provider::wheel() should return true, because John is the administrator' );
+    $this->assertTrue( $obj->wheel(), 'BeeHub_ACL_Provider::wheel() should return true, because we set the \'wheel_path\' to be logged in' );
 
     $authJane = $this->getMock( '\BeeHub\tests\BeeHub_Auth', array( 'is_authenticated', 'current_user' ), array( new \SimpleSAML_Auth_Simple( 'BeeHub' ) ) );
     $authJane->expects( $this->any() )

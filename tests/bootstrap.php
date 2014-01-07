@@ -73,26 +73,74 @@ reset_SERVER();
 
 
 /**
- * Returns an array with the parsed configuration file
+ * Delete a complete tree
  *
- * @param   boolean  $parse  If set to true, the configuration file will be parsed, even if we have a parsed version in cache
- * @return  array            The configuration.
- * @see     parse_ini_file
+ * Adapted this function from the PHP documentation, currently to be found at
+ * http://nl3.php.net/manual/en/function.rmdir.php#110489
+ *
+ * @return  boolean  True on success, false otherwise
  */
-function getConfig( $parse = false ) {
-  static $config = null;
-  if ( $parse || \is_null( $config ) ) {
-    $config = \parse_ini_file( \dirname( __FILE__ ) . \DIRECTORY_SEPARATOR . 'config.ini', true );
+function delTreeContents( $dir ) {
+   $files = \array_diff( \scandir( $dir ), array( '.', '..' ) );
+    foreach ( $files as $file ) {
+      $filePath = $dir . \DIRECTORY_SEPARATOR . $file;
+      if ( \is_dir( $filePath ) ) {
+        delTreeContents( $filePath );
+        \rmdir( $filePath );
+      }else{
+        \unlink( $filePath );
+      }
+    }
   }
-  return $config;
-}
 
 
-// Check for configuration file
-if ( !\file_exists( \dirname( __FILE__ ) . \DIRECTORY_SEPARATOR . 'config.ini' ) ) {
-  print( "No configuration file exists. Please copy ' . \dirname( __FILE__ ) . \DIRECTORY_SEPARATOR . 'config_example.ini to ' . \dirname( __FILE__ ) . \DIRECTORY_SEPARATOR . 'config.ini and edit it to set the right configuration options\n" );
-  die( 1 );
+/**
+ * Initialize the storage backend
+ *
+ * @return  void
+ */
+function setUpStorageBackend() {
+  $config = \BeeHub::config();
+  if ( empty( $config['environment']['datadir'] ) || ! is_dir( $config['environment']['datadir'] ) ) {
+    trigger_error( 'No datadir set!' );
+  }
+
+  // Remove everything in the datadir
+  delTreeContents( $config['environment']['datadir'] );
+
+  // Remove all extended attributes from the datadir
+  $attributes = \xattr_list( $config['environment']['datadir'] );
+  foreach ( $attributes as $attribute ) {
+    \xattr_remove( $config['environment']['datadir'], $attribute );
+  }
+
+  // Set extended attributes and create a controlled environment
+  \xattr_set( $config['environment']['datadir'], rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
+  \mkdir( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'home' );
+  \xattr_set( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'home', rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
+  \mkdir( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'foo' );
+  \xattr_set( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'foo', rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
+  \xattr_set( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'foo', rawurlencode( \DAV::PROP_ACL ), "[[\"/system/groups/foo\",false,[\"DAV: read\", \"DAV: write\"],false]]" );
+  \xattr_set( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'foo', rawurlencode( \BeeHub::PROP_SPONSOR ), '/system/sponsors/sponsor_a' );
+  \file_put_contents( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'foo' . \DIRECTORY_SEPARATOR . 'file.txt', 'Some contents of this file' );
+  \xattr_set( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'foo', rawurlencode( \DAV::PROP_OWNER ), '/system/users/john' );
+  \xattr_set( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'foo', rawurlencode( \BeeHub::PROP_SPONSOR ), '/system/sponsors/sponsor_a' );
+  \xattr_set( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'foo', rawurlencode( \DAV::PROP_GETCONTENTTYPE ), "text/plain; charset=UTF-8" );
+  \xattr_set( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'foo', rawurlencode( \DAV::PROP_GETETAG ), '"EA"' );
+  \mkdir( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'bar' );
+  \xattr_set( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'bar', rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
+  \xattr_set( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'bar', rawurlencode( \DAV::PROP_ACL ), "[[\"/system/groups/bar\",false,[\"DAV: read\", \"DAV: write\"],false]]" );
+  \xattr_set( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'bar', rawurlencode( \BeeHub::PROP_SPONSOR ), '/system/sponsors/sponsor_b' );
+  \mkdir( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'system' );
+  \xattr_set( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'system', rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
+  \mkdir( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'system' . \DIRECTORY_SEPARATOR . 'groups' );
+  \xattr_set( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'system' . \DIRECTORY_SEPARATOR . 'groups', rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
+  \mkdir( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'system' . \DIRECTORY_SEPARATOR . 'sponsors' );
+  \xattr_set( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'system' . \DIRECTORY_SEPARATOR . 'sponsors', rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
+  \mkdir( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'system' . \DIRECTORY_SEPARATOR . 'users' );
+  \xattr_set( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'system' . \DIRECTORY_SEPARATOR . 'users', rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
 }
+
 
 // Load dependencies
 require_once( \dirname( \dirname( __FILE__ ) ) . \DIRECTORY_SEPARATOR . 'vendor' . \DIRECTORY_SEPARATOR . 'autoload.php' );
@@ -112,5 +160,28 @@ function loadMocks() {
   }
 }
 loadMocks();
+
+
+// Check for configuration file
+$configFile = \dirname( __FILE__ ) . \DIRECTORY_SEPARATOR . 'config.ini';
+if ( !\file_exists( $configFile ) ) {
+  print( 'No configuration file exists. Please copy ' . \dirname( \dirname( __FILE__ ) ) . \DIRECTORY_SEPARATOR . 'config_example.ini to ' . $configFile . ' and edit it to set the right configuration options\n' );
+  die( 1 );
+}
+\BeeHub::loadConfig( $configFile );
+unset( $configFile );
+
+
+/**
+ * Because we can't be sure we're using PHP 5.4 or higher, we can't use traits.
+ * Instead, we use this global function to do the general setup for tests
+ *
+ * @return  void
+ */
+function setUp() {
+  reset_SERVER();
+  \DAV::$REGISTRY = \BeeHub_Registry::inst();
+  \BeeHub::setAuth( BeeHub_Auth::inst() );
+}
 
 // End of file

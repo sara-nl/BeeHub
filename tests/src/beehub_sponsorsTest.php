@@ -26,7 +26,7 @@ namespace BeeHub\tests;
  * @package     BeeHub
  * @subpackage  tests
  */
-class BeeHub_SponsorsTest extends BeeHub_Tests_Db_Test_Case {
+class BeeHub_SponsorsTest extends \PHPUnit_Framework_TestCase {
 
   /**
    * @var  \BeeHub_Sponsors  The unit under test
@@ -36,6 +36,7 @@ class BeeHub_SponsorsTest extends BeeHub_Tests_Db_Test_Case {
 
   public function setUp() {
     parent::setUp();
+    setUp();
     $this->obj = new \BeeHub_Sponsors( '/system/sponsors/' );
   }
 

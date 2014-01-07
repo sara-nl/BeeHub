@@ -170,4 +170,10 @@
       <value>987654</value>
     </row>
   </table>
+  <table name="ETag">
+    <column>etag</column>
+    <row>
+      <value>1</value>
+    </row>
+  </table>
 </dataset>

@@ -35,16 +35,20 @@ abstract class BeeHub_Tests_Db_Test_Case extends \PHPUnit_Extensions_Database_Te
 
 
   public function setUp() {
+    $config = \BeeHub::config();
+    if ( empty( $config['mysql']['host'] ) ) {
+      $this->markTestSkipped( 'No mySQL credentials specified; all tests depending on mySQL are skipped' );
+      return;
+    }
+
     parent::setUp();
-    reset_SERVER();
-    \DAV::$REGISTRY = \BeeHub_Registry::inst();
-    \BeeHub::setAuth( BeeHub_Auth::inst() );
+    setUp();
   }
 
-  
+
   final public function getConnection() {
     if ( \is_null( $this->dbUnitConnection ) ) {
-      $config = getConfig();
+      $config = \BeeHub::config();
       if ( \is_null( self::$connection ) ) {
         self::$connection = new \PDO( 'mysql:dbname=' . $config['mysql']['database'] . ';host=' . $config['mysql']['host'], $config['mysql']['username'], $config['mysql']['password'] );
       }
@@ -64,6 +68,11 @@ abstract class BeeHub_Tests_Db_Test_Case extends \PHPUnit_Extensions_Database_Te
   }
 
 
+  /**
+   * Get the path to the datasets
+   *
+   * @return  string  The path to the datasets
+   */
   protected function getDatasetPath() {
     return \dirname( __FILE__ ) . \DIRECTORY_SEPARATOR;
   }

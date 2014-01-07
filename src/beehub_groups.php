@@ -54,11 +54,6 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
         !preg_match('/^[a-zA-Z0-9]{1}[a-zA-Z0-9_\-\.]{0,254}$/D', $group_name)) {
       throw new DAV_Status(DAV::HTTP_BAD_REQUEST);
     }
-    $groupdir = DAV::unslashify(BeeHub::$CONFIG['environment']['datadir']) . DIRECTORY_SEPARATOR . $group_name;
-    // Check for existing groupdir
-    if (file_exists($groupdir)) {
-      throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
-    }
 
     // Store in the database
     try {
@@ -72,6 +67,16 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
       }else{
         throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
       }
+    }
+
+    $groupdir = DAV::unslashify(BeeHub::$CONFIG['environment']['datadir']) . DIRECTORY_SEPARATOR . $group_name;
+    // Check for existing groupdir
+    if (file_exists($groupdir)) {
+      BeeHub_DB::execute(
+        'DELETE FROM `beehub_groups` WHERE `group_name`=?',
+        's', $group_name
+      );
+      throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
     }
 
     // Fetch the group and store extra properties

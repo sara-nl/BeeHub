@@ -377,16 +377,22 @@ class BeeHub {
    */
   public static $CONFIG = null;
 
+
+  public static function loadConfig( $path = null ) {
+    if ( is_null( $path ) ) {
+      $path = dirname( dirname( __FILE__ ) ) . DIRECTORY_SEPARATOR . 'config.ini';
+    }
+    BeeHub::$CONFIG = parse_ini_file( $path, true );
+  }
+
+
   /**
    * Returns the configuration file parsed into an array
    * @return  array  An array with the configuration options
    */
   public static function config() {
     if ( is_null( self::$CONFIG ) ) {
-      BeeHub::$CONFIG = parse_ini_file(
-        dirname( dirname( __FILE__ ) ) . DIRECTORY_SEPARATOR . 'config.ini',
-        true
-      );
+      self::loadConfig();
     }
     return self::$CONFIG;
   }
@@ -412,7 +418,7 @@ class BeeHub {
 // When PHP 5.4 is more widely adapted, all calls to BeeHub::$CONFIG['some_key']
 // should be replaced by BeeHub::config()['some_key']. But as PHP 5.3.3 and
 // earlier don't support this, let's not make things more complicated and make
-// BeeHub::$CONFIG public and call BeeHub::config() here so it is always filled.
-BeeHub::config();
+// BeeHub::$CONFIG public and call BeeHub::loadConfig() here so it is always filled.
+BeeHub::loadConfig();
 
 // End of file
