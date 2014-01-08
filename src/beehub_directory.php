@@ -71,12 +71,12 @@ private function internal_create_member( $name, $collection = false ) {
   xattr_set( $localPath, rawurlencode( DAV::PROP_GETETAG), BeeHub_DB::ETag() );
   xattr_set( $localPath, rawurlencode( DAV::PROP_OWNER  ), $this->user_prop_current_user_principal() );
   xattr_set( $localPath, rawurlencode( BeeHub::PROP_SPONSOR ), $sponsor );
-  return BeeHub_Registry::inst()->resource($path);
+  return DAV::$REGISTRY->resource( $path );
 }
 
 
 public function method_COPY( $path ) {
-  $parent = BeeHub_Registry::inst()->resource(dirname($path));
+  $parent = DAV::$REGISTRY->resource( dirname( $path ) );
   if (!$parent)
     throw new DAV_Status(DAV::HTTP_CONFLICT, 'Unable to COPY to unexisting collection');
   if (!$parent instanceof BeeHub_Directory)
@@ -110,7 +110,7 @@ public function method_DELETE( $name )
     if (!@unlink($localpath))
       throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
   }
-  BeeHub_Registry::inst()->forget($path);
+  DAV::$REGISTRY->forget( $path );
 }
 
 
@@ -141,11 +141,11 @@ public function method_MKCOL( $name ) {
 
 public function method_MOVE( $member, $destination ) {
   // Get the ACL of the source (including inherited ACE's)
-  $sourceAcl = BeeHub_Registry::inst()->resource( $this->path . $member )->user_prop_acl();
+  $sourceAcl = DAV::$REGISTRY->resource( $this->path . $member )->user_prop_acl();
 
   // Determine if moving is allowed and if so, move the object
-  BeeHub_Registry::inst()->resource( $this->path . $member )->assert(DAVACL::PRIV_WRITE);
-  BeeHub_Registry::inst()->resource( dirname($destination) )->assert(DAVACL::PRIV_WRITE);
+  DAV::$REGISTRY->resource( $this->path . $member )->assert( DAVACL::PRIV_WRITE );
+  DAV::$REGISTRY->resource( dirname($destination) )->assert( DAVACL::PRIV_WRITE );
   $localDest = BeeHub::localPath($destination);
   rename(
     BeeHub::localPath( $this->path . $member ),
@@ -176,7 +176,7 @@ public function method_MOVE( $member, $destination ) {
     }
   }
 
-  $destinationResource = BeeHub_Registry::inst()->resource( $destination );
+  $destinationResource = DAV::$REGISTRY->resource( $destination );
 
   // If the inherited ACE's at the destination are the same as at the source, then no need to copy them (for example when moving within the same directory). The effective ACL will still be the same
   if ( $copyInherited ) {
@@ -235,11 +235,11 @@ private function skipInvalidMembers() {
   while (
     $this->dir()->valid() && (
       $this->dir()->isDot() ||
-      !BeeHub_Registry::inst()->resource(
+      !DAV::$REGISTRY->resource(
         $this->path . $this->current()
       )->isVisible()
   ) ) {
-    BeeHub_Registry::inst()->forget(
+    DAV::$REGISTRY->forget(
       $this->path . $this->current()
     );
     $this->dir->next();

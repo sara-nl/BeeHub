@@ -34,7 +34,7 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
   public function method_GET() {
     $groups = array();
     foreach ($this as $group_name)
-      $groups[$group_name] = BeeHub_Registry::inst()->resource( $this->path . $group_name );
+      $groups[$group_name] = DAV::$REGISTRY->resource( $this->path . $group_name );
     $this->include_view(null, array('groups' => $groups));
   }
 
@@ -80,7 +80,7 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
     }
 
     // Fetch the group and store extra properties
-    $group = BeeHub_Registry::inst()->resource(BeeHub::GROUPS_PATH . $group_name);
+    $group = DAV::$REGISTRY->resource( BeeHub::GROUPS_PATH . $group_name );
     $group->user_set(DAV::PROP_DISPLAYNAME, $displayname);
     if (!empty($description)) {
       $group->user_set(BeeHub::PROP_DESCRIPTION, $description);

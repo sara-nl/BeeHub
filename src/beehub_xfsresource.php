@@ -109,7 +109,7 @@ class BeeHub_XFSResource extends BeeHub_Resource {
    */
   protected function user_set_sponsor($sponsor) {
     $this->assert(DAVACL::PRIV_READ);
-    if ( ! ( $sponsor = BeeHub_Registry::inst()->resource($sponsor) ) ||
+    if ( ! ( $sponsor = DAV::$REGISTRY->resource($sponsor) ) ||
          ! $sponsor instanceof BeeHub_Sponsor ||
          ! $sponsor->isVisible() )
       throw new DAV_Status(
@@ -130,7 +130,7 @@ class BeeHub_XFSResource extends BeeHub_Resource {
    */
   protected function user_set_owner($owner) {
     $this->assert(DAVACL::PRIV_READ);
-    if ( ! ( $owner = BeeHub_Registry::inst()->resource($owner) ) ||
+    if ( ! ( $owner = DAV::$REGISTRY->resource($owner) ) ||
          ! $owner->isVisible() ||
          ! $owner instanceof BeeHub_User)
       throw new DAV_Status(
@@ -138,10 +138,10 @@ class BeeHub_XFSResource extends BeeHub_Resource {
         DAV::COND_RECOGNIZED_PRINCIPAL
       );
     if ( !( $cup = $this->user_prop_current_user_principal() ) ||
-         !( $cup = BeeHub_Registry::inst()->resource($cup) ) )
+         !( $cup = DAV::$REGISTRY->resource($cup) ) )
       throw DAV::forbidden();
     if ( ($sponsor = $this->user_prop_sponsor()) )
-      $sponsor = BeeHub_Registry::inst()->resource($sponsor);
+      $sponsor = DAV::$REGISTRY->resource($sponsor);
     if ( $this->user_prop_owner() === $cup->path &&
          in_array( $owner->path, $sponsor->user_prop_group_member_set() ) )
       return $this->user_set(DAV::PROP_OWNER, $owner->path);

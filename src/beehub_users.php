@@ -86,7 +86,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
     }
 
     // Fetch the user and store extra properties
-    $user = BeeHub_Registry::inst()->resource(
+    $user = DAV::$REGISTRY->resource(
       BeeHub::USERS_PATH . rawurlencode($user_name)
     );
     $user->set_password($password);

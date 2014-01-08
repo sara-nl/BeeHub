@@ -87,7 +87,7 @@ public function user_prop_getetag() {
  */
 public function method_COPY( $path ) {
   $this->assert(DAVACL::PRIV_READ);
-  BeeHub_Registry::inst()->resource(dirname($path))->assert(DAVACL::PRIV_WRITE);
+  DAV::$REGISTRY->resource( dirname( $path ) )->assert( DAVACL::PRIV_WRITE );
   $localPath = BeeHub::localPath($path);
   exec( 'cp --preserve=all ' . BeeHub::escapeshellarg($this->localPath) . ' ' . BeeHub::escapeshellarg($localPath) );
   xattr_remove( $localPath, rawurlencode(DAV::PROP_ACL) );
@@ -99,7 +99,7 @@ public function method_COPY( $path ) {
   if (count($user_sponsors) == 0) { // If the user doesn't have any sponsors, he/she can't create files and directories
     throw DAV::forbidden();
   }
-  $parent = BeeHub_Registry::inst()->resource(dirname($this->path));
+  $parent = DAV::$REGISTRY->resource( dirname( $this->path ) );
   $sponsor = $parent->prop(BeeHub::PROP_SPONSOR); // The default is the directory sponsor
   if (!in_array($sponsor, $user_sponsors)) { //But a user can only create files sponsored by his own sponsors
     $sponsor = $user->user_prop(BeeHub::PROP_SPONSOR);
