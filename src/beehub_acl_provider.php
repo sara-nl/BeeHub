@@ -24,43 +24,13 @@
 class BeeHub_ACL_Provider implements DAVACL_ACL_Provider {
 
   /**
-   * @var  BeeHub_Auth  The authentication instance to check authentication against
-   */
-  private $auth;
-
-
-  /**
-   * Constructor just requires dependecies
-   *
-   * For backwards compatibility, the parameters can be omitted and the
-   * constructor will set it to the default values
-   *
-   * @param  BeeHub_Auth  $auth  The authentication instance to check authentication against
-   */
-  public function __construct( BeeHub_Auth $auth = null ) {
-    if ( is_null( $auth ) ) {
-      $this->auth = BeeHub::getAuth();
-    }else{
-      $this->auth = $auth;
-    }
-  }
-
-
-  /**
    * Returns the cached instance of this class
    *
-   * For backwards compatibility, the parameters can be omitted and the method
-   * will set it to the default values
-   *
-   * @param   BeeHub_Auth          $auth  The authentication instance to check authentication against
    * @return  BeeHub_ACL_Provider         The cached instance of this class
    */
-  static public function inst( BeeHub_Auth $auth = null ) {
-    if ( is_null( $auth ) ) {
-      $auth = BeeHub_Auth::inst();
-    }
+  static public function inst() {
     static $inst = null;
-    if (!$inst) $inst = new BeeHub_ACL_Provider( $auth );
+    if (!$inst) $inst = new BeeHub_ACL_Provider();
     return $inst;
   }
 
@@ -69,7 +39,8 @@ class BeeHub_ACL_Provider implements DAVACL_ACL_Provider {
  * @see DAVACL_ACL_Provider::user_prop_current_user_principal
  */
 public function user_prop_current_user_principal() {
-  $currentUser = $this->auth->current_user();
+  $auth = BeeHub::getAuth();
+  $currentUser = $auth->current_user();
   if ( !is_null( $currentUser ) ) {
     return $currentUser->path;
   }else{
@@ -83,13 +54,6 @@ public function user_prop_current_user_principal() {
  */
 public function wheel() {
   return BeeHub::$CONFIG['namespace']['wheel_path'] === $this->user_prop_current_user_principal();
-//  if ($this->wheelCache === null)
-//    $this->wheelCache = (
-//      ($cup = $this->user_prop_current_user_principal()) &&
-//      ($cup = BeeHub_Registry::inst()->resource($cup)) &&
-//      in_array('/groups/wheel', $cup->current_user_principals())
-//    );
-//  return $this->wheelCache;
 }
 
 

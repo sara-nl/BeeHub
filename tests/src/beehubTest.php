@@ -26,13 +26,7 @@ namespace BeeHub\tests;
  * @package     BeeHub
  * @subpackage  tests
  */
-class beehubTest extends \PHPUnit_Framework_TestCase {
-
-  public function setUp() {
-    parent::setUp();
-    setUp();
-  }
-  
+class beehubTest extends BeeHub_Tests_Db_Test_Case {
 
   public function testBest_xhtml_type() {
     // For now it should always return 'text/html'

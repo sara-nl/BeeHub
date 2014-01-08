@@ -76,29 +76,35 @@ class BeeHub_UsersTest extends BeeHub_Tests_Db_Test_Case {
   }
 
 
-// This test doesn't work yet in a non-production environment. The implementation
-// of the code (not the test, but the unit under test) should improve so it is
-// less dependent on the environment. In other words; it should be easier to
-// spoof the environment
-//  public function testMethod_POST() {
-//    $_POST['user_name'] = 'jdoe';
-//    $_POST['displayname'] = 'J Doe';
-//    $_POST['email'] = "j.doe@somedomain.com";
-//    $_POST['password'] = 'anew password for a new user';
-//    $headers = array();
-//
-//    $this->expectOutputRegex( '/https 303 See Other/' );
-//    $this->obj->method_POST();
-//
-//    $user = new \BeeHub_User( '/system/users/jdoe' );
-//    $this->assertSame( $_POST['displayname'], $user->user_prop( \DAV::PROP_DISPLAYNAME ) );
-//    $this->assertSame( $_POST['email'], $user->user_prop( \Beehub::PROP_EMAIL ) );
-//    $this->assertTrue( $user->check_password( $_POST['password'] ) );
-//
-//    $userFolder = \DAV::$REGISTRY->resource( '/home/' . $_POST['user_name'] );
-//    $beehubConfig = \BeeHub::config();
-//    $this->assertSame( $user->path, $userFolder->user_prop( \DAV::PROP_OWNER ) );
-//  }
+  public function testMethod_POST() {
+    $_POST['user_name'] = 'jdoe';
+    $_POST['displayname'] = 'J Doe';
+    $_POST['email'] = "j.doe@somedomain.com";
+    $_POST['password'] = 'anew password for a new user';
+    $headers = array();
+    $obj = $this->getMock( '\BeeHub_Users', array( 'include_view' ), array ( '/system/users/' ) );
+    $obj->expects( $this->any() )
+        ->method( 'include_view' )
+        ->with( $this->equalTo( 'new_user_confirmation'), $this->equalTo( array( 'email_address' => $_POST['email'] ) ) );
+
+    $emailer = $this->getMock( '\BeeHub_Emailer', array( 'email' ) );
+    $emailer->expects( $this->once() )
+            ->method( 'email' );
+    \BeeHub::setEmailer( $emailer );
+
+    $this->expectOutputRegex( '/html/' );
+    $this->obj->method_POST( $headers );
+
+    $user = new \BeeHub_User( '/system/users/jdoe' );
+    $this->assertSame( $_POST['displayname'], $user->user_prop( \DAV::PROP_DISPLAYNAME ) );
+    $this->assertTrue( $user->check_password( $_POST['password'] ) );
+
+    $userFolder = \DAV::$REGISTRY->resource( '/home/' . $_POST['user_name'] );
+    $beehubConfig = \BeeHub::config();
+    $this->assertSame( $user->path, $userFolder->user_prop( \DAV::PROP_OWNER ) );
+
+    \BeeHub::setEmailer( new \BeeHub_Emailer() );
+  }
 
 
   public function testReport_principal_property_search_invalidProperty() {

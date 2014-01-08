@@ -57,17 +57,16 @@ class BeeHub_Principal_CollectionTest extends \PHPUnit_Framework_TestCase {
   }
 
 
-// Because these methods assert privileges, they need to read the ACL of parent
-// collections. Therefore xattributes are tested. Because not all test systems
-// have a file system installed, I have commented these tests out. On a
-// production system they should run however. Plus, when we moved to an noSQL
-// implementation, it should also work (because the ACL is then stored in the
-// database
-// 
-//  public function testMethod_HEAD() {
-//    $headers = $this->obj->method_HEAD();
-//    $this->assertSame( 'no-cache', $headers['Cache-Control'] );
-//  }
+  public function testMethod_HEAD() {
+    $user = new \BeeHub_User( '/system/users/john' );
+    $auth = $this->getMock( '\BeeHub\tests\BeeHub_Auth', array( 'current_user' ), array( new \SimpleSAML_Auth_Simple( 'BeeHub' ) ) );
+    $auth->expects( $this->any() )
+         ->method( 'current_user' )
+         ->will( $this->returnValue( $user ) );
+    \BeeHub::setAuth( $auth );
+    $headers = $this->obj->method_HEAD();
+    $this->assertSame( 'no-cache', $headers['Cache-Control'] );
+  }
 
 
   public function testMethod_MKCOL() {

@@ -97,12 +97,12 @@ function delTreeContents( $dir ) {
 /**
  * Initialize the storage backend
  *
- * @return  void
+ * @return  boolean  False if there is no storage backend specified, true otherwise
  */
 function setUpStorageBackend() {
   $config = \BeeHub::config();
   if ( empty( $config['environment']['datadir'] ) || ! is_dir( $config['environment']['datadir'] ) ) {
-    trigger_error( 'No datadir set!' );
+    return false;
   }
 
   // Remove everything in the datadir
@@ -115,30 +115,35 @@ function setUpStorageBackend() {
   }
 
   // Set extended attributes and create a controlled environment
-  \xattr_set( $config['environment']['datadir'], rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
-  \mkdir( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'home' );
-  \xattr_set( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'home', rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
-  \mkdir( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'foo' );
-  \xattr_set( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'foo', rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
-  \xattr_set( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'foo', rawurlencode( \DAV::PROP_ACL ), "[[\"/system/groups/foo\",false,[\"DAV: read\", \"DAV: write\"],false]]" );
-  \xattr_set( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'foo', rawurlencode( \BeeHub::PROP_SPONSOR ), '/system/sponsors/sponsor_a' );
-  \file_put_contents( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'foo' . \DIRECTORY_SEPARATOR . 'file.txt', 'Some contents of this file' );
-  \xattr_set( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'foo', rawurlencode( \DAV::PROP_OWNER ), '/system/users/john' );
-  \xattr_set( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'foo', rawurlencode( \BeeHub::PROP_SPONSOR ), '/system/sponsors/sponsor_a' );
-  \xattr_set( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'foo', rawurlencode( \DAV::PROP_GETCONTENTTYPE ), "text/plain; charset=UTF-8" );
-  \xattr_set( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'foo', rawurlencode( \DAV::PROP_GETETAG ), '"EA"' );
-  \mkdir( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'bar' );
-  \xattr_set( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'bar', rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
-  \xattr_set( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'bar', rawurlencode( \DAV::PROP_ACL ), "[[\"/system/groups/bar\",false,[\"DAV: read\", \"DAV: write\"],false]]" );
-  \xattr_set( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'bar', rawurlencode( \BeeHub::PROP_SPONSOR ), '/system/sponsors/sponsor_b' );
-  \mkdir( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'system' );
-  \xattr_set( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'system', rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
-  \mkdir( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'system' . \DIRECTORY_SEPARATOR . 'groups' );
-  \xattr_set( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'system' . \DIRECTORY_SEPARATOR . 'groups', rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
-  \mkdir( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'system' . \DIRECTORY_SEPARATOR . 'sponsors' );
-  \xattr_set( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'system' . \DIRECTORY_SEPARATOR . 'sponsors', rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
-  \mkdir( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'system' . \DIRECTORY_SEPARATOR . 'users' );
-  \xattr_set( $config['environment']['datadir'] . \DIRECTORY_SEPARATOR . 'system' . \DIRECTORY_SEPARATOR . 'users', rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
+  $basePath = $config['environment']['datadir'] . \DIRECTORY_SEPARATOR;
+  \xattr_set( $config['environment']['datadir'], \rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
+  \mkdir( $basePath . 'home' );
+  \xattr_set( $basePath . 'home', \rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
+  \mkdir( $basePath . 'foo' );
+  \xattr_set( $basePath . 'foo', \rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
+  \xattr_set( $basePath . 'foo', \rawurlencode( \DAV::PROP_ACL ), "[[\"/system/groups/foo\",false,[\"DAV: read\", \"DAV: write\"],false]]" );
+  \xattr_set( $basePath . 'foo', \rawurlencode( \BeeHub::PROP_SPONSOR ), '/system/sponsors/sponsor_a' );
+  \file_put_contents( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'file.txt', 'Some contents of this file' );
+  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'file.txt', \rawurlencode( \DAV::PROP_ACL ), "[[\"/system/groups/bar\",false,[\"DAV: read\"],false]]" );
+  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'file.txt', \rawurlencode( \DAV::PROP_OWNER ), '/system/users/john' );
+  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'file.txt', \rawurlencode( \BeeHub::PROP_SPONSOR ), '/system/sponsors/sponsor_a' );
+  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'file.txt', \rawurlencode( \DAV::PROP_GETCONTENTTYPE ), "text/plain; charset=UTF-8" );
+  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'file.txt', \rawurlencode( \DAV::PROP_GETETAG ), '"EA"' );
+  \mkdir( $basePath . 'bar' );
+  \xattr_set( $basePath . 'bar', \rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
+  \xattr_set( $basePath . 'bar', \rawurlencode( \DAV::PROP_ACL ), "[[\"/system/groups/bar\",false,[\"DAV: read\", \"DAV: write\"],false]]" );
+  \xattr_set( $basePath . 'bar', \rawurlencode( \BeeHub::PROP_SPONSOR ), '/system/sponsors/sponsor_b' );
+  \mkdir( $basePath . 'system' );
+  \xattr_set( $basePath . 'system', \rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
+  \mkdir( $basePath . 'system' . \DIRECTORY_SEPARATOR . 'groups' );
+  \xattr_set( $basePath . 'system' . \DIRECTORY_SEPARATOR . 'groups', \rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
+  \mkdir( $basePath . 'system' . \DIRECTORY_SEPARATOR . 'sponsors' );
+  \xattr_set( $basePath . 'system' . \DIRECTORY_SEPARATOR . 'sponsors', \rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
+  \mkdir( $basePath . 'system' . \DIRECTORY_SEPARATOR . 'users' );
+  \xattr_set( $basePath . 'system' . \DIRECTORY_SEPARATOR . 'users', \rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
+
+  // Return true to indicate everything went well
+  return true;
 }
 
 
@@ -180,8 +185,10 @@ unset( $configFile );
  */
 function setUp() {
   reset_SERVER();
-  \DAV::$REGISTRY = \BeeHub_Registry::inst();
-  \BeeHub::setAuth( BeeHub_Auth::inst() );
+  \DAV::$REGISTRY = new \BeeHub_Registry();
+  \DAV::$LOCKPROVIDER = new \BeeHub_Lock_Provider();
+  \DAV::$ACLPROVIDER  = new \BeeHub_ACL_Provider();
+  \BeeHub::setAuth( new BeeHub_Auth( new \SimpleSAML_Auth_Simple( 'BeeHub' ) ) );
 }
 
 // End of file

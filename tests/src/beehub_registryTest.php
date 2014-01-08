@@ -31,13 +31,10 @@ class BeeHub_RegistryTest extends \PHPUnit_Framework_TestCase {
   public function setUp() {
     parent::setUp();
     setUp();
-    $config = \BeeHub::config();
-    if ( empty( $config['environment']['datadir'] ) ) {
-      $this->markTestSkipped( 'No data directory specified; all tests depending on XFS are skipped' );
+    if ( ! setUpStorageBackend() ) {
+      $this->markTestSkipped( 'No storage backend specified; all tests depending on the storage backend are skipped' );
       return;
     }
-
-    setUpStorageBackend();
   }
 
 

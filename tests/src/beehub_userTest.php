@@ -56,7 +56,6 @@ class BeeHub_UserTest extends BeeHub_Tests_Db_Test_Case {
 
   public function testIs_admin() {
     $this->setCurrentUser( '/system/users/jane' );
-    \DAV::$ACLPROVIDER = new \BeeHub_ACL_Provider( \BeeHub::getAuth() );
 
     $john = new \BeeHub_User( '/system/users/john' );
     $jane = new \BeeHub_User( '/system/users/jane' );
@@ -68,7 +67,6 @@ class BeeHub_UserTest extends BeeHub_Tests_Db_Test_Case {
 
   public function testMethod_GET() {
     $this->setCurrentUser( '/system/users/jane' );
-    \DAV::$ACLPROVIDER = new \BeeHub_ACL_Provider( \BeeHub::getAuth() );
     $expected = array( 'unverified_address' => 'j.doe@mailservice.com' );
 
     $user = $this->getMock( '\BeeHub_User', array( 'include_view' ), array( '/system/users/jane' ) );
@@ -81,7 +79,6 @@ class BeeHub_UserTest extends BeeHub_Tests_Db_Test_Case {
 
   public function testMethod_POST_verifyEmail() {
     $this->setCurrentUser( '/system/users/jane' );
-    \DAV::$ACLPROVIDER = new \BeeHub_ACL_Provider( \BeeHub::getAuth() );
     $_POST['verification_code'] = 'somesecretcode';
     $_POST['password'] = 'password_of_jane';
 
@@ -96,7 +93,6 @@ class BeeHub_UserTest extends BeeHub_Tests_Db_Test_Case {
 
   public function testMethod_POST_newPassword() {
     $this->setCurrentUser( '/system/users/jane' );
-    \DAV::$ACLPROVIDER = new \BeeHub_ACL_Provider( \BeeHub::getAuth() );
     $_POST['new_password'] = 'new password for jane';
     $_POST['password'] = 'password_of_jane';
 
@@ -108,59 +104,59 @@ class BeeHub_UserTest extends BeeHub_Tests_Db_Test_Case {
     $this->assertTrue( $user->check_password( 'new password for jane' ) );
   }
 
-// Because these methods assert privileges, they need to read the ACL of parent
-// collections. Therefore xattributes are tested. Because not all test systems
-// have a file system installed, I have commented these tests out. On a
-// production system they should run however. Plus, when we moved to an noSQL
-// implementation, it should also work (because the ACL is then stored in the
-// database
-//
-//  public function testProperty_priv_read() {
-//    $this->setCurrentUser( '/system/users/jane' );
-//    \DAV::$ACLPROVIDER = new \BeeHub_ACL_Provider( \BeeHub::getAuth() );
-//
-//    $john = new \BeeHub_User( '/system/users/john' );
-//    $propsJohn = $john->property_priv_read( array( \BeeHub::PROP_EMAIL, \BeeHub::PROP_SURFCONEXT, \BeeHub::PROP_SURFCONEXT_DESCRIPTION, \BeeHub::PROP_X509, \BeeHub::PROP_SPONSOR, \DAV::PROP_GROUP_MEMBERSHIP ) );
-//    $this->assertFalse( $propsJohn[ \BeeHub::PROP_EMAIL ] );
-//    $this->assertFalse( $propsJohn[ \BeeHub::PROP_SURFCONEXT] );
-//    $this->assertFalse( $propsJohn[ \BeeHub::PROP_SURFCONEXT_DESCRIPTION] );
-//    $this->assertFalse( $propsJohn[ \BeeHub::PROP_X509] );
-//    $this->assertFalse( $propsJohn[ \BeeHub::PROP_SPONSOR] );
-//    $this->assertFalse( $propsJohn[ \DAV::PROP_GROUP_MEMBERSHIP] );
-//
-//    $jane = new \BeeHub_User( '/system/users/jane' );
-//    $propsJane = $jane->property_priv_read( array( \BeeHub::PROP_EMAIL, \BeeHub::PROP_SURFCONEXT, \BeeHub::PROP_SURFCONEXT_DESCRIPTION, \BeeHub::PROP_X509, \BeeHub::PROP_SPONSOR, \DAV::PROP_GROUP_MEMBERSHIP ) );
-//    $this->assertTrue( $propsJane[ \BeeHub::PROP_EMAIL ] );
-//    $this->assertTrue( $propsJane[ \BeeHub::PROP_SURFCONEXT] );
-//    $this->assertTrue( $propsJane[ \BeeHub::PROP_SURFCONEXT_DESCRIPTION] );
-//    $this->assertTrue( $propsJane[ \BeeHub::PROP_X509] );
-//    $this->assertTrue( $propsJane[ \BeeHub::PROP_SPONSOR] );
-//    $this->assertTrue( $propsJane[ \DAV::PROP_GROUP_MEMBERSHIP] );
-//  }
-//
-//
-//  public function testProperty_priv_write() {
-//    $this->setCurrentUser( '/system/users/jane' );
-//    \DAV::$ACLPROVIDER = new \BeeHub_ACL_Provider( \BeeHub::getAuth() );
-//
-//    $john = new \BeeHub_User( '/system/users/john' );
-//    $propsJohn = $john->property_priv_read( array( \BeeHub::PROP_EMAIL, \BeeHub::PROP_SURFCONEXT, \BeeHub::PROP_SURFCONEXT_DESCRIPTION, \BeeHub::PROP_X509, \BeeHub::PROP_SPONSOR, \DAV::PROP_GROUP_MEMBERSHIP ) );
-//    $this->assertFalse( $propsJohn[ \BeeHub::PROP_EMAIL ] );
-//    $this->assertFalse( $propsJohn[ \BeeHub::PROP_SURFCONEXT] );
-//    $this->assertFalse( $propsJohn[ \BeeHub::PROP_SURFCONEXT_DESCRIPTION] );
-//    $this->assertFalse( $propsJohn[ \BeeHub::PROP_X509] );
-//    $this->assertFalse( $propsJohn[ \BeeHub::PROP_SPONSOR] );
-//    $this->assertFalse( $propsJohn[ \DAV::PROP_GROUP_MEMBERSHIP] );
-//
-//    $jane = new \BeeHub_User( '/system/users/jane' );
-//    $propsJane = $jane->property_priv_read( array( \BeeHub::PROP_EMAIL, \BeeHub::PROP_SURFCONEXT, \BeeHub::PROP_SURFCONEXT_DESCRIPTION, \BeeHub::PROP_X509, \BeeHub::PROP_SPONSOR, \DAV::PROP_GROUP_MEMBERSHIP ) );
-//    $this->assertTrue( $propsJane[ \BeeHub::PROP_EMAIL ] );
-//    $this->assertTrue( $propsJane[ \BeeHub::PROP_SURFCONEXT] );
-//    $this->assertTrue( $propsJane[ \BeeHub::PROP_SURFCONEXT_DESCRIPTION] );
-//    $this->assertTrue( $propsJane[ \BeeHub::PROP_X509] );
-//    $this->assertTrue( $propsJane[ \BeeHub::PROP_SPONSOR] );
-//    $this->assertTrue( $propsJane[ \DAV::PROP_GROUP_MEMBERSHIP] );
-//  }
+
+  public function testProperty_priv_read() {
+    if ( ! setUpStorageBackend() ) {
+      $this->markTestSkipped( 'No storage backend specified; all tests depending on the storage backend are skipped' );
+      return;
+    }
+    $this->setCurrentUser( '/system/users/jane' );
+
+    $john = new \BeeHub_User( '/system/users/john' );
+    $propsJohn = $john->property_priv_read( array( \BeeHub::PROP_EMAIL, \BeeHub::PROP_SURFCONEXT, \BeeHub::PROP_SURFCONEXT_DESCRIPTION, \BeeHub::PROP_X509, \BeeHub::PROP_SPONSOR, \DAV::PROP_GROUP_MEMBERSHIP ) );
+    $this->assertFalse( $propsJohn[ \BeeHub::PROP_EMAIL ] );
+    $this->assertFalse( $propsJohn[ \BeeHub::PROP_SURFCONEXT] );
+    $this->assertFalse( $propsJohn[ \BeeHub::PROP_SURFCONEXT_DESCRIPTION] );
+    $this->assertFalse( $propsJohn[ \BeeHub::PROP_X509] );
+    $this->assertFalse( $propsJohn[ \BeeHub::PROP_SPONSOR] );
+    $this->assertFalse( $propsJohn[ \DAV::PROP_GROUP_MEMBERSHIP] );
+
+    $jane = new \BeeHub_User( '/system/users/jane' );
+    $propsJane = $jane->property_priv_read( array( \BeeHub::PROP_EMAIL, \BeeHub::PROP_SURFCONEXT, \BeeHub::PROP_SURFCONEXT_DESCRIPTION, \BeeHub::PROP_X509, \BeeHub::PROP_SPONSOR, \DAV::PROP_GROUP_MEMBERSHIP ) );
+    $this->assertTrue( $propsJane[ \BeeHub::PROP_EMAIL ] );
+    $this->assertTrue( $propsJane[ \BeeHub::PROP_SURFCONEXT] );
+    $this->assertTrue( $propsJane[ \BeeHub::PROP_SURFCONEXT_DESCRIPTION] );
+    $this->assertTrue( $propsJane[ \BeeHub::PROP_X509] );
+    $this->assertTrue( $propsJane[ \BeeHub::PROP_SPONSOR] );
+    $this->assertTrue( $propsJane[ \DAV::PROP_GROUP_MEMBERSHIP] );
+  }
+
+
+  public function testProperty_priv_write() {
+    if ( ! setUpStorageBackend() ) {
+      $this->markTestSkipped( 'No storage backend specified; all tests depending on the storage backend are skipped' );
+      return;
+    }
+    $this->setCurrentUser( '/system/users/jane' );
+
+    $john = new \BeeHub_User( '/system/users/john' );
+    $propsJohn = $john->property_priv_read( array( \BeeHub::PROP_EMAIL, \BeeHub::PROP_SURFCONEXT, \BeeHub::PROP_SURFCONEXT_DESCRIPTION, \BeeHub::PROP_X509, \BeeHub::PROP_SPONSOR, \DAV::PROP_GROUP_MEMBERSHIP ) );
+    $this->assertFalse( $propsJohn[ \BeeHub::PROP_EMAIL ] );
+    $this->assertFalse( $propsJohn[ \BeeHub::PROP_SURFCONEXT] );
+    $this->assertFalse( $propsJohn[ \BeeHub::PROP_SURFCONEXT_DESCRIPTION] );
+    $this->assertFalse( $propsJohn[ \BeeHub::PROP_X509] );
+    $this->assertFalse( $propsJohn[ \BeeHub::PROP_SPONSOR] );
+    $this->assertFalse( $propsJohn[ \DAV::PROP_GROUP_MEMBERSHIP] );
+
+    $jane = new \BeeHub_User( '/system/users/jane' );
+    $propsJane = $jane->property_priv_read( array( \BeeHub::PROP_EMAIL, \BeeHub::PROP_SURFCONEXT, \BeeHub::PROP_SURFCONEXT_DESCRIPTION, \BeeHub::PROP_X509, \BeeHub::PROP_SPONSOR, \DAV::PROP_GROUP_MEMBERSHIP ) );
+    $this->assertTrue( $propsJane[ \BeeHub::PROP_EMAIL ] );
+    $this->assertTrue( $propsJane[ \BeeHub::PROP_SURFCONEXT] );
+    $this->assertTrue( $propsJane[ \BeeHub::PROP_SURFCONEXT_DESCRIPTION] );
+    $this->assertTrue( $propsJane[ \BeeHub::PROP_X509] );
+    $this->assertTrue( $propsJane[ \BeeHub::PROP_SPONSOR] );
+    $this->assertTrue( $propsJane[ \DAV::PROP_GROUP_MEMBERSHIP] );
+  }
 
 
   public function testStoreProperties() {

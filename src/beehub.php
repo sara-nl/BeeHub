@@ -354,10 +354,18 @@ class BeeHub {
     self::$emailer->email($recipients, $subject, $message);
   }
   
-  
+
+  /**
+   * @var  BeeHub_Auth  The instance that handles the authentication
+   */
   private static $auth = null;
 
 
+  /**
+   * Get the instance that handles the authentication
+   *
+   * @return  BeeHub_Auth  The instance that handles the authentication
+   */
   public static function getAuth() {
     if ( is_null( self::$auth ) ) {
       self::$auth = BeeHub_Auth::inst();
@@ -366,6 +374,12 @@ class BeeHub {
   }
 
 
+  /**
+   * Set the instance that should handle the authentication
+   *
+   * @param   BeeHub_Auth  $auth  The instance that should handle the authentication
+   * @return  void
+   */
   public static function setAuth( BeeHub_Auth $auth ) {
     self::$auth = $auth;
   }

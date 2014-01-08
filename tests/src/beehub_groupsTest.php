@@ -88,31 +88,31 @@ class BeeHub_GroupsTest extends BeeHub_Tests_Db_Test_Case {
   }
 
 
-// This test doesn't work yet in a non-production environment. The implementation
-// of the code (not the test, but the unit under test) should improve so it is
-// less dependent on the environment. In other words; it should be easier to
-// spoof the environment
-//  public function testMethod_POST() {
-//    $this->setCurrentUser( '/system/users/john' );
-//
-//    $_POST['displayname'] = 'Some test group of John';
-//    $_POST['description'] = "This is the description of John's test group";
-//    $_POST['group_name'] = 'johngroup';
-//
-//    $this->expectOutputRegex( '/https 303 See Other/' );
-//    $this->obj->method_POST();
-//
-//    $group = new \BeeHub_Group( '/system/groups/johngroup' );
-//    $this->assertSame( $_POST['displayname'], $group->user_prop( \DAV::PROP_DISPLAYNAME ) );
-//    $this->assertSame( $_POST['description'], $group->user_prop( \BeeHub::PROP_DESCRIPTION ) );
-//
-//    $groupFolder = \DAV::$REGISTRY->resource( '/' . $_POST['group_name'] );
-//    $beehubConfig = \BeeHub::config();
-//    $expectedAcl = array( new \DAVACL_Element_ace( $group->path, false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false, false ) );
-//    $this->assertSame( $beehubConfig['namespace']['wheel_path'], $groupFolder->user_prop( \DAV::PROP_OWNER ) );
-//    $this->assertSame( $expectedAcl, $groupFolder->user_prop( \DAV::PROP_ACL ) );
-//    $this->assertSame( '/system/sponsors/sponsor_a', $groupFolder->user_prop( \BeeHub::PROP_SPONSOR ) );
-//  }
+  public function testMethod_POST() {
+    if ( ! setUpStorageBackend() ) {
+      $this->markTestSkipped( 'No storage backend specified; all tests depending on the storage backend are skipped' );
+      return;
+    }
+    $this->setCurrentUser( '/system/users/john' );
+
+    $_POST['displayname'] = 'Some test group of John';
+    $_POST['description'] = "This is the description of John's test group";
+    $_POST['group_name'] = 'johngroup';
+
+    $this->expectOutputRegex( '/https 303 See Other/' );
+    $this->obj->method_POST();
+
+    $group = new \BeeHub_Group( '/system/groups/johngroup' );
+    $this->assertSame( $_POST['displayname'], $group->user_prop( \DAV::PROP_DISPLAYNAME ) );
+    $this->assertSame( $_POST['description'], $group->user_prop( \BeeHub::PROP_DESCRIPTION ) );
+
+    $groupFolder = \DAV::$REGISTRY->resource( '/' . $_POST['group_name'] );
+    $beehubConfig = \BeeHub::config();
+    $expectedAcl = array( new \DAVACL_Element_ace( $group->path, false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false, false ) );
+    $this->assertSame( $beehubConfig['namespace']['wheel_path'], $groupFolder->user_prop( \DAV::PROP_OWNER ) );
+    $this->assertEquals( $expectedAcl, $groupFolder->user_prop_acl_internal() );
+    $this->assertSame( '/system/sponsors/sponsor_a', $groupFolder->user_prop( \BeeHub::PROP_SPONSOR ) );
+  }
 
 
   public function testReport_principal_property_search_invalidProperty() {
