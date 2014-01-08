@@ -274,6 +274,13 @@ BeeHub';
             'is_admin' => (bool) $newAdmin
         );
       }
+
+      $key = array_search( BeeHub::USERS_PATH . $user_name, $this->stored_props[DAV::PROP_GROUP_MEMBER_SET] );
+      if ( $this->users[ BeeHub::USERS_PATH . $user_name ]['is_invited'] && $this->users[ BeeHub::USERS_PATH . $user_name ]['is_requested'] && ( $key === false ) ) {
+        $this->stored_props[DAV::PROP_GROUP_MEMBER_SET][] = BeeHub::USERS_PATH . $user_name;
+      }elseif ( ( ! $this->users[ BeeHub::USERS_PATH . $user_name ]['is_invited'] || ! $this->users[ BeeHub::USERS_PATH . $user_name ]['is_requested'] ) && ( $key !== false ) ) {
+        unset( $this->stored_props[DAV::PROP_GROUP_MEMBER_SET][ $key ] );
+      }
     }
   }
 
@@ -300,6 +307,11 @@ BeeHub';
 
       if ( isset( $this->users[ BeeHub::USERS_PATH . $user_name ] ) ) {
         unset( $this->users[ BeeHub::USERS_PATH . $user_name ] );
+      }
+
+      $key = array_search( BeeHub::USERS_PATH . $user_name, $this->stored_props[DAV::PROP_GROUP_MEMBER_SET] );
+      if ( $key !== false ) {
+        unset( $this->stored_props[DAV::PROP_GROUP_MEMBER_SET][ $key ] );
       }
     }
   }

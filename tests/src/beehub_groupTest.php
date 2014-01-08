@@ -36,12 +36,14 @@ class BeeHub_GroupTest extends BeeHub_Tests_Db_Test_Case {
     $this->assertFalse( $foo->is_requested() );
     $this->assertFalse( $foo->is_member() );
     $this->assertFalse( $foo->is_admin() );
+    $this->assertSame( array( '/system/users/john' ), $foo->user_prop_group_member_set() );
 
     $foo->change_memberships( array( 'jane' ), true, true, false, true, true, false );
     $this->assertFalse( $foo->is_invited() );
     $this->assertFalse( $foo->is_requested() );
     $this->assertTrue( $foo->is_member() );
     $this->assertFalse( $foo->is_admin() );
+    $this->assertSame( array( '/system/users/john', '/system/users/jane' ), $foo->user_prop_group_member_set() );
   }
 
 
@@ -80,15 +82,16 @@ class BeeHub_GroupTest extends BeeHub_Tests_Db_Test_Case {
 
 
   public function testChange_membershipsUnadmin(){
-    $this->setCurrentUser( '/system/users/john' );
+    $this->setCurrentUser( '/system/users/jane' );
 
     $foo = new \BeeHub_Group( '/system/groups/foo' );
+    $foo->change_memberships( array( 'jane' ), true, true, true, true, true, true );
     $this->assertFalse( $foo->is_invited() );
     $this->assertFalse( $foo->is_requested() );
     $this->assertTrue( $foo->is_member() );
     $this->assertTrue( $foo->is_admin() );
 
-    $foo->change_memberships( array( 'john' ), true, true, false, true, true, false );
+    $foo->change_memberships( array( 'jane' ), true, true, false, true, true, false );
     $this->assertFalse( $foo->is_invited() );
     $this->assertFalse( $foo->is_requested() );
     $this->assertTrue( $foo->is_member() );
@@ -99,17 +102,19 @@ class BeeHub_GroupTest extends BeeHub_Tests_Db_Test_Case {
   public function testChange_membershipsAcceptRequest(){
     $this->setCurrentUser( '/system/users/jane' );
 
-    $foo = new \BeeHub_Group( '/system/groups/bar' );
-    $this->assertFalse( $foo->is_invited() );
-    $this->assertTrue( $foo->is_requested() );
-    $this->assertFalse( $foo->is_member() );
-    $this->assertFalse( $foo->is_admin() );
+    $bar = new \BeeHub_Group( '/system/groups/bar' );
+    $this->assertFalse( $bar->is_invited() );
+    $this->assertTrue( $bar->is_requested() );
+    $this->assertFalse( $bar->is_member() );
+    $this->assertFalse( $bar->is_admin() );
+    $this->assertSame( array( '/system/users/john' ), $bar->user_prop_group_member_set() );
 
-    $foo->change_memberships( array( 'jane' ), true, true, false, true, true, false );
-    $this->assertFalse( $foo->is_invited() );
-    $this->assertFalse( $foo->is_requested() );
-    $this->assertTrue( $foo->is_member() );
-    $this->assertFalse( $foo->is_admin() );
+    $bar->change_memberships( array( 'jane' ), true, true, false, true, true, false );
+    $this->assertFalse( $bar->is_invited() );
+    $this->assertFalse( $bar->is_requested() );
+    $this->assertTrue( $bar->is_member() );
+    $this->assertFalse( $bar->is_admin() );
+    $this->assertSame( array( '/system/users/john', '/system/users/jane' ), $bar->user_prop_group_member_set() );
   }
 
 
@@ -345,15 +350,13 @@ class BeeHub_GroupTest extends BeeHub_Tests_Db_Test_Case {
             ->method( 'email' );
     \BeeHub::setEmailer( $emailer );
 
-    $this->setCurrentUser( '/system/users/jane' );
     $foo = new \BeeHub_Group( '/system/groups/foo' );
-    $this->assertTrue( $foo->is_invited() );
-    $this->assertFalse( $foo->is_requested() );
-    $this->assertFalse( $foo->is_member() );
-    $this->assertFalse( $foo->is_admin() );
+    $foo->change_memberships( array( 'jane' ), true, true, false, true, true, false );
+    $this->assertSame( array( '/system/users/john', '/system/users/jane' ), $foo->user_prop_group_member_set() );
 
     $this->setCurrentUser( '/system/users/john' );
     $foo->method_POST( $headers );
+    $this->assertSame( array( '/system/users/john' ), $foo->user_prop_group_member_set() );
 
     $this->setCurrentUser( '/system/users/jane' );
     $this->assertFalse( $foo->is_invited() );

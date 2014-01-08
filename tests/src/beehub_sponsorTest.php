@@ -44,14 +44,15 @@ class BeeHub_SponsorTest extends BeeHub_Tests_Db_Test_Case {
 
 
   public function testChange_membershipsUnadmin(){
-    $this->setCurrentUser( '/system/users/john' );
+    $this->setCurrentUser( '/system/users/jane' );
 
     $sponsor = new \BeeHub_Sponsor( '/system/sponsors/sponsor_b' );
+    $sponsor->change_memberships( array( 'jane' ), true, true, true, true );
     $this->assertFalse( $sponsor->is_requested() );
     $this->assertTrue( $sponsor->is_member() );
     $this->assertTrue( $sponsor->is_admin() );
 
-    $sponsor->change_memberships( array( 'john' ), true, false, true, false );
+    $sponsor->change_memberships( array( 'jane' ), true, false, true, false );
     $this->assertFalse( $sponsor->is_requested() );
     $this->assertTrue( $sponsor->is_member() );
     $this->assertFalse( $sponsor->is_admin() );
@@ -65,11 +66,13 @@ class BeeHub_SponsorTest extends BeeHub_Tests_Db_Test_Case {
     $this->assertTrue( $sponsor->is_requested() );
     $this->assertFalse( $sponsor->is_member() );
     $this->assertFalse( $sponsor->is_admin() );
+    $this->assertSame( array( '/system/users/john' ), $sponsor->user_prop_group_member_set() );
 
     $sponsor->change_memberships( array( 'jane' ), true, false, true, false );
     $this->assertFalse( $sponsor->is_requested() );
     $this->assertTrue( $sponsor->is_member() );
     $this->assertFalse( $sponsor->is_admin() );
+    $this->assertSame( array( '/system/users/john', '/system/users/jane' ), $sponsor->user_prop_group_member_set() );
   }
 
 
@@ -271,14 +274,13 @@ class BeeHub_SponsorTest extends BeeHub_Tests_Db_Test_Case {
             ->method( 'email' );
     \BeeHub::setEmailer( $emailer );
 
-    $this->setCurrentUser( '/system/users/jane' );
     $sponsor = new \BeeHub_Sponsor( '/system/sponsors/sponsor_b' );
-    $this->assertTrue( $sponsor->is_requested() );
-    $this->assertFalse( $sponsor->is_member() );
-    $this->assertFalse( $sponsor->is_admin() );
+    $sponsor->change_memberships( array( 'jane' ), true, false, true, false );
+    $this->assertSame( array( '/system/users/john', '/system/users/jane' ), $sponsor->user_prop_group_member_set() );
 
     $this->setCurrentUser( '/system/users/john' );
     $sponsor->method_POST( $headers );
+    $this->assertSame( array( '/system/users/john' ), $sponsor->user_prop_group_member_set() );
 
     $this->setCurrentUser( '/system/users/jane' );
     $this->assertFalse( $sponsor->is_requested() );
