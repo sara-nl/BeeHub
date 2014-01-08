@@ -5,6 +5,11 @@
  */
 ?>
     </div>
+    <?php if ( APPLICATION_ENV === BeeHub::ENVIRONMENT_TEST ) : ?>
+      </div> <!-- End qunit-fixture -->
+      <script src="resources/qunit.js"></script>
+      <script src="resources/mock.js"></script>
+    <?php endif; ?>
     <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.9.0/jquery.min.js"></script>
     <script type="text/javascript" src="/system/js/jquery-ui.js"></script>
     <script type="text/javascript" src="/system/bootstrap/js/bootstrap.js"></script>
