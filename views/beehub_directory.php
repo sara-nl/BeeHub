@@ -27,7 +27,7 @@ declare( encoding = 'UTF-8' );
 */
 
 // Load the default page header
-if ( APPLICATION_ENV === BeeHub::ENVIRONMENT_TEST ) {
+if ( RUN_CLIENT_TESTS ) {
   $header = '<link href="/system/css/dynatree/ui.dynatree.css" rel="stylesheet" type="text/css" />';
 }
 require 'views/header.php';
@@ -633,10 +633,10 @@ try {
   }
 }
 
-if ( APPLICATION_ENV === BeeHub::ENVIRONMENT_TEST ) {
+if ( RUN_CLIENT_TESTS ) {
   $footer .= '
-    <script src="../tests/unittests/directory_view_content.js"></script>
-    <script src="../tests/unittests/directory_view_acl.js"></script>
+    <script src="/system/tests/unittests/directory_view_content.js"></script>
+    <script src="/system/tests/unittests/directory_view_acl.js"></script>
   ';
 }
 
