@@ -55,7 +55,7 @@ private function internal_create_member( $name, $collection = false ) {
   if (count($user_sponsors) == 0) { // If the user doesn't have any sponsors, he/she can't create files and directories
     throw DAV::forbidden();
   }
-  $sponsor = $this->prop(BeeHub::PROP_SPONSOR); // The default is the directory sponsor
+  $sponsor = $this->user_prop(BeeHub::PROP_SPONSOR); // The default is the directory sponsor
   if (!in_array($sponsor, $user_sponsors)) { //But a user can only create files sponsored by his own sponsors
     $sponsor = $user->user_prop(BeeHub::PROP_SPONSOR);
   }
