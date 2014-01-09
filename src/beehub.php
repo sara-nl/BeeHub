@@ -1,7 +1,8 @@
 <?php
-
-/*·************************************************************************
- * Copyright ©2007-2012 SARA b.v., Amsterdam, The Netherlands
+/**
+ * Contains the BeeHub class
+ *
+ * Copyright ©2007-2013 SURFsara b.v., Amsterdam, The Netherlands
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -12,38 +13,12 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- **************************************************************************/
-
-/**
- * File documentation (who cares)
+ *
  * @package BeeHub
  */
 
-
-// Set the include path, so BeeHub_* classes are automatically loaded
-set_include_path(
-  realpath( dirname( dirname(__FILE__) ) ) . PATH_SEPARATOR .
-  dirname(__FILE__) . PATH_SEPARATOR .
-  get_include_path()
-);
-require_once dirname(dirname(__FILE__)) . '/webdav-php/lib/dav.php';
-
-
-// Set a default exception handler, so we always output nice errors if an exception is uncaught
-function beehub_exception_handler($e) {
-  if (! $e instanceof DAV_Status) {
-    $e = new DAV_Status(
-      DAV::HTTP_INTERNAL_SERVER_ERROR,
-      "$e"
-    );
-  }
-  $e->output();
-}
-set_exception_handler('beehub_exception_handler');
-
-
 /**
- * Just a namespace.
+ * This class contains several general (static) functions and is more like a namespace than a real class
  * @package BeeHub
  */
 class BeeHub {
@@ -96,8 +71,6 @@ class BeeHub {
   const ENVIRONMENT_PRODUCTION  = 'production';
   /**#@-*/
 
-  public static $CONFIG;
-
 
   /**
    * Returns the base URI.
@@ -105,7 +78,11 @@ class BeeHub {
    * @return string
    */
   public static function urlbase($https = null) {
-    static $URLBASE = array();
+    $cache = DAV_Cache::inst( 'BeeHub' );
+    $URLBASE = $cache->get( 'urlbase' );
+    if ( is_null( $URLBASE ) ) {
+      $URLBASE = array();
+    }
     if ( !@$URLBASE[$https] ) {
       if ( true === $https || ! empty($_SERVER['HTTPS']) && null === $https )
         $tmp = 'https://';
@@ -122,6 +99,7 @@ class BeeHub {
         $tmp .= ":{$server_port}";
       }
       $URLBASE[$https] = $tmp;
+      $cache->set( 'urlbase', $URLBASE );
     }
     return $URLBASE[$https];
   }
@@ -151,11 +129,24 @@ class BeeHub {
   }
 
 
+  /**
+   * Determine the local path in the storage backend
+   *
+   * @param   string  $path  The path in the webDAV namespace
+   * @return  string         The location where the data is stored in the storage backend
+   */
   public static function localPath($path) {
     return DAV::unslashify(self::$CONFIG['environment']['datadir'] . rawurldecode($path));
   }
 
 
+  /**
+   * Returns the best content-type value for (X)HTML output
+   *
+   * For now this should always return text/html
+   *
+   * @return  string  The best content-type value
+   */
   public static function best_xhtml_type() {
     return 'text/html';
     // The rest of the function will be skipped. This is because ExtJS doesn't support X(HT)ML, so we always need to send it as 'text/html'
@@ -165,6 +156,26 @@ class BeeHub {
   }
 
 
+  /**
+   * Handles method spoofing
+   *
+   * Some browsers (read: Internet Explorer) don't support all webDAV request
+   * methods. For these browsers, the build-in client will use a (non-standard)
+   * form of method spoofing which this server can handle.
+   *
+   * The HTTP POST method is used along with a (GET) query string containing one
+   * variable '_method' describing the method that should have been used. For
+   * example: POST /path/to/resource?_method=ACL
+   *
+   * This function puts the original request method in
+   * $_SERVER['ORIGINAL_REQUEST_METHOD'], removes the _method key from $_GET,
+   * rebuilds $_SERVER['QUERY_STRING'] to exclude _method, also rebuilds
+   * $_SERVER['REQUEST_URI'] to do the same and of course sets
+   * $_SERVER['REQUEST_METHOD'] to the spoofed method. Also, it copies $_POST to
+   * $_GET if the spoofed method is GET (and $_POST is cleared).
+   *
+   * @return void
+   */
   public static function handle_method_spoofing() {
     $_SERVER['ORIGINAL_REQUEST_METHOD'] = $_SERVER['REQUEST_METHOD'];
     if ($_SERVER['REQUEST_METHOD'] === 'POST' and
@@ -194,7 +205,7 @@ class BeeHub {
     if ($name[0] !== '/')
       $name = BeeHub::USERS_PATH .
         rawurlencode($name);
-    $retval = BeeHub_Registry::inst()->resource( $name );
+    $retval = DAV::$REGISTRY->resource( $name );
     if ( !$retval || !( $retval instanceof BeeHub_User ) ) throw new DAV_Status(
       DAV::HTTP_FORBIDDEN, DAV::COND_RECOGNIZED_PRINCIPAL
     );
@@ -203,14 +214,17 @@ class BeeHub {
 
 
   /**
-   * @param $name string the path or name of the resource
-   * @return BeeHub_Group
+   * Convert a path to a BeeHub_Group
+   *
+   * @param   string        $name  The path or name of the resource
+   * @return  BeeHub_Group
+   * @throws  DAV_Status           DAV::HTTP_FORBIDDEN when the path provided doesn't point to a group
    */
   public static function group($name) {
     if ($name[0] !== '/')
       $name = BeeHub::GROUPS_PATH .
         rawurlencode($name);
-    $retval = BeeHub_Registry::inst()->resource( $name );
+    $retval = DAV::$REGISTRY->resource( $name );
     if ( !$retval || !( $retval instanceof BeeHub_Group ) ) throw new DAV_Status(
       DAV::HTTP_FORBIDDEN, DAV::COND_RECOGNIZED_PRINCIPAL
     );
@@ -219,14 +233,17 @@ class BeeHub {
 
 
   /**
-   * @param $name string the path or name of the resource
-   * @return BeeHub_Sponsor
+   * Convert a path to a BeeHub_Sponsor
+   *
+   * @param   string          $name  The path or name of the resource
+   * @return  BeeHub_Sponsor
+   * @throws  DAV_Status             DAV::HTTP_FORBIDDEN when the path provided doesn't point to a sponsor
    */
   public static function sponsor($name) {
     if ($name[0] !== '/')
       $name = BeeHub::SPONSORS_PATH .
         rawurlencode($name);
-    $retval = BeeHub_Registry::inst()->resource( $name );
+    $retval = DAV::$REGISTRY->resource( $name );
     if ( !$retval || !( $retval instanceof BeeHub_Sponsor ) ) throw new DAV_Status(
       DAV::HTTP_FORBIDDEN, DAV::COND_RECOGNIZED_PRINCIPAL
     );
@@ -244,11 +261,11 @@ class BeeHub {
    * handling the type. This can for example be an array with the group name and
    * display name of the group you are invited for.
    *
-   * @return  array  An array with notifications.
+   * @param   BeeHub_Auth  $auth  An instance of the authentication class that can be used to determine the current user
+   * @return  array               An array with notifications.
    */
-  public static function notifications() {
+  public static function notifications( BeeHub_Auth $auth ) {
     $notifications = array();
-    $auth = BeeHub_Auth::inst();
     if ($auth->is_authenticated()) {
       $user = $auth->current_user();
 
@@ -313,6 +330,14 @@ class BeeHub {
     } // end if ($auth->is_authenticated())
     return $notifications;
   }
+  
+  
+  private static $emailer = null;
+
+
+  public static function setEmailer( BeeHub_Emailer $emailer ) {
+    self::$emailer = $emailer;
+  }
 
 
   /**
@@ -323,22 +348,91 @@ class BeeHub {
    * @return  void
    */
   public static function email($recipients, $subject, $message) {
-    if (is_array($recipients)) {
-      $recipients = implode(',', $recipients);
+    if ( is_null( self::$emailer ) ) {
+      self::$emailer = new BeeHub_Emailer();
     }
-    mail($recipients, $subject, $message, 'From: ' . BeeHub::$CONFIG['email']['sender_name'] . ' <' . BeeHub::$CONFIG['email']['sender_address'] . '>', '-f ' . BeeHub::$CONFIG['email']['sender_address']);
+    self::$emailer->email($recipients, $subject, $message);
+  }
+  
+
+  /**
+   * @var  BeeHub_Auth  The instance that handles the authentication
+   */
+  private static $auth = null;
+
+
+  /**
+   * Get the instance that handles the authentication
+   *
+   * @return  BeeHub_Auth  The instance that handles the authentication
+   */
+  public static function getAuth() {
+    if ( is_null( self::$auth ) ) {
+      self::$auth = BeeHub_Auth::inst();
+    }
+    return self::$auth;
   }
 
 
+  /**
+   * Set the instance that should handle the authentication
+   *
+   * @param   BeeHub_Auth  $auth  The instance that should handle the authentication
+   * @return  void
+   */
+  public static function setAuth( BeeHub_Auth $auth ) {
+    self::$auth = $auth;
+  }
+
+
+  /**
+   * This should be made private in the future. See the comments at the bottom of this source file
+   * @var  array  Contains the configuration options once they are parsed from file
+   */
+  public static $CONFIG = null;
+
+
+  public static function loadConfig( $path = null ) {
+    if ( is_null( $path ) ) {
+      $path = dirname( dirname( __FILE__ ) ) . DIRECTORY_SEPARATOR . 'config.ini';
+    }
+    BeeHub::$CONFIG = parse_ini_file( $path, true );
+  }
+
+
+  /**
+   * Returns the configuration file parsed into an array
+   * @return  array  An array with the configuration options
+   */
+  public static function config() {
+    if ( is_null( self::$CONFIG ) ) {
+      self::loadConfig();
+    }
+    return self::$CONFIG;
+  }
+
+
+  /**
+   * The default exception handler, so we always output nice errors if an exception is uncaught
+   * @param   exception  $exception  The (uncaught) exception
+   * @return  void
+   */
+  public static function exception_handler( $exception ) {
+    if ( ! $exception instanceof DAV_Status ) {
+      $exception = new DAV_Status(
+        DAV::HTTP_INTERNAL_SERVER_ERROR,
+        strval( $exception )
+      );
+    }
+    $exception->output();
+  }
+
 } // class BeeHub
 
-BeeHub::$CONFIG = parse_ini_file(
-  dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'config.ini',
-  true
-);
-// We need SimpleSamlPHP
-require_once(BeeHub::$CONFIG['environment']['simplesamlphp_autoloader']);
+// When PHP 5.4 is more widely adapted, all calls to BeeHub::$CONFIG['some_key']
+// should be replaced by BeeHub::config()['some_key']. But as PHP 5.3.3 and
+// earlier don't support this, let's not make things more complicated and make
+// BeeHub::$CONFIG public and call BeeHub::loadConfig() here so it is always filled.
+BeeHub::loadConfig();
 
-DAV::$PROTECTED_PROPERTIES[ DAV::PROP_GROUP_MEMBER_SET ] = true;
-DAV::$ACL_PROPERTIES[BeeHub::PROP_SPONSOR] =
-DAV::$SUPPORTED_PROPERTIES[BeeHub::PROP_SPONSOR] = 'sponsor';
+// End of file

@@ -39,8 +39,8 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
     }
     $display_name = '';
     $email_address = '';
-    if (BeeHub_Auth::inst()->simpleSaml()->isAuthenticated()) {
-      $as = BeeHub_Auth::inst()->simpleSaml();
+    if (BeeHub::getAuth()->simpleSaml()->isAuthenticated()) {
+      $as = BeeHub::getAuth()->simpleSaml();
       $attrs = $as->getAttributes();
       $display_name = @$attrs['urn:mace:dir:attribute-def:displayName'][0];
       $email_address = @$attrs['urn:mace:dir:attribute-def:mail'][0];
@@ -63,11 +63,6 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
         !preg_match('/^[a-zA-Z0-9]{1}[a-zA-Z0-9_\-\.]{0,254}$/D', $user_name)) {
       throw new DAV_Status(DAV::HTTP_BAD_REQUEST);
     }
-    $userdir = DAV::unslashify(BeeHub::$CONFIG['environment']['datadir']) . DIRECTORY_SEPARATOR . 'home' . DIRECTORY_SEPARATOR . $user_name;
-    // Check for existing groupdir
-    if (file_exists($userdir)) {
-      throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
-    }
 
     // Store in the database
     try{
@@ -85,8 +80,18 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
       }
     }
 
+    $userdir = DAV::unslashify(BeeHub::$CONFIG['environment']['datadir']) . DIRECTORY_SEPARATOR . 'home' . DIRECTORY_SEPARATOR . $user_name;
+    // Check for existing groupdir
+    if ( file_exists( $userdir ) ) {
+      BeeHub_DB::execute(
+        'DELETE FROM `beehub_users` WHERE `user_name`=?',
+        's', $user_name
+      );
+      throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR );
+    }
+
     // Fetch the user and store extra properties
-    $user = BeeHub_Registry::inst()->resource(
+    $user = DAV::$REGISTRY->resource(
       BeeHub::USERS_PATH . rawurlencode($user_name)
     );
     $user->set_password($password);
@@ -103,7 +108,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
       'sii', $user_name, 1, 0
     );
     // Just to be clear: the above lines will have to be deleted somewhere in the future, but the lines below should stay
-    $auth = BeeHub_Auth::inst();
+    $auth = BeeHub::getAuth();
     if ($auth->simpleSaml()->isAuthenticated()) {
       $surfId = $auth->simpleSaml()->getAuthData("saml:sp:NameID");
       $surfId = $surfId['Value'];
@@ -170,7 +175,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
   public function user_prop_acl_internal() {
     return array( new DAVACL_Element_ace(
       DAVACL::PRINCIPAL_ALL, false, array(
-        DAVACL::PRIV_READ, DAVACL::PRIV_READ_ACL
+        DAVACL::PRIV_READ
       ), false, true
     ));
   }

@@ -1,7 +1,7 @@
 <?php
 
 /*·************************************************************************
- * Copyright ©2007-2012 SARA b.v., Amsterdam, The Netherlands
+ * Copyright ©2007-2014 SARA b.v., Amsterdam, The Netherlands
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -81,7 +81,7 @@ EOS;
 
 
   public function method_POST ( &$headers ) {
-    $auth = BeeHub_Auth::inst();
+    $auth = BeeHub::getAuth();
     if (!$auth->is_authenticated()) {
       throw DAV::forbidden();
     }
@@ -255,6 +255,32 @@ BeeHub';
         $this->name, $user_name, $newInvited,
         $newRequested, $newAdmin
       );
+
+      // And change local cache
+      if ( isset( $this->users[ BeeHub::USERS_PATH . $user_name ] ) ) {
+        if ( $existingInvited !== "`is_invited`" ) {
+          $this->users[ BeeHub::USERS_PATH . $user_name ]['is_invited'] = (bool) $existingInvited;
+        }
+        if ( $existingRequested !== "`is_requested`" ) {
+          $this->users[ BeeHub::USERS_PATH . $user_name ]['is_requested'] = (bool) $existingRequested;
+        }
+        if ( $existingAdmin !== "`is_admin`" ) {
+          $this->users[ BeeHub::USERS_PATH . $user_name ]['is_admin'] = (bool) $existingAdmin;
+        }
+      }else{
+        $this->users[ BeeHub::USERS_PATH . $user_name ] = array(
+            'is_invited' => (bool) $newInvited,
+            'is_requested' => (bool) $newRequested,
+            'is_admin' => (bool) $newAdmin
+        );
+      }
+
+      $key = array_search( BeeHub::USERS_PATH . $user_name, $this->stored_props[DAV::PROP_GROUP_MEMBER_SET] );
+      if ( $this->users[ BeeHub::USERS_PATH . $user_name ]['is_invited'] && $this->users[ BeeHub::USERS_PATH . $user_name ]['is_requested'] && ( $key === false ) ) {
+        $this->stored_props[DAV::PROP_GROUP_MEMBER_SET][] = BeeHub::USERS_PATH . $user_name;
+      }elseif ( ( ! $this->users[ BeeHub::USERS_PATH . $user_name ]['is_invited'] || ! $this->users[ BeeHub::USERS_PATH . $user_name ]['is_requested'] ) && ( $key !== false ) ) {
+        unset( $this->stored_props[DAV::PROP_GROUP_MEMBER_SET][ $key ] );
+      }
     }
   }
 
@@ -278,6 +304,15 @@ BeeHub';
            AND `user_name`  = ?',
         'ss', $this->name, $user_name
       );
+
+      if ( isset( $this->users[ BeeHub::USERS_PATH . $user_name ] ) ) {
+        unset( $this->users[ BeeHub::USERS_PATH . $user_name ] );
+      }
+
+      $key = array_search( BeeHub::USERS_PATH . $user_name, $this->stored_props[DAV::PROP_GROUP_MEMBER_SET] );
+      if ( $key !== false ) {
+        unset( $this->stored_props[DAV::PROP_GROUP_MEMBER_SET][ $key ] );
+      }
     }
   }
 
@@ -387,9 +422,9 @@ BeeHub';
    * @return  boolean  True if the currently logged in user is an administrator of this group, false otherwise
    */
   public function is_admin() {
-    if ( BeeHub_ACL_Provider::inst()->wheel() ) return true;
+    if ( DAV::$ACLPROVIDER->wheel() ) return true;
     $this->init_props();
-    return ( $current_user = BeeHub_Auth::inst()->current_user() ) &&
+    return ( $current_user = BeeHub::getAuth()->current_user() ) &&
            ( $tmp = @$this->users[$current_user->path] ) &&
            $tmp['is_admin'];
   }
@@ -397,7 +432,7 @@ BeeHub';
 
   public function is_member() {
     $this->init_props();
-    return ( $current_user = BeeHub_Auth::inst()->current_user() ) &&
+    return ( $current_user = BeeHub::getAuth()->current_user() ) &&
            ( $tmp = @$this->users[$current_user->path] ) &&
            $tmp['is_invited'] && $tmp['is_requested'];
   }
@@ -405,7 +440,7 @@ BeeHub';
 
   public function is_invited() {
     $this->init_props();
-    return ( $current_user = BeeHub_Auth::inst()->current_user() ) &&
+    return ( $current_user = BeeHub::getAuth()->current_user() ) &&
            ( $tmp = @$this->users[$current_user->path] ) &&
            $tmp['is_invited'] && !$tmp['is_requested'];
   }
@@ -413,7 +448,7 @@ BeeHub';
 
   public function is_requested() {
     $this->init_props();
-    return ( $current_user = BeeHub_Auth::inst()->current_user() ) &&
+    return ( $current_user = BeeHub::getAuth()->current_user() ) &&
            ( $tmp = @$this->users[$current_user->path] ) &&
            !$tmp['is_invited'] && $tmp['is_requested'];
   }

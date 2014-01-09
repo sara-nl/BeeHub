@@ -3,21 +3,26 @@
 set -e
 pushd "$( dirname "${BASH_SOURCE[0]}" )/../"
 
+# Prepare a directory to install extra tools in
+rm -rf tools 2>/dev/null | true
+mkdir tools
+
+# Then install Composer and let it install dependencies for this project
+curl -sS https://getcomposer.org/installer | php -- --install-dir=tools
+php tools/composer.phar install
+
+# Load submodules
 git submodule init
 git submodule update
-./client/link_submodules
-./client/makeapp
+
+# 'compile' js-webdav-client and link the file
 pushd ./js-webdav-client
 make dist.js
 popd
-
-rm -vf public/system/client
-ln -vs "$(pwd)/client/build/system/client" public/system/client
-rm -vf views/beehub_directory.php
-ln -vs "$(pwd)/client/build/views/directory.php" views/beehub_directory.php
 rm -vf public/system/js/webdavlib.js
 ln -vs "$(pwd)/js-webdav-client/dist.js" public/system/js/webdavlib.js
 
+# Check whether we have to create a default principals.js
 chmod -v 2777 public/system/js/server/
 if [[ -e public/system/js/server/principals.js ]]; then
   cat > public/system/js/server/principals.js <<EOM
@@ -25,6 +30,7 @@ nl.sara.beehub.principals = {"users":{},"groups":{},"sponsors":{}};
 EOM
 fi
 
+# Link to simplesamlphp
 echo "Path to simplesamlphp: "
 read SIMPLESAML
 rm -vf public/system/simplesaml
@@ -32,6 +38,7 @@ ln -vs "${SIMPLESAML}/www/" public/system/simplesaml
 
 popd
 
+# Some last information
 echo "Don't forget:"
 echo " - to create sponsor e-infra"
 echo " - to create an admin user"

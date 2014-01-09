@@ -352,8 +352,16 @@ BeeHub';
 
 
   /**
-   * @todo move the initialization into init_props()
+   * Returns an array with all sponsors of the current user
+   *
+   * @return  array  An array of paths of the user's sponsors
    */
+  final public function current_user_sponsors() {
+    $this->init_props();
+    return $this->stored_props[BeeHub::PROP_SPONSOR_MEMBERSHIP];
+  }
+
+
   public function user_prop_group_membership() {
     $this->init_props();
     return $this->stored_props[DAV::PROP_GROUP_MEMBERSHIP];
@@ -366,7 +374,7 @@ BeeHub';
 
 
   public function is_admin() {
-    return BeeHub_ACL_Provider::inst()->wheel() ||
+    return DAV::$ACLPROVIDER->wheel() ||
       ( $this->path === $this->user_prop_current_user_principal() );
   }
 

@@ -88,8 +88,9 @@ class BeeHub_XFSResource extends BeeHub_Resource {
   public function user_propname() {
     $this->init_props();
     $retval = array();
+    $SUPPORTED_PROPERTIES = DAV::getSupported_Properties();
     foreach (array_keys($this->stored_props) as $prop)
-      if (!isset(DAV::$SUPPORTED_PROPERTIES[$prop]))
+      if (!isset($SUPPORTED_PROPERTIES[$prop]))
         $retval[$prop] = true;
     return $retval;
   }
@@ -108,7 +109,7 @@ class BeeHub_XFSResource extends BeeHub_Resource {
    */
   protected function user_set_sponsor($sponsor) {
     $this->assert(DAVACL::PRIV_READ);
-    if ( ! ( $sponsor = BeeHub_Registry::inst()->resource($sponsor) ) ||
+    if ( ! ( $sponsor = DAV::$REGISTRY->resource($sponsor) ) ||
          ! $sponsor instanceof BeeHub_Sponsor ||
          ! $sponsor->isVisible() )
       throw new DAV_Status(
@@ -116,9 +117,9 @@ class BeeHub_XFSResource extends BeeHub_Resource {
       );
     if ( $this->user_prop_owner() !==
            $this->user_prop_current_user_principal() &&
-         ! BeeHub_ACL_Provider::inst()->wheel() )
+         ! DAV::$ACLPROVIDER->wheel() )
       throw DAV::forbidden( 'Only the owner can change the sponsor of a resource.' );
-    if (!in_array($sponsor->path, $this->current_user_sponsors()))
+    if ( !in_array( $sponsor->path, BeeHub::getAuth()->current_user()->current_user_sponsors() ) )
       throw DAV::forbidden( "You're not sponsored by {$sponsor->path}" );
     return $this->user_set( BeeHub::PROP_SPONSOR, $sponsor->path);
   }
@@ -129,7 +130,7 @@ class BeeHub_XFSResource extends BeeHub_Resource {
    */
   protected function user_set_owner($owner) {
     $this->assert(DAVACL::PRIV_READ);
-    if ( ! ( $owner = BeeHub_Registry::inst()->resource($owner) ) ||
+    if ( ! ( $owner = DAV::$REGISTRY->resource($owner) ) ||
          ! $owner->isVisible() ||
          ! $owner instanceof BeeHub_User)
       throw new DAV_Status(
@@ -137,10 +138,10 @@ class BeeHub_XFSResource extends BeeHub_Resource {
         DAV::COND_RECOGNIZED_PRINCIPAL
       );
     if ( !( $cup = $this->user_prop_current_user_principal() ) ||
-         !( $cup = BeeHub_Registry::inst()->resource($cup) ) )
+         !( $cup = DAV::$REGISTRY->resource($cup) ) )
       throw DAV::forbidden();
     if ( ($sponsor = $this->user_prop_sponsor()) )
-      $sponsor = BeeHub_Registry::inst()->resource($sponsor);
+      $sponsor = DAV::$REGISTRY->resource($sponsor);
     if ( $this->user_prop_owner() === $cup->path &&
          in_array( $owner->path, $sponsor->user_prop_group_member_set() ) )
       return $this->user_set(DAV::PROP_OWNER, $owner->path);
@@ -150,9 +151,9 @@ class BeeHub_XFSResource extends BeeHub_Resource {
            $this->collection() &&
            $this->collection()->assert(DAVACL::PRIV_WRITE) ) ) {
       if ( !in_array( $this->user_prop_sponsor(),
-                      $this->current_user_sponsors() ) ) {
+                      BeeHub::getAuth()->current_user()->current_user_sponsors() ) ) {
         if ( !in_array( $this->collection()->user_prop_sponsor(),
-                        $this->current_user_sponsors() ) ) {
+                        BeeHub::getAuth()->current_user()->current_user_sponsors() ) ) {
           if ( !$cup->user_prop_sponsor() ) {
             throw DAV::forbidden();
           } else {

@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+  <table name="beehub_groups">
+    <column>group_name</column>
+    <column>displayname</column>
+    <column>description</column>
+    <row>
+      <value>foo</value>
+      <value>Foo</value>
+      <value>Group of all Foo employees</value>
+    </row>
+    <row>
+      <value>bar</value>
+      <value>Bar</value>
+      <value>Group of all Bar members</value>
+    </row>
+  </table>
+  <table name="beehub_group_members">
+    <column>group_name</column>
+    <column>user_name</column>
+    <column>is_admin</column>
+    <column>is_invited</column>
+    <column>is_requested</column>
+    <row>
+      <value>foo</value>
+      <value>john</value>
+      <value>1</value>
+      <value>1</value>
+      <value>1</value>
+    </row>
+    <row>
+      <value>foo</value>
+      <value>jane</value>
+      <value>0</value>
+      <value>1</value>
+      <value>0</value>
+    </row>
+    <row>
+      <value>bar</value>
+      <value>john</value>
+      <value>1</value>
+      <value>1</value>
+      <value>1</value>
+    </row>
+    <row>
+      <value>bar</value>
+      <value>jane</value>
+      <value>0</value>
+      <value>0</value>
+      <value>1</value>
+    </row>
+  </table>
+  <table name="beehub_sponsors">
+    <column>sponsor_name</column>
+    <column>displayname</column>
+    <column>description</column>
+    <row>
+      <value>sponsor_a</value>
+      <value>Company A</value>
+      <value>Company A has paid for some storage</value>
+    </row>
+    <row>
+      <value>sponsor_b</value>
+      <value>Company B</value>
+      <value>Company B has paid for even more storage</value>
+    </row>
+  </table>
+  <table name="beehub_sponsor_members">
+    <column>sponsor_name</column>
+    <column>user_name</column>
+    <column>is_admin</column>
+    <column>is_accepted</column>
+    <row>
+      <value>sponsor_a</value>
+      <value>john</value>
+      <value>1</value>
+      <value>1</value>
+    </row>
+    <row>
+      <value>sponsor_b</value>
+      <value>john</value>
+      <value>1</value>
+      <value>1</value>
+    </row>
+    <row>
+      <value>sponsor_b</value>
+      <value>jane</value>
+      <value>0</value>
+      <value>0</value>
+    </row>
+  </table>
+  <table name="beehub_users">
+    <column>user_name</column>
+    <column>displayname</column>
+    <column>email</column>
+    <column>unverified_email</column>
+    <column>password</column>
+    <column>surfconext_id</column>
+    <column>surfconext_description</column>
+    <column>x509</column>
+    <column>sponsor_name</column>
+    <column>verification_code</column>
+    <column>verification_expiration</column>
+    <column>password_reset_code</column>
+    <column>password_reset_expiration</column>
+    <row>
+      <value>john</value>
+      <value>John Doe</value>
+      <value>john.doe@mailservice.com</value>
+      <null />
+      <value>$6$rounds=5000$126b519331f5189c$cvGKahLo6.q/TSTeLMxGC8qpwHC6QIA37NCdn6xKpBJVCU3vBzwJkK3HS7.d4RwJcCG.oXMHBiv06oMnZCwjM0</value>
+      <null />
+      <null />
+      <null />
+      <value>sponsor_a</value>
+      <null />
+      <null />
+      <null />
+      <null />
+    </row>
+    <row>
+      <value>jane</value>
+      <value>Jane Doe</value>
+      <value>jane.doe@mailservice.com</value>
+      <value>j.doe@mailservice.com</value>
+      <value>$6$rounds=5000$cvGKahLo6.q/TSTe$20dAPKtCcskhKC7SJ0ObfQodGu8dKhj5Eb4ipm09NK7RRJzTONJTsZgxASn3I1PtV6Yrwi186Xw9mn2mOxqKc.</value>
+      <value>qwertyuiop</value>
+      <value>Account at the top row of letters on my keyboard</value>
+      <value>CN=Jane Doe</value>
+      <null />
+      <value>somesecretcode</value>
+      <value>2038-01-19 03:14:07</value>
+      <value>someothersecretcode</value>
+      <value>2038-01-19 03:14:07</value>
+    </row>
+    <row>
+      <value>johny</value>
+      <value>Johny Doe</value>
+      <value>johny.doe@mailservice.com</value>
+      <null />
+      <value>$6$rounds=5000$126b519331f5189c$cvGKahLo6.q/TSTeLMxGC8qpwHC6QIA37NCdn6xKpBJVCU3vBzwJkK3HS7.d4RwJcCG.oXMHBiv06oMnZCwjM0</value>
+      <null />
+      <null />
+      <null />
+      <value>sponsor_a</value>
+      <null />
+      <null />
+      <null />
+      <null />
+    </row>
+  </table>
+  <table name="Locks">
+    <column>lock_token</column>
+    <column>lock_root</column>
+    <column>lock_owner</column>
+    <column>lock_depth</column>
+    <column>lock_timeout</column>
+    <row>
+      <value>opaquelocktoken:01234567-89ab-cdef-0123456789abcdef0</value>
+      <value>/some/path/</value>
+      <value>Some client software</value>
+      <value>0</value>
+      <value>123456</value>
+    </row>
+    <row>
+      <value>opaquelocktoken:fedcba98-7654-3210-fedcba9876543210f</value>
+      <value>/some/other/path/</value>
+      <value>Other client software</value>
+      <value>1</value>
+      <value>987654</value>
+    </row>
+  </table>
+  <table name="ETag">
+    <column>etag</column>
+    <row>
+      <value>1</value>
+    </row>
+  </table>
+</dataset>

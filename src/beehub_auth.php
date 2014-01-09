@@ -1,7 +1,8 @@
 <?php
-
-/*·************************************************************************
- * Copyright ©2007-2012 SARA b.v., Amsterdam, The Netherlands
+/**
+ * Contains the BeeHub_Auth class
+ *
+ * Copyright ©2007-2013 SURFsara b.v., Amsterdam, The Netherlands
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -12,10 +13,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- **************************************************************************/
-
-/**
- * File documentation (who cares)
+ *
  * @package BeeHub
  */
 
@@ -36,11 +34,17 @@ class BeeHub_Auth {
    */
   private $simpleSAML_authentication;
 
+
+  /**
+   * @var  BeeHub_User  The user currently logged in, or null if no user is logged in
+   */
+  private $currentUserPrincipal = null;
+
   /**
    * This class is a singleton, so the constructor is private. Instantiate through BeeHub_Auth::inst()
    */
-  private function __construct() {
-    $this->simpleSAML_authentication = new SimpleSAML_Auth_Simple('BeeHub');
+  protected function __construct( SimpleSAML_Auth_Simple $simpleSAML ) {
+    $this->simpleSAML_authentication = $simpleSAML;
   }
 
   /**
@@ -48,10 +52,13 @@ class BeeHub_Auth {
    *
    * @return  BeeHub_Auth  The only instance of this class
    */
-  public static function inst() {
+  public static function inst( SimpleSAML_Auth_Simple $simpleSAML = null ) {
+    if ( is_null( $simpleSAML ) ) {
+      $simpleSAML = new SimpleSAML_Auth_Simple( 'BeeHub' );
+    }
     static $inst = null;
     if (is_null($inst)) {
-      $inst = new BeeHub_Auth();
+      $inst = new BeeHub_Auth( $simpleSAML );
     }
     return $inst;
   }
@@ -65,6 +72,10 @@ class BeeHub_Auth {
    * @param  boolean  $allowDoubleLogin  TODO documentation
    */
   public function handle_authentication($requireAuth = true, $allowDoubleLogin = false) {
+    // We start with assuming nobody is logged in
+    $this->set_user( null );
+    $this->SURFconext = false;
+
     if (isset($_GET['logout'])) {
       if ($this->simpleSAML_authentication->isAuthenticated()) {
         $this->simpleSAML_authentication->logout();
@@ -133,7 +144,7 @@ class BeeHub_Auth {
     if (!is_null($user)) {
       $email = $user->prop(BeeHub::PROP_EMAIL);
       if ( empty($email) &&
-           DAV::unslashify(DAV::$PATH) != DAV::unslashify($user->path) ) {
+           DAV::unslashify( DAV::getPath() ) != DAV::unslashify($user->path) ) {
         $message = file_get_contents( dirname( dirname ( __FILE__ ) ) . '/views/error_no_verified_email.html' );
         $message = str_replace( '%USER_PATH%', BeeHub::urlbase(true) . $user->path, $message );
         BeeHub::htmlError( $message, DAV::HTTP_FORBIDDEN );
@@ -144,12 +155,15 @@ class BeeHub_Auth {
   /**
    * Sets the current user
    *
-   * @param   string  $user_name  The user name
+   * @param   string  $user_name  The user name, or null to indicate no user is logged in
    * @return  void
    */
   private function set_user($user_name) {
-    BeeHub_ACL_Provider::inst()->CURRENT_USER_PRINCIPAL =
-      BeeHub::USERS_PATH . $user_name;
+    if ( is_null( $user_name ) ) {
+      $this->currentUserPrincipal = null;
+    }else{
+      $this->currentUserPrincipal = BeeHub::user( $user_name );
+    }
   }
 
 
@@ -160,8 +174,7 @@ class BeeHub_Auth {
    *   logged in.
    */
   public function current_user() {
-    $cup = BeeHub_ACL_Provider::inst()->user_prop_current_user_principal();
-    return $cup ? BeeHub::user($cup) : null;
+    return $this->currentUserPrincipal;
   }
 
 
@@ -171,8 +184,7 @@ class BeeHub_Auth {
    * @return  boolean  True if the user is authenticated, false otherwise
    */
   public function is_authenticated() {
-    $cup = BeeHub_ACL_Provider::inst()->user_prop_current_user_principal();
-    return (boolean) $cup;
+    return ! is_null( $this->current_user() );
   }
 
 
@@ -210,4 +222,32 @@ class BeeHub_Auth {
   }
 
 
+  /**
+   * Determines whether you need to authenticate based on the method and URL of the request
+   * @return  boolean  True if authentication is required, false otherwise
+   */
+  public static function is_authentication_required() {
+    $path = DAV::unslashify( DAV::getPath() );
+    /**
+     * You don't need to authenticate when:
+     * - GET (or HEAD) or POST on the users collection (required to create a new user)
+     * - GET (or HEAD) on the system collection (required to read the 'homepage')
+     * In other cases you do need to authenticate
+     */
+    $noRequireAuth = (
+      (
+        $path === DAV::unslashify( BeeHub::USERS_PATH ) &&
+        in_array( $_SERVER['REQUEST_METHOD'], array('GET', 'POST', 'HEAD') )
+      ) ||
+      (
+        $path === DAV::unslashify( BeeHub::SYSTEM_PATH ) &&
+        in_array($_SERVER['REQUEST_METHOD'], array('GET', 'HEAD') )
+      )
+    );
+
+    return ! $noRequireAuth;
+  }
+
 } // class BeeHub_Auth
+
+// End of file
