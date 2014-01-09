@@ -2,7 +2,7 @@
 /**
  * Sets up an environment to emulate a webserver environment
  *
- * Copyright ©2007-2013 SURFsara b.v., Amsterdam, The Netherlands
+ * Copyright ©2007-2014 SURFsara b.v., Amsterdam, The Netherlands
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -119,6 +119,13 @@ function setUpStorageBackend() {
   \xattr_set( $config['environment']['datadir'], \rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
   \mkdir( $basePath . 'home' );
   \xattr_set( $basePath . 'home', \rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
+  \mkdir( $basePath . 'home' . \DIRECTORY_SEPARATOR . 'john' );
+  \xattr_set( $basePath . 'home' . \DIRECTORY_SEPARATOR . 'john', \rawurlencode( \DAV::PROP_OWNER ), '/system/users/john' );
+  \xattr_set( $basePath . 'home' . \DIRECTORY_SEPARATOR . 'john', \rawurlencode( \BeeHub::PROP_SPONSOR ), '/system/sponsors/sponsor_a' );
+  \mkdir( $basePath . 'home' . \DIRECTORY_SEPARATOR . 'johny' );
+  \xattr_set( $basePath . 'home' . \DIRECTORY_SEPARATOR . 'johny', \rawurlencode( \DAV::PROP_OWNER ), '/system/users/johny' );
+  \mkdir( $basePath . 'home' . \DIRECTORY_SEPARATOR . 'jane' );
+  \xattr_set( $basePath . 'home' . \DIRECTORY_SEPARATOR . 'jane', \rawurlencode( \DAV::PROP_OWNER ), '/system/users/jane' );
   \mkdir( $basePath . 'foo' );
   \xattr_set( $basePath . 'foo', \rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
   \xattr_set( $basePath . 'foo', \rawurlencode( \DAV::PROP_ACL ), "[[\"/system/groups/foo\",false,[\"DAV: read\", \"DAV: write\"],false]]" );
@@ -129,6 +136,9 @@ function setUpStorageBackend() {
   \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'file.txt', \rawurlencode( \BeeHub::PROP_SPONSOR ), '/system/sponsors/sponsor_a' );
   \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'file.txt', \rawurlencode( \DAV::PROP_GETCONTENTTYPE ), "text/plain; charset=UTF-8" );
   \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'file.txt', \rawurlencode( \DAV::PROP_GETETAG ), '"EA"' );
+  \mkdir( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'directory' );
+  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'directory', \rawurlencode( \DAV::PROP_OWNER ), '/system/users/john' );
+  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'directory', \rawurlencode( \BeeHub::PROP_SPONSOR ), '/system/sponsors/sponsor_a' );
   \mkdir( $basePath . 'bar' );
   \xattr_set( $basePath . 'bar', \rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
   \xattr_set( $basePath . 'bar', \rawurlencode( \DAV::PROP_ACL ), "[[\"/system/groups/bar\",false,[\"DAV: read\", \"DAV: write\"],false]]" );
