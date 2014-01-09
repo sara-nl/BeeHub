@@ -2,7 +2,7 @@
 /**
  * Contains tests for the class BeeHub_XFSResource
  *
- * Copyright ©2007-2013 SURFsara b.v., Amsterdam, The Netherlands
+ * Copyright ©2007-2014 SURFsara b.v., Amsterdam, The Netherlands
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -157,73 +157,170 @@ class BeeHub_XFSResourceTest extends BeeHub_Tests_Db_Test_Case {
   }
 
 
-//  public function testBecomeOwnerNoResourceWritePriv() {
-//    $this->setCurrentUser( '/system/users/jane' );
-//    $this->setExpectedException( 'DAV_Status', null, \DAV::HTTP_BAD_REQUEST );
-//    $this->obj->method_PROPPATCH( \DAV::PROP_OWNER, '<D:href>/system/users/unexisting_user</D:href>' );
-//  }
-//
-//
-//  public function testBecomeOwnerNoCollectionWritePriv() {
-//    $this->setCurrentUser( '/system/users/jane' );
-//    $this->setExpectedException( 'DAV_Status', null, \DAV::HTTP_BAD_REQUEST );
-//    $this->obj->method_PROPPATCH( \DAV::PROP_OWNER, '<D:href>/system/users/unexisting_user</D:href>' );
-//  }
-//
-//
-//  public function testBecomeOwnerWrongSponsoredResource() {
-//    $this->setCurrentUser( '/system/users/jane' );
-//    $this->setExpectedException( 'DAV_Status', null, \DAV::HTTP_BAD_REQUEST );
-//    $this->obj->method_PROPPATCH( \DAV::PROP_OWNER, '<D:href>/system/users/unexisting_user</D:href>' );
-//  }
-//
-//
-//  public function testBecomeOwnerWithoutSponsor() {
-//    $this->setCurrentUser( '/system/users/johny' );
-//    $this->setExpectedException( 'DAV_Status', null, \DAV::HTTP_BAD_REQUEST );
-//    $this->obj->method_PROPPATCH( \DAV::PROP_OWNER, '<D:href>/system/users/unexisting_user</D:href>' );
-//  }
+  public function testBecomeOwnerNoResourceWritePriv() {
+    // Make sure Jane has write privilege on the collection
+    $this->setCurrentUser( '/system/users/john' );
+    $this->obj->collection()->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
+    $this->obj->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_WRITE ), true ) ) );
+    $sponsor = new \BeeHub_Sponsor( '/system/sponsors/sponsor_a' );
+    $sponsor->change_memberships( array( 'jane' ), true, true, true, true );
+    $jane = new \BeeHub_User( '/system/users/jane' );
+    $jane->user_set_sponsor( '/system/sponsors/sponsor_a' );
+    $jane->storeProperties();
 
-
-//  public function testBecomeOwner() {
-//    $this->setCurrentUser( '/system/users/jane' );
-//    // Jane should have the same sponsor as the file
-//    $sponsor = new \BeeHub_Sponsor( '/system/sponsors/sponsor_a' );
-//    $sponsor->change_memberships( array( 'jane' ), true, true, true, true );
-//
-//    // The group 'foo' has write privileges on the collection and the file itself
-//    $foo = new \BeeHub_Group( '/system/groups/foo' );
-//    $foo->change_memberships( array( 'jane' ), true, true, true, true, true, true );
-//
-//    // So Jane should now be able to become owner of the file
-//    $this->obj->method_PROPPATCH( \DAV::PROP_OWNER, '<D:href>/system/users/jane</D:href>' );
-//  }
-
-
-  protected function user_set_sponsor($sponsor) {
-    $this->assert(DAVACL::PRIV_READ);
-
-    // No (correct) sponsor given? Bad request!
-    if ( ! ( $sponsor = BeeHub_Registry::inst()->resource($sponsor) ) ||
-         ! $sponsor instanceof BeeHub_Sponsor ||
-         ! $sponsor->isVisible() )
-      throw new DAV_Status(
-        DAV::HTTP_BAD_REQUEST
-      );
-
-    // Only the resource owner (or an administrator) can change the sponsor
-    if ( $this->user_prop_owner() !==
-           $this->user_prop_current_user_principal() &&
-         ! DAV::$ACLPROVIDER->wheel() )
-      throw DAV::forbidden( 'Only the owner can change the sponsor of a resource.' );
-
-    // And I can only change the sponsor into a sponsor that sponsors me
-    if ( !in_array( $sponsor->path, BeeHub::getAuth()->current_user()->current_user_sponsors() ) )
-      throw DAV::forbidden( "You're not sponsored by {$sponsor->path}" );
-      
-    return $this->user_set( BeeHub::PROP_SPONSOR, $sponsor->path);
+    $this->setCurrentUser( '/system/users/jane' );
+    $this->setExpectedException( 'DAV_Status', null, \DAV::HTTP_FORBIDDEN );
+    $this->obj->method_PROPPATCH( \DAV::PROP_OWNER, '<D:href>/system/users/jane</D:href>' );
   }
 
+
+  public function testBecomeOwnerNoCollectionWritePriv() {
+    // Make sure Jane has write privilege on the resource, but not on the collection
+    $this->setCurrentUser( '/system/users/john' );
+    $this->obj->collection()->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), true ) ) );
+    $this->obj->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
+    $sponsor = new \BeeHub_Sponsor( '/system/sponsors/sponsor_a' );
+    $sponsor->change_memberships( array( 'jane' ), true, true, true, true );
+    $jane = new \BeeHub_User( '/system/users/jane' );
+    $jane->user_set_sponsor( '/system/sponsors/sponsor_a' );
+    $jane->storeProperties();
+
+    $this->setCurrentUser( '/system/users/jane' );
+    $this->setExpectedException( 'DAV_Status', null, \DAV::HTTP_FORBIDDEN );
+    $this->obj->method_PROPPATCH( \DAV::PROP_OWNER, '<D:href>/system/users/jane</D:href>' );
+  }
+
+
+  public function testBecomeOwnerWrongSponsoredResource() {
+    // Make sure Jane has write privilege on the resource, but not on the collection
+    $this->setCurrentUser( '/system/users/john' );
+    $this->obj->user_set( \BeeHub::PROP_SPONSOR, '/system/sponsors/sponsor_c' );
+    $this->obj->collection()->user_set( \BeeHub::PROP_SPONSOR, '/system/sponsors/sponsor_b' );
+    $this->obj->collection()->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
+    $this->obj->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
+    $sponsorA = new \BeeHub_Sponsor( '/system/sponsors/sponsor_a' );
+    $sponsorA->change_memberships( array( 'jane' ), true, true, true, true );
+    $sponsorB = new \BeeHub_Sponsor( '/system/sponsors/sponsor_b' );
+    $sponsorB->change_memberships( array( 'jane' ), true, true, true, true );
+    $jane = new \BeeHub_User( '/system/users/jane' );
+    $jane->user_set_sponsor( '/system/sponsors/sponsor_a' );
+    $jane->storeProperties();
+
+    $this->setCurrentUser( '/system/users/jane' );
+    $this->obj->method_PROPPATCH( \DAV::PROP_OWNER, '<D:href>/system/users/jane</D:href>' );
+
+    // Jane is sponsored by sponsor A and B, the resource by sponsor C, so this
+    // should change; the collection is sponsored by resource B, so that's the
+    // right choice (it takes precendence over the default sponsor of the user)
+    $this->assertSame( '/system/sponsors/sponsor_b', $this->obj->user_prop_sponsor() );
+    $this->assertSame( '/system/users/jane', $this->obj->user_prop_owner() );
+  }
+
+
+  public function testBecomeOwnerWrongSponsoredResourceAndCollection() {
+    // Make sure Jane has write privilege on the resource, but not on the collection
+    $this->setCurrentUser( '/system/users/john' );
+    $this->obj->user_set( \BeeHub::PROP_SPONSOR, '/system/sponsors/sponsor_c' );
+    $this->obj->collection()->user_set( \BeeHub::PROP_SPONSOR, '/system/sponsors/sponsor_c' );
+    $this->obj->collection()->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
+    $this->obj->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
+    $sponsorA = new \BeeHub_Sponsor( '/system/sponsors/sponsor_a' );
+    $sponsorA->change_memberships( array( 'jane' ), true, true, true, true );
+    $sponsorB = new \BeeHub_Sponsor( '/system/sponsors/sponsor_b' );
+    $sponsorB->change_memberships( array( 'jane' ), true, true, true, true );
+    $jane = new \BeeHub_User( '/system/users/jane' );
+    $jane->user_set_sponsor( '/system/sponsors/sponsor_a' );
+    $jane->storeProperties();
+
+    $this->setCurrentUser( '/system/users/jane' );
+    $this->obj->method_PROPPATCH( \DAV::PROP_OWNER, '<D:href>/system/users/jane</D:href>' );
+
+    // Jane is sponsored by sponsor A and B, the resource by sponsor C, so this
+    // should change; the collection is sponsored by resource C, so that's not
+    // right, so it should take the default sponsor of the user
+    $this->assertSame( '/system/sponsors/sponsor_a', $this->obj->user_prop_sponsor() );
+    $this->assertSame( '/system/users/jane', $this->obj->user_prop_owner() );
+  }
+
+
+  public function testBecomeOwnerWithoutSponsor() {
+    // Make sure Jane has write privilege on the resource, but not on the collection
+    $this->setCurrentUser( '/system/users/john' );
+    $this->obj->user_set( \BeeHub::PROP_SPONSOR, '/system/sponsors/sponsor_c' );
+    $this->obj->collection()->user_set( \BeeHub::PROP_SPONSOR, '/system/sponsors/sponsor_c' );
+    $this->obj->collection()->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
+    $this->obj->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
+
+    // Because Jane is not sponsored, she can not become the owner
+    $this->setCurrentUser( '/system/users/jane' );
+    $this->setExpectedException( 'DAV_Status', null, \DAV::HTTP_FORBIDDEN );
+    $this->obj->method_PROPPATCH( \DAV::PROP_OWNER, '<D:href>/system/users/jane</D:href>' );
+  }
+
+
+  public function testBecomeOwner() {
+    // Make sure Jane has write privilege on the resource, but not on the collection
+    $this->setCurrentUser( '/system/users/john' );
+    $this->obj->user_set( \BeeHub::PROP_SPONSOR, '/system/sponsors/sponsor_b' );
+    $this->obj->collection()->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
+    $this->obj->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
+    $sponsorA = new \BeeHub_Sponsor( '/system/sponsors/sponsor_a' );
+    $sponsorA->change_memberships( array( 'jane' ), true, true, true, true );
+    $sponsorB = new \BeeHub_Sponsor( '/system/sponsors/sponsor_b' );
+    $sponsorB->change_memberships( array( 'jane' ), true, true, true, true );
+    $jane = new \BeeHub_User( '/system/users/jane' );
+    $jane->user_set_sponsor( '/system/sponsors/sponsor_a' );
+    $jane->storeProperties();
+
+    $this->setCurrentUser( '/system/users/jane' );
+    $this->obj->method_PROPPATCH( \DAV::PROP_OWNER, '<D:href>/system/users/jane</D:href>' );
+
+    // Both Jane and the object are sponsored by sponsor B, so no need to change it
+    $this->assertSame( '/system/sponsors/sponsor_b', $this->obj->user_prop_sponsor() );
+    $this->assertSame( '/system/users/jane', $this->obj->user_prop_owner() );
+  }
+
+
+  public function testChangeSponsorToUnexisting() {
+    $this->setCurrentUser( '/system/users/john' );
+    $this->setExpectedException( 'DAV_Status', null, \DAV::HTTP_BAD_REQUEST );
+    $this->obj->method_PROPPATCH( \BeeHub::PROP_SPONSOR, '<D:href>/system/sponsors/sponsor_c</D:href>' );
+  }
+
+
+  public function testChangeSponsorOfUnownedResource() {
+    $this->setCurrentUser( '/system/users/john' );
+    $sponsorA = new \BeeHub_Sponsor( '/system/sponsors/sponsor_a' );
+    $sponsorA->change_memberships( array( 'jane' ), true, true, true, true );
+    $this->obj->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
+
+    $this->setCurrentUser( '/system/users/jane' );
+    $this->setExpectedException( 'DAV_Status', null, \DAV::HTTP_FORBIDDEN );
+    $this->obj->method_PROPPATCH( \BeeHub::PROP_SPONSOR, '<D:href>/system/sponsors/sponsor_a</D:href>' );
+  }
+
+
+  public function testChangeSponsorToUnsponsoredSponsor() {
+    $sponsor = new \BeeHub_Sponsor( '/system/sponsors/sponsor_b' );
+    $sponsor->change_memberships( array( 'jane' ), true, true, true, true );
+    $this->obj->user_set( \DAV::PROP_OWNER, '/system/users/jane' );
+
+    $this->setCurrentUser( '/system/users/jane' );
+    $this->setExpectedException( 'DAV_Status', null, \DAV::HTTP_FORBIDDEN );
+    $this->obj->method_PROPPATCH( \BeeHub::PROP_SPONSOR, '<D:href>/system/sponsors/sponsor_a</D:href>' );
+  }
+
+
+  public function testChangeSponsor() {
+    $sponsor = new \BeeHub_Sponsor( '/system/sponsors/sponsor_b' );
+    $sponsor->change_memberships( array( 'jane' ), true, true, true, true );
+    $this->obj->user_set( \DAV::PROP_OWNER, '/system/users/jane' );
+
+    $this->setCurrentUser( '/system/users/jane' );
+    $this->obj->method_PROPPATCH( \BeeHub::PROP_SPONSOR, '<D:href>/system/sponsors/sponsor_b</D:href>' );
+
+    $this->assertSame( '/system/sponsors/sponsor_b', $this->obj->user_prop_sponsor() );
+  }
 
 } // class BeeHub_XFSResourceTest
 

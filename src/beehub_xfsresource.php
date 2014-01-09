@@ -1,7 +1,7 @@
 <?php
 
 /*·************************************************************************
- * Copyright ©2007-2012 SARA b.v., Amsterdam, The Netherlands
+ * Copyright ©2007-2014 SARA b.v., Amsterdam, The Netherlands
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -109,18 +109,25 @@ class BeeHub_XFSResource extends BeeHub_Resource {
    */
   protected function user_set_sponsor($sponsor) {
     $this->assert(DAVACL::PRIV_READ);
+
+    // No (correct) sponsor given? Bad request!
     if ( ! ( $sponsor = DAV::$REGISTRY->resource($sponsor) ) ||
          ! $sponsor instanceof BeeHub_Sponsor ||
          ! $sponsor->isVisible() )
       throw new DAV_Status(
         DAV::HTTP_BAD_REQUEST
       );
+
+    // Only the resource owner (or an administrator) can change the sponsor
     if ( $this->user_prop_owner() !==
            $this->user_prop_current_user_principal() &&
          ! DAV::$ACLPROVIDER->wheel() )
       throw DAV::forbidden( 'Only the owner can change the sponsor of a resource.' );
+
+    // And I can only change the sponsor into a sponsor that sponsors me
     if ( !in_array( $sponsor->path, BeeHub::getAuth()->current_user()->current_user_sponsors() ) )
       throw DAV::forbidden( "You're not sponsored by {$sponsor->path}" );
+
     return $this->user_set( BeeHub::PROP_SPONSOR, $sponsor->path);
   }
 
@@ -130,6 +137,8 @@ class BeeHub_XFSResource extends BeeHub_Resource {
    */
   protected function user_set_owner($owner) {
     $this->assert(DAVACL::PRIV_READ);
+
+    // The owner should exist and be visible
     if ( ! ( $owner = DAV::$REGISTRY->resource($owner) ) ||
          ! $owner->isVisible() ||
          ! $owner instanceof BeeHub_User)
@@ -137,23 +146,40 @@ class BeeHub_XFSResource extends BeeHub_Resource {
         DAV::HTTP_BAD_REQUEST,
         DAV::COND_RECOGNIZED_PRINCIPAL
       );
+
+    // You should be authenticated
     if ( !( $cup = $this->user_prop_current_user_principal() ) ||
          !( $cup = DAV::$REGISTRY->resource($cup) ) )
       throw DAV::forbidden();
+
+    // Get the sponsor of this resource
     if ( ($sponsor = $this->user_prop_sponsor()) )
       $sponsor = DAV::$REGISTRY->resource($sponsor);
+
+    // If you are owner, and the new owner is sponsored by the resource sponsor
     if ( $this->user_prop_owner() === $cup->path &&
          in_array( $owner->path, $sponsor->user_prop_group_member_set() ) )
       return $this->user_set(DAV::PROP_OWNER, $owner->path);
+
+    // If you are not the owner, you can become owner if you have write
+    // privileges on both the resource itself as its parent collection
     if ( $this->user_prop_owner() !== $cup->path &&
          $owner->path === $cup->path &&
-         ( $this->assert(DAVACL::PRIV_WRITE) ||
+         ( $this->assert(DAVACL::PRIV_WRITE) &&
            $this->collection() &&
            $this->collection()->assert(DAVACL::PRIV_WRITE) ) ) {
+
+      // If the user is not sponsored by the resource sponsor, we have to change
+      // the resource sponsor
       if ( !in_array( $this->user_prop_sponsor(),
                       BeeHub::getAuth()->current_user()->current_user_sponsors() ) ) {
+
+        // If the user is sponsored by the collection sponsor, then let's take
+        // that sponsor
         if ( !in_array( $this->collection()->user_prop_sponsor(),
                         BeeHub::getAuth()->current_user()->current_user_sponsors() ) ) {
+
+          // Else take the default sponsor of the user
           if ( !$cup->user_prop_sponsor() ) {
             throw DAV::forbidden();
           } else {
@@ -166,6 +192,8 @@ class BeeHub_XFSResource extends BeeHub_Resource {
       }
       return $this->user_set(DAV::PROP_OWNER, $owner->path);
     }
+
+    // If the owner still isn't changed, you are not allowed to do so
     throw DAV::forbidden();
   }
 
