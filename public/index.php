@@ -17,6 +17,9 @@
  * @package BeeHub
  */
 
+// TODO: determine how to enable the client tests
+define( 'RUN_CLIENT_TESTS', true );
+
 // Bootstrap the application
 require_once '../src/beehub_bootstrap.php';
 

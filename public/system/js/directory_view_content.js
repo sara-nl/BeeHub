@@ -112,29 +112,29 @@
 
     // Add listeners
     // Go to users homedirectory handler
-    $('.bh-dir-content-gohome').click(function() { window.location.href=$(this).attr("id");});
+    $('.bh-dir-content-gohome').unbind('click').click(function(){nl.sara.beehub.controller.goToPage($(this).attr("id"))});
     
     // Go up one directory button
-    $('.bh-dir-content-up').click(function() { window.location.href=$(this).attr("id");});
+    $('.bh-dir-content-up').unbind('click').click(function(){console.log($(this));nl.sara.beehub.controller.goToPage($(this).attr("id"))});
     
     // Upload button
-    $('.bh-dir-content-upload').click(handle_upload_button_click);
+    $('.bh-dir-content-upload').unbind('click').click(handle_upload_button_click);
     
     // When upload files are choosen
-    $('.bh-dir-content-upload-hidden').change(handle_upload_change);
+    $('.bh-dir-content-upload-hidden').unbind('change').change(handle_upload_change);
     
     // New folder button
-    $('.bh-dir-content-newfolder').click(nl.sara.beehub.controller.createNewFolder);
+    $('.bh-dir-content-newfolder').unbind('click').click(handle_newfolder_button_click);
     
     // Delete button click handler
-    $('.bh-dir-content-delete').click(handle_delete_button_click);
+    $('.bh-dir-content-delete').unbind('click').click(handle_delete_button_click);
     
     // Copy button click handler
-    $('.bh-dir-content-copy').click(handle_copy_button_click);
+    $('.bh-dir-content-copy').unbind('click').click(handle_copy_button_click);
     
     // Move button click handler
-    $('.bh-dir-content-move').click(handle_move_button_click);
-  
+    $('.bh-dir-content-move').unbind('click').click(handle_move_button_click);
+
     // All handlers that belong to a row
     setRowHandlers();
   };
@@ -198,13 +198,14 @@
     $('.bh-dir-content-checkbox').unbind( 'click' ).click(handle_checkbox_click);
     
     // Open selected handler: this can be a file or a directory
-    $('.bh-dir-content-openselected').unbind( 'click' ).click(function() {window.location.href=$(this).attr('name');});
-    
+    $('.bh-dir-content-openselected').unbind('click').click(function(){nl.sara.beehub.controller.goToPage($(this).attr("name"))});
+
     // Edit icon
-    $('.bh-dir-content-edit').unbind( 'click' ).click(handle_edit_menu_click);
-    
+    $('.bh-dir-content-edit').unbind('click').click(handle_edit_menu_click);
+   
     // View acl
     $('.bh-dir-content-acl').unbind( 'click' ).click(handle_acl_menu_click);
+    
   };
   
   /*
@@ -337,7 +338,6 @@
     if (resource.lastmodified === undefined) {
       resource.lastmodified = $("tr[id='"+resource.path+"']").find('.lastmodified').attr('name');
     }
-    
     return resource;
   };
   
@@ -354,11 +354,13 @@
     if ( currentPath.substr( -1 ) !== '/' ) {
       currentPath += '/';
     }
-    if ( collection !== currentPath ) {
-      return;
-    }
+// TODO weer terugzetten
+//    if ( collection !== currentPath ) {
+//      return;
+//    }
 
     var row = createRow(resource);
+
     $("#bh-dir-content-table").append(row);
     $("#bh-dir-content-table").trigger("update");
     // Set handlers again
@@ -391,16 +393,16 @@
     if ( currentPath.substr( -1 ) !== '/' ) {
       currentPath += '/';
     }
-
-    if ( collectionOrg === currentPath ) {
+// TODO WEER TERUGZETTEN!!!!
+//    if ( collectionOrg === currentPath ) {
       // delete current row
       nl.sara.beehub.view.content.deleteResource(resourceOrg);
-    }
+//    }
 
-    if ( collectionNew === currentPath ) {
+//    if ( collectionNew === currentPath ) {
       // add new row
       nl.sara.beehub.view.content.addResource(resourceNew);
-    }
+//    }
   };
   
   
@@ -543,11 +545,17 @@
   /*
    * Onclick handler delete button content view
    */
+  var handle_newfolder_button_click = function(){
+    nl.sara.beehub.controller.createNewFolder();
+  };
+  
+  /*
+   * Onclick handler delete button content view
+   */
   var handle_delete_button_click = function(){
     var resources = getSelectedResources();
     // init and start action "delete"
     nl.sara.beehub.controller.initAction(resources,"delete");
-  
   };
   
   /*

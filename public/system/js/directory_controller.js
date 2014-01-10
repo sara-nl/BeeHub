@@ -65,6 +65,17 @@
             .replace(/>/g, '&gt;');
   };
   
+  /**
+   * Go to page
+   * 
+   * Public function
+   * 
+   * @param {String} location
+   */
+  nl.sara.beehub.controller.goToPage = function(location) {
+    window.location.href=location;
+  };
+  
   /*
    * Clear all views
    * 
@@ -1114,6 +1125,8 @@
       aceObject['unbind'] = true;
     };
     
+    console.log(ace.principal);
+    console.log(ace.getPrivilegeNames('DAV:'));
     // Make permissions string  
     if ( ace.grantdeny === 2 ) {
       aceObject['permissions'] = "deny ";

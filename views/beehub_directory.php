@@ -27,7 +27,14 @@ declare( encoding = 'UTF-8' );
 */
 
 // Load the default page header
-$header = '<link href="/system/css/dynatree/ui.dynatree.css" rel="stylesheet" type="text/css" />';
+if ( RUN_CLIENT_TESTS ) {
+  if ( $_SERVER['REQUEST_URI'] !== '/foo/' ) {
+    header( 'Location: /foo/' );
+    die();
+  }
+}else{
+  $header = '<link href="/system/css/dynatree/ui.dynatree.css" rel="stylesheet" type="text/css" />';
+}
 require 'views/header.php';
 ?>
 
@@ -629,6 +636,13 @@ try {
       </script>
     ';
   }
+}
+
+if ( RUN_CLIENT_TESTS ) {
+  $footer .= '
+    <script src="/system/tests/unittests/directory_view_content.js"></script>
+    <script src="/system/tests/unittests/directory_view_acl.js"></script>
+  ';
 }
 
 require 'views/footer.php';

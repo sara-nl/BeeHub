@@ -65,7 +65,7 @@ class BeeHub {
    * The global constant APPLICATION_ENV can be compared to one of these
    * constants to check whether the application is running in the respective
    * environment. This reduces the chance of developers making up their own
-   * environment values without in stead of using one of the existing ones.
+   * environment values instead of using one of the existing ones.
    */
   const ENVIRONMENT_DEVELOPMENT = 'development';
   const ENVIRONMENT_PRODUCTION  = 'production';

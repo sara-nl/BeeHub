@@ -48,4 +48,11 @@ DAV::$LOCKPROVIDER = BeeHub_Lock_Provider::inst();
 DAV::$ACLPROVIDER  = BeeHub_ACL_Provider::inst();
 DAV::$UNAUTHORIZED = array( BeeHub::getAuth(), 'unauthorized' );
 
+// If we want to run the client tests, load the test configuration and reset the storage backend (of the test environment)
+if ( RUN_CLIENT_TESTS ) {
+  require_once( dirname( dirname ( __FILE__ ) ) . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR . 'environment_building.php' );
+  \BeeHub\tests\loadTestConfig();
+  \BeeHub\tests\setUpStorageBackend();
+}
+
 // End of file
