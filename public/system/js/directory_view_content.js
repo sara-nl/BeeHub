@@ -112,25 +112,25 @@
 
     // Add listeners
     // Go to users homedirectory handler
-    $('.bh-dir-content-gohome').unbind().click(function(){nl.sara.beehub.controller.goToPage($(this).attr("id"))});
+    $('.bh-dir-content-gohome').unbind('click').click(function(){nl.sara.beehub.controller.goToPage($(this).attr("id"))});
     
     // Go up one directory button
-    $('.bh-dir-content-up').unbind().click(function(){nl.sara.beehub.controller.goToPage($(this).attr("id"))});
+    $('.bh-dir-content-up').unbind('click').click(function(){console.log($(this));nl.sara.beehub.controller.goToPage($(this).attr("id"))});
     
     // Upload button
-    $('.bh-dir-content-upload').unbind().click(handle_upload_button_click);
+    $('.bh-dir-content-upload').unbind('click').click(handle_upload_button_click);
     
     // When upload files are choosen
-    $('.bh-dir-content-upload-hidden').unbind().change(handle_upload_change);
+    $('.bh-dir-content-upload-hidden').unbind('change').change(handle_upload_change);
     
     // New folder button
-    $('.bh-dir-content-newfolder').unbind().click(handle_newfolder_button_click);
+    $('.bh-dir-content-newfolder').unbind('click').click(handle_newfolder_button_click);
     
     // Delete button click handler
-    $('.bh-dir-content-delete').unbind().click(handle_delete_button_click);
+    $('.bh-dir-content-delete').unbind('click').click(handle_delete_button_click);
     
     // Copy button click handler
-    $('.bh-dir-content-copy').unbind().click(handle_copy_button_click);
+    $('.bh-dir-content-copy').unbind('click').click(handle_copy_button_click);
     
     // Move button click handler
     $('.bh-dir-content-move').unbind('click').click(handle_move_button_click);

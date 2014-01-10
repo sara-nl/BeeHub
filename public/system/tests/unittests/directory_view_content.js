@@ -18,85 +18,35 @@
  */
 "use strict";
 
+//// Call init function
+//nl.sara.beehub.view.content.init();
+
 (function(){
-  var getTable = function() {
-    return '<table class="table table-striped table-hover table-condensed tablesorter\
-      tablesorter-default hasStickyHeaders" id="bh-dir-content-table">\
-      <thead class="bh-dir-content-table-header">\
-      <tr class="tablesorter-headerRow">\
-        <th class="bh-dir-small-column tablesorter-header sorter-false"\
-          data-column="0" tabindex="0" unselectable="on" style="-moz-user-select: none;">\
-          <div class="tablesorter-header-inner">\
-            <input type="checkbox" class="bh-dir-content-checkboxgroup">\
-          </div></th>\
-        <th class="bh-dir-small-column tablesorter-header sorter-false" data-column="1"\
-          tabindex="0" unselectable="on" style="-moz-user-select: none;">\
-          <div class="tablesorter-header-inner"></div></th>\
-        <th data-column="2" class="tablesorter-header" tabindex="0" unselectable="on"\
-          style="-moz-user-select: none;"><div class="tablesorter-header-inner">Name</div></th>\
-        <th hidden="" data-column="3" class="tablesorter-header" tabindex="0" unselectable="on"\
-          style="-moz-user-select: none;"><div class="tablesorter-header-inner"></div></th>\
-        <th data-column="4" class="tablesorter-header" tabindex="0" unselectable="on"\
-          style="-moz-user-select: none;"><div class="tablesorter-header-inner">Size</div></th>\
-        <th data-column="5" class="tablesorter-header" tabindex="0" unselectable="on"\
-          style="-moz-user-select: none;"><div class="tablesorter-header-inner">Type</div></th>\
-        <th data-column="6" class="tablesorter-header" tabindex="0" unselectable="on"\
-          style="-moz-user-select: none;"><div class="tablesorter-header-inner">Modified</div></th>\
-        <th data-column="7" class="tablesorter-header" tabindex="0" unselectable="on"\
-          style="-moz-user-select: none;"><div class="tablesorter-header-inner">Owner</div></th>\
-      </tr>\
-    </thead>\
-    <tbody>\
-       <tr id="/home/testuser/testfolder/">\
-        <td width="10px"><input type="checkbox" value="testfolder" name="/home/testuser/testfolder/"\
-          class="bh-dir-content-checkbox">\
-        </td>\
-        <td width="10px" title="Rename" data-toggle="tooltip">\
-          <i style="cursor: pointer" class="icon-edit bh-dir-content-edit"></i>\
-        </td>\
-        <td name="testfolder" class="bh-dir-content-name displayname" style="display: table-cell;">\
-          <a href="/home/testuser/testfolder/"><b>testfolder/</b></a></td><td hidden="true"\
-          class="bh-dir-content-rename-td" style="display: none;"><input value="testfolder"\
-          name="testfolder" class="bh-dir-content-rename-form"></td>\
-        <td name="undefined" class="contentlength"></td>\
-        <td name="collection" class="type">\
-          <i style="cursor: pointer" class="icon-folder-close bh-dir-content-openselected"\
-          name="/home/testuser/testfolder/">&gt;</i>\
-        </td>\
-        <td name="Thu Nov 21 2013 14:27:03 GMT+0100 (CET)" class="lastmodified">21-11-2013 14:27</td>\
-        <td name="/system/users/testuser" class="owner">Test User</td>\
-      </tr>\
-      <tr id="/home/testuser/testfile/">\
-        <td width="10px"><input type="checkbox" value="testfolder" name="/home/testuser/testfile/"\
-          class="bh-dir-content-checkbox">\
-        </td>\
-        <td width="10px" title="Rename" data-toggle="tooltip">\
-          <i style="cursor: pointer" class="icon-edit bh-dir-content-edit"></i>\
-        </td>\
-        <td name="testfile" class="bh-dir-content-name displayname" style="display: table-cell;">\
-          <a href="/home/testuser/testfile/"><b>testfile/</b></a></td><td hidden="true"\
-          class="bh-dir-content-rename-td" style="display: none;"><input value="testfile"\
-          name="testfile" class="bh-dir-content-rename-form"></td>\
-        <td name="39424" class="contentlength"></td>\
-        <td name="text/plain; charset=UTF-8" class="type">\
-          <i style="cursor: pointer" class="icon-folder-close bh-dir-content-openselected"\
-          name="/home/testuser/testfile/">&gt;</i>\
-        </td>\
-        <td name="Thu Nov 21 2013 14:27:03 GMT+0100 (CET)" class="lastmodified">21-11-2013 14:27</td>\
-        <td name="/system/users/testuser" class="owner">Test User</td>\
-    </tr>\
-    </tbody>\
-  </table>';
-  };
+  var fixture = $("#qunit-fixture").clone(true);
+  
+  var home = "/home/john/";
+  // Current dir is /foo/
+  var up = "/";
+  var homeButton = '.bh-dir-content-gohome';
+  var directory1 = '/foo/directory';
+  var directory1Displayname = 'directory';
+  var file1 = '/foo/file.txt';
+  var file1Displayname = 'file.txt';
+  var upButton = '.bh-dir-content-up';
+  var deleteButton = '.bh-dir-content-delete';
+  var copyButton = '.bh-dir-content-copy';
+  var moveButton = '.bh-dir-content-move';
+  
+  module("view content",{
+    setup: function(){
+      $('#qunit-fixture').replaceWith(fixture);
+      // Call init function
+      nl.sara.beehub.view.content.init();
+//      $('body').append(fixture.clone(true));
+    }
+  });
   
   var checkCheckboxes = function(length) {    
-    $("#qunit-fixture").append('<button class="bh-dir-content-copy"></button>');
-    $("#qunit-fixture").append('<button class="bh-dir-content-move"></button>');
-    $("#qunit-fixture").append('<button class="bh-dir-content-delete"></button>');
-    
-    // Call init function
-    nl.sara.beehub.view.content.init();
-    
     // Select all checkboxes
     $('.bh-dir-content-checkboxgroup').click();
     deepEqual($('.bh-dir-content-checkbox:checked').length, length , "All checkboxes should be selected");
@@ -192,78 +142,77 @@
     checkEditMenu( check, displayname );
   };
   
-  module("view content")
   /**
    * Test home and up buttons click handlers
    */
-  test( 'nl.sara.beehub.view.content.init: Home and up buttons click handlers', function() {
-    expect( 2 );
-  
-    // Home and up button
-    $("#qunit-fixture").append('<button id="/home/testuser/" class="bh-dir-content-gohome"></button>');
-    $("#qunit-fixture").append('<button id="/home/testuser/" class="bh-dir-content-up"></button>');
-    
+  test( 'nl.sara.beehub.view.content.init: Home button click handler', function() {
+    expect( 1 );   
     // Rewrite controller goToPage
     var rememberGoToPage = nl.sara.beehub.controller.goToPage;
     nl.sara.beehub.controller.goToPage = function(location){
-      deepEqual(location, "/home/testuser/", "Location should be /home/testuser" );
+      deepEqual(location, home, "Home location should be "+home );
     };
-    // Call init function
-    nl.sara.beehub.view.content.init();
     
     // Call click handlers
     // Buttons
-    $('.bh-dir-content-gohome').click();
-    $('.bh-dir-content-up').click();
+    $(homeButton).click();
     
     // Original environment
     nl.sara.beehub.controller.goToPage = rememberGoToPage;
-    nl.sara.beehub.view.content.init();
+  });
+  
+  /**
+   * Test home and up buttons click handlers
+   */
+  test( 'nl.sara.beehub.view.content.init: Up button click handler', function() {
+    expect( 1 );   
+    // Rewrite controller goToPage
+    var rememberGoToPage = nl.sara.beehub.controller.goToPage;
+    nl.sara.beehub.controller.goToPage = function(location){
+      deepEqual(location, up, "Up location should be "+up );
+    };
+ 
+    // Call click handler
+    $(upButton).click();
+    
+    // Original environment
+    nl.sara.beehub.controller.goToPage = rememberGoToPage;
   });
   
   /**
    * Test delete, copy and move buttons click handlers
    */
   test( 'nl.sara.beehub.view.content.init: Delete, copy and move buttons click handlers', function() {
-    expect( 12 );
-  
-    $("#qunit-fixture").append('<button class="bh-dir-content-copy"></button>');
-    $("#qunit-fixture").append('<button class="bh-dir-content-move"></button>');
-    $("#qunit-fixture").append('<button class="bh-dir-content-delete"></button>');
-  
-    $("#qunit-fixture").append('<input type="checkbox" value="testfolder1" name="/home/testuser/testfolder1" class="bh-dir-content-checkbox" checked>');
-    $("#qunit-fixture").append('<input type="checkbox" value="testfile1" name="/home/testuser/testfile1" class="bh-dir-content-checkbox" checked>');
-    $("#qunit-fixture").append('<input type="checkbox" value="testfile2" name="/home/testuser/testfile2" class="bh-dir-content-checkbox">');
-    
+    expect( 18 );
+          
+    // Select resources
+    $("tr[id='"+directory1+"']").find('.bh-dir-content-checkbox').prop('checked',true);
+    $("tr[id='"+file1+"']").find('.bh-dir-content-checkbox').prop('checked',true);
+
     var rememberInitAction = nl.sara.beehub.controller.initAction;
+    
     nl.sara.beehub.controller.initAction = function(resources, action){
-      deepEqual(resources[0].path, "/home/testuser/testfolder1", action+": Name of first resource should be /home/testuser/testfolder1");
-      deepEqual(resources[0].displayname, "testfolder1", action+": Displayname of first resource shpuld be testfolder1");
+      deepEqual(resources[0].path, directory1, action+": Name of first resource should be "+directory1);
+      deepEqual(resources[0].displayname, directory1Displayname, action+": Displayname of first resource shpuld be "+directory1Displayname);
+      deepEqual(resources[1].path, file1, action+": Name of first resource should be "+file1);
+      deepEqual(resources[1].displayname, file1Displayname, action+": Displayname of first resource shpuld be "+file1Displayname);
       deepEqual(resources.length, 2, action+": The length of the selected resources should be 2");
       ok(true, action+": Click handler is succesfully set");
     };
     
-    // Call init function
-    nl.sara.beehub.view.content.init();
-    
-    $('.bh-dir-content-delete').click();
-    $('.bh-dir-content-copy').click();
-    $('.bh-dir-content-move').click();
+    $(deleteButton).click();
+    $(copyButton).click();
+    $(moveButton).click();
    
     // Original environment
     nl.sara.beehub.controller.initAction = rememberInitAction;
-    nl.sara.beehub.view.content.init();
   });
   
   /**
    * Test upload button click handler
    */
   test( 'nl.sara.beehub.view.content.init: Upload click and change handlers', function() {
-    expect( 2 );  
-    
-    $("#qunit-fixture").append('<button class="bh-dir-content-upload"></button>');
-    $("#qunit-fixture").append('<button class="bh-dir-content-upload-hidden"></button>');
-    
+    expect( 2 );      
     var rememberInitAction = nl.sara.beehub.controller.initAction;
     nl.sara.beehub.controller.initAction = function(resources, action){
       ok(true, "Upload click handler is set");
@@ -301,7 +250,7 @@
   test( 'nl.sara.beehub.view.content.init: New folder button click handler', function() {
     expect( 1 );
     
-    $("#qunit-fixture").append('<button class="bh-dir-content-newfolder"></button>');
+//    $("#qunit-fixture").append('<button class="bh-dir-content-newfolder"></button>');
     
     // Call init function
     nl.sara.beehub.view.content.init();
@@ -323,7 +272,7 @@
    */
   test( 'nl.sara.beehub.view.content.init: Select checboxes handlers', function() {
     expect( 16 );
-    $("#qunit-fixture").append(getTable());
+//    $("#qunit-fixture").append(getTable());
     checkCheckboxes( 2 );
   });
   
@@ -333,7 +282,7 @@
   test( 'nl.sara.beehub.view.content.init: Open selected folder icon', function() {
     expect( 1 );
     
-    $("#qunit-fixture").append(getTable());
+//    $("#qunit-fixture").append(getTable());
 
     checkOpenSelected("/home/testuser/testfolder/");
   });
@@ -344,7 +293,7 @@
   test( 'nl.sara.beehub.view.content.init: Edit menu', function() {
     expect( 10 );
     
-    $("#qunit-fixture").append(getTable());
+//    $("#qunit-fixture").append(getTable());
     
     checkEditMenu("/home/testuser/testfolder/", "testfolder");
   });
@@ -355,16 +304,16 @@
   test( 'nl.sara.beehub.view.content.clearView', function() {
     expect( 5 );
   
-    // Create environment
-    $("#qunit-fixture").append('<button class="bh-dir-content-copy"></button>');
-    $("#qunit-fixture").append('<button class="bh-dir-content-move"></button>');
-    $("#qunit-fixture").append('<button class="bh-dir-content-delete"></button>');
-    
-    $("#qunit-fixture").append('<input type="checkbox" value="testfolder1" name="/home/testuser/testfolder1" class="bh-dir-content-checkbox" checked>');
-    $("#qunit-fixture").append('<input type="checkbox" value="testfile1" name="/home/testuser/testfile1" class="bh-dir-content-checkbox" checked>');
-    $("#qunit-fixture").append('<input type="checkbox" value="testfile2" name="/home/testuser/testfile2" class="bh-dir-content-checkbox" checked>');
-    
-    $("#qunit-fixture").append('<input type="checkbox" class="bh-dir-content-checkboxgroup" checked> ');
+//    // Create environment
+//    $("#qunit-fixture").append('<button class="bh-dir-content-copy"></button>');
+//    $("#qunit-fixture").append('<button class="bh-dir-content-move"></button>');
+//    $("#qunit-fixture").append('<button class="bh-dir-content-delete"></button>');
+//    
+//    $("#qunit-fixture").append('<input type="checkbox" value="testfolder1" name="/home/testuser/testfolder1" class="bh-dir-content-checkbox" checked>');
+//    $("#qunit-fixture").append('<input type="checkbox" value="testfile1" name="/home/testuser/testfile1" class="bh-dir-content-checkbox" checked>');
+//    $("#qunit-fixture").append('<input type="checkbox" value="testfile2" name="/home/testuser/testfile2" class="bh-dir-content-checkbox" checked>');
+//    
+//    $("#qunit-fixture").append('<input type="checkbox" class="bh-dir-content-checkboxgroup" checked> ');
   
     nl.sara.beehub.view.content.clearView();
     deepEqual($(".bh-dir-content-checkboxgroup:checked").length, 0, 'Checkbox group should be unchecked');
@@ -380,14 +329,14 @@
   test( 'nl.sara.beehub.view.content.allFixedButtons', function() {
     expect( 12 );
   
-    // Create environment
-    // Home and up button
-    $("#qunit-fixture").append('<button class="bh-dir-content-gohome"></button>');
-    $("#qunit-fixture").append('<button class="bh-dir-content-up"></button>');
-    $("#qunit-fixture").append('<button class="bh-dir-content-upload"></button>');
-    $("#qunit-fixture").append('<button class="bh-dir-content-copy"></button>');
-    $("#qunit-fixture").append('<button class="bh-dir-content-move"></button>');
-    $("#qunit-fixture").append('<button class="bh-dir-content-delete"></button>');
+//    // Create environment
+//    // Home and up button
+//    $("#qunit-fixture").append('<button class="bh-dir-content-gohome"></button>');
+//    $("#qunit-fixture").append('<button class="bh-dir-content-up"></button>');
+//    $("#qunit-fixture").append('<button class="bh-dir-content-upload"></button>');
+//    $("#qunit-fixture").append('<button class="bh-dir-content-copy"></button>');
+//    $("#qunit-fixture").append('<button class="bh-dir-content-move"></button>');
+//    $("#qunit-fixture").append('<button class="bh-dir-content-delete"></button>');
     
     nl.sara.beehub.view.content.allFixedButtons('hide');
     deepEqual($(".bh-dir-content-gohome").is(':hidden'), true, 'Home button should be hidden');
@@ -413,10 +362,10 @@
   test('nl.sara.beehub.view.content.triggerRenameClick', function(){
     expect ( 1 );
     
-    // Create environment
-    $("#qunit-fixture").append('<table><tbody><tr id="/home/testuser/testfolder">\
-        <td><i class="bh-dir-content-edit"></i></td>\
-      </tr></tbody></table>');
+//    // Create environment
+//    $("#qunit-fixture").append('<table><tbody><tr id="/home/testuser/testfolder">\
+//        <td><i class="bh-dir-content-edit"></i></td>\
+//      </tr></tbody></table>');
     
     $('.bh-dir-content-edit').unbind().click(function(){
       ok(true, "Rename handler click should be triggered.")
@@ -432,8 +381,8 @@
   test('nl.sara.beehub.view.content.getUnknownResourceValues', function(){
     expect( 5 );
   
-    // Create environment
-    $("#qunit-fixture").append(getTable());
+//    // Create environment
+//    $("#qunit-fixture").append(getTable());
     
     var resource = new nl.sara.beehub.ClientResource("/home/testuser/testfile/");
     resource = nl.sara.beehub.view.content.getUnknownResourceValues(resource);
@@ -451,12 +400,12 @@
   test('nl.sara.beehub.view.content.addResource', function(){
     expect( 38 );
     
-    $("#qunit-fixture").append(getTable());
+//    $("#qunit-fixture").append(getTable());
     
     // Init for initializing table
     nl.sara.beehub.view.content.init();
     
-    var resource = new nl.sara.beehub.ClientResource("/home/testuser/newfolder/");
+    var resource = new nl.sara.beehub.ClientResource( location.href + "/subfolder/newfolder/");
     resource.displayname = "newfolder";
     resource.type = "collection";
     resource.contentlength = "undefined";
@@ -493,7 +442,7 @@
   test('nl.sara.beehub.view.content.deleteResource', function(){
     expect( 10 );
     
-    $("#qunit-fixture").append(getTable());
+//    $("#qunit-fixture").append(getTable());
     
     // Init for initializing table
     nl.sara.beehub.view.content.init();
@@ -527,7 +476,7 @@
   test('nl.sara.beehub.view.content.updateResource', function(){
     expect( 46 );
     
-    $("#qunit-fixture").append(getTable());
+//    $("#qunit-fixture").append(getTable());
     
     // Init for initializing table
     nl.sara.beehub.view.content.init();

@@ -19,36 +19,36 @@
 "use strict";
 
 (function(){
-  var getTable = function() {
-    return '';
-  };
-  module("view acl")
-  /**
-   * Test home and up buttons click handlers
-   */
-  test( 'nl.sara.beehub.view.acl.init: Home and up buttons click handlers', function() {
-    expect( 2 );
-  
-    // Home and up button
-    $("#qunit-fixture").append('<button id="/home/testuser/" class="bh-dir-content-gohome"></button>');
-    $("#qunit-fixture").append('<button id="/home/testuser/" class="bh-dir-content-up"></button>');
-    
-    // Rewrite controller goToPage
-    var rememberGoToPage = nl.sara.beehub.controller.goToPage;
-    nl.sara.beehub.controller.goToPage = function(location){
-      deepEqual(location, "/home/testuser/", "Location should be /home/testuser" );
-    };
-    // Call init function
-    nl.sara.beehub.view.content.init();
-    
-    // Call click handlers
-    // Buttons
-    $('.bh-dir-content-gohome').click();
-    $('.bh-dir-content-up').click();
-    
-    // Original environment
-    nl.sara.beehub.controller.goToPage = rememberGoToPage;
-    nl.sara.beehub.view.content.init();
-  });
+//  var getTable = function() {
+//    return '';
+//  };
+//  module("view acl")
+//  /**
+//   * Test home and up buttons click handlers
+//   */
+//  test( 'nl.sara.beehub.view.acl.init: Home and up buttons click handlers', function() {
+//    expect( 2 );
+//  
+//    // Home and up button
+//    $("#qunit-fixture").append('<button id="/home/testuser/" class="bh-dir-content-gohome"></button>');
+//    $("#qunit-fixture").append('<button id="/home/testuser/" class="bh-dir-content-up"></button>');
+//    
+//    // Rewrite controller goToPage
+//    var rememberGoToPage = nl.sara.beehub.controller.goToPage;
+//    nl.sara.beehub.controller.goToPage = function(location){
+//      deepEqual(location, "/home/testuser/", "Location should be /home/testuser" );
+//    };
+//    // Call init function
+//    nl.sara.beehub.view.content.init();
+//    
+//    // Call click handlers
+//    // Buttons
+//    $('.bh-dir-content-gohome').click();
+//    $('.bh-dir-content-up').click();
+//    
+//    // Original environment
+//    nl.sara.beehub.controller.goToPage = rememberGoToPage;
+//    nl.sara.beehub.view.content.init();
+//  });
 })();
 // End of file
