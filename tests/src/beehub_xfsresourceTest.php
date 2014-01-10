@@ -49,7 +49,7 @@ class BeeHub_XFSResourceTest extends BeeHub_Tests_Db_Test_Case {
     $value = 'Some random value';
     $property = 'test_namespace test_property';
 
-    $this->assertNull( $this->obj->user_prop( $property ) );
+    $this->assertSame( 'this is a random dead property', $this->obj->user_prop( $property ) );
 
     // Set some random property
     $this->obj->method_PROPPATCH( $property, $value );
@@ -99,10 +99,10 @@ class BeeHub_XFSResourceTest extends BeeHub_Tests_Db_Test_Case {
 
 
   public function testUser_propname() {
-    $this->assertSame( array(), $this->obj->user_propname() );
+    $this->assertSame( array( 'test_namespace test_property' => true ), $this->obj->user_propname() );
 
     $property = 'some_namespace some_property';
-    $expected = array( $property => true );
+    $expected = array( 'test_namespace test_property' => true, $property => true );
     $this->obj->method_PROPPATCH( $property, 'random value' );
     $this->assertSame( $expected, $this->obj->user_propname() );
   }

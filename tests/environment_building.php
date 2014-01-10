@@ -115,6 +115,7 @@ function setUpStorageBackend() {
 
   // Set extended attributes and create a controlled environment
   $basePath = $config['environment']['datadir'] . \DIRECTORY_SEPARATOR;
+  \umask( 0007 );
   \xattr_set( $config['environment']['datadir'], \rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
   \mkdir( $basePath . 'home' );
   \xattr_set( $basePath . 'home', \rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
@@ -135,9 +136,12 @@ function setUpStorageBackend() {
   \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'file.txt', \rawurlencode( \BeeHub::PROP_SPONSOR ), '/system/sponsors/sponsor_a' );
   \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'file.txt', \rawurlencode( \DAV::PROP_GETCONTENTTYPE ), "text/plain; charset=UTF-8" );
   \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'file.txt', \rawurlencode( \DAV::PROP_GETETAG ), '"EA"' );
+  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'file.txt', \rawurlencode( 'test_namespace test_property' ), 'this is a random dead property' );
   \mkdir( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'directory' );
+  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'directory', \rawurlencode( \DAV::PROP_ACL ), "[[\"/system/users/johny\",false,[\"DAV: read\"],true]]" );
   \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'directory', \rawurlencode( \DAV::PROP_OWNER ), '/system/users/john' );
   \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'directory', \rawurlencode( \BeeHub::PROP_SPONSOR ), '/system/sponsors/sponsor_a' );
+  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'directory', \rawurlencode( 'test_namespace test_property' ), 'this is a random dead property' );
   \mkdir( $basePath . 'bar' );
   \xattr_set( $basePath . 'bar', \rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
   \xattr_set( $basePath . 'bar', \rawurlencode( \DAV::PROP_ACL ), "[[\"/system/groups/bar\",false,[\"DAV: read\", \"DAV: write\"],false]]" );

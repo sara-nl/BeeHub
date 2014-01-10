@@ -65,7 +65,7 @@ class BeeHub_DirectoryTest extends BeeHub_Tests_Db_Test_Case {
 
   public function testCreate_memberWithoutSponsor() {
     $this->setCurrentUser( '/system/users/john' );
-    $this->obj->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/johny', false, array( \DAVACL::PRIV_WRITE, \DAVACL::PRIV_WRITE ), false ) ) );
+    $this->obj->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/johny', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
 
     $this->setCurrentUser( '/system/users/johny' );
     $this->setExpectedException( 'DAV_Status', null, \DAV::HTTP_FORBIDDEN );
@@ -84,11 +84,11 @@ class BeeHub_DirectoryTest extends BeeHub_Tests_Db_Test_Case {
 
     $this->setCurrentUser( '/system/users/jane' );
     $this->obj->create_member( 'nextfile.txt' );
-    $subdirectory = \DAV::$REGISTRY->resource( $this->obj->path . 'nextfile.txt' );
+    $file = \DAV::$REGISTRY->resource( $this->obj->path . 'nextfile.txt' );
 
-    $this->assertSame( '/system/sponsors/sponsor_b', $subdirectory->user_prop_sponsor() );
-    $this->assertSame( '/system/users/jane', $subdirectory->user_prop_owner() );
-    $this->assertNotNull( $subdirectory->user_prop( \DAV::PROP_GETETAG ) );
+    $this->assertSame( '/system/sponsors/sponsor_b', $file->user_prop_sponsor() );
+    $this->assertSame( '/system/users/jane', $file->user_prop_owner() );
+    $this->assertNotNull( $file->user_prop( \DAV::PROP_GETETAG ) );
   }
 
 
@@ -101,11 +101,11 @@ class BeeHub_DirectoryTest extends BeeHub_Tests_Db_Test_Case {
 
     $this->setCurrentUser( '/system/users/jane' );
     $this->obj->create_member( 'nextfile.txt' );
-    $subdirectory = \DAV::$REGISTRY->resource( $this->obj->path . 'nextfile.txt' );
+    $file = \DAV::$REGISTRY->resource( $this->obj->path . 'nextfile.txt' );
 
-    $this->assertSame( '/system/sponsors/sponsor_a', $subdirectory->user_prop_sponsor() );
-    $this->assertSame( '/system/users/jane', $subdirectory->user_prop_owner() );
-    $this->assertNotNull( $subdirectory->user_prop( \DAV::PROP_GETETAG ) );
+    $this->assertSame( '/system/sponsors/sponsor_a', $file->user_prop_sponsor() );
+    $this->assertSame( '/system/users/jane', $file->user_prop_owner() );
+    $this->assertNotNull( $file->user_prop( \DAV::PROP_GETETAG ) );
 
     // And now it already exists, we should not be able to create it again
     $this->setExpectedException( 'DAV_Status', null, \DAV::HTTP_FORBIDDEN );
@@ -125,173 +125,279 @@ class BeeHub_DirectoryTest extends BeeHub_Tests_Db_Test_Case {
   }
 
 
-  private function internal_create_member( $name, $collection = false ) {
-    $this->assert(DAVACL::PRIV_WRITE);
-    $path = $this->path . $name;
-    $localPath = BeeHub::localPath( $path );
-    $cups = $this->current_user_principals();
-
-    // Determine the sponsor
-    $user = BeeHub::getAuth()->current_user();
-    $user_sponsors = $user->prop(BeeHub::PROP_SPONSOR_MEMBERSHIP);
-    if (count($user_sponsors) == 0) { // If the user doesn't have any sponsors, he/she can't create files and directories
-      throw DAV::forbidden();
-    }
-    $sponsor = $this->prop(BeeHub::PROP_SPONSOR); // The default is the directory sponsor
-    if (!in_array($sponsor, $user_sponsors)) { //But a user can only create files sponsored by his own sponsors
-      $sponsor = $user->user_prop(BeeHub::PROP_SPONSOR);
-    }
-
-    // Create the subdirectory or file
-    if (file_exists($localPath))
-      throw DAV::forbidden();
-    $result = $collection ? @mkdir($localPath) : touch($localPath);
-    if ( !$result )
-      throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
-
-    // And set the xattributes
-    xattr_set( $localPath, rawurlencode( DAV::PROP_GETETAG), BeeHub_DB::ETag() );
-    xattr_set( $localPath, rawurlencode( DAV::PROP_OWNER  ), $this->user_prop_current_user_principal() );
-    xattr_set( $localPath, rawurlencode( BeeHub::PROP_SPONSOR ), $sponsor );
-    return DAV::$REGISTRY->resource( $path );
+  public function testMethod_COPYToUnexistingCollection() {
+    $this->setExpectedException( '\DAV_Status', null, \DAV::HTTP_CONFLICT );
+    $this->obj->method_COPY( '/unexisting_directory/directory/' );
   }
 
 
-  public function method_COPY( $path ) {
-    $parent = DAV::$REGISTRY->resource( dirname( $path ) );
-    if (!$parent)
-      throw new DAV_Status(DAV::HTTP_CONFLICT, 'Unable to COPY to unexisting collection');
-    if (!$parent instanceof BeeHub_Directory)
-      throw new DAV_Status(DAV::HTTP_FORBIDDEN);
-    $parent->internal_create_member(basename($path), true);
-    // TODO: Should we check here if the xattr to be copied is in the 'user.' realm?
-    foreach(xattr_list($this->localPath) as $xattr)
-      if ( !in_array( rawurldecode($xattr), array(
-        DAV::PROP_GETETAG,
-        DAV::PROP_OWNER,
-        DAV::PROP_GROUP,
-        BeeHub::PROP_SPONSOR,
-        DAV::PROP_ACL,
-        DAV::PROP_LOCKDISCOVERY
-      ) ) )
-        xattr_set( $localPath, $xattr, xattr_get( $this->localPath, $xattr ) );
+  public function testMethod_COPYToSystemCollection() {
+    $this->setExpectedException( '\DAV_Status', null, \DAV::HTTP_FORBIDDEN );
+    $this->obj->method_COPY( '/system/users/directory/' );
   }
 
 
-  public function method_DELETE( $name )
-  {
-    $path = $this->path . $name;
-    $localpath = BeeHub::localPath( $path );
-    $resource = DAV::$REGISTRY->resource( $path );
-    $resource->assert(DAVACL::PRIV_WRITE);
-    if (is_dir($localpath)) {
-      if (!@rmdir($localpath))
-        throw new DAV_Status(DAV::HTTP_CONFLICT, 'Unable to DELETE resource: ' . $name);
-    }
-    else {
-      if (!@unlink($localpath))
-        throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
-    }
-    DAV::$REGISTRY->forget( $path );
+  public function testMethod_COPYWithoutWritePrivilegeDestination() {
+    $this->setCurrentUser( '/system/users/jane' );
+    $this->setExpectedException( '\DAV_Status', null, \DAV::HTTP_FORBIDDEN );
+    $this->obj->method_COPY( '/bar/directory/' );
+  }
+
+
+  public function testMethod_COPYWithoutSponsor() {
+    $bar = new \BeeHub_Directory( '/bar/' );
+    $bar->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/johny', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
+    $this->setCurrentUser( '/system/users/johny' );
+
+    $this->setExpectedException( '\DAV_Status', null, \DAV::HTTP_FORBIDDEN );
+    $this->obj->method_COPY( '/bar/directory/' );
+  }
+
+
+  public function testMethod_COPYWithoutCollectionSponsor() {
+    $bar = new \BeeHub_Directory( '/bar/' );
+    $bar->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
+    $this->setCurrentUser( '/system/users/jane' );
+    $this->obj->method_COPY( '/bar/directory/' );
+
+    $newDirectory = \DAV::$REGISTRY->resource( '/bar/directory/' );
+    $this->assertNull( $newDirectory->user_prop_getetag() );
+    $this->assertSame( '/system/users/jane', $newDirectory->user_prop_owner() );
+    $this->assertSame( \BeeHub::getAuth()->current_user()->user_prop_sponsor(), $newDirectory->user_prop_sponsor() );
+    $this->assertSame( array(), $newDirectory->user_prop_acl_internal() );
+    $this->assertSame( $this->obj->user_prop( 'test_namespace test_property' ), $newDirectory->user_prop( 'test_namespace test_property' ) );
+  }
+
+
+  public function testMethod_COPY() {
+    $sponsorB = new \BeeHub_Sponsor( '/system/sponsors/sponsor_b' );
+    $sponsorB->change_memberships( array( 'jane' ), true, true, true, true );
+    $bar = new \BeeHub_Directory( '/bar/' );
+    $bar->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
+    $this->setCurrentUser( '/system/users/jane' );
+    $this->obj->method_COPY( '/bar/directory/' );
+
+    $newDirectory = \DAV::$REGISTRY->resource( '/bar/directory/' );
+    $this->assertNull( $newDirectory->user_prop_getetag() );
+    $this->assertSame( '/system/users/jane', $newDirectory->user_prop_owner() );
+    $this->assertSame( $bar->user_prop_sponsor(), $newDirectory->user_prop_sponsor() );
+    $this->assertSame( array(), $newDirectory->user_prop_acl_internal() );
+    $this->assertSame( $this->obj->user_prop( 'test_namespace test_property' ), $newDirectory->user_prop( 'test_namespace test_property' ) );
+  }
+  
+  
+  public function testMethod_DELETEforNonemptyDir() {
+    $this->obj->create_member( 'some_file.txt' );
+    $obj = new \BeeHub_Directory( '/foo' );
+
+    $this->setExpectedException( '\DAV_Status', null, \DAV::HTTP_CONFLICT );
+    $obj->method_DELETE( 'directory' );
+  }
+  
+  
+  public function testMethod_DELETEwithoutWritePrivilege() {
+    $this->obj->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_WRITE ), true ) ) );
+    $obj = new \BeeHub_Directory( '/foo' );
+    $obj->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
+    $this->setCurrentUser( '/system/users/jane' );
+
+    $this->setExpectedException( '\DAV_Status', null, \DAV::HTTP_FORBIDDEN );
+    $obj->method_DELETE( 'directory' );
+  }
+
+
+  public function testMethod_DELETEforDirectory() {
+    $obj = new \BeeHub_Directory( '/foo' );
+    $obj->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), true ) ) );
+    $this->setCurrentUser( '/system/users/jane' );
+
+    $this->assertInstanceOf( '\BeeHub_Directory', \DAV::$REGISTRY->resource( '/foo/directory/' ) );
+    $obj->method_DELETE( 'directory' );
+    $this->assertNull( \DAV::$REGISTRY->resource( '/foo/directory/' ) );
+  }
+
+
+  public function testMethod_DELETEforFile() {
+    $obj = new \BeeHub_Directory( '/foo' );
+    $obj->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), true ) ) );
+    $file = new \BeeHub_File( '/foo/file.txt' );
+    $file->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
+    $this->setCurrentUser( '/system/users/jane' );
+
+    $this->assertInstanceOf( '\BeeHub_File', \DAV::$REGISTRY->resource( '/foo/file.txt' ) );
+    $obj->method_DELETE( 'file.txt' );
+    $this->assertNull( \DAV::$REGISTRY->resource( '/foo/file.txt' ) );
+  }
+
+
+  public function testMethod_GETWithoutReadPrivileges() {
+    $this->setCurrentUser( '/system/users/johny' );
+    $this->setExpectedException( '\DAV_Status', null, \DAV::HTTP_FORBIDDEN );
+    $this->obj->method_GET();
+  }
+
+
+  public function testMethod_HEAD() {
+    $headers = $this->obj->method_HEAD();
+    $this->assertSame( 'no-cache', $headers['Cache-Control'] );
+  }
+
+
+  public function testMethod_MKCOLWithoutWritePrivilege() {
+    $this->setCurrentUser( '/system/users/john' );
+    $this->obj->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_WRITE ), true ) ) );
+
+    $this->setCurrentUser( '/system/users/jane' );
+    $this->setExpectedException( 'DAV_Status', null, \DAV::HTTP_FORBIDDEN );
+    $this->obj->method_MKCOL( 'subdirectory' );
+  }
+
+
+  public function testMethod_MKCOLWithoutSponsor() {
+    $this->setCurrentUser( '/system/users/john' );
+    $this->obj->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/johny', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
+
+    $this->setCurrentUser( '/system/users/johny' );
+    $this->setExpectedException( 'DAV_Status', null, \DAV::HTTP_FORBIDDEN );
+    $this->obj->method_MKCOL( 'subdirectory' );
+  }
+
+
+  public function testMethod_MKCOLWithoutCollectionSponsor() {
+    $sponsorA = new \BeeHub_Sponsor( '/system/sponsors/sponsor_a' );
+    $sponsorA->change_memberships( array( 'jane' ), false, false, false, false );
+    $sponsorB = new \BeeHub_Sponsor( '/system/sponsors/sponsor_b' );
+    $sponsorB->change_memberships( array( 'jane' ), true, true, true, true );
+    $jane = new \BeeHub_User( '/system/users/jane' );
+    $jane->user_set_sponsor( '/system/sponsors/sponsor_b' );
+    $jane->storeProperties();
+
+    $this->setCurrentUser( '/system/users/jane' );
+    $this->obj->method_MKCOL( 'subdirectory' );
+    $subdirectory = \DAV::$REGISTRY->resource( $this->obj->path . 'subdirectory' );
+
+    $this->assertSame( '/system/sponsors/sponsor_b', $subdirectory->user_prop_sponsor() );
+    $this->assertSame( '/system/users/jane', $subdirectory->user_prop_owner() );
+    $this->assertNull( $subdirectory->user_prop( \DAV::PROP_GETETAG ) );
+  }
+
+
+  public function testMethod_MKCOL() {
+    $sponsorB = new \BeeHub_Sponsor( '/system/sponsors/sponsor_b' );
+    $sponsorB->change_memberships( array( 'jane' ), true, true, true, true );
+    $jane = new \BeeHub_User( '/system/users/jane' );
+    $jane->user_set_sponsor( '/system/sponsors/sponsor_b' );
+    $jane->storeProperties();
+
+    $this->setCurrentUser( '/system/users/jane' );
+    $this->obj->method_MKCOL( 'subdirectory' );
+    $subdirectory = \DAV::$REGISTRY->resource( $this->obj->path . 'subdirectory' );
+
+    $this->assertSame( '/system/sponsors/sponsor_a', $subdirectory->user_prop_sponsor() );
+    $this->assertSame( '/system/users/jane', $subdirectory->user_prop_owner() );
+    $this->assertNull( $subdirectory->user_prop( \DAV::PROP_GETETAG ) );
+
+    // And now it already exists, we should not be able to create it again
+    $this->setExpectedException( 'DAV_Status', null, \DAV::HTTP_FORBIDDEN );
+    $this->obj->method_MKCOL( 'subdirectory' );
+  }
+
+
+  public function testMethod_MOVEwithoutWritePrivilegeSource() {
+    $this->obj->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_WRITE ), true ) ) );
+    $bar = new \BeeHub_Directory( '/bar' );
+    $bar->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
+    $foo = new \BeeHub_Directory( '/foo' );
+    $this->setCurrentUser( '/system/users/jane' );
+
+    $this->setExpectedException( '\DAV_Status', null, \DAV::HTTP_FORBIDDEN );
+    $foo->method_MOVE( 'directory', '/bar/directory' );
+  }
+
+
+  public function testMethod_MOVEwithoutWritePrivilegeDestination() {
+    $bar = new \BeeHub_Directory( '/bar' );
+    $bar->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_WRITE ), true ) ) );
+    $foo = new \BeeHub_Directory( '/foo' );
+    $this->setCurrentUser( '/system/users/jane' );
+
+    $this->setExpectedException( '\DAV_Status', null, \DAV::HTTP_FORBIDDEN );
+    $foo->method_MOVE( 'directory', '/bar/directory' );
+  }
+
+
+  public function testMethod_MOVErename() {
+    $foo = new \BeeHub_Directory( '/foo' );
+    $foo->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
+    $this->setCurrentUser( '/system/users/jane' );
+
+    $propExpected = $this->obj->user_prop( 'test_namespace test_property' );
+    $ownerExpected = $this->obj->user_prop_owner();
+    $sponsorExpected = $this->obj->user_prop_sponsor();
+    $aclExpected = $this->obj->user_prop_acl();
+    $foo->method_MOVE( 'directory', '/foo/renamed_directory' );
+    $renamedResource = \DAV::$REGISTRY->resource( '/foo/renamed_directory' );
+    $this->assertSame( $propExpected, $renamedResource->user_prop( 'test_namespace test_property' ) );
+    $this->assertSame( $ownerExpected, $renamedResource->user_prop_owner() );
+    $this->assertSame( $sponsorExpected, $renamedResource->user_prop_sponsor() );
+    $this->assertEqualEffectiveAcl( $aclExpected, $renamedResource->user_prop_acl() );
+  }
+
+
+  public function testMethod_MOVEtoOtherParent() {
+    $bar = new \BeeHub_Directory( '/bar' );
+    $bar->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
+    $foo = new \BeeHub_Directory( '/foo' );
+    $foo->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), true ) ) );
+    $this->setCurrentUser( '/system/users/jane' );
+
+    $propExpected = $this->obj->user_prop( 'test_namespace test_property' );
+    $ownerExpected = $this->obj->user_prop_owner();
+    $sponsorExpected = $this->obj->user_prop_sponsor();
+    $aclExpected = $this->obj->user_prop_acl();
+    $foo->method_MOVE( 'directory', '/bar/directory' );
+    $renamedResource = \DAV::$REGISTRY->resource( '/bar/directory' );
+    $this->assertSame( $propExpected, $renamedResource->user_prop( 'test_namespace test_property' ) );
+    $this->assertSame( $ownerExpected, $renamedResource->user_prop_owner() );
+    $this->assertSame( $sponsorExpected, $renamedResource->user_prop_sponsor() );
+    $this->assertEqualEffectiveAcl( $aclExpected, $renamedResource->user_prop_acl() );
   }
 
 
   /**
-   * @return string an HTML file
-   * @see DAV_Resource::method_GET()
+   * Asserts whether two acl's are effectively the same
+   *
+   * @param   array  $expected  An (ordered) array of \DAVACL_Element_ace's
+   * @param   array  $actual    An (ordered) array of \DAVACL_Element_ace's
+   * @return  void
    */
-  public function method_GET() {
-    $this->assert(DAVACL::PRIV_READ);
-    $this->include_view();
+  private function assertEqualEffectiveAcl( $expected, $actual ) {
+    foreach ( $actual as $key => $ace ) {
+      if ( ! isset( $expected[ $key ] ) ) {
+        $this->assertEqualAce( new \DAVACL_Element_ace( \DAVACL::PRINCIPAL_ALL, false, array( \DAVACL::PRIV_ALL ), true ), $ace, 'If there are more actual ACE\'s than expected, the one after the last expected should deny everything to everybody' );
+        return;
+      }
+      $this->assertEqualAce( $expected[ $key ], $ace );
+    }
+
+    if ( isset( $expected[ $key + 1 ] ) ) {
+      $this->assertEqualAce( new \DAVACL_Element_ace( \DAVACL::PRINCIPAL_ALL, false, array( \DAVACL::PRIV_ALL ), true ), $expected[ $key + 1 ], 'If there are more expected ACE\'s than in the actual ACL, the one after the last actual should deny everything to everybody' );
+    }
   }
 
-
-  public function method_HEAD() {
-    $retval = parent::method_HEAD();
-    $retval['Cache-Control'] = 'no-cache';
-    return $retval;
-  }
 
   /**
-   * @param string $name
-   * @throws DAV_Status
+   * Asserts whether two ace's are effectively the same
+   *
+   * @param   \DAVACL_Element_ace  $expected  The expected ACE
+   * @param   \DAVACL_Element_ace  $actual    The actual ACE
+   * @return  void
    */
-  public function method_MKCOL( $name ) {
-    return $this->internal_create_member( $name, true );
-  }
-
-
-  public function method_MOVE( $member, $destination ) {
-    // Get the ACL of the source (including inherited ACE's)
-    $sourceAcl = DAV::$REGISTRY->resource( $this->path . $member )->user_prop_acl();
-
-    // Determine if moving is allowed and if so, move the object
-    DAV::$REGISTRY->resource( $this->path . $member )->assert( DAVACL::PRIV_WRITE );
-    DAV::$REGISTRY->resource( dirname($destination) )->assert( DAVACL::PRIV_WRITE );
-    $localDest = BeeHub::localPath($destination);
-    rename(
-      BeeHub::localPath( $this->path . $member ),
-      $localDest
-    );
-
-    // We need to make sure that the effective ACL at the destination is the same as at the resource
-    $destinationAcl = array();
-    $inheritedAcl = array();
-    $copyInherited = true;
-    foreach ( $sourceAcl as $ace ) {
-      if ( $ace->protected ) { // Protected ACE's don't require copying; at this moment all resources have the same protected resources
-        continue;
-      }
-      if ( $ace->inherited ) { // Inherited ACE's don't always need to be copied, so let's store them seperately for now
-        $ace->inherited= null;
-        $inheritedAcl[] = $ace;
-      }else{
-        // If there is already a 'deny all to everybody' ACE in the ACL, then no need to copy any inherited ACL's
-        if ( ( $ace->principal === DAVACL::PRINCIPAL_ALL ) &&
-             ! $ace->invert &&
-             in_array( DAVACL::PRIV_ALL, $ace->privileges ) &&
-             $ace->deny
-        ) {
-          $copyInherited = false;
-        }
-        $destinationAcl[] = $ace;
-      }
-    }
-
-    $destinationResource = DAV::$REGISTRY->resource( $destination );
-
-    // If the inherited ACE's at the destination are the same as at the source, then no need to copy them (for example when moving within the same directory). The effective ACL will still be the same
-    if ( $copyInherited ) {
-      $oldDestinationAcl = $destinationResource->user_prop_acl();
-      $destinationInheritedAcl = array();
-      $copyInherited = false;
-      foreach ( $oldDestinationAcl as $ace ) {
-        if ( ! $ace->inherited ) {
-          continue;
-        }
-        if ( ( count( $inheritedAcl) > 0 ) &&
-             ( $ace->principal === $inheritedAcl[0]->principal ) &&
-             ( $ace->invert === $inheritedAcl[0]->invert ) &&
-             ( $ace->deny === $inheritedAcl[0]->deny ) &&
-             ( $ace->privileges === $inheritedAcl[0]->privileges )
-        ) {
-          array_shift( $inheritedAcl );
-        }else{
-          $copyInherited = true;
-          break;
-        }
-      }
-    }
-
-    // If needed; copy the inherited ACE's so we have the complete ACL of the source. And end it with a 'deny all to everybody' ACE so inherited ACE's at the destination don't change the effective ACL
-    if ( $copyInherited ) {
-      $destinationAcl = array_merge( $destinationAcl, $inheritedAcl );
-      $destinationAcl[] = new DAVACL_Element_ace( DAVACL::PRINCIPAL_ALL, false, array( DAVACL::PRIV_ALL ), true, false, null );
-    }
-
-    // And store the ACL at the destination
-    $destinationResource->user_set( DAV::PROP_ACL, ( $destinationAcl ? DAVACL_Element_ace::aces2json( $destinationAcl ) : null ) );
-    $destinationResource->storeProperties();
+  private function assertEqualAce( $expected, $actual ) {
+    $this->assertSame( $expected->principal,  $actual->principal );
+    $this->assertSame( $expected->invert,     $actual->invert );
+    $this->assertSame( $expected->privileges, $actual->privileges );
+    $this->assertSame( $expected->deny,       $actual->deny );
   }
 
 } // class BeeHub_DirectoryTest

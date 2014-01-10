@@ -68,7 +68,9 @@ private function internal_create_member( $name, $collection = false ) {
     throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
 
   // And set the xattributes
-  xattr_set( $localPath, rawurlencode( DAV::PROP_GETETAG), BeeHub_DB::ETag() );
+  if ( ! $collection ) {
+    xattr_set( $localPath, rawurlencode( DAV::PROP_GETETAG), BeeHub_DB::ETag() );
+  }
   xattr_set( $localPath, rawurlencode( DAV::PROP_OWNER  ), $this->user_prop_current_user_principal() );
   xattr_set( $localPath, rawurlencode( BeeHub::PROP_SPONSOR ), $sponsor );
   return DAV::$REGISTRY->resource( $path );
@@ -81,7 +83,7 @@ public function method_COPY( $path ) {
     throw new DAV_Status(DAV::HTTP_CONFLICT, 'Unable to COPY to unexisting collection');
   if (!$parent instanceof BeeHub_Directory)
     throw new DAV_Status(DAV::HTTP_FORBIDDEN);
-  $parent->internal_create_member(basename($path), true);
+  $newResource = $parent->internal_create_member(basename($path), true);
   // TODO: Should we check here if the xattr to be copied is in the 'user.' realm?
   foreach(xattr_list($this->localPath) as $xattr)
     if ( !in_array( rawurldecode($xattr), array(
@@ -92,7 +94,7 @@ public function method_COPY( $path ) {
       DAV::PROP_ACL,
       DAV::PROP_LOCKDISCOVERY
     ) ) )
-      xattr_set( $localPath, $xattr, xattr_get( $this->localPath, $xattr ) );
+      xattr_set( $newResource->localPath, $xattr, xattr_get( $this->localPath, $xattr ) );
 }
 
 
@@ -181,7 +183,6 @@ public function method_MOVE( $member, $destination ) {
   // If the inherited ACE's at the destination are the same as at the source, then no need to copy them (for example when moving within the same directory). The effective ACL will still be the same
   if ( $copyInherited ) {
     $oldDestinationAcl = $destinationResource->user_prop_acl();
-    $destinationInheritedAcl = array();
     $copyInherited = false;
     foreach ( $oldDestinationAcl as $ace ) {
       if ( ! $ace->inherited ) {
