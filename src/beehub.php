@@ -69,6 +69,7 @@ class BeeHub {
    */
   const ENVIRONMENT_DEVELOPMENT = 'development';
   const ENVIRONMENT_PRODUCTION  = 'production';
+  const ENVIRONMENT_TEST        = 'test';
   /**#@-*/
 
 

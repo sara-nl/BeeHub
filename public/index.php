@@ -17,9 +17,6 @@
  * @package BeeHub
  */
 
-// TODO: determine how to enable the client tests
-define( 'RUN_CLIENT_TESTS', true );
-
 // Bootstrap the application
 require_once '../src/beehub_bootstrap.php';
 
@@ -46,7 +43,11 @@ if ( !isset($_GET['nosystem']) &&
 }
 
 // After bootstrapping, start authentication
-if ( !empty( $_SERVER['HTTPS'] ) ) {
+if ( APPLICATION_ENV === BeeHub::ENVIRONMENT_TEST ) {
+  $_SERVER['PHP_AUTH_USER'] = 'john';
+  $_SERVER['PHP_AUTH_PW'] = 'password_of_john';
+  BeeHub_Auth::inst()->handle_authentication( BeeHub_Auth::is_authentication_required() );
+}elseif ( !empty( $_SERVER['HTTPS'] ) ) {
   BeeHub_Auth::inst()->handle_authentication( BeeHub_Auth::is_authentication_required() );
 }
 

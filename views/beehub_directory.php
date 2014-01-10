@@ -28,8 +28,8 @@ declare( encoding = 'UTF-8' );
 
 // Load the default page header
 if ( RUN_CLIENT_TESTS ) {
-  if ( $_SERVER['REQUEST_URI'] !== '/foo/' ) {
-    header( 'Location: /foo/' );
+  if ( $_SERVER['REQUEST_URI'] !== '/foo/?test' ) {
+    header( 'Location: /foo/?test' );
     die();
   }
 }else{
