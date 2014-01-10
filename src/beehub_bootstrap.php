@@ -58,6 +58,7 @@ if ( ( APPLICATION_ENV === BeeHub::ENVIRONMENT_TEST ) && isset( $_GET['test'] ) 
 if ( APPLICATION_ENV === BeeHub::ENVIRONMENT_TEST ) {
   require_once( dirname( dirname ( __FILE__ ) ) . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR . 'environment_building.php' );
   \BeeHub\tests\loadTestConfig();
+  \BeeHub\tests\setUpDatabase();
   \BeeHub\tests\setUpStorageBackend();
 }
 

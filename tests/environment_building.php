@@ -168,6 +168,25 @@ function setUpStorageBackend() {
 }
 
 
+function setUpDatabase() {
+  $lines = \file( \dirname( __FILE__ ) . \DIRECTORY_SEPARATOR . 'dbtests_data' . \DIRECTORY_SEPARATOR . 'basicDataset.sql', \FILE_IGNORE_NEW_LINES | \FILE_SKIP_EMPTY_LINES );
+  $queries = array();
+  $query = '';
+  foreach ( $lines as $line ) {
+    $query .= \rtrim( $line );
+    if ( substr( $line, -1 ) === ';' ) {
+      $queries[] = $query;
+      $query = '';
+    }else{
+      $query .= ' ';
+    }
+  }
+  foreach ( $queries as $query ) {
+    \BeeHub_DB::mysqli()->query( $query );
+  }
+}
+
+
 function loadTestConfig() {
   $configFile = \dirname( __FILE__ ) . \DIRECTORY_SEPARATOR . 'config.ini';
   if ( !\file_exists( $configFile ) ) {

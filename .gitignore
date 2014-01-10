@@ -3,6 +3,7 @@
 .settings
 nbproject
 config.ini
+/.htaccess
 /tools/
 /vendor/
 /public/system/client

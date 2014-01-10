@@ -2,7 +2,7 @@
 /**
  * Contains an abstract test case for database tests
  *
- * Copyright ©2007-2013 SURFsara b.v., Amsterdam, The Netherlands
+ * Copyright ©2007-2014 SURFsara b.v., Amsterdam, The Netherlands
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -26,7 +26,7 @@ namespace BeeHub\tests;
  * @package     BeeHub
  * @subpackage  tests
  */
-abstract class BeeHub_Tests_Db_Test_Case extends \PHPUnit_Extensions_Database_TestCase {
+abstract class BeeHub_Tests_Db_Test_Case extends \PHPUnit_Framework_TestCase {
 
   static private $connection = null;
 
@@ -40,41 +40,9 @@ abstract class BeeHub_Tests_Db_Test_Case extends \PHPUnit_Extensions_Database_Te
       $this->markTestSkipped( 'No mySQL credentials specified; all tests depending on mySQL are skipped' );
       return;
     }
-
+    setUpDatabase();
     parent::setUp();
     setUp();
-  }
-
-
-  final public function getConnection() {
-    if ( \is_null( $this->dbUnitConnection ) ) {
-      $config = \BeeHub::config();
-      if ( \is_null( self::$connection ) ) {
-        self::$connection = new \PDO( 'mysql:dbname=' . $config['mysql']['database'] . ';host=' . $config['mysql']['host'], $config['mysql']['username'], $config['mysql']['password'] );
-      }
-      $this->dbUnitConnection = $this->createDefaultDBConnection( self::$connection, $config['mysql']['database'] );
-    }
-
-    return $this->dbUnitConnection;
-  }
-
-
-  public function getDataSet() {
-    if ( \file_exists( $this->getDatasetPath() . 'basicDataset.xml' ) ) {
-      return $this->createXMLDataSet( $this->getDatasetPath() . 'basicDataset.xml' );
-    }else{
-      return new PHPUnit_Extensions_Database_DataSet_DefaultDataSet();
-    }
-  }
-
-
-  /**
-   * Get the path to the datasets
-   *
-   * @return  string  The path to the datasets
-   */
-  protected function getDatasetPath() {
-    return \dirname( __FILE__ ) . \DIRECTORY_SEPARATOR;
   }
 
 

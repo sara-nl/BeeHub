@@ -2,7 +2,7 @@
 /**
  * Entry point for the web server
  *
- * Copyright ©2013 SURFsara b.v., Amsterdam, The Netherlands
+ * Copyright ©2014 SURFsara b.v., Amsterdam, The Netherlands
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
