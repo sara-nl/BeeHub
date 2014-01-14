@@ -77,6 +77,11 @@ class BeeHub_UsersTest extends BeeHub_Tests_Db_Test_Case {
 
 
   public function testMethod_POST() {
+    if ( ! setUpStorageBackend() ) {
+      $this->markTestSkipped( 'No storage backend specified; all tests depending on the storage backend are skipped' );
+      return;
+    }
+    
     $_POST['user_name'] = 'jdoe';
     $_POST['displayname'] = 'J Doe';
     $_POST['email'] = "j.doe@somedomain.com";
