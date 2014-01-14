@@ -137,6 +137,7 @@ function setUpStorageBackend() {
   \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'file.txt', \rawurlencode( \DAV::PROP_GETCONTENTTYPE ), "text/plain; charset=UTF-8" );
   \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'file.txt', \rawurlencode( \DAV::PROP_GETETAG ), '"EA"' );
   \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'file.txt', \rawurlencode( 'test_namespace test_property' ), 'this is a random dead property' );
+  \touch( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'file.txt', 1388576096 );
   \file_put_contents( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'file2.txt', 'Lorem ipsum' );
   \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'file2.txt', \rawurlencode( \DAV::PROP_OWNER ), '/system/users/john' );
   \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'file2.txt', \rawurlencode( \BeeHub::PROP_SPONSOR ), '/system/sponsors/sponsor_a' );

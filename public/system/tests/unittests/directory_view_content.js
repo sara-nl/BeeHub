@@ -18,62 +18,87 @@
  */
 "use strict";
 
-//// Call init function
-//nl.sara.beehub.view.content.init();
-
 (function(){
-  var fixture = $("#qunit-fixture").clone(true);
-  
   var home = "/home/john/";
   // Current dir is /foo/
   var up = "/";
-  var homeButton = '.bh-dir-content-gohome';
+  
+  var contentCount = 4;
+  
   var directory1 = '/foo/directory';
   var directory1Displayname = 'directory';
+  
   var file1 = '/foo/file.txt';
   var file1Displayname = 'file.txt';
+  var file1Owner = '/system/users/john';
+  var file1Type = "text/plain; charset=UTF-8";
+  var file1LastModified = "Wed, 01 Jan 2014 12:34:56 +0100";
+  var file1Size = "26";
+  
   var upButton = '.bh-dir-content-up';
   var deleteButton = '.bh-dir-content-delete';
   var copyButton = '.bh-dir-content-copy';
   var moveButton = '.bh-dir-content-move';
+  var uploadButton = '.bh-dir-content-upload';
+  var newFolderButton = '.bh-dir-content-newfolder';
+  var homeButton = '.bh-dir-content-gohome';
+  
+  var checkAllCheckBox = '.bh-dir-content-checkboxgroup';
+  var checkBoxes = '.bh-dir-content-checkbox';
+  var selectDirIcon = '.bh-dir-content-openselected';
+  var menuRename = '.bh-dir-content-edit';
+  var renameForm = '.bh-dir-content-rename-form';
+  var renameField = '.bh-dir-content-name';
+  var renameColumn = '.bh-dir-content-rename-td';
+  var uploadHiddenField = '.bh-dir-content-upload-hidden';
   
   module("view content",{
     setup: function(){
-      $('#qunit-fixture').replaceWith(fixture);
       // Call init function
       nl.sara.beehub.view.content.init();
-//      $('body').append(fixture.clone(true));
     }
   });
   
-  var checkCheckboxes = function(length) {    
+  /**
+   * Check if selecting checkboxes is working
+   * 
+   * @param {Integer} count Total amount of resources in current directory
+   * 
+   */
+  var checkCheckboxes = function( count ) {    
     // Select all checkboxes
-    $('.bh-dir-content-checkboxgroup').click();
-    deepEqual($('.bh-dir-content-checkbox:checked').length, length , "All checkboxes should be selected");
-    deepEqual($('.bh-dir-content-copy').attr("disabled"), undefined, "Copy button should be enabled");
-    deepEqual($('.bh-dir-content-move').attr("disabled"), undefined, "Move button should be enabled");
-    deepEqual($('.bh-dir-content-delete').attr("disabled"), undefined, "Delete button should be enabled");
+    $(checkAllCheckBox).click();
+    deepEqual($(checkBoxes+':checked').length, count , "All checkboxes should be selected");
+    deepEqual($(copyButton).attr("disabled"), undefined, "Copy button should be enabled");
+    deepEqual($(moveButton).attr("disabled"), undefined, "Move button should be enabled");
+    deepEqual($(deleteButton).attr("disabled"), undefined, "Delete button should be enabled");
+    
     // Unselect all checkboxes
-    $('.bh-dir-content-checkboxgroup').click();
-    deepEqual($('.bh-dir-content-checkbox:checked').length, 0, "Zero checkboxes should be selected");
-    deepEqual($('.bh-dir-content-copy').attr("disabled"), "disabled", "Copy button should be disabled");
-    deepEqual($('.bh-dir-content-move').attr("disabled"), "disabled", "Move button should be disabled");
-    deepEqual($('.bh-dir-content-delete').attr("disabled"), "disabled", "Delete button should be disabled");
+    $(checkAllCheckBox).click();
+    deepEqual($(checkBoxes+':checked').length, 0, "Zero checkboxes should be selected");
+    deepEqual($(copyButton).attr("disabled"), "disabled", "Copy button should be disabled");
+    deepEqual($(moveButton).attr("disabled"), "disabled", "Move button should be disabled");
+    deepEqual($(deleteButton).attr("disabled"), "disabled", "Delete button should be disabled");
     
     // Select 1 checkbox
-    $('.bh-dir-content-checkbox')[0].click();
-    deepEqual($('.bh-dir-content-checkbox:checked').length, 1, "One checkbox should be selected");
-    deepEqual($('.bh-dir-content-copy').attr("disabled"), undefined, "Copy button should be enabled");
-    deepEqual($('.bh-dir-content-move').attr("disabled"), undefined, "Move button should be enabled");
-    deepEqual($('.bh-dir-content-delete').attr("disabled"), undefined, "Delete button should be enabled");
+    $(checkBoxes)[0].click();
+    deepEqual($(checkBoxes+':checked').length, 1, "One checkbox should be selected");
+    deepEqual($(copyButton).attr("disabled"), undefined, "Copy button should be enabled");
+    deepEqual($(moveButton).attr("disabled"), undefined, "Move button should be enabled");
+    deepEqual($(deleteButton).attr("disabled"), undefined, "Delete button should be enabled");
     // Deselect this checkbox again
-    $('.bh-dir-content-checkbox')[0].click();
-    deepEqual($('.bh-dir-content-checkbox:checked').length, 0, "Zere checkboxes should be selected");
-    deepEqual($('.bh-dir-content-copy').attr("disabled"), "disabled", "Copy button should be disabled");
-    deepEqual($('.bh-dir-content-move').attr("disabled"), "disabled", "Move button should be disabled");
-    deepEqual($('.bh-dir-content-delete').attr("disabled"), "disabled", "Delete button should be disabled");
+    $(checkBoxes)[0].click();
+    deepEqual($(checkBoxes+':checked').length, 0, "Zere checkboxes should be selected");
+    deepEqual($(copyButton).attr("disabled"), "disabled", "Copy button should be disabled");
+    deepEqual($(moveButton).attr("disabled"), "disabled", "Move button should be disabled");
+    deepEqual($(deleteButton).attr("disabled"), "disabled", "Delete button should be disabled");
   };
   
+  /**
+   * Check if click on resource will open the resource
+   * 
+   * @param {String} check Resource to check
+   */
   var checkOpenSelected = function(check) {      
     // Rewrite controller goToPage
     var rememberGoToPage = nl.sara.beehub.controller.goToPage;
@@ -82,22 +107,21 @@
     };
     
     var row = $("tr[id='"+check+"']");
-    
-    // Call init function
-    nl.sara.beehub.view.content.init();
-    
     // Call click handlers
-    row.find('.bh-dir-content-openselected').click();
+    row.find(selectDirIcon).click();
     
     // Original environment
     nl.sara.beehub.controller.goToPage = rememberGoToPage;
-    nl.sara.beehub.view.content.init();
   };
   
-  var checkEditMenu = function(check , displayname){    
-    // Call init function
-    nl.sara.beehub.view.content.init();
-    
+  /**
+   * Check if renaming a resource is working
+   * 
+   * @param {String} check        Resource to rename
+   * @param {String} displayname  Displaynam of resource to rename
+   * 
+   */
+  var checkEditMenu = function(check , displayname){      
     var rememberRenameResource = nl.sara.beehub.controller.renameResource;
     nl.sara.beehub.controller.renameResource = function(resource, value, overwrite){
       deepEqual(resource.path, check , "Location should be "+check );
@@ -108,36 +132,34 @@
 
     // Call events
     // Check click event 
-    row.find('.bh-dir-content-edit').click();
+    row.find(menuRename).click();
 
-    deepEqual(row.find(".bh-dir-content-name").is(':hidden'), true, 'Name field should be hidden');
-    deepEqual(row.find(".bh-dir-content-rename-td").is(':hidden'), false, 'Input field should be shown');
-    deepEqual(row.find(".bh-dir-content-rename-td").find(':input').val(), displayname,'Input field value should be testfolder');
-    deepEqual(row.find(".bh-dir-content-rename-td").find(':input').is(':focus'), true, 'Mouse should be focused in input field');
+    deepEqual(row.find(renameField).is(':hidden'), true, 'Name field should be hidden');
+    deepEqual(row.find(renameColumn).is(':hidden'), false, 'Input field should be shown');
+    deepEqual(row.find(renameColumn).find(':input').val(), displayname,'Input field value should be testfolder');
+    deepEqual(row.find(renameColumn).find(':input').is(':focus'), true, 'Mouse should be focused in input field');
   
-    row.find(".bh-dir-content-rename-td").find(':input').val("newFolderName");
+    row.find(renameColumn).find(':input').val("newFolderName");
     
     // Check change event
-    row.find('.bh-dir-content-rename-form').change();
-   
-    
+    row.find(renameForm).change();
+  
     // Check keypress event
     var e = jQuery.Event("keypress");
     e.which = 13; // # Some key code value
-    row.find('.bh-dir-content-rename-form').trigger(e);
+    row.find(renameForm).trigger(e);
 
     // Check blur event
-    row.find('.bh-dir-content-rename-form').blur();
-    deepEqual(row.find(".bh-dir-content-name").is(':hidden'), false, 'Name field should be shown');
-    deepEqual(row.find(".bh-dir-content-rename-td").is(':hidden'), true, 'Input field should be hidden');
+    row.find(renameForm).blur();
+    deepEqual(row.find(renameField).is(':hidden'), false, 'Name field should be shown');
+    deepEqual(row.find(renameColumn).is(':hidden'), true, 'Input field should be hidden');
    
     // Original environment
     nl.sara.beehub.controller.renameResource = rememberRenameResource;
-    nl.sara.beehub.view.content.init();
   };
   
-  var checkSetRowHandlers = function(length, check , displayname){
-    checkCheckboxes( length );
+  var checkSetRowHandlers = function(count, check , displayname){
+    checkCheckboxes( count );
     checkOpenSelected( check );
     checkEditMenu( check, displayname );
   };
@@ -147,6 +169,7 @@
    */
   test( 'nl.sara.beehub.view.content.init: Home button click handler', function() {
     expect( 1 );   
+
     // Rewrite controller goToPage
     var rememberGoToPage = nl.sara.beehub.controller.goToPage;
     nl.sara.beehub.controller.goToPage = function(location){
@@ -186,8 +209,8 @@
     expect( 18 );
           
     // Select resources
-    $("tr[id='"+directory1+"']").find('.bh-dir-content-checkbox').prop('checked',true);
-    $("tr[id='"+file1+"']").find('.bh-dir-content-checkbox').prop('checked',true);
+    $("tr[id='"+directory1+"']").find(checkBoxes).prop('checked',true);
+    $("tr[id='"+file1+"']").find(checkBoxes).prop('checked',true);
 
     var rememberInitAction = nl.sara.beehub.controller.initAction;
     
@@ -223,25 +246,19 @@
       ok(true, "IE should show an error when uploading files is clicked")
     }; 
     
-    // Call init function
-    nl.sara.beehub.view.content.init();
+    // First test change before changing the field
+    $(uploadHiddenField).change();
+
+    $(uploadHiddenField).replaceWith('<input class="bh-dir-content-upload-hidden" hidden="hidden">');
     
-    $('.bh-dir-content-upload-hidden').unbind().click(function(){
-      // This should be done bu clicking the upload button
-        ok(true, "Upload hidden click handler field is set");
+    $(uploadHiddenField).unbind('click').click(function(){
+      ok(true, "Upload hidden file field is clicked");
     });
-    
-    $('.bh-dir-content-upload').click();
-   
-    // Call init function
-    nl.sara.beehub.view.content.init();
-    
-    $('.bh-dir-content-upload-hidden').change();
-    
+    $(uploadButton).click();
+        
     // Original environment
     nl.sara.beehub.controller.initAction = rememberInitAction;
     nl.sara.beehub.controller.showError = rememberShowError;
-    nl.sara.beehub.view.content.init();
   });
   
   /**
@@ -249,22 +266,16 @@
    */
   test( 'nl.sara.beehub.view.content.init: New folder button click handler', function() {
     expect( 1 );
-    
-//    $("#qunit-fixture").append('<button class="bh-dir-content-newfolder"></button>');
-    
-    // Call init function
-    nl.sara.beehub.view.content.init();
    
     var rememberCreateNewFolder = nl.sara.beehub.controller.createNewFolder;
     nl.sara.beehub.controller.createNewFolder = function(){
       ok(true, "Click handler new folder button is set");
     };
     
-    $('.bh-dir-content-newfolder').click();
+    $(newFolderButton).click();
     
     // Original environment
     nl.sara.beehub.controller.createNewFolder = rememberCreateNewFolder;
-    nl.sara.beehub.view.content.init();
   });
   
   /**
@@ -272,8 +283,7 @@
    */
   test( 'nl.sara.beehub.view.content.init: Select checboxes handlers', function() {
     expect( 16 );
-//    $("#qunit-fixture").append(getTable());
-    checkCheckboxes( 2 );
+    checkCheckboxes( contentCount );
   });
   
   /**
@@ -281,21 +291,16 @@
    */
   test( 'nl.sara.beehub.view.content.init: Open selected folder icon', function() {
     expect( 1 );
-    
-//    $("#qunit-fixture").append(getTable());
-
-    checkOpenSelected("/home/testuser/testfolder/");
+    checkOpenSelected(directory1);
   });
   
   /**
    * Test edit icon
    */
   test( 'nl.sara.beehub.view.content.init: Edit menu', function() {
-    expect( 10 );
-    
-//    $("#qunit-fixture").append(getTable());
-    
-    checkEditMenu("/home/testuser/testfolder/", "testfolder");
+    expect( 20 );
+    checkEditMenu(directory1, directory1Displayname);
+    checkEditMenu(file1, file1Displayname);
   });
   
   /**
@@ -304,23 +309,12 @@
   test( 'nl.sara.beehub.view.content.clearView', function() {
     expect( 5 );
   
-//    // Create environment
-//    $("#qunit-fixture").append('<button class="bh-dir-content-copy"></button>');
-//    $("#qunit-fixture").append('<button class="bh-dir-content-move"></button>');
-//    $("#qunit-fixture").append('<button class="bh-dir-content-delete"></button>');
-//    
-//    $("#qunit-fixture").append('<input type="checkbox" value="testfolder1" name="/home/testuser/testfolder1" class="bh-dir-content-checkbox" checked>');
-//    $("#qunit-fixture").append('<input type="checkbox" value="testfile1" name="/home/testuser/testfile1" class="bh-dir-content-checkbox" checked>');
-//    $("#qunit-fixture").append('<input type="checkbox" value="testfile2" name="/home/testuser/testfile2" class="bh-dir-content-checkbox" checked>');
-//    
-//    $("#qunit-fixture").append('<input type="checkbox" class="bh-dir-content-checkboxgroup" checked> ');
-  
     nl.sara.beehub.view.content.clearView();
-    deepEqual($(".bh-dir-content-checkboxgroup:checked").length, 0, 'Checkbox group should be unchecked');
-    deepEqual($('.bh-dir-content-checkbox:checked').length, 0, "Zero checkboxes should be selected");
-    deepEqual($('.bh-dir-content-copy').attr('disabled'), 'disabled', 'Copy button should be disabled');
-    deepEqual($('.bh-dir-content-move').attr('disabled'), 'disabled', 'Move button should be disabled');
-    deepEqual($('.bh-dir-content-delete').attr('disabled'), 'disabled', 'Delete button should be disabled');
+    deepEqual($(checkAllCheckBox+":checked").length, 0, 'Checkbox group should be unchecked');
+    deepEqual($(checkBoxes+':checked').length, 0, "Zero checkboxes should be selected");
+    deepEqual($(copyButton).attr('disabled'), 'disabled', 'Copy button should be disabled');
+    deepEqual($(moveButton).attr('disabled'), 'disabled', 'Move button should be disabled');
+    deepEqual($(deleteButton).attr('disabled'), 'disabled', 'Delete button should be disabled');
   });
   
   /**
@@ -328,31 +322,22 @@
    */
   test( 'nl.sara.beehub.view.content.allFixedButtons', function() {
     expect( 12 );
-  
-//    // Create environment
-//    // Home and up button
-//    $("#qunit-fixture").append('<button class="bh-dir-content-gohome"></button>');
-//    $("#qunit-fixture").append('<button class="bh-dir-content-up"></button>');
-//    $("#qunit-fixture").append('<button class="bh-dir-content-upload"></button>');
-//    $("#qunit-fixture").append('<button class="bh-dir-content-copy"></button>');
-//    $("#qunit-fixture").append('<button class="bh-dir-content-move"></button>');
-//    $("#qunit-fixture").append('<button class="bh-dir-content-delete"></button>');
     
     nl.sara.beehub.view.content.allFixedButtons('hide');
-    deepEqual($(".bh-dir-content-gohome").is(':hidden'), true, 'Home button should be hidden');
-    deepEqual($(".bh-dir-content-up").is(':hidden'), true, 'Up button should be hidden');
-    deepEqual($(".bh-dir-content-upload").is(':hidden'), true, 'Upload button should be hidden');
-    deepEqual($(".bh-dir-content-copy").is(':hidden'), true, 'Copy button should be hidden');
-    deepEqual($(".bh-dir-content-move").is(':hidden'), true, 'Move button should be hidden');
-    deepEqual($(".bh-dir-content-delete").is(':hidden'), true, 'Delete button should be hidden');
+    deepEqual($(homeButton).is(':hidden'), true, 'Home button should be hidden');
+    deepEqual($(upButton).is(':hidden'), true, 'Up button should be hidden');
+    deepEqual($(uploadButton).is(':hidden'), true, 'Upload button should be hidden');
+    deepEqual($(copyButton).is(':hidden'), true, 'Copy button should be hidden');
+    deepEqual($(moveButton).is(':hidden'), true, 'Move button should be hidden');
+    deepEqual($(deleteButton).is(':hidden'), true, 'Delete button should be hidden');
   
     nl.sara.beehub.view.content.allFixedButtons('show');
-    deepEqual($(".bh-dir-content-gohome").is(':hidden'), false, 'Home button should be shown');
-    deepEqual($(".bh-dir-content-up").is(':hidden'), false, 'Up button should be shown');
-    deepEqual($(".bh-dir-content-upload").is(':hidden'), false, 'Upload button should be shown');
-    deepEqual($(".bh-dir-content-copy").is(':hidden'), false, 'Copy button should be shown');
-    deepEqual($(".bh-dir-content-move").is(':hidden'), false, 'Move button should be shown');
-    deepEqual($(".bh-dir-content-delete").is(':hidden'), false, 'Delete button should be shown');
+    deepEqual($(homeButton).is(':hidden'), false, 'Home button should be shown');
+    deepEqual($(upButton).is(':hidden'), false, 'Up button should be shown');
+    deepEqual($(uploadButton).is(':hidden'), false, 'Upload button should be shown');
+    deepEqual($(copyButton).is(':hidden'), false, 'Copy button should be shown');
+    deepEqual($(moveButton).is(':hidden'), false, 'Move button should be shown');
+    deepEqual($(deleteButton).is(':hidden'), false, 'Delete button should be shown');
    
   });
   
@@ -362,16 +347,11 @@
   test('nl.sara.beehub.view.content.triggerRenameClick', function(){
     expect ( 1 );
     
-//    // Create environment
-//    $("#qunit-fixture").append('<table><tbody><tr id="/home/testuser/testfolder">\
-//        <td><i class="bh-dir-content-edit"></i></td>\
-//      </tr></tbody></table>');
-    
-    $('.bh-dir-content-edit').unbind().click(function(){
-      ok(true, "Rename handler click should be triggered.")
+    $(menuRename).unbind('click').click(function(){
+      ok(true, "Rename handler click should be triggered.");
     })
     
-    var resource = new nl.sara.beehub.ClientResource("/home/testuser/testfolder");
+    var resource = new nl.sara.beehub.ClientResource(directory1);
     nl.sara.beehub.view.content.triggerRenameClick(resource);
   });
   
@@ -380,18 +360,15 @@
    */
   test('nl.sara.beehub.view.content.getUnknownResourceValues', function(){
     expect( 5 );
-  
-//    // Create environment
-//    $("#qunit-fixture").append(getTable());
     
-    var resource = new nl.sara.beehub.ClientResource("/home/testuser/testfile/");
+    var resource = new nl.sara.beehub.ClientResource(file1);
     resource = nl.sara.beehub.view.content.getUnknownResourceValues(resource);
 
-    deepEqual(resource.displayname, "testfile", "Displayname should be testfile");
-    deepEqual(resource.type, "text/plain; charset=UTF-8", "Type should be text/plain; charset=UTF-8");
-    deepEqual(resource.owner, "/system/users/testuser", "Owner should be /system/users/testuser");
-    deepEqual(resource.contentlength, "39424", "Contentlength should be 39424");
-    deepEqual(resource.lastmodified, "Thu Nov 21 2013 14:27:03 GMT+0100 (CET)", "Lastmodified should be testfolder");
+    deepEqual(resource.displayname, file1Displayname, "Displayname should be "+file1Displayname);
+    deepEqual(resource.type, file1Type, "Type should be "+file1Type);
+    deepEqual(resource.owner, file1Owner, "Owner should be "+file1Owner);
+    deepEqual(resource.contentlength, file1Size, "Contentlength should be "+file1Size);
+    deepEqual(resource.lastmodified, file1LastModified, "Lastmodified should be "+file1LastModified);
   });
   
   /**
@@ -400,19 +377,14 @@
   test('nl.sara.beehub.view.content.addResource', function(){
     expect( 38 );
     
-//    $("#qunit-fixture").append(getTable());
-    
-    // Init for initializing table
-    nl.sara.beehub.view.content.init();
-    
-    var resource = new nl.sara.beehub.ClientResource( location.href + "/subfolder/newfolder/");
+    var resource = new nl.sara.beehub.ClientResource( location.pathname+"newfolder");
     resource.displayname = "newfolder";
     resource.type = "collection";
     resource.contentlength = "undefined";
     resource.lastmodified = "Thu Nov 21 2013 14:27:03 GMT+0100 (CET)";
     resource.owner = 'Test User'
 
-    var testresource1 = new nl.sara.beehub.ClientResource("/home/testuser/newfolder/");
+    var testresource1 = new nl.sara.beehub.ClientResource(location.pathname+"newfolder");
     testresource1 = nl.sara.beehub.view.content.getUnknownResourceValues(testresource1);
     
     deepEqual(testresource1.displayname, undefined, "Displayname should be undefined");
@@ -423,7 +395,7 @@
     
     nl.sara.beehub.view.content.addResource(resource);
     
-    var testresource2 = new nl.sara.beehub.ClientResource("/home/testuser/newfolder/");
+    var testresource2 = new nl.sara.beehub.ClientResource(location.pathname+"newfolder");
     testresource2 = nl.sara.beehub.view.content.getUnknownResourceValues(testresource2);
 
     deepEqual(testresource2.path, resource.path, "Path should be "+resource.path);
@@ -433,7 +405,7 @@
     deepEqual(testresource2.lastmodified, resource.lastmodified, "Lastmodified should be "+resource.lastmodified);
     deepEqual(testresource2.owner, resource.owner, "Owner should be "+resource.owner);
 
-    checkSetRowHandlers( 3, resource.path , resource.displayname );
+    checkSetRowHandlers( 5, resource.path , resource.displayname );
   })
   
    /**
@@ -442,25 +414,20 @@
   test('nl.sara.beehub.view.content.deleteResource', function(){
     expect( 10 );
     
-//    $("#qunit-fixture").append(getTable());
+    var resource = new nl.sara.beehub.ClientResource(file1);
     
-    // Init for initializing table
-    nl.sara.beehub.view.content.init();
-    
-    var resource = new nl.sara.beehub.ClientResource("/home/testuser/testfile/");
-    
-    var testresource1 = new nl.sara.beehub.ClientResource("/home/testuser/testfile/");
+    var testresource1 = new nl.sara.beehub.ClientResource(file1);
     testresource1 = nl.sara.beehub.view.content.getUnknownResourceValues(testresource1);
     
-    deepEqual(testresource1.displayname, "testfile", "Displayname should be testfile");
-    deepEqual(testresource1.type, "text/plain; charset=UTF-8", "Type should be text/plain; charset=UTF-8");
-    deepEqual(testresource1.contentlength, "39424", "Contentlength should be 39424");
-    deepEqual(testresource1.lastmodified, "Thu Nov 21 2013 14:27:03 GMT+0100 (CET)", "Lastmodified should be Thu Nov 21 2013 14:27:03 GMT+0100 (CET)");
-    deepEqual(testresource1.owner, "/system/users/testuser", "Owner should be /system/users/testuser");
+    deepEqual(testresource1.displayname, file1Displayname, "Displayname should be "+file1Displayname);
+    deepEqual(testresource1.type, file1Type, "Type should be "+file1Type);
+    deepEqual(testresource1.contentlength, file1Size, "Contentlength should be "+file1Size);
+    deepEqual(testresource1.lastmodified, file1LastModified, "Lastmodified should be "+file1LastModified);
+    deepEqual(testresource1.owner, file1Owner, "Owner should be "+file1Owner);
     
     nl.sara.beehub.view.content.deleteResource(resource);
     
-    var testresource2 = new nl.sara.beehub.ClientResource("/home/testuser/testfile/");
+    var testresource2 = new nl.sara.beehub.ClientResource(file1);
     testresource2 = nl.sara.beehub.view.content.getUnknownResourceValues(testresource2);
     
     deepEqual(testresource2.displayname, undefined, "Displayname should be undefined");
@@ -476,21 +443,16 @@
   test('nl.sara.beehub.view.content.updateResource', function(){
     expect( 46 );
     
-//    $("#qunit-fixture").append(getTable());
-    
-    // Init for initializing table
-    nl.sara.beehub.view.content.init();
-    
-    var testresource1 = new nl.sara.beehub.ClientResource("/home/testuser/testfile/");
+    var testresource1 = new nl.sara.beehub.ClientResource(file1);
     testresource1 = nl.sara.beehub.view.content.getUnknownResourceValues(testresource1);
     
-    deepEqual(testresource1.displayname, "testfile", "Displayname should be testfile");
-    deepEqual(testresource1.type, "text/plain; charset=UTF-8", "Type should be text/plain; charset=UTF-8");
-    deepEqual(testresource1.contentlength, "39424", "Contentlength should be 39424");
-    deepEqual(testresource1.lastmodified, "Thu Nov 21 2013 14:27:03 GMT+0100 (CET)", "Lastmodified should be Thu Nov 21 2013 14:27:03 GMT+0100 (CET)");
-    deepEqual(testresource1.owner, "/system/users/testuser", "Owner should be /system/users/testuser");
+    deepEqual(testresource1.displayname, file1Displayname, "Displayname should be "+file1Displayname);
+    deepEqual(testresource1.type, file1Type, "Type should be "+file1Type);
+    deepEqual(testresource1.contentlength, file1Size, "Contentlength should be "+file1Size);
+    deepEqual(testresource1.lastmodified, file1LastModified, "Lastmodified should be "+file1LastModified);
+    deepEqual(testresource1.owner, file1Owner, "Owner should be "+file1Owner);
     
-    var resourcenew = new nl.sara.beehub.ClientResource("/home/testuser/testfile2/");
+    var resourcenew = new nl.sara.beehub.ClientResource("/foo/testfile2");
     resourcenew = nl.sara.beehub.view.content.getUnknownResourceValues(resourcenew);
     
     deepEqual(resourcenew.displayname, undefined, "Displayname should be undefined");
@@ -507,7 +469,7 @@
       
     nl.sara.beehub.view.content.updateResource(testresource1, resourcenew);
    
-    var testresource2 = new nl.sara.beehub.ClientResource("/home/testuser/testfile/");
+    var testresource2 = new nl.sara.beehub.ClientResource(file1);
     testresource2 = nl.sara.beehub.view.content.getUnknownResourceValues(testresource2);
     
     deepEqual(testresource2.displayname, undefined, "Displayname should be undefined");
@@ -516,7 +478,7 @@
     deepEqual(testresource2.lastmodified, undefined, "Lastmodified should be undefined");
     deepEqual(testresource2.owner, undefined, "Owner should be undefined");
     
-    var testresource3 = new nl.sara.beehub.ClientResource("/home/testuser/testfile2/");
+    var testresource3 = new nl.sara.beehub.ClientResource("/foo/testfile2");
     testresource3 = nl.sara.beehub.view.content.getUnknownResourceValues(testresource3);
     
     deepEqual(testresource3.displayname, "testfile2", "Displayname should be testfile2");
@@ -525,7 +487,7 @@
     deepEqual(testresource3.lastmodified, "Thu Nov 22 2013 14:27:03 GMT+0100 (CET)", "Lastmodified should be Thu Nov 22 2013 14:27:03 GMT+0100 (CET)");
     deepEqual(testresource3.owner, "/system/users/testuser2", "Owner should be /system/users/testuser2");
     
-    checkSetRowHandlers( 2, resourcenew.path , resourcenew.displayname );
+    checkSetRowHandlers( 4, resourcenew.path , resourcenew.displayname );
   }) 
 })();
 // End of file

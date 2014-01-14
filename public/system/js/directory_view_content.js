@@ -115,7 +115,7 @@
     $('.bh-dir-content-gohome').unbind('click').click(function(){nl.sara.beehub.controller.goToPage($(this).attr("id"))});
     
     // Go up one directory button
-    $('.bh-dir-content-up').unbind('click').click(function(){console.log($(this));nl.sara.beehub.controller.goToPage($(this).attr("id"))});
+    $('.bh-dir-content-up').unbind('click').click(function(){nl.sara.beehub.controller.goToPage($(this).attr("id"))});
     
     // Upload button
     $('.bh-dir-content-upload').unbind('click').click(handle_upload_button_click);
@@ -351,13 +351,14 @@
   nl.sara.beehub.view.content.addResource = function(resource){
     var collection = resource.path.substr( 0, resource.path.lastIndexOf( '/', resource.path.length - 2 ) + 1 );
     var currentPath = location.pathname;
+
     if ( currentPath.substr( -1 ) !== '/' ) {
       currentPath += '/';
     }
-// TODO weer terugzetten
-//    if ( collection !== currentPath ) {
-//      return;
-//    }
+
+    if ( collection !== currentPath ) {
+      return;
+    }
 
     var row = createRow(resource);
 
@@ -393,16 +394,16 @@
     if ( currentPath.substr( -1 ) !== '/' ) {
       currentPath += '/';
     }
-// TODO WEER TERUGZETTEN!!!!
-//    if ( collectionOrg === currentPath ) {
-      // delete current row
-      nl.sara.beehub.view.content.deleteResource(resourceOrg);
-//    }
 
-//    if ( collectionNew === currentPath ) {
+    if ( collectionOrg === currentPath ) {
+//       delete current row
+      nl.sara.beehub.view.content.deleteResource(resourceOrg);
+    }
+
+    if ( collectionNew === currentPath ) {
       // add new row
       nl.sara.beehub.view.content.addResource(resourceNew);
-//    }
+    }
   };
   
   
