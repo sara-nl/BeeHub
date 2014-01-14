@@ -23,6 +23,8 @@
   // Current dir is /foo/
   var up = "/";
   
+  var contentCount = 4;
+  
   var directory1 = '/foo/directory';
   var directory1Displayname = 'directory';
   
@@ -30,7 +32,7 @@
   var file1Displayname = 'file.txt';
   var file1Owner = '/system/users/john';
   var file1Type = "text/plain; charset=UTF-8";
-  var file1LastModified = "Mon, 13 Jan 2014 11:44:10 +0100";
+  var file1LastModified = "Wed, 01 Jan 2014 12:34:56 +0100";
   var file1Size = "26";
   
   var upButton = '.bh-dir-content-up';
@@ -57,13 +59,20 @@
     }
   });
   
-  var checkCheckboxes = function(length) {    
+  /**
+   * Check if selecting checkboxes is working
+   * 
+   * @param {Integer} count Total amount of resources in current directory
+   * 
+   */
+  var checkCheckboxes = function( count ) {    
     // Select all checkboxes
     $(checkAllCheckBox).click();
-    deepEqual($(checkBoxes+':checked').length, length , "All checkboxes should be selected");
+    deepEqual($(checkBoxes+':checked').length, count , "All checkboxes should be selected");
     deepEqual($(copyButton).attr("disabled"), undefined, "Copy button should be enabled");
     deepEqual($(moveButton).attr("disabled"), undefined, "Move button should be enabled");
     deepEqual($(deleteButton).attr("disabled"), undefined, "Delete button should be enabled");
+    
     // Unselect all checkboxes
     $(checkAllCheckBox).click();
     deepEqual($(checkBoxes+':checked').length, 0, "Zero checkboxes should be selected");
@@ -85,6 +94,11 @@
     deepEqual($(deleteButton).attr("disabled"), "disabled", "Delete button should be disabled");
   };
   
+  /**
+   * Check if click on resource will open the resource
+   * 
+   * @param {String} check Resource to check
+   */
   var checkOpenSelected = function(check) {      
     // Rewrite controller goToPage
     var rememberGoToPage = nl.sara.beehub.controller.goToPage;
@@ -100,6 +114,13 @@
     nl.sara.beehub.controller.goToPage = rememberGoToPage;
   };
   
+  /**
+   * Check if renaming a resource is working
+   * 
+   * @param {String} check        Resource to rename
+   * @param {String} displayname  Displaynam of resource to rename
+   * 
+   */
   var checkEditMenu = function(check , displayname){      
     var rememberRenameResource = nl.sara.beehub.controller.renameResource;
     nl.sara.beehub.controller.renameResource = function(resource, value, overwrite){
@@ -123,7 +144,6 @@
     // Check change event
     row.find(renameForm).change();
   
-    
     // Check keypress event
     var e = jQuery.Event("keypress");
     e.which = 13; // # Some key code value
@@ -138,8 +158,8 @@
     nl.sara.beehub.controller.renameResource = rememberRenameResource;
   };
   
-  var checkSetRowHandlers = function(length, check , displayname){
-    checkCheckboxes( length );
+  var checkSetRowHandlers = function(count, check , displayname){
+    checkCheckboxes( count );
     checkOpenSelected( check );
     checkEditMenu( check, displayname );
   };
@@ -225,19 +245,17 @@
     nl.sara.beehub.controller.showError = function(){
       ok(true, "IE should show an error when uploading files is clicked")
     }; 
-
-    $(uploadHiddenField).unbind().click(function(){
-      // This should be done bu clicking the upload button
-        ok(true, "Upload hidden click handler field is set");
-    });
     
-    $(uploadButton).click();
-   
-    // Call init function
-    nl.sara.beehub.view.content.init();
-    
+    // First test change before changing the field
     $(uploadHiddenField).change();
+
+    $(uploadHiddenField).replaceWith('<input class="bh-dir-content-upload-hidden" hidden="hidden">');
     
+    $(uploadHiddenField).unbind('click').click(function(){
+      ok(true, "Upload hidden file field is clicked");
+    });
+    $(uploadButton).click();
+        
     // Original environment
     nl.sara.beehub.controller.initAction = rememberInitAction;
     nl.sara.beehub.controller.showError = rememberShowError;
@@ -265,7 +283,7 @@
    */
   test( 'nl.sara.beehub.view.content.init: Select checboxes handlers', function() {
     expect( 16 );
-    checkCheckboxes( 4 );
+    checkCheckboxes( contentCount );
   });
   
   /**
