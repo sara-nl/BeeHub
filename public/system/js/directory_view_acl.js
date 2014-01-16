@@ -69,9 +69,9 @@
     // Set view
     nl.sara.beehub.view.acl.setView("directory", nl.sara.beehub.controller.getPath());
     // ACL TAB ACTIONS/FUNCTIONS
-    nl.sara.beehub.view.acl.setTableSorter(nl.sara.beehub.view.acl.getAclView().find('.bh-dir-acl-contents').find("#bh-dir-acl-table"));
+    nl.sara.beehub.view.acl.setTableSorter(nl.sara.beehub.view.acl.getAclView().find("#bh-dir-acl-table"));
     // Add rule handler
-    $('.bh-dir-acl-add').click(nl.sara.beehub.controller.addAclRule);
+    $('.bh-dir-acl-add').unbind('click').click(nl.sara.beehub.controller.addAclRule);
     // Add handler on row
     var rows = nl.sara.beehub.view.acl.getAclView().find('.bh-dir-acl-contents').find('.bh-dir-acl-row');
     setRowHandlers(rows); 

@@ -120,7 +120,7 @@ class BeeHub_DirectoryTest extends BeeHub_Tests_Db_Test_Case {
       $children[] = $child;
     }
 
-    $expected = array( 'file.txt', 'file2.txt', 'directory/', 'directory2/' );
+    $expected = array( 'file.txt', 'file2.txt', 'directory/', 'directory2/', 'client_tests/' );
     $this->assertSame( $expected, $children );
   }
 
