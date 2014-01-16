@@ -375,7 +375,7 @@
    * Test add resource
    */
   test('nl.sara.beehub.view.content.addResource', function(){
-    expect( 38 );
+    expect( 39 );
     
     var resource = new nl.sara.beehub.ClientResource( location.pathname+"newfolder");
     resource.displayname = "newfolder";
@@ -404,6 +404,8 @@
     deepEqual(testresource2.contentlength, resource.contentlength, "Contentlength should be "+resource.contentlength);
     deepEqual(testresource2.lastmodified, resource.lastmodified, "Lastmodified should be "+resource.lastmodified);
     deepEqual(testresource2.owner, resource.owner, "Owner should be "+resource.owner);
+
+    deepEqual($("tr[id='"+directory1+"']").find('td').length, $("tr[id='"+testresource2.path+"']").find('td').length, "Count of total columns is ok");
 
     checkSetRowHandlers( 5, resource.path , resource.displayname );
   })
@@ -437,7 +439,7 @@
     deepEqual(testresource2.owner, undefined, "Owner should be undefined");
   })
   
-     /**
+   /**
    * Test delete resource
    */
   test('nl.sara.beehub.view.content.updateResource', function(){
