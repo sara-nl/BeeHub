@@ -87,11 +87,8 @@ public function user_prop_getetag() {
  */
 public function method_COPY( $path ) {
   $this->assert(DAVACL::PRIV_READ);
-  DAV::$REGISTRY->resource( dirname( $path ) )->assert( DAVACL::PRIV_WRITE );
-  $localPath = BeeHub::localPath($path);
-  exec( 'cp --preserve=all ' . BeeHub::escapeshellarg($this->localPath) . ' ' . BeeHub::escapeshellarg($localPath) );
-  xattr_remove( $localPath, rawurlencode(DAV::PROP_ACL) );
-  xattr_remove( $localPath, rawurlencode(DAV::PROP_LOCKDISCOVERY) );
+  $parent = DAV::$REGISTRY->resource( dirname( $path ) );
+  $parent->assert( DAVACL::PRIV_WRITE );
 
   // Determine the sponsor
   $user = BeeHub::getAuth()->current_user();
@@ -99,8 +96,14 @@ public function method_COPY( $path ) {
   if (count($user_sponsors) == 0) { // If the user doesn't have any sponsors, he/she can't create files and directories
     throw DAV::forbidden();
   }
-  $parent = DAV::$REGISTRY->resource( dirname( $this->path ) );
-  $sponsor = $parent->prop(BeeHub::PROP_SPONSOR); // The default is the directory sponsor
+
+  // Do the actual copying
+  $localPath = BeeHub::localPath($path);
+  exec( 'cp --preserve=all ' . BeeHub::escapeshellarg($this->localPath) . ' ' . BeeHub::escapeshellarg($localPath) );
+  xattr_remove( $localPath, rawurlencode(DAV::PROP_ACL) );
+  xattr_remove( $localPath, rawurlencode(DAV::PROP_LOCKDISCOVERY) );
+
+  $sponsor = $parent->user_prop_sponsor(); // The default is the directory sponsor
   if (!in_array($sponsor, $user_sponsors)) { //But a user can only create files sponsored by his own sponsors
     $sponsor = $user->user_prop(BeeHub::PROP_SPONSOR);
   }
@@ -179,6 +182,7 @@ public function method_PUT($stream) {
   }
   $this->user_set( DAV::PROP_GETETAG, BeeHub_DB::ETag() );
   $this->storeProperties();
+  $this->stat = stat($this->localPath);
 }
 
 
@@ -217,6 +221,7 @@ public function method_PUT_range($stream, $start, $end, $total) {
   fclose($resource);
   $this->user_set( DAV::PROP_GETETAG, BeeHub_DB::ETag() );
   $this->storeProperties();
+  $this->stat = stat($this->localPath);
 }
 
 } // class BeeHub_File

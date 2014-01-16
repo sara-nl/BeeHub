@@ -29,7 +29,7 @@ namespace BeeHub\tests;
 class BeeHub_DirectoryTest extends BeeHub_Tests_Db_Test_Case {
 
   /**
-   * @var  \BeeHub_XFSResource  The unit under test
+   * @var  \BeeHub_Directory  The unit under test
    */
   private $obj;
 
