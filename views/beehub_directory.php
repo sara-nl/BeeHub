@@ -142,7 +142,7 @@ require 'views/header.php';
 
   <!-- 	ACL VIEW -->
   <!-- ACL: Add button-->
-  <button data-toggle="tooltip" title="Add rule" class="btn btn-small bh-dir-acl-add hide" >
+  <button id="bh-dir-acl-directory-button" data-toggle="tooltip" title="Add rule" class="btn btn-small bh-dir-acl-add hide" >
     <i class="icon-plus"></i> Add rule
   </button> 
 </div>
