@@ -1,4 +1,4 @@
-/*
+  /*
  * Copyright ©2014 SURFsara bv, The Netherlands
  *
  * This file is part of the BeeHub webclient.
@@ -19,7 +19,7 @@
 "use strict";
 
 (function(){
-  var currentDirectory =      "/foo/";
+  var currentDirectory =      "/foo/client_tests/";
   var addButton =             '.bh-dir-acl-add';
   
   var aclContents =           '.bh-dir-acl-contents';
@@ -50,6 +50,7 @@
     var permissionsOld = "";
     var aclPermissionsFieldShow = true;
     var aclPermissionsSelectShow = false;
+    var rowIndex = 0;
 
     var rememberChangePermissions = nl.sara.beehub.view.acl.changePermissions;
     nl.sara.beehub.view.acl.changePermissions = function(row, val){
@@ -83,37 +84,62 @@
     
     var rememberUpAclRule = nl.sara.beehub.view.acl.moveUpAclRule;
     nl.sara.beehub.view.acl.moveUpAclRule = function(row){
-      deepEqual("iets in row", "deze row", "");
+      if ((row !== undefined) && ($(row).index() === rowIndex)) {
+        ok(true, "Move up acl is called with the right row object");
+      } else {
+        ok(false, "Move up acl is called with no row or the wrong row index");
+      }
     };
     
     var rememberMoveUpAclRuleController = nl.sara.beehub.controller.moveUpAclRule;
     nl.sara.beehub.controller.moveUpAclRule = function(row, t){
-      deepEqual("iets","met iets","");
+      if ((row !== undefined) && (t !== undefined) && ($(row).index() === rowIndex)) {
+        ok(true, "Move up acl controller is called with the right row object");
+      } else {
+        ok(false, "Move up acl controller is called but row object or time object is wrong or undefined");
+      }
     }
     
     var rememberDownAclRule = nl.sara.beehub.view.acl.moveDownAclRule;
     nl.sara.beehub.view.acl.moveDownAclRule = function(row){
-      deepEqual("iets in row", "deze row", "");
+      if ((row !== undefined) && ($(row).index() === rowIndex)) {
+        ok(true, "Move down acl is called with the right row object");
+      } else {
+        ok(false, "Move down acl is called with no row or the wrong row index");
+      }
     };
     
     var rememberMoveDownAclRuleController = nl.sara.beehub.controller.moveDownAclRule;
     nl.sara.beehub.controller.moveDownAclRule = function(row, t){
-      deepEqual("iets","met iets","");
+      if ((row !== undefined) && (t !== undefined) && ($(row).index() === rowIndex)) {
+        ok(true, "Move down acl controller is called with the right row object");
+      } else {
+        ok(false, "Move down acl controller is called but row object or time object is wrong or undefined");
+      }
     }
     
     var rememberDeleteRowIndex = nl.sara.beehub.view.acl.deleteRowIndex;
     nl.sara.beehub.view.acl.deleteRowIndex = function(index){
-      deepEqual("iets","met iets","");
+      if ((index !== undefined) && (index === rowIndex)){
+        ok(true, "Delete row is called with the right index");
+      } else {
+        ok(false, "Delete row is called but index is undefined or wrong");
+      }
     };
     
     var rememberDeleteAclRuleController = nl.sara.beehub.controller.deleteAclRule;
     nl.sara.beehub.controller.deleteAclRule = function(row, index, t){
-      deepEqual("iets","met iets","");
+      if ((index !== undefined) && (index === rowIndex) && (t !== undefined)){
+        ok(true, "Delete row controller is called with the right index");
+      } else {
+        ok(false, "Delete row controller is called but index is undefined or wrong");
+      }
     };
     
     $.each(rows, function(key, row) {
       var info = $(row).find(aclComment).attr('name');
       if (info !== 'protected' && info !== 'inherited') {
+        rowIndex = $(row).index();
         // Change permissions handler
         aclPermissionsFieldShow = true;
         aclPermissionsSelectShow = false;
@@ -128,12 +154,13 @@
         aclPermissionsSelectShow = true;
         if ($(row).find(aclPermissions).prop("selectedIndex") !== 0) {
           permissions = "allow read";
-          $(row).find(aclPermissions).val(0).change();
+          $(row).find(aclPermissions).prop("selectedIndex",0);
+          $(row).change();
         } else {
           permissions = "allow read, write";
-          $(row).find(aclPermissions).val(1).change();
+          $(row).find(aclPermissions).prop("selectedIndex",1);
+          $(row).change();
         }; 
-        
         // Check blur handler
         aclPermissionsFieldShow = true;
         aclPermissionsSelectShow = false;
@@ -143,8 +170,6 @@
         $(row).find(aclPermissions).blur();
         
         // Check up icon handler
-//        console.log($(row));
-//        console.log($(row).find(aclUpIcon));
         $(row).find(aclUpIcon).click();
         
         // Check down icon handler
@@ -163,18 +188,37 @@
     nl.sara.beehub.controller.moveUpAclRule = rememberMoveUpAclRuleController;
     nl.sara.beehub.view.acl.moveDownAclRule = rememberDownAclRule;
     nl.sara.beehub.controller.moveDownAclRule = rememberMoveDownAclRuleController;
+    nl.sara.beehub.view.acl.deleteRowIndex = rememberDeleteRowIndex;
+    nl.sara.beehub.controller.deleteAclRule = rememberDeleteAclRuleController;
   };
   
   /**
    * Test init function
    */
   test( 'nl.sara.beehub.view.acl.init: Set view', function() {
-    expect( 15 );  
+    expect( 3 );  
     
     var rememberSetTableSort = nl.sara.beehub.view.acl.setTableSorter;
     nl.sara.beehub.view.acl.setTableSorter = function(input){
       deepEqual(input.length,1,"Table sorter is called");
     }
+    
+    // Call init function
+    nl.sara.beehub.view.acl.init();
+    
+    // View is set
+    deepEqual(nl.sara.beehub.view.acl.getViewPath(), currentDirectory, "View path should be "+currentDirectory );
+    deepEqual(nl.sara.beehub.view.acl.getView(), "directory", "View should be directory");
+    
+    nl.sara.beehub.view.acl.setTableSorter = rememberSetTableSort;
+  });
+  
+  /**
+   * Test init function
+   */
+  test( 'nl.sara.beehub.view.acl.init: Set view add button', function() {
+    expect( 1 );  
+ 
     var rememberAddAclRule = nl.sara.beehub.controller.addAclRule;
     nl.sara.beehub.controller.addAclRule = function(){
       ok(true, "Add acl button click handler is set");
@@ -183,17 +227,18 @@
     // Call init function
     nl.sara.beehub.view.acl.init();
     
-    // View is set
-    deepEqual(nl.sara.beehub.view.acl.getViewPath(), currentDirectory, "View path should be "+currentDirectory );
-    deepEqual(nl.sara.beehub.view.acl.getView(), "directory", "View should be directory");
-
     $(addButton).click();
     
+    nl.sara.beehub.controller.addAclRule = rememberAddAclRule;
+  });
+  
+  /**
+   * Test init function
+   */
+  test( 'nl.sara.beehub.view.acl.init: Set view row handlers', function() {
+    expect( 42 ); 
     var rows = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclRow);
     checkSetRowHandlers(rows);
-    
-    nl.sara.beehub.view.acl.setTableSorter = rememberSetTableSort;
-    nl.sara.beehub.controller.addAclRule = rememberAddAclRule;
   });
 })();
 // End of file

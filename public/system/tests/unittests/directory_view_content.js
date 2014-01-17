@@ -21,14 +21,14 @@
 (function(){
   var home = "/home/john/";
   // Current dir is /foo/
-  var up = "/";
+  var up = "/foo";
   
   var contentCount = 4;
   
-  var directory1 = '/foo/directory';
+  var directory1 = '/foo/client_tests/directory';
   var directory1Displayname = 'directory';
   
-  var file1 = '/foo/file.txt';
+  var file1 = '/foo/client_tests/file.txt';
   var file1Displayname = 'file.txt';
   var file1Owner = '/system/users/john';
   var file1Type = "text/plain; charset=UTF-8";
@@ -185,7 +185,7 @@
   });
   
   /**
-   * Test home and up buttons click handlers
+   * Test up button click handlers
    */
   test( 'nl.sara.beehub.view.content.init: Up button click handler', function() {
     expect( 1 );   
@@ -238,6 +238,7 @@
     expect( 2 );      
     var rememberInitAction = nl.sara.beehub.controller.initAction;
     nl.sara.beehub.controller.initAction = function(resources, action){
+      // TODO klopt resources
       ok(true, "Upload click handler is set");
     };
     
@@ -454,7 +455,7 @@
     deepEqual(testresource1.lastmodified, file1LastModified, "Lastmodified should be "+file1LastModified);
     deepEqual(testresource1.owner, file1Owner, "Owner should be "+file1Owner);
     
-    var resourcenew = new nl.sara.beehub.ClientResource("/foo/testfile2");
+    var resourcenew = new nl.sara.beehub.ClientResource(location.pathname+"testfile2");
     resourcenew = nl.sara.beehub.view.content.getUnknownResourceValues(resourcenew);
     
     deepEqual(resourcenew.displayname, undefined, "Displayname should be undefined");
@@ -480,7 +481,7 @@
     deepEqual(testresource2.lastmodified, undefined, "Lastmodified should be undefined");
     deepEqual(testresource2.owner, undefined, "Owner should be undefined");
     
-    var testresource3 = new nl.sara.beehub.ClientResource("/foo/testfile2");
+    var testresource3 = new nl.sara.beehub.ClientResource(location.pathname+"testfile2");
     testresource3 = nl.sara.beehub.view.content.getUnknownResourceValues(testresource3);
     
     deepEqual(testresource3.displayname, "testfile2", "Displayname should be testfile2");
