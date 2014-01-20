@@ -21,9 +21,10 @@
 (function(){
   var currentDirectory =      "/foo/client_tests/";
   var addButton =             '.bh-dir-acl-add';
-  var directoryView =         '#bh-dir-acl-directory-acl'
-  var addAclButton=           '#bh-dir-acl-directory-button'
-  var aclFormView=            '#bh-dir-acl-directory-form'
+  var directoryView =         '#bh-dir-acl-directory-acl';
+  var addAclButton=           '#bh-dir-acl-directory-button';
+  var aclFormView=            '#bh-dir-acl-directory-form';
+  var indexLastProtected=     0;
 
   
   var aclContents =           '.bh-dir-acl-contents';
@@ -162,11 +163,11 @@
         if ($(row).find(aclPermissions).prop("selectedIndex") !== 0) {
           permissions = "allow read";
           $(row).find(aclPermissions).prop("selectedIndex",0);
-          $(row).change();
+          $(row).find(aclPermissions).change();
         } else {
           permissions = "allow read, write";
           $(row).find(aclPermissions).prop("selectedIndex",1);
-          $(row).change();
+          $(row).find(aclPermissions).change();
         }; 
         // Check blur handler
         aclPermissionsFieldShow = true;
@@ -199,6 +200,68 @@
     nl.sara.beehub.view.acl.deleteRowIndex = rememberDeleteRowIndex;
     nl.sara.beehub.controller.deleteAclRule = rememberDeleteAclRuleController;
   };
+  
+  /**
+   * Test a row that is created
+   * 
+   * @param {DOM object}    row   Row to test
+   * @param {object}        ace   ace used to create the row
+   */
+  var testCreatedRow = function(row, ace, up, down, remove){
+    // Principal
+    var principal = row.find(aclPrincipal).attr('title');
+    var invert = row.find(aclPrincipal).attr('data-invert');
+    var name = row.find(aclPrincipal).attr('name');
+    deepEqual(principal, ace.principal, "Principal title should be "+ace.principal);
+    deepEqual(invert, ace.invert, "Data invert should be "+ace.invert);
+    deepEqual(name, ace.principal, "Name should be "+ace.principal);
+    
+    // Hidden select
+    var select = true;
+    if (row.find(aclPermissionsSelect) === undefined){
+      select = false;
+    }
+    deepEqual(select, true, "Hidden select field is created");
+
+    // Permissions
+    var title = row.find(aclPermissionsField).attr('title');
+    deepEqual(title, ace.permissions, "Hidden select field is created");
+    var presentation = row.find(aclPermissionsField).find(".presentation").html();
+    deepEqual(presentation, ace.permissions, "Presentation of permissions is ok");
+    
+    // Comment
+    var comment = row.find(aclComment).attr('name');
+    var iconDown = row.find(aclDownIcon);
+    if (ace.protected){
+      deepEqual(comment, "protected", "Info should be protected");
+    } else { 
+      if (ace.inherited) {
+        deepEqual(comment, "inherited", "Info should be inherited");
+      } else {
+        deepEqual(comment, "", "Info should be empty string");
+      }
+    }
+    // Icon up
+    if (row.find(aclUpIcon).html() !== undefined){
+      deepEqual(true, up, "Up icon should be visible.");
+    } else {
+      deepEqual(false, up, "Up icon should not be visible.");
+    };
+    
+    // Icon down
+    if (row.find(aclDownIcon).html() !== undefined){
+      deepEqual(true, down, "Down icon should be visible.");
+    } else {
+      deepEqual(false, down, "Down icon should not be visible.");
+    };
+    
+    // Icon delete
+    if (row.find(aclRemoveIcon).html() !== undefined){
+      deepEqual(true, remove, "Delete icon should be visible.");
+    } else {
+      deepEqual(false, remove, "Delete icon should not be visible.");
+    };
+  }
   
   /**
    * Test if view is set
@@ -244,7 +307,7 @@
    * Test if row handlers are set
    */
   test( 'nl.sara.beehub.view.acl.init: Set view row handlers', function() {
-    expect( 42 ); 
+    expect( 54 ); 
     var rows = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclRow);
     checkSetRowHandlers(rows);
   });
@@ -305,30 +368,73 @@
   });
   
   /**
-   * Test createRow
+   * Test addRow and createRow
    */
   test( 'nl.sara.beehub.view.acl.addRow,createRow', function() {
-    expect( 2 ); 
+    expect( 40 ); 
+    
+    // Test createRow after last protected
     var ace = {
-        principal :   "test_principal", 
-        permissions:  "test_permissions", 
-        invert:       "true",
-        info:         "test_info"
+        'principal' :   "test_principal", 
+        'permissions':  "allow read, write", 
+        'invert':       "true",
     };
-    var row = nl.sara.beehub.view.acl.createRow(ace);
-    nl.sara.beehub.view.acl.addRow(row, nl.sara.beehub.view.acl.getIndexLastProtected());
-    var table = nl.sara.beehub.view.acl.getAclView().find('.bh-dir-acl-contents');
-    var row = nl.sara.beehub.view.acl.getAclView().find('.bh-dir-acl-contents').find('tr:eq('+nl.sara.beehub.view.acl.getIndexLastProtected()+1+')')
-    console.log(row);
-    // Principal
-    var principal = row.find(aclPrincipal).attr('title');
-    var invert = row.find(aclPrincipal).attr('data-invert');
-    var name = row.find(aclPrincipal).attr('name');
-    deepEqual(principal, ace.principal, "Principal title should be "+ace.principal);
-    deepEqual(invert, ace.invert, "Data invert should be "+ace.invert);
-    deepEqual(name, ace.principal, "Name should be "+ace.principal);
-
-
+    var createdRow = nl.sara.beehub.view.acl.createRow(ace);
+    nl.sara.beehub.view.acl.addRow(createdRow, nl.sara.beehub.view.acl.getIndexLastProtected());
+    var table = nl.sara.beehub.view.acl.getAclView().find(aclContents);
+    var row = table.find('tr').find('td').filter("[name='test_principal']").parent();
+    testCreatedRow(row, ace, false, true, true);
+    
+    // Test createRow with inherited ace
+    var ace2 = {
+        'principal' :   "test2_principal", 
+        'permissions':  "allow read", 
+        'invert':       "false",
+        'inherited':    true
+    };
+    
+    var createdRow2 = nl.sara.beehub.view.acl.createRow(ace2);
+    var index = nl.sara.beehub.view.acl.getAclView().find(aclContents).find('tr').length;
+    nl.sara.beehub.view.acl.addRow(createdRow2, index-1);
+    var table2 = nl.sara.beehub.view.acl.getAclView().find(aclContents);
+    var row2 = table2.find('tr').find('td').filter("[name='test2_principal']").parent();
+    testCreatedRow(row2, ace2, false, false, false);
+    
+    // Test createRow with protected ace
+    var ace3 = {
+        'principal' :   "test3_principal", 
+        'permissions':  "allow read", 
+        'invert':       "false",
+        'protected':    true
+    };
+    
+    // Test create row with up and down icons
+    var createdRow3 = nl.sara.beehub.view.acl.createRow(ace3);
+    nl.sara.beehub.view.acl.addRow(createdRow3, 0);
+    var table3 = nl.sara.beehub.view.acl.getAclView().find(aclContents);
+    var row3 = table3.find('tr').find('td').filter("[name='test3_principal']").parent();
+    testCreatedRow(row3, ace3, false, false, false);
+    
+    var ace4 = {
+        'principal' :   "test4_principal", 
+        'permissions':  "deny read, write, change acl", 
+        'invert':       "false"
+    };
+    
+    var createdRow4 = nl.sara.beehub.view.acl.createRow(ace4);
+    nl.sara.beehub.view.acl.addRow(createdRow4, nl.sara.beehub.view.acl.getIndexLastProtected()+1);
+    var table4 = nl.sara.beehub.view.acl.getAclView().find(aclContents);
+    var row4 = table4.find('tr').find('td').filter("[name='test4_principal']").parent();
+    testCreatedRow(row4, ace4, true, true, true);
+  });
+  
+  /**
+   * Test getIndexLastProtected
+   */
+  test('nl.sara.beehub.view.acl.getIndexLastProtected', function(){
+    expect( 1 );
+    var index = nl.sara.beehub.view.acl.getIndexLastProtected();
+    deepEqual(index, indexLastProtected, 'Index last protected should be '+indexLastProtected);
   });
 })();
 // End of file
