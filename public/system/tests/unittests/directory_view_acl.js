@@ -47,8 +47,8 @@
   var aclFormView=            '#bh-dir-acl-directory-form';
   var indexLastProtected=     0;
 
-  
   var aclContents =           '.bh-dir-acl-contents';
+  var aclTable =              '.bh-dir-acl-table';
   var aclRow =                '.bh-dir-acl-row';
   var aclComment =            '.bh-dir-acl-comment';
   var aclChangePermissions =  '.bh-dir-acl-change-permissions';
@@ -59,6 +59,10 @@
   var aclDownIcon =           '.bh-dir-acl-icon-down';
   var aclRemoveIcon =         '.bh-dir-acl-icon-remove';
   var aclPrincipal =          '.bh-dir-acl-principal';
+  
+  var optionRadio =           '.bh-dir-view-acl-optionRadio';
+  var searchTable =           '.bh-dir-acl-table-search';
+  var tablePermissions =      '.bh-dir-acl-table-permisions';
 
   module("view acl",{
     setup: function(){
@@ -483,11 +487,57 @@
    * Test setAddAclRuleDialogClickHandler
    */
   test('nl.sara.beehub.view.acl.setAddAclRuleDialogClickHandler', function(){
+    expect(1);
+    nl.sara.beehub.view.acl.setView("resource", currentDirectory);
     var testFunction = function(ace){
-      console.log(ace);
+      deepEqual(ace.permissions, "allow read", "Add button click handler is set.");
     }
-    nl.sara.beehub.view.acl.setAddAclRuleDialogClickHandler();
+    $('#qunit-fixture').append(nl.sara.beehub.view.acl.createDialogViewHtml());
+    nl.sara.beehub.view.acl.setAddAclRuleDialogClickHandler(testFunction);
     nl.sara.beehub.view.acl.getAddAclButton().click();
+  });
+  
+  /**
+   * Test createHtmlAclForm
+   */
+  test('nl.sara.beehub.view.acl.createHtmlAclForm', function(){
+    expect(12);
+    
+    // Create environment
+    nl.sara.beehub.view.acl.setView("resource", currentDirectory);
+    $('#qunit-fixture').append(nl.sara.beehub.view.acl.createDialogViewHtml(currentDirectory));
+    var aclForm = nl.sara.beehub.view.acl.getFormView();
+    
+    var values = ["authenticated", "all", "user_or_group"];
+    aclForm.find('input[name = "'+optionRadio.replace(".","")+'"]').each(function(key, value){
+      deepEqual($(value).val(), values[key], "Radio value should be "+values[key]);
+    })
+    
+    deepEqual(aclForm.find('input[name = "'+optionRadio.replace(".","")+'"]:checked').val(), "user_or_group","Selected value should be user_or_group");
+    deepEqual(aclForm.find(searchTable).val(),"", "Search field exists.");
+    
+    var options = ["allow read", "allow read, write", "allow read, write, change acl", "deny read, write, change acl", "deny write, change acl", "deny change acl"];
+    aclForm.find(tablePermissions).find('option').each(function(key,option){
+      deepEqual($(option).val(), options[key], "Option should be "+options[key]);
+    })
+    
+    deepEqual(nl.sara.beehub.view.acl.getAclView().find(aclContents).attr('name'), currentDirectory, "Name attribute should be "+currentDirectory);
+  });
+  
+  /**
+   * Test createDialogViewHtml
+   */
+  test('nl.sara.beehub.view.acl.createDialogViewHtml', function(){
+    expect(1);
+    
+    // Set up environment
+    nl.sara.beehub.view.acl.setView("resource", currentDirectory);
+    $('#qunit-fixture').append(nl.sara.beehub.view.acl.createDialogViewHtml(currentDirectory));
+    console.log(nl.sara.beehub.view.acl.getAclView().find(".bh-dir-acl-table"));
+
+//    console.log(nl.sara.beehub.view.acl.getAclView().find(aclTable));
+//    console.log($(aclTable));
+    deepEqual(nl.sara.beehub.view.acl.getAclView().find(aclContents).attr('name'), currentDirectory, "Name attribute should be "+currentDirectory);
   });
 })();
 // End of file

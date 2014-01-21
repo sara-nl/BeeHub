@@ -69,7 +69,7 @@
     // Set view
     nl.sara.beehub.view.acl.setView("directory", nl.sara.beehub.controller.getPath());
     // ACL TAB ACTIONS/FUNCTIONS
-    nl.sara.beehub.view.acl.setTableSorter(nl.sara.beehub.view.acl.getAclView().find("#bh-dir-acl-table"));
+    nl.sara.beehub.view.acl.setTableSorter(nl.sara.beehub.view.acl.getAclView().find(".bh-dir-acl-table").first());
     // Add rule handler
     $('.bh-dir-acl-add').unbind('click').click(nl.sara.beehub.controller.addAclRule);
     // Add handler on row
@@ -534,7 +534,7 @@
        <i class="icon-plus"></i> Add rule\
       </button><br><br>';
     html += '<div id="bh-dir-acl-resource-acl">';
-    html += '<table id="bh-dir-acl-table" class="table table-striped table-hover table-condensed">\
+    html += '<table class="table table-striped table-hover table-condensed bh-dir-acl-table">\
         <thead class="bh-dir-acl-table-header">\
           <tr>\
   <!--           Principal -->\
@@ -558,18 +558,6 @@
     html += '</div>';
     return html;
   };
-  
-
-  
-//  /**
-//   * Return active acl table 
-//   *  
-//   */
-//  nl.sara.beehub.view.acl.nl.sara.beehub.view.acl.getAclView = function(){
-//    return aclView;
-//  }
-  
-  
   
   /**
    * Delete row at certain index
