@@ -19,6 +19,27 @@
 "use strict";
 
 (function(){
+  var aclTest = [{
+    principal         :     '/system/groups/foo',
+    invertprincipal   :     false,
+    isprotected       :     false,
+    grantdeny         :     2,
+    privileges        :     ["write","write-acl"]
+   },{
+    principal         :     'DAV: authenticated',
+    invertprincipal   :     true,
+    isprotected       :     false,
+    grantdeny         :     1,
+    privileges        :     ["read"]
+   },{
+    principal         :     'DAV: all',
+    invertprincipal   :     false,
+    isprotected       :     false,
+    grantdeny         :     1,
+    privileges        :     ["read"]
+   }
+  ];
+  
   var currentDirectory =      "/foo/client_tests/";
   var addButton =             '.bh-dir-acl-add';
   var directoryView =         '#bh-dir-acl-directory-acl';
@@ -377,7 +398,7 @@
     var ace = {
         'principal' :   "test_principal", 
         'permissions':  "allow read, write", 
-        'invert':       "true",
+        'invert':       "1",
     };
     var createdRow = nl.sara.beehub.view.acl.createRow(ace);
     nl.sara.beehub.view.acl.addRow(createdRow, nl.sara.beehub.view.acl.getIndexLastProtected());
@@ -389,7 +410,7 @@
     var ace2 = {
         'principal' :   "test2_principal", 
         'permissions':  "allow read", 
-        'invert':       "false",
+        'invert':       "",
         'inherited':    true
     };
     
@@ -404,7 +425,7 @@
     var ace3 = {
         'principal' :   "test3_principal", 
         'permissions':  "allow read", 
-        'invert':       "false",
+        'invert':       "",
         'protected':    true
     };
     
@@ -418,7 +439,7 @@
     var ace4 = {
         'principal' :   "test4_principal", 
         'permissions':  "deny read, write, change acl", 
-        'invert':       "false"
+        'invert':       ""
     };
     
     var createdRow4 = nl.sara.beehub.view.acl.createRow(ace4);
@@ -435,6 +456,38 @@
     expect( 1 );
     var index = nl.sara.beehub.view.acl.getIndexLastProtected();
     deepEqual(index, indexLastProtected, 'Index last protected should be '+indexLastProtected);
+  });
+  
+  /**
+   * Test getAcl
+   */
+  test('nl.sara.beehub.view.acl.getAcl', function(){
+    expect(15);   
+    var acl = nl.sara.beehub.view.acl.getAcl();
+    for ( var key in acl.getAces() ) {
+      var ace = acl.getAces()[key];
+      var aceTest = aclTest[key];
+      if (ace.principal.tagname !== undefined) {
+        deepEqual(ace.principal.tagname, aceTest.principal, "Principal should be "+aceTest.principal);
+      } else {
+        deepEqual(ace.principal, aceTest.principal, "Principal should be "+aceTest.principal);
+      }
+      deepEqual(ace.invertprincipal, aceTest.invertprincipal, "Invert principal should be "+aceTest.invertprincipal);
+      deepEqual(ace.isprotected, aceTest.isprotected, "Protected should be "+aceTest.isprotected);
+      deepEqual(ace.grantdeny, aceTest.grantdeny, "Granddeny should be "+aceTest.granddeny);
+      deepEqual(ace.getPrivilegeNames('DAV:'), aceTest.privileges, "Privileges should be "+aceTest.privileges);
+    }
+  });
+  
+  /**
+   * Test setAddAclRuleDialogClickHandler
+   */
+  test('nl.sara.beehub.view.acl.setAddAclRuleDialogClickHandler', function(){
+    var testFunction = function(ace){
+      console.log(ace);
+    }
+    nl.sara.beehub.view.acl.setAddAclRuleDialogClickHandler();
+    nl.sara.beehub.view.acl.getAddAclButton().click();
   });
 })();
 // End of file

@@ -51,6 +51,7 @@
   var renameField = '.bh-dir-content-name';
   var renameColumn = '.bh-dir-content-rename-td';
   var uploadHiddenField = '.bh-dir-content-upload-hidden';
+  var resourceSpecificAcl = '.bh-resource-specific-acl';
   
   module("view content",{
     setup: function(){
@@ -492,5 +493,8 @@
     
     checkSetRowHandlers( 4, resourcenew.path , resourcenew.displayname );
   }) 
+  
+  
+
 })();
 // End of file

@@ -379,6 +379,24 @@
     $("tr[id='"+resource.path+"']").remove();
   };
   
+  /**
+   * Set acl on resource on or off - icon at de last column
+   * 
+   * @param {Boolean}   ownACL        true or false
+   * @param {String}    resourcePath  Path of resource
+   * 
+   */
+  nl.sara.beehub.view.content.setCustomAclOnResource = function(ownACL, resourcePath){
+    // If the resource has it's own ACE, set the view appropriately
+    var resourceDiv = $( 'tr[id="' + resourcePath + '"]' );
+    var exclamation = resourceDiv.find( '.bh-resource-specific-acl' );
+    if ( ownACL && ( exclamation.html() === "" )) {
+      exclamation.replaceWith( '<td title="Resource specific ACL set!" class="bh-resource-specific-acl"><i class="icon-star-empty"></i></td>' );
+    } else if ( ! ownACL ) {
+      exclamation.replaceWith( '<td class="bh-resource-specific-acl"></td>');
+    }
+  };
+  
   /*
    * Update resource from content view
    * 

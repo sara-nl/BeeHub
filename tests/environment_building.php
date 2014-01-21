@@ -152,7 +152,7 @@ function setUpStorageBackend() {
   \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'directory2', \rawurlencode( \DAV::PROP_OWNER ), '/system/users/john' );
   \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'directory2', \rawurlencode( \BeeHub::PROP_SPONSOR ), '/system/sponsors/sponsor_a' );
   \mkdir( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'client_tests' );
-  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'client_tests', \rawurlencode( \DAV::PROP_ACL ), "[[\"/system/groups/foo\",false,[\"DAV: write\",\"DAV: write-acl\"],true],[\"DAV: authenticated\",false,[\"DAV: read\"],false],[\"DAV: all\",false,[\"DAV: read\"],false]]" );
+  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'client_tests', \rawurlencode( \DAV::PROP_ACL ), "[[\"/system/groups/foo\",false,[\"DAV: write\",\"DAV: write-acl\"],true],[\"DAV: authenticated\",true,[\"DAV: read\"],false],[\"DAV: all\",false,[\"DAV: read\"],false]]" );
   \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'client_tests', \rawurlencode( \DAV::PROP_OWNER ), '/system/users/john' );
   \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'client_tests', \rawurlencode( \BeeHub::PROP_SPONSOR ), '/system/sponsors/sponsor_a' );
   \file_put_contents( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'client_tests' . \DIRECTORY_SEPARATOR . 'file.txt', 'Some contents of this file' );
