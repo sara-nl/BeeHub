@@ -69,7 +69,7 @@
     // Set view
     nl.sara.beehub.view.acl.setView("directory", nl.sara.beehub.controller.getPath());
     // ACL TAB ACTIONS/FUNCTIONS
-    nl.sara.beehub.view.acl.setTableSorter(nl.sara.beehub.view.acl.getAclView().find("#bh-dir-acl-table"));
+    nl.sara.beehub.view.acl.setTableSorter(nl.sara.beehub.view.acl.getAclView().find(".bh-dir-acl-table").first());
     // Add rule handler
     $('.bh-dir-acl-add').unbind('click').click(nl.sara.beehub.controller.addAclRule);
     // Add handler on row
@@ -387,14 +387,11 @@
       var permissions = $(row).find('.bh-dir-acl-permissions span.presentation').text();
       var info = $(row).find('.bh-dir-acl-comment').attr('name');
       var invert = $(row).find('.bh-dir-acl-principal').attr('data-invert'); 
-      
+
       if (info !== 'protected' && info !== 'inherited') {
         // create ace according the webdavlib specifications
         var ace = new nl.sara.webdav.Ace();
-        
-        if (invert === "true") {
-          ace.invertprincipal=invert;
-        };
+        ace.invertprincipal=invert;
         
         // put all values from rec in ace
         switch ( principal ) {
@@ -496,24 +493,6 @@
     return acl;
   };
   
-  /**
-   * Set acl on resource on or of
-   * 
-   * @param {Boolean}   ownACL        true or false
-   * @param {String}    resourcePath  Path of resource
-   * 
-   */
-  nl.sara.beehub.view.acl.setCustomAclOnResource = function(ownACL, resourcePath){
-    // If the resource has it's own ACE, set the view appropriately
-    var resourceDiv = $( 'tr[id="' + resourcePath + '"]' );
-    var exclamation = resourceDiv.find( '.bh-resource-specific-acl' );
-    if ( ownACL && ( exclamation.html() === "" )) {
-      exclamation.replaceWith( '<td title="Resource specific ACL set!" class="bh-resource-specific-acl"><i class="icon-star-empty"></i></td>' );
-    } else if ( ! ownACL ) {
-      exclamation.replaceWith( '<td class="bh-resource-specific-acl"></td>');
-    }
-  };
-  
   /*
    * Add ace to Acl view
    * 
@@ -555,7 +534,7 @@
        <i class="icon-plus"></i> Add rule\
       </button><br><br>';
     html += '<div id="bh-dir-acl-resource-acl">';
-    html += '<table id="bh-dir-acl-table" class="table table-striped table-hover table-condensed">\
+    html += '<table class="table table-striped table-hover table-condensed bh-dir-acl-table">\
         <thead class="bh-dir-acl-table-header">\
           <tr>\
   <!--           Principal -->\
@@ -579,18 +558,6 @@
     html += '</div>';
     return html;
   };
-  
-
-  
-//  /**
-//   * Return active acl table 
-//   *  
-//   */
-//  nl.sara.beehub.view.acl.nl.sara.beehub.view.acl.getAclView = function(){
-//    return aclView;
-//  }
-  
-  
   
   /**
    * Delete row at certain index

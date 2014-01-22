@@ -1036,7 +1036,6 @@
         return;
       };
       // TODO return als privilege is niet bekend
-      // put all the retrieved values into the store
       var value = data.getResponseNames()[0];
       var propstatus = data.getResponse(value).getProperty('DAV:','acl').status;
       // Status 403, forbidden, stop
@@ -1089,7 +1088,6 @@
    */
   var createAceObject = function(ace){
     var aceObject = {};
-
     if (ace.principal.tagname !== undefined) {
       aceObject['principal'] =  "DAV: "+ ace.principal.tagname;
     } else {
@@ -1125,8 +1123,6 @@
       aceObject['unbind'] = true;
     };
     
-    console.log(ace.principal);
-    console.log(ace.getPrivilegeNames('DAV:'));
     // Make permissions string  
     if ( ace.grantdeny === 2 ) {
       aceObject['permissions'] = "deny ";

@@ -100,7 +100,7 @@
     });
     nl.sara.beehub.view.acl.getAddAclButton().prop('disabled', true);
   };
-  
+
   /*
    * Show dialog with ready buttons
    * 

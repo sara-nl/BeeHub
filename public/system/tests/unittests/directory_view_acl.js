@@ -1,4 +1,4 @@
-/*
+  /*
  * Copyright ©2014 SURFsara bv, The Netherlands
  *
  * This file is part of the BeeHub webclient.
@@ -19,10 +19,36 @@
 "use strict";
 
 (function(){
-  var currentDirectory =      "/foo/";
-  var addButton =             '.bh-dir-acl-add';
+  var aclTest = [{
+    principal         :     '/system/groups/foo',
+    invertprincipal   :     false,
+    isprotected       :     false,
+    grantdeny         :     2,
+    privileges        :     ["write","write-acl"]
+   },{
+    principal         :     'DAV: authenticated',
+    invertprincipal   :     true,
+    isprotected       :     false,
+    grantdeny         :     1,
+    privileges        :     ["read"]
+   },{
+    principal         :     'DAV: all',
+    invertprincipal   :     false,
+    isprotected       :     false,
+    grantdeny         :     1,
+    privileges        :     ["read"]
+   }
+  ];
   
+  var currentDirectory =      "/foo/client_tests/";
+  var addButton =             '.bh-dir-acl-add';
+  var directoryView =         '#bh-dir-acl-directory-acl';
+  var addAclButton=           '#bh-dir-acl-directory-button';
+  var aclFormView=            '#bh-dir-acl-directory-form';
+  var indexLastProtected=     0;
+
   var aclContents =           '.bh-dir-acl-contents';
+  var aclTable =              '.bh-dir-acl-table';
   var aclRow =                '.bh-dir-acl-row';
   var aclComment =            '.bh-dir-acl-comment';
   var aclChangePermissions =  '.bh-dir-acl-change-permissions';
@@ -32,6 +58,11 @@
   var aclUpIcon =             '.bh-dir-acl-icon-up';
   var aclDownIcon =           '.bh-dir-acl-icon-down';
   var aclRemoveIcon =         '.bh-dir-acl-icon-remove';
+  var aclPrincipal =          '.bh-dir-acl-principal';
+  
+  var optionRadio =           '.bh-dir-view-acl-optionRadio';
+  var searchTable =           '.bh-dir-acl-table-search';
+  var tablePermissions =      '.bh-dir-acl-table-permisions';
 
   module("view acl",{
     setup: function(){
@@ -46,11 +77,14 @@
    * @param {Array} rows  Array with rows to check
    */
   var checkSetRowHandlers = function(rows){
+    // Remember values
     var permissions = "";
     var permissionsOld = "";
     var aclPermissionsFieldShow = true;
     var aclPermissionsSelectShow = false;
+    var rowIndex = 0;
 
+    // Rewrite functions
     var rememberChangePermissions = nl.sara.beehub.view.acl.changePermissions;
     nl.sara.beehub.view.acl.changePermissions = function(row, val){
       deepEqual(val, permissions, "Permissions should be "+permissions);
@@ -83,37 +117,62 @@
     
     var rememberUpAclRule = nl.sara.beehub.view.acl.moveUpAclRule;
     nl.sara.beehub.view.acl.moveUpAclRule = function(row){
-      deepEqual("iets in row", "deze row", "");
+      if ((row !== undefined) && ($(row).index() === rowIndex)) {
+        ok(true, "Move up acl is called with the right row object");
+      } else {
+        ok(false, "Move up acl is called with no row or the wrong row index");
+      }
     };
     
     var rememberMoveUpAclRuleController = nl.sara.beehub.controller.moveUpAclRule;
     nl.sara.beehub.controller.moveUpAclRule = function(row, t){
-      deepEqual("iets","met iets","");
+      if ((row !== undefined) && (t !== undefined) && ($(row).index() === rowIndex)) {
+        ok(true, "Move up acl controller is called with the right row object");
+      } else {
+        ok(false, "Move up acl controller is called but row object or time object is wrong or undefined");
+      }
     }
     
     var rememberDownAclRule = nl.sara.beehub.view.acl.moveDownAclRule;
     nl.sara.beehub.view.acl.moveDownAclRule = function(row){
-      deepEqual("iets in row", "deze row", "");
+      if ((row !== undefined) && ($(row).index() === rowIndex)) {
+        ok(true, "Move down acl is called with the right row object");
+      } else {
+        ok(false, "Move down acl is called with no row or the wrong row index");
+      }
     };
     
     var rememberMoveDownAclRuleController = nl.sara.beehub.controller.moveDownAclRule;
     nl.sara.beehub.controller.moveDownAclRule = function(row, t){
-      deepEqual("iets","met iets","");
+      if ((row !== undefined) && (t !== undefined) && ($(row).index() === rowIndex)) {
+        ok(true, "Move down acl controller is called with the right row object");
+      } else {
+        ok(false, "Move down acl controller is called but row object or time object is wrong or undefined");
+      }
     }
     
     var rememberDeleteRowIndex = nl.sara.beehub.view.acl.deleteRowIndex;
     nl.sara.beehub.view.acl.deleteRowIndex = function(index){
-      deepEqual("iets","met iets","");
+      if ((index !== undefined) && (index === rowIndex)){
+        ok(true, "Delete row is called with the right index");
+      } else {
+        ok(false, "Delete row is called but index is undefined or wrong");
+      }
     };
     
     var rememberDeleteAclRuleController = nl.sara.beehub.controller.deleteAclRule;
     nl.sara.beehub.controller.deleteAclRule = function(row, index, t){
-      deepEqual("iets","met iets","");
+      if ((index !== undefined) && (index === rowIndex) && (t !== undefined)){
+        ok(true, "Delete row controller is called with the right index");
+      } else {
+        ok(false, "Delete row controller is called but index is undefined or wrong");
+      }
     };
     
     $.each(rows, function(key, row) {
       var info = $(row).find(aclComment).attr('name');
       if (info !== 'protected' && info !== 'inherited') {
+        rowIndex = $(row).index();
         // Change permissions handler
         aclPermissionsFieldShow = true;
         aclPermissionsSelectShow = false;
@@ -128,12 +187,13 @@
         aclPermissionsSelectShow = true;
         if ($(row).find(aclPermissions).prop("selectedIndex") !== 0) {
           permissions = "allow read";
-          $(row).find(aclPermissions).val(0).change();
+          $(row).find(aclPermissions).prop("selectedIndex",0);
+          $(row).find(aclPermissions).change();
         } else {
           permissions = "allow read, write";
-          $(row).find(aclPermissions).val(1).change();
+          $(row).find(aclPermissions).prop("selectedIndex",1);
+          $(row).find(aclPermissions).change();
         }; 
-        
         // Check blur handler
         aclPermissionsFieldShow = true;
         aclPermissionsSelectShow = false;
@@ -143,8 +203,6 @@
         $(row).find(aclPermissions).blur();
         
         // Check up icon handler
-//        console.log($(row));
-//        console.log($(row).find(aclUpIcon));
         $(row).find(aclUpIcon).click();
         
         // Check down icon handler
@@ -155,6 +213,7 @@
       };
     });
     
+    // Back to original environment
     nl.sara.beehub.view.acl.changePermissions = rememberChangePermissions;
     nl.sara.beehub.controller.changePermissions = rememberChangePermissionsController;
     nl.sara.beehub.view.acl.showChangePermissions = rememberShowChangePermissions;
@@ -163,18 +222,99 @@
     nl.sara.beehub.controller.moveUpAclRule = rememberMoveUpAclRuleController;
     nl.sara.beehub.view.acl.moveDownAclRule = rememberDownAclRule;
     nl.sara.beehub.controller.moveDownAclRule = rememberMoveDownAclRuleController;
+    nl.sara.beehub.view.acl.deleteRowIndex = rememberDeleteRowIndex;
+    nl.sara.beehub.controller.deleteAclRule = rememberDeleteAclRuleController;
   };
   
   /**
-   * Test init function
+   * Test a row that is created
+   * 
+   * @param {DOM object}    row   Row to test
+   * @param {object}        ace   ace used to create the row
+   */
+  var testCreatedRow = function(row, ace, up, down, remove){
+    // Principal
+    var principal = row.find(aclPrincipal).attr('title');
+    var invert = row.find(aclPrincipal).attr('data-invert');
+    var name = row.find(aclPrincipal).attr('name');
+    deepEqual(principal, ace.principal, "Principal title should be "+ace.principal);
+    deepEqual(invert, ace.invert, "Data invert should be "+ace.invert);
+    deepEqual(name, ace.principal, "Name should be "+ace.principal);
+    
+    // Hidden select
+    var select = true;
+    if (row.find(aclPermissionsSelect) === undefined){
+      select = false;
+    }
+    deepEqual(select, true, "Hidden select field is created");
+
+    // Permissions
+    var title = row.find(aclPermissionsField).attr('title');
+    deepEqual(title, ace.permissions, "Hidden select field is created");
+    var presentation = row.find(aclPermissionsField).find(".presentation").html();
+    deepEqual(presentation, ace.permissions, "Presentation of permissions is ok");
+    
+    // Comment
+    var comment = row.find(aclComment).attr('name');
+    var iconDown = row.find(aclDownIcon);
+    if (ace.protected){
+      deepEqual(comment, "protected", "Info should be protected");
+    } else { 
+      if (ace.inherited) {
+        deepEqual(comment, "inherited", "Info should be inherited");
+      } else {
+        deepEqual(comment, "", "Info should be empty string");
+      }
+    }
+    // Icon up
+    if (row.find(aclUpIcon).html() !== undefined){
+      deepEqual(true, up, "Up icon should be visible.");
+    } else {
+      deepEqual(false, up, "Up icon should not be visible.");
+    };
+    
+    // Icon down
+    if (row.find(aclDownIcon).html() !== undefined){
+      deepEqual(true, down, "Down icon should be visible.");
+    } else {
+      deepEqual(false, down, "Down icon should not be visible.");
+    };
+    
+    // Icon delete
+    if (row.find(aclRemoveIcon).html() !== undefined){
+      deepEqual(true, remove, "Delete icon should be visible.");
+    } else {
+      deepEqual(false, remove, "Delete icon should not be visible.");
+    };
+  }
+  
+  /**
+   * Test if view is set
    */
   test( 'nl.sara.beehub.view.acl.init: Set view', function() {
-    expect( 15 );  
+    expect( 3 );  
     
     var rememberSetTableSort = nl.sara.beehub.view.acl.setTableSorter;
     nl.sara.beehub.view.acl.setTableSorter = function(input){
       deepEqual(input.length,1,"Table sorter is called");
     }
+    
+    // Call init function
+    nl.sara.beehub.view.acl.init();
+    
+    // View is set
+    deepEqual(nl.sara.beehub.view.acl.getViewPath(), currentDirectory, "View path should be "+currentDirectory );
+    deepEqual(nl.sara.beehub.view.acl.getView(), "directory", "View should be directory");
+    
+    nl.sara.beehub.view.acl.setTableSorter = rememberSetTableSort;
+  });
+  
+  /**
+   * Test if add button handler is set
+   */
+  test( 'nl.sara.beehub.view.acl.init: Set view add button', function() {
+    expect( 1 );  
+ 
     var rememberAddAclRule = nl.sara.beehub.controller.addAclRule;
     nl.sara.beehub.controller.addAclRule = function(){
       ok(true, "Add acl button click handler is set");
@@ -183,17 +323,221 @@
     // Call init function
     nl.sara.beehub.view.acl.init();
     
-    // View is set
-    deepEqual(nl.sara.beehub.view.acl.getViewPath(), currentDirectory, "View path should be "+currentDirectory );
-    deepEqual(nl.sara.beehub.view.acl.getView(), "directory", "View should be directory");
-
     $(addButton).click();
     
+    nl.sara.beehub.controller.addAclRule = rememberAddAclRule;
+  });
+  
+  /**
+   * Test if row handlers are set
+   */
+  test( 'nl.sara.beehub.view.acl.init: Set view row handlers', function() {
+    expect( 54 ); 
     var rows = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclRow);
     checkSetRowHandlers(rows);
+  });
+  
+  /**
+   * Test setView, getViewPath and getView
+   */
+  test( 'nl.sara.beehub.view.acl.setView, getViewPath, getView', function() {
+    expect( 2 ); 
+    // Remember old value
+    var view = nl.sara.beehub.view.acl.getView();
+    var path = nl.sara.beehub.view.acl.getViewPath();
     
-    nl.sara.beehub.view.acl.setTableSorter = rememberSetTableSort;
-    nl.sara.beehub.controller.addAclRule = rememberAddAclRule;
+    nl.sara.beehub.view.acl.setView("test","/testpath");
+    // View is set
+    deepEqual(nl.sara.beehub.view.acl.getViewPath(), "/testpath", "View path should be /testpath" );
+    deepEqual(nl.sara.beehub.view.acl.getView(), "test", "View should be test");
+  
+    // Back to original
+    nl.sara.beehub.view.acl.setView(view, path);
+  });
+  
+  /**
+   * Test getAclView
+   */
+  test( 'nl.sara.beehub.view.acl.getAclView', function() {
+    expect( 1 ); 
+    deepEqual(nl.sara.beehub.view.acl.getAclView().attr("id"), directoryView.replace("#",""), "Acl view id should be "+directoryView.replace("#","") );
+  });
+  
+  /**
+   * Test getAddAclButton
+   */
+  test( 'nl.sara.beehub.view.acl.getAddAclButton', function() {
+    expect( 1 ); 
+    deepEqual(nl.sara.beehub.view.acl.getAddAclButton().attr("id"), addAclButton.replace("#",""), "Add acl button id should be "+addAclButton.replace("#","") );
+  });
+  
+  /**
+   * Test getFormView
+   */
+  test( 'nl.sara.beehub.view.acl.getFormView', function() {
+    expect( 1 ); 
+    $('#qunit-fixture').append('<div id="'+aclFormView.replace("#","")+'"></div>')
+    deepEqual(nl.sara.beehub.view.acl.getFormView().attr("id"), aclFormView.replace("#",""), "Add acl button id should be "+aclFormView.replace("#","") );
+  });
+  
+  /**
+   * Test allFixedButtons
+   */
+  test( 'nl.sara.beehub.view.acl.allFixedButtons', function() {
+    expect( 2 ); 
+    nl.sara.beehub.view.acl.allFixedButtons('hide');
+    deepEqual($(addAclButton).is(':hidden'), true, 'Add acl button should be hidden');
+    nl.sara.beehub.view.acl.allFixedButtons('show');
+    deepEqual($(addAclButton).is(':hidden'), false, 'Add acl button should be shown');
+
+  });
+  
+  /**
+   * Test addRow and createRow
+   */
+  test( 'nl.sara.beehub.view.acl.addRow,createRow', function() {
+    expect( 40 ); 
+    
+    // Test createRow after last protected
+    var ace = {
+        'principal' :   "test_principal", 
+        'permissions':  "allow read, write", 
+        'invert':       "1",
+    };
+    var createdRow = nl.sara.beehub.view.acl.createRow(ace);
+    nl.sara.beehub.view.acl.addRow(createdRow, nl.sara.beehub.view.acl.getIndexLastProtected());
+    var table = nl.sara.beehub.view.acl.getAclView().find(aclContents);
+    var row = table.find('tr').find('td').filter("[name='test_principal']").parent();
+    testCreatedRow(row, ace, false, true, true);
+    
+    // Test createRow with inherited ace
+    var ace2 = {
+        'principal' :   "test2_principal", 
+        'permissions':  "allow read", 
+        'invert':       "",
+        'inherited':    true
+    };
+    
+    var createdRow2 = nl.sara.beehub.view.acl.createRow(ace2);
+    var index = nl.sara.beehub.view.acl.getAclView().find(aclContents).find('tr').length;
+    nl.sara.beehub.view.acl.addRow(createdRow2, index-1);
+    var table2 = nl.sara.beehub.view.acl.getAclView().find(aclContents);
+    var row2 = table2.find('tr').find('td').filter("[name='test2_principal']").parent();
+    testCreatedRow(row2, ace2, false, false, false);
+    
+    // Test createRow with protected ace
+    var ace3 = {
+        'principal' :   "test3_principal", 
+        'permissions':  "allow read", 
+        'invert':       "",
+        'protected':    true
+    };
+    
+    // Test create row with up and down icons
+    var createdRow3 = nl.sara.beehub.view.acl.createRow(ace3);
+    nl.sara.beehub.view.acl.addRow(createdRow3, 0);
+    var table3 = nl.sara.beehub.view.acl.getAclView().find(aclContents);
+    var row3 = table3.find('tr').find('td').filter("[name='test3_principal']").parent();
+    testCreatedRow(row3, ace3, false, false, false);
+    
+    var ace4 = {
+        'principal' :   "test4_principal", 
+        'permissions':  "deny read, write, change acl", 
+        'invert':       ""
+    };
+    
+    var createdRow4 = nl.sara.beehub.view.acl.createRow(ace4);
+    nl.sara.beehub.view.acl.addRow(createdRow4, nl.sara.beehub.view.acl.getIndexLastProtected()+1);
+    var table4 = nl.sara.beehub.view.acl.getAclView().find(aclContents);
+    var row4 = table4.find('tr').find('td').filter("[name='test4_principal']").parent();
+    testCreatedRow(row4, ace4, true, true, true);
+  });
+  
+  /**
+   * Test getIndexLastProtected
+   */
+  test('nl.sara.beehub.view.acl.getIndexLastProtected', function(){
+    expect( 1 );
+    var index = nl.sara.beehub.view.acl.getIndexLastProtected();
+    deepEqual(index, indexLastProtected, 'Index last protected should be '+indexLastProtected);
+  });
+  
+  /**
+   * Test getAcl
+   */
+  test('nl.sara.beehub.view.acl.getAcl', function(){
+    expect(15);   
+    var acl = nl.sara.beehub.view.acl.getAcl();
+    for ( var key in acl.getAces() ) {
+      var ace = acl.getAces()[key];
+      var aceTest = aclTest[key];
+      if (ace.principal.tagname !== undefined) {
+        deepEqual(ace.principal.tagname, aceTest.principal, "Principal should be "+aceTest.principal);
+      } else {
+        deepEqual(ace.principal, aceTest.principal, "Principal should be "+aceTest.principal);
+      }
+      deepEqual(ace.invertprincipal, aceTest.invertprincipal, "Invert principal should be "+aceTest.invertprincipal);
+      deepEqual(ace.isprotected, aceTest.isprotected, "Protected should be "+aceTest.isprotected);
+      deepEqual(ace.grantdeny, aceTest.grantdeny, "Granddeny should be "+aceTest.granddeny);
+      deepEqual(ace.getPrivilegeNames('DAV:'), aceTest.privileges, "Privileges should be "+aceTest.privileges);
+    }
+  });
+  
+  /**
+   * Test setAddAclRuleDialogClickHandler
+   */
+  test('nl.sara.beehub.view.acl.setAddAclRuleDialogClickHandler', function(){
+    expect(1);
+    nl.sara.beehub.view.acl.setView("resource", currentDirectory);
+    var testFunction = function(ace){
+      deepEqual(ace.permissions, "allow read", "Add button click handler is set.");
+    }
+    $('#qunit-fixture').append(nl.sara.beehub.view.acl.createDialogViewHtml());
+    nl.sara.beehub.view.acl.setAddAclRuleDialogClickHandler(testFunction);
+    nl.sara.beehub.view.acl.getAddAclButton().click();
+  });
+  
+  /**
+   * Test createHtmlAclForm
+   */
+  test('nl.sara.beehub.view.acl.createHtmlAclForm', function(){
+    expect(12);
+    
+    // Create environment
+    nl.sara.beehub.view.acl.setView("resource", currentDirectory);
+    $('#qunit-fixture').append(nl.sara.beehub.view.acl.createDialogViewHtml(currentDirectory));
+    var aclForm = nl.sara.beehub.view.acl.getFormView();
+    
+    var values = ["authenticated", "all", "user_or_group"];
+    aclForm.find('input[name = "'+optionRadio.replace(".","")+'"]').each(function(key, value){
+      deepEqual($(value).val(), values[key], "Radio value should be "+values[key]);
+    })
+    
+    deepEqual(aclForm.find('input[name = "'+optionRadio.replace(".","")+'"]:checked').val(), "user_or_group","Selected value should be user_or_group");
+    deepEqual(aclForm.find(searchTable).val(),"", "Search field exists.");
+    
+    var options = ["allow read", "allow read, write", "allow read, write, change acl", "deny read, write, change acl", "deny write, change acl", "deny change acl"];
+    aclForm.find(tablePermissions).find('option').each(function(key,option){
+      deepEqual($(option).val(), options[key], "Option should be "+options[key]);
+    })
+    
+    deepEqual(nl.sara.beehub.view.acl.getAclView().find(aclContents).attr('name'), currentDirectory, "Name attribute should be "+currentDirectory);
+  });
+  
+  /**
+   * Test createDialogViewHtml
+   */
+  test('nl.sara.beehub.view.acl.createDialogViewHtml', function(){
+    expect(1);
+    
+    // Set up environment
+    nl.sara.beehub.view.acl.setView("resource", currentDirectory);
+    $('#qunit-fixture').append(nl.sara.beehub.view.acl.createDialogViewHtml(currentDirectory));
+    console.log(nl.sara.beehub.view.acl.getAclView().find(".bh-dir-acl-table"));
+
+//    console.log(nl.sara.beehub.view.acl.getAclView().find(aclTable));
+//    console.log($(aclTable));
+    deepEqual(nl.sara.beehub.view.acl.getAclView().find(aclContents).attr('name'), currentDirectory, "Name attribute should be "+currentDirectory);
   });
 })();
 // End of file

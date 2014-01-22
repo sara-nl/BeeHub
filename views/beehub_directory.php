@@ -142,7 +142,7 @@ require 'views/header.php';
 
   <!-- 	ACL VIEW -->
   <!-- ACL: Add button-->
-  <button data-toggle="tooltip" title="Add rule" class="btn btn-small bh-dir-acl-add hide" >
+  <button id="bh-dir-acl-directory-button" data-toggle="tooltip" title="Add rule" class="btn btn-small bh-dir-acl-add hide" >
     <i class="icon-plus"></i> Add rule
   </button> 
 </div>
@@ -401,7 +401,7 @@ require 'views/header.php';
   <!-- Acl tab -->
   <div id="bh-dir-panel-acl" class="tab-pane fade">
   	<div id="bh-dir-acl-directory-acl">
-	    <table id="bh-dir-acl-table" class="table table-striped table-hover table-condensed">
+	    <table class="table table-striped table-hover table-condensed bh-dir-acl-table">
 	      <thead class="bh-dir-acl-table-header">
 	        <tr>
 	          <th>Principal</th>
