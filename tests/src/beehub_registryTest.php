@@ -31,14 +31,15 @@ class BeeHub_RegistryTest extends \PHPUnit_Framework_TestCase {
   public function setUp() {
     parent::setUp();
     setUp();
-    if ( ! setUpStorageBackend() ) {
-      $this->markTestSkipped( 'No storage backend specified; all tests depending on the storage backend are skipped' );
-      return;
-    }
   }
 
 
   public function testResource() {
+    if ( ! setUpStorageBackend() ) {
+      $this->markTestSkipped( 'No storage backend specified; all tests depending on the storage backend are skipped' );
+      return;
+    }
+    
     $registry = \BeeHub_Registry::inst();
     $resourceFile = $registry->resource( '/foo/file.txt' );
     $this->assertInstanceOf( '\BeeHub_File', $resourceFile );

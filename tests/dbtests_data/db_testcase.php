@@ -28,12 +28,6 @@ namespace BeeHub\tests;
  */
 abstract class BeeHub_Tests_Db_Test_Case extends \PHPUnit_Framework_TestCase {
 
-  static private $connection = null;
-
-
-  private $dbUnitConnection = null;
-
-
   public function setUp() {
     $config = \BeeHub::config();
     if ( empty( $config['mysql']['host'] ) ) {
