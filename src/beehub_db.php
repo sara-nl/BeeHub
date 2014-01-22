@@ -110,41 +110,53 @@ class BeeHub_Statement {
  */
 class BeeHub_DB {
 
+  private static $mysqli = null;
+
+
+  private static $prepared = array();
+
 
   /**
    * @return mysqli
    * @throws DAV_Status
    */
   public static function mysqli() {
-    static $mysqli;
-    if ($mysqli === null) {
-      $mysqli = new mysqli(
-        BeeHub::$CONFIG['mysql']['host'],
-        BeeHub::$CONFIG['mysql']['username'],
-        BeeHub::$CONFIG['mysql']['password'],
-        BeeHub::$CONFIG['mysql']['database']
+    if ( ! ( self::$mysqli instanceof mysqli ) ) {
+      $config = BeeHub::config();
+      self::$mysqli = new mysqli(
+        $config['mysql']['host'],
+        $config['mysql']['username'],
+        $config['mysql']['password'],
+        $config['mysql']['database']
       );
-      if (!$mysqli) {
-        $mysqli = null;
+      if (!self::$mysqli) {
+        self::$mysqli = null;
         throw new BeeHub_MySQL(mysqli_connect_error(), mysqli_connect_errno());
       }
-      $mysqli->set_charset('utf8');
+      self::$mysqli->set_charset('utf8');
       #$charset = $mysqli->get_charset();
       #DAV::debug($charset);
     }
-    return $mysqli;
+    return self::$mysqli;
+  }
+
+  public static function forceReconnect() {
+    if ( self::$mysqli instanceof mysqli ) {
+      @self::$mysqli->close();
+    }
+    self::$mysqli = null;
+    self::$prepared = array();
   }
 
   public static function execute() {
     $args = func_get_args();
     $query = array_shift($args);
-    static $prepared = array();
-    if ( !@$prepared[$query] ) {
+    if ( !@self::$prepared[$query] ) {
       if (! ($stmt = self::mysqli()->prepare($query) ) )
         throw new BeeHub_MySQL($query . "\n" . self::mysqli()->error, self::mysqli()->errno);
-      $prepared[$query] = $stmt;
+      self::$prepared[$query] = $stmt;
     } else
-      $stmt = $prepared[$query];
+      $stmt = self::$prepared[$query];
     if (!empty($args)) {
       $ref = new ReflectionClass('mysqli_stmt');
       $method = $ref->getMethod('bind_param');

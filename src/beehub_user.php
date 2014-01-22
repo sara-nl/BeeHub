@@ -73,7 +73,7 @@ class BeeHub_User extends BeeHub_Principal {
   }
 
 
-  public function method_POST() {
+  public function method_POST( &$headers ) {
     $this->init_props();
 
     // For all POST requests, you need to send a POST field 'password' with the current password

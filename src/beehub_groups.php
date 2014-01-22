@@ -39,7 +39,7 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
   }
 
 
-  public function method_POST() {
+  public function method_POST( &$headers ) {
     $displayname = $_POST['displayname'];
     $description = $_POST['description'];
     $group_name = $_POST['group_name'];

@@ -81,12 +81,13 @@ class BeeHub_UserTest extends BeeHub_Tests_Db_Test_Case {
     $this->setCurrentUser( '/system/users/jane' );
     $_POST['verification_code'] = 'somesecretcode';
     $_POST['password'] = 'password_of_jane';
+    $headers = array();
 
     $user = new \BeeHub_User( '/system/users/jane' );
     $this->assertSame( 'jane.doe@mailservice.com', $user->user_prop( \BeeHub::PROP_EMAIL ) );
 
     $this->expectOutputRegex( '/https 303 See Other/' );
-    $user->method_POST();
+    $user->method_POST( $headers );
     $this->assertSame( 'j.doe@mailservice.com', $user->user_prop( \BeeHub::PROP_EMAIL ) );
   }
 
@@ -95,12 +96,13 @@ class BeeHub_UserTest extends BeeHub_Tests_Db_Test_Case {
     $this->setCurrentUser( '/system/users/jane' );
     $_POST['new_password'] = 'new password for jane';
     $_POST['password'] = 'password_of_jane';
+    $headers = array();
 
     $user = new \BeeHub_User( '/system/users/jane' );
     $this->assertTrue( $user->check_password( 'password_of_jane' ) );
 
     $this->expectOutputRegex( '/https 303 See Other/' );
-    $user->method_POST();
+    $user->method_POST( $headers );
     $this->assertTrue( $user->check_password( 'new password for jane' ) );
   }
 

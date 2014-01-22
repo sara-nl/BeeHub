@@ -46,9 +46,10 @@ class BeeHub_GroupsTest extends BeeHub_Tests_Db_Test_Case {
     $_POST['displayname'] = 'Some test group of Jane';
     $_POST['description'] = "This is the description of Jane's test group";
     $_POST['group_name'] = 'janegroup';
+    $headers = array();
 
     $this->setExpectedException( '\DAV_Status', null, \DAV::HTTP_FORBIDDEN );
-    $this->obj->method_POST();
+    $this->obj->method_POST( $headers );
   }
 
 
@@ -58,9 +59,10 @@ class BeeHub_GroupsTest extends BeeHub_Tests_Db_Test_Case {
     $_POST['displayname'] = 'Some test group of John';
     $_POST['description'] = "This is the description of John's test group";
     $_POST['group_name'] = '.johngroup with illegal characters like space and !@#$%*()';
+    $headers = array();
 
     $this->setExpectedException( '\DAV_Status', null, \DAV::HTTP_BAD_REQUEST );
-    $this->obj->method_POST();
+    $this->obj->method_POST( $headers );
   }
 
 
@@ -70,9 +72,10 @@ class BeeHub_GroupsTest extends BeeHub_Tests_Db_Test_Case {
     $_POST['displayname'] = '';
     $_POST['description'] = "This is the description of John's test group";
     $_POST['group_name'] = 'johngroup';
+    $headers = array();
 
     $this->setExpectedException( '\DAV_Status', null, \DAV::HTTP_BAD_REQUEST );
-    $this->obj->method_POST();
+    $this->obj->method_POST( $headers );
   }
 
 
@@ -82,9 +85,10 @@ class BeeHub_GroupsTest extends BeeHub_Tests_Db_Test_Case {
     $_POST['displayname'] = 'Some test group of John';
     $_POST['description'] = "This is the description of John's test group";
     $_POST['group_name'] = 'foo';
+    $headers = array();
 
     $this->setExpectedException( '\DAV_Status', null, \DAV::HTTP_CONFLICT );
-    $this->obj->method_POST();
+    $this->obj->method_POST( $headers );
   }
 
 
@@ -98,9 +102,10 @@ class BeeHub_GroupsTest extends BeeHub_Tests_Db_Test_Case {
     $_POST['displayname'] = 'Some test group of John';
     $_POST['description'] = "This is the description of John's test group";
     $_POST['group_name'] = 'johngroup';
+    $headers = array();
 
     $this->expectOutputRegex( '/https 303 See Other/' );
-    $this->obj->method_POST();
+    $this->obj->method_POST( $headers );
 
     $group = new \BeeHub_Group( '/system/groups/johngroup' );
     $this->assertSame( $_POST['displayname'], $group->user_prop( \DAV::PROP_DISPLAYNAME ) );

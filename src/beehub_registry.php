@@ -1,7 +1,7 @@
 <?php
 
 /*·************************************************************************
- * Copyright ©2007-2012 SARA b.v., Amsterdam, The Netherlands
+ * Copyright ©2007-2014 SURFsara b.v., Amsterdam, The Netherlands
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -35,7 +35,7 @@ class BeeHub_Registry implements DAV_Registry {
    * @return BeeHub_Registry
    */
   public static function inst() {
-    if (null === self::$inst)
+    if ( is_null( self::$inst ) )
       self::$inst = new BeeHub_Registry();
     return self::$inst;
   }
@@ -102,10 +102,22 @@ class BeeHub_Registry implements DAV_Registry {
   }
 
   /**
-   * @param array $write paths to write-lock.
-   * @param array $read paths to read-lock
+   * Puts shallow read and/or write locks on files
+   * 
+   * Resources with a shallow lock on it can only be modified in the same
+   * request as they were placed and not by parallel requests (in different
+   * server threads/processes). However, as soon as the request ends, the lock
+   * will be released.
+   * 
+   * Write locks can not be set if there is already a read or write lock set.
+   * Read locks can not be set if there is already a write lock set. There can
+   * be multiple read locks on the same resource!
+   * 
+   * @param  array  $write  paths to write-lock, use an empty array to skip
+   * @param  array  $read   paths to read-lock
+   * @return  void
    */
-  public function shallowLock($write, $read) {
+  public function shallowLock( $write, $read = array() ) {
     $whashes = $rhashes = array();
     foreach ($write as $value)
       $whashes[] = BeeHub_DB::escape_string(hash('sha256', $value, true));
@@ -167,8 +179,7 @@ class BeeHub_Registry implements DAV_Registry {
   }
 
   /**
-   * @param array $write paths to write-lock.
-   * @param array $read paths to read-lock
+   * Releases all shallow locks set within this request
    */
   public function shallowUnlock() {
     BeeHub_DB::query('COMMIT;');
