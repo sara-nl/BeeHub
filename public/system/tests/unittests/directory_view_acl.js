@@ -46,9 +46,11 @@
   var addAclButton=           '#bh-dir-acl-directory-button';
   var aclFormView=            '#bh-dir-acl-directory-form';
   var indexLastProtected=     0;
+  var aclColumns =            7;
 
   var aclContents =           '.bh-dir-acl-contents';
   var aclTable =              '.bh-dir-acl-table';
+  var aclTableHeader =        '.bh-dir-acl-table-header';
   var aclRow =                '.bh-dir-acl-row';
   var aclComment =            '.bh-dir-acl-comment';
   var aclChangePermissions =  '.bh-dir-acl-change-permissions';
@@ -289,6 +291,17 @@
   }
   
   /**
+   * Check if Up/Down buttons are shown or hidden
+   * 
+   * param {Array} rows   Rows to check
+   */
+  var checkSetUpDownButtons = function(rows){
+    $.each(rows, function(key, row) {
+      console.log(row);
+    }
+  };
+  
+  /**
    * Test if view is set
    */
   test( 'nl.sara.beehub.view.acl.init: Set view', function() {
@@ -377,7 +390,7 @@
   test( 'nl.sara.beehub.view.acl.getFormView', function() {
     expect( 1 ); 
     $('#qunit-fixture').append('<div id="'+aclFormView.replace("#","")+'"></div>')
-    deepEqual(nl.sara.beehub.view.acl.getFormView().attr("id"), aclFormView.replace("#",""), "Add acl button id should be "+aclFormView.replace("#","") );
+    deepEqual(nl.sara.beehub.view.acl.getFormView().attr("id"), aclFormView.replace("#",""), "Form view id should be "+aclFormView.replace("#","") );
   });
   
   /**
@@ -386,8 +399,10 @@
   test( 'nl.sara.beehub.view.acl.allFixedButtons', function() {
     expect( 2 ); 
     nl.sara.beehub.view.acl.allFixedButtons('hide');
+    // Test if button is hidden
     deepEqual($(addAclButton).is(':hidden'), true, 'Add acl button should be hidden');
     nl.sara.beehub.view.acl.allFixedButtons('show');
+    // Test if button is shown
     deepEqual($(addAclButton).is(':hidden'), false, 'Add acl button should be shown');
 
   });
@@ -459,6 +474,8 @@
   test('nl.sara.beehub.view.acl.getIndexLastProtected', function(){
     expect( 1 );
     var index = nl.sara.beehub.view.acl.getIndexLastProtected();
+    
+    // Test lat protected value
     deepEqual(index, indexLastProtected, 'Index last protected should be '+indexLastProtected);
   });
   
@@ -468,6 +485,8 @@
   test('nl.sara.beehub.view.acl.getAcl', function(){
     expect(15);   
     var acl = nl.sara.beehub.view.acl.getAcl();
+    
+    // Test values of all ace's
     for ( var key in acl.getAces() ) {
       var ace = acl.getAces()[key];
       var aceTest = aclTest[key];
@@ -489,6 +508,8 @@
   test('nl.sara.beehub.view.acl.setAddAclRuleDialogClickHandler', function(){
     expect(1);
     nl.sara.beehub.view.acl.setView("resource", currentDirectory);
+    
+    // Test if this function is called.
     var testFunction = function(ace){
       deepEqual(ace.permissions, "allow read", "Add button click handler is set.");
     }
@@ -501,43 +522,72 @@
    * Test createHtmlAclForm
    */
   test('nl.sara.beehub.view.acl.createHtmlAclForm', function(){
-    expect(12);
+    expect(11);
     
     // Create environment
     nl.sara.beehub.view.acl.setView("resource", currentDirectory);
     $('#qunit-fixture').append(nl.sara.beehub.view.acl.createDialogViewHtml(currentDirectory));
     var aclForm = nl.sara.beehub.view.acl.getFormView();
     
+    // Test if radio buttons are available
     var values = ["authenticated", "all", "user_or_group"];
     aclForm.find('input[name = "'+optionRadio.replace(".","")+'"]').each(function(key, value){
       deepEqual($(value).val(), values[key], "Radio value should be "+values[key]);
     })
     
+    // Test default checked value
     deepEqual(aclForm.find('input[name = "'+optionRadio.replace(".","")+'"]:checked').val(), "user_or_group","Selected value should be user_or_group");
+    // Search field available
     deepEqual(aclForm.find(searchTable).val(),"", "Search field exists.");
     
+    // Test if all options are available
     var options = ["allow read", "allow read, write", "allow read, write, change acl", "deny read, write, change acl", "deny write, change acl", "deny change acl"];
     aclForm.find(tablePermissions).find('option').each(function(key,option){
       deepEqual($(option).val(), options[key], "Option should be "+options[key]);
     })
     
-    deepEqual(nl.sara.beehub.view.acl.getAclView().find(aclContents).attr('name'), currentDirectory, "Name attribute should be "+currentDirectory);
   });
   
   /**
    * Test createDialogViewHtml
    */
   test('nl.sara.beehub.view.acl.createDialogViewHtml', function(){
-    expect(1);
+    expect(2);
     
     // Set up environment
     nl.sara.beehub.view.acl.setView("resource", currentDirectory);
     $('#qunit-fixture').append(nl.sara.beehub.view.acl.createDialogViewHtml(currentDirectory));
-    console.log(nl.sara.beehub.view.acl.getAclView().find(".bh-dir-acl-table"));
-
-//    console.log(nl.sara.beehub.view.acl.getAclView().find(aclTable));
-//    console.log($(aclTable));
+    
+    var count = nl.sara.beehub.view.acl.getAclView().find(aclTable).find(aclTableHeader).find('th').length;
+    
+    // Test total columns
+    deepEqual(count, aclColumns, "Total columns should be "+aclColumns);
+    // Find body and test name attribute of the body
     deepEqual(nl.sara.beehub.view.acl.getAclView().find(aclContents).attr('name'), currentDirectory, "Name attribute should be "+currentDirectory);
   });
+  
+  /**
+   * Test deleteRowIndex
+   */
+  test('nl.sara.beehub.view.acl.deleteRowIndex', function(){
+    expect(3);
+    
+    var name = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclPrincipal).attr('name');
+    var result = nl.sara.beehub.view.acl.getAclView().find(aclContents).find('td[name = "'+name+'"]').attr('name');
+    var length = nl.sara.beehub.view.acl.getAclView().find(aclContents).find('tr').length;
+    // Check if row to delete exists
+    deepEqual(result, name, "Name should be "+name);
+    
+    // Delete row
+    nl.sara.beehub.view.acl.deleteRowIndex(0);
+    
+    var result2 = nl.sara.beehub.view.acl.getAclView().find(aclContents).find('td[name = "'+name+'"]').attr('name');
+    var length2 = nl.sara.beehub.view.acl.getAclView().find(aclContents).find('tr').length;
+    var newLength = length -1;
+    // Test if row is undefined now
+    deepEqual(result2, undefined, "Name should be undefined");
+    // Test is acl length is 1 shorter now
+    deepEqual(length2, newLength, "Length of acl should be "+newLength);
+  })
 })();
 // End of file
