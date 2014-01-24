@@ -54,6 +54,8 @@
   var aclRow =                '.bh-dir-acl-row';
   var aclComment =            '.bh-dir-acl-comment';
   var aclChangePermissions =  '.bh-dir-acl-change-permissions';
+  var aclAllow =              '.bh-dir-acl-allow';
+  var aclDeny =               '.bh-dir-acl-deny';
   var aclPermissionsField =   '.bh-dir-acl-permissions';
   var aclPermissionsSelect =  '.bh-dir-acl-permissions-select';
   var aclPermissions =        '.bh-dir-acl-table-permissions';
@@ -296,9 +298,34 @@
    * param {Array} rows   Rows to check
    */
   var checkSetUpDownButtons = function(rows){
-    $.each(rows, function(key, row) {
-      console.log(row);
-    }
+    $.each(rows, function(index,row) {
+      var info = $(row).find('.bh-dir-acl-comment').attr('name');
+      var upLength = $(row).find('.bh-dir-acl-up').find('.bh-dir-acl-icon-up').length;
+      var downLength = $(row).find('.bh-dir-acl-down').find('.bh-dir-acl-icon-down').length;
+
+      if (info !== 'protected' && info !== 'inherited') {
+        var prevProtected = $(row).prev().find('.bh-dir-acl-comment').attr('name');
+        var nextInherited = $(row).next().find('.bh-dir-acl-comment').attr('name');
+        
+        // Check up button
+        if ( prevProtected === "protected" ) {
+          deepEqual(upLength, 0, "Up icon should be not visible now.");
+        } else {
+          deepEqual(upLength, 1, "Up icon should be visible now.");
+        };
+        
+        // Check up button
+        if ( nextInherited === "inherited" ) {
+          deepEqual(downLength, 0, "Down icon should be not visible now.");
+        } else {
+          deepEqual(downLength, 1, "Down icon should be visible now.");
+        };
+      } else {
+        // No up or down
+        deepEqual(upLength, 0, "Up icon should be not visible now.");
+        deepEqual(downLength, 0, "Down icon should be not visible now.");
+      }
+    });
   };
   
   /**
@@ -570,24 +597,127 @@
    * Test deleteRowIndex
    */
   test('nl.sara.beehub.view.acl.deleteRowIndex', function(){
-    expect(3);
+    expect(45);
     
-    var name = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclPrincipal).attr('name');
+    var name = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclPrincipal).eq(1).attr('name');
     var result = nl.sara.beehub.view.acl.getAclView().find(aclContents).find('td[name = "'+name+'"]').attr('name');
     var length = nl.sara.beehub.view.acl.getAclView().find(aclContents).find('tr').length;
     // Check if row to delete exists
     deepEqual(result, name, "Name should be "+name);
     
     // Delete row
-    nl.sara.beehub.view.acl.deleteRowIndex(0);
+    nl.sara.beehub.view.acl.deleteRowIndex(1);
     
-    var result2 = nl.sara.beehub.view.acl.getAclView().find(aclContents).find('td[name = "'+name+'"]').attr('name');
+    var result2 = nl.sara.beehub.view.acl.getAclView().find(aclContents).eq(1).find('td[name = "'+name+'"]').attr('name');
     var length2 = nl.sara.beehub.view.acl.getAclView().find(aclContents).find('tr').length;
     var newLength = length -1;
     // Test if row is undefined now
     deepEqual(result2, undefined, "Name should be undefined");
     // Test is acl length is 1 shorter now
     deepEqual(length2, newLength, "Length of acl should be "+newLength);
+    
+    var rows = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclRow);
+    checkSetUpDownButtons(rows);
+    checkSetRowHandlers(rows);
+  });
+  
+  /**
+   * Test moveDownAclRule
+   */
+  test('nl.sara.beehub.view.acl.moveDownAclRule' , function() {
+    expect(65);
+    
+    var index = nl.sara.beehub.view.acl.getIndexLastProtected() + 1;
+    var row = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclRow).eq(index);
+    var name = row.find(aclPrincipal).attr('name');
+    
+    nl.sara.beehub.view.acl.moveDownAclRule(row);
+    
+    // index +1 should be the same row now
+    var rowNew = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclRow).eq(index+1);
+    var nameNew = row.find(aclPrincipal).attr('name');
+    deepEqual(nameNew, name, "Name should be "+name);
+    
+    var rows = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclRow);
+    checkSetUpDownButtons(rows);
+    checkSetRowHandlers(rows);
+  });
+  
+  /**
+   * Test moveDownAclRule
+   */
+  test('nl.sara.beehub.view.acl.moveDownAclRule' , function() {
+    expect(65);
+    
+    var index = nl.sara.beehub.view.acl.getIndexLastProtected() + 2;
+    var row = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclRow).eq(index);
+    var name = row.find(aclPrincipal).attr('name');
+    
+    nl.sara.beehub.view.acl.moveUpAclRule(row);
+    
+    // index +1 should be the same row now
+    var rowNew = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclRow).eq(index-1);
+    var nameNew = row.find(aclPrincipal).attr('name');
+    deepEqual(nameNew, name, "Name should be "+name);
+    
+    var rows = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclRow);
+    checkSetUpDownButtons(rows);
+    checkSetRowHandlers(rows);
+  });
+  
+  /**
+   * changePermissions
+   */
+  test('nl.sara.beehub.view.acl.changePermissions', function(){
+    expect(6);
+    
+    var index = nl.sara.beehub.view.acl.getIndexLastProtected() + 1;
+    var row = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclRow).eq(index);
+    
+    // Test Allow read permissions
+    var permissions = "allow read";
+    nl.sara.beehub.view.acl.changePermissions(row, permissions);
+    
+    var allow = row.find(aclAllow).length;
+    var title = row.find(aclChangePermissions).attr('title');
+    var show = row.find('.presentation').html();
+    deepEqual(allow, 1, "Class should be "+aclAllow);
+    deepEqual(title, permissions, "Title should be "+permissions);
+    deepEqual(show, permissions, "Presentation should be "+permissions);
+    
+    // Test Deny write, change acl permissions
+    var permissions2 = "deny write, change acl";
+    nl.sara.beehub.view.acl.changePermissions(row, permissions2);
+    
+    var deny = row.find(aclDeny).length;
+    var title2 = row.find(aclChangePermissions).attr('title');
+    var show2 = row.find('.presentation').html();
+    deepEqual(deny, 1, "Class should be "+aclDeny);
+    deepEqual(title2, permissions2, "Title should be "+permissions2);
+    deepEqual(show2, permissions2, "Presentation should be "+permissions2);
+  });
+  
+  /**
+   * showChangePermissions
+   */
+  test('nl.sara.beehub.view.acl.showChangePermissions', function(){
+    expect(6);
+    
+    var index = nl.sara.beehub.view.acl.getIndexLastProtected() + 1;
+    var row = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclRow).eq(index);
+    
+    deepEqual(row.find(aclPermissionsField).is(':hidden'), false, 'Permissions field should be shown');
+    deepEqual(row.find(aclPermissionsSelect).is(':hidden'), true, 'Permissions select should be hidden');
+   
+    nl.sara.beehub.view.acl.showChangePermissions(row, true);
+   
+    deepEqual(row.find(aclPermissionsField).is(':hidden'), true, 'Permissions field should be hidden');
+    deepEqual(row.find(aclPermissionsSelect).is(':hidden'), false, 'Permissions select should be shown');
+    
+    nl.sara.beehub.view.acl.showChangePermissions(row, false);
+   
+    deepEqual(row.find(aclPermissionsField).is(':hidden'), false, 'Permissions field should be shown');
+    deepEqual(row.find(aclPermissionsSelect).is(':hidden'), true, 'Permissions select should be hidden');
   })
 })();
 // End of file
