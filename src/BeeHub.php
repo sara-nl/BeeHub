@@ -125,7 +125,7 @@ class BeeHub {
    */
   public static function htmlError($message, $status = DAV::HTTP_OK) {
     DAV::header( array( 'status' => $status ) );
-    require( 'views/html_error.php' );
+    require( 'views/' . 'html_error.php' );
     exit;
   }
 

@@ -2,8 +2,10 @@
     "name": "SURFsara/BeeHub",
     "description": "The webDAV server for BeeHub",
     "require" : {
-        "php": "5.3.*",
-        "ext-xattr": "*"
+        "php": ">=5.3.3",
+        "ext-mysqli": "*",
+        "ext-xattr": "*",
+        "pieterb/webdav-php": "1.0.*"
     },
     "require-dev": {
         "phpunit/phpunit": "3.7.*",
@@ -22,5 +24,8 @@
             "name": "Laura Leistikow",
             "email": "laura.leistikow@surfsara.nl"
         }
-    ]
+    ],
+    "autoload": {
+        "psr-4": { "": "src/" }
+    }
 }

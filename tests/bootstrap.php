@@ -25,13 +25,6 @@ require_once( \dirname( __FILE__ ) . \DIRECTORY_SEPARATOR . 'environment_buildin
 reset_SERVER();
 
 // Load dependencies
-require_once( \dirname( \dirname( __FILE__ ) ) . \DIRECTORY_SEPARATOR . 'vendor' . \DIRECTORY_SEPARATOR . 'autoload.php' );
-require_once( \dirname( __FILE__ ) . \DIRECTORY_SEPARATOR . 'dbtests_data' . \DIRECTORY_SEPARATOR . 'db_testcase.php' );
-require_once( \dirname( \dirname( __FILE__ ) ) . \DIRECTORY_SEPARATOR . 'webdav-php' . \DIRECTORY_SEPARATOR . 'tests' . \DIRECTORY_SEPARATOR . 'mocks' . \DIRECTORY_SEPARATOR . 'dav_cache.php' );
-\spl_autoload_register('\spl_autoload');
-require_once( \dirname( \dirname( __FILE__ ) ) . '/src/beehub_bootstrap.php' );
-\DAV::$testMode = true;
-
 function loadMocks() {
   $mockPath = \realpath( \dirname( __FILE__ ) ) . \DIRECTORY_SEPARATOR . 'mocks' . \DIRECTORY_SEPARATOR;
   $dir = new \DirectoryIterator( $mockPath );
@@ -43,6 +36,10 @@ function loadMocks() {
 }
 loadMocks();
 
+require_once( \dirname( __DIR__ ) . \DIRECTORY_SEPARATOR . 'vendor' . \DIRECTORY_SEPARATOR . 'autoload.php' );
+require_once( __DIR__ . \DIRECTORY_SEPARATOR . 'dbtests_data' . \DIRECTORY_SEPARATOR . 'db_testcase.php' );
+require_once( \dirname( __DIR__ ) . \DIRECTORY_SEPARATOR . 'src' . \DIRECTORY_SEPARATOR . 'beehub_bootstrap.php' );
+\DAV::$testMode = true;
 
 // Check for configuration file
 loadTestConfig();

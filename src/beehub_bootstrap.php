@@ -30,8 +30,10 @@ set_include_path(
   dirname(__FILE__) . PATH_SEPARATOR .
   get_include_path()
 );
-require_once( dirname( dirname( __FILE__ ) ) . DIRECTORY_SEPARATOR .'webdav-php' . DIRECTORY_SEPARATOR . 'lib' . DIRECTORY_SEPARATOR . 'bootstrap.php' );
 
+require_once( dirname( dirname( __FILE__ ) ) . DIRECTORY_SEPARATOR .'vendor' . DIRECTORY_SEPARATOR . 'autoload.php' );
+
+DAV::bootstrap();
 set_exception_handler( array( 'BeeHub', 'exception_handler' ) );
 
 // We need SimpleSamlPHP
