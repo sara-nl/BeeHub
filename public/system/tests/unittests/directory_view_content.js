@@ -53,7 +53,7 @@
   var uploadHiddenField = '.bh-dir-content-upload-hidden';
   var resourceSpecificAcl = '.bh-resource-specific-acl';
   
-  module("view content",{
+  module("content view",{
     setup: function(){
       // Call init function
       nl.sara.beehub.view.content.init();

@@ -80,7 +80,7 @@
   var searchTable =           '.bh-dir-acl-table-search';
   var tablePermissions =      '.bh-dir-acl-table-permisions';
 
-  module("view acl",{
+  module("acl view",{
     setup: function(){
       // Call init function
       nl.sara.beehub.view.acl.init();

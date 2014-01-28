@@ -74,7 +74,7 @@
     if ( resourcePath.substr( -1 ) === '/' ) {
       resourcePath = resourcePath.substr( 0, resourcePath.length -1 );
     }
-    
+
     $('#bh-dir-dialog').html(html);
     // auto complete for searching users and groups
     setupAutoComplete();
@@ -334,6 +334,7 @@
     formView.find( ".bh-dir-acl-table-search" ).autocomplete({
       source:searchList,
       select: function( event, ui ) {
+        console.log("select");
         formView.find(".bh-dir-acl-table-search").val(ui.item.label);
         formView.find(".bh-dir-acl-table-search").attr('name' ,ui.item.name);
         // jquery and bootstrap buttons act different
@@ -345,6 +346,7 @@
         return false;
       },
       change: function (event, ui) {
+        console.log("change");
         if(!ui.item){
             //http://api.jqueryui.com/autocomplete/#event-change -
             // The item selected from the menu, if any. Otherwise the property is null
@@ -376,7 +378,7 @@
       aclForm.find(".bh-dir-acl-table-search").attr("disabled",true);
       aclForm.find(".bh-dir-acl-table-search").val("");
       // jquery and bootstrap buttons act different
-      if (nl.sara.beehub.view.acl.getView() === "directory"){
+      if (nl.sara.beehub.view.acl.getView() === "directory") {
         nl.sara.beehub.view.acl.getAddAclButton().button('enable');
       } else {
         nl.sara.beehub.view.acl.getAddAclButton().prop('disabled', false);
@@ -386,7 +388,7 @@
       aclForm.find(".bh-dir-acl-table-search").attr("disabled",true);
       aclForm.find(".bh-dir-acl-table-search").val("");
       // jquery and bootstrap buttons act different
-      if (nl.sara.beehub.view.acl.getView() === "directory"){
+      if (nl.sara.beehub.view.acl.getView() === "directory") {
         nl.sara.beehub.view.acl.getAddAclButton().button('enable');
       } else {
         nl.sara.beehub.view.acl.getAddAclButton().prop('disabled', false);
@@ -396,7 +398,7 @@
       aclForm.find(".bh-dir-acl-table-search").attr("disabled",false);
       aclForm.find(".bh-dir-acl-table-search").val("");
       // jquery and bootstrap buttons act different
-      if (nl.sara.beehub.view.acl.getView() === "directory"){
+      if (nl.sara.beehub.view.acl.getView() === "directory") {
         nl.sara.beehub.view.acl.getAddAclButton().button('disable');
       } else {
         nl.sara.beehub.view.acl.getAddAclButton().prop('disabled', true);
