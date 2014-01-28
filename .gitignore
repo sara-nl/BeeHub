@@ -6,7 +6,6 @@ config.ini
 /.htaccess
 /tools/
 /vendor/
-/public/system/client
 /public/system/simplesaml
 /public/system/js/webdavlib.js
 /simplesamlphp/
