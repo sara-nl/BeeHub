@@ -37,7 +37,19 @@
     isprotected       :     false,
     grantdeny         :     1,
     privileges        :     ["read"]
-   }
+   },{
+     principal         :     'DAV: owner',
+     invertprincipal   :     false,
+     isprotected       :     false,
+     grantdeny         :     1,
+     privileges        :     ["read"]
+   },{
+     principal         :     'DAV: authenticated',
+     invertprincipal   :     false,
+     isprotected       :     false,
+     grantdeny         :     1,
+     privileges        :     ["write"]
+    }
   ];
   
   var currentDirectory =      "/foo/client_tests/";
@@ -372,7 +384,7 @@
    * Test if row handlers are set
    */
   test( 'nl.sara.beehub.view.acl.init: Set view row handlers', function() {
-    expect( 54 ); 
+    expect( 94 ); 
     var rows = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclRow);
     checkSetRowHandlers(rows);
   });
@@ -510,7 +522,7 @@
    * Test getAcl
    */
   test('nl.sara.beehub.view.acl.getAcl', function(){
-    expect(15);   
+    expect(25);   
     var acl = nl.sara.beehub.view.acl.getAcl();
     
     // Test values of all ace's
@@ -597,7 +609,7 @@
    * Test deleteRowIndex
    */
   test('nl.sara.beehub.view.acl.deleteRowIndex', function(){
-    expect(45);
+    expect(89);
     
     var name = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclPrincipal).eq(1).attr('name');
     var result = nl.sara.beehub.view.acl.getAclView().find(aclContents).find('td[name = "'+name+'"]').attr('name');
@@ -625,7 +637,7 @@
    * Test moveDownAclRule
    */
   test('nl.sara.beehub.view.acl.moveDownAclRule' , function() {
-    expect(65);
+    expect(109);
     
     var index = nl.sara.beehub.view.acl.getIndexLastProtected() + 1;
     var row = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclRow).eq(index);
@@ -644,10 +656,10 @@
   });
   
   /**
-   * Test moveDownAclRule
+   * Test moveUpAclRule
    */
-  test('nl.sara.beehub.view.acl.moveDownAclRule' , function() {
-    expect(65);
+  test('nl.sara.beehub.view.acl.moveUpAclRule' , function() {
+    expect(109);
     
     var index = nl.sara.beehub.view.acl.getIndexLastProtected() + 2;
     var row = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclRow).eq(index);

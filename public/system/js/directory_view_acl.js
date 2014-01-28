@@ -392,11 +392,13 @@
         // create ace according the webdavlib specifications
         var ace = new nl.sara.webdav.Ace();
         ace.invertprincipal=invert;
-        
         // put all values from rec in ace
         switch ( principal ) {
           case 'all':
             ace.principal = nl.sara.webdav.Ace.ALL;
+            break;
+          case 'owner':
+            ace.principal.tagname = "owner";
             break;
           case 'authenticated':
             ace.principal = nl.sara.webdav.Ace.AUTHENTICATED;

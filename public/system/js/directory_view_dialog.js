@@ -376,7 +376,7 @@
       aclForm.find(".bh-dir-acl-table-search").attr("disabled",true);
       aclForm.find(".bh-dir-acl-table-search").val("");
       // jquery and bootstrap buttons act different
-      if (nl.sara.beehub.view.acl.getView() === "directory") {
+      if (nl.sara.beehub.view.acl.getView() === "directory"){
         nl.sara.beehub.view.acl.getAddAclButton().button('enable');
       } else {
         nl.sara.beehub.view.acl.getAddAclButton().prop('disabled', false);
@@ -386,7 +386,7 @@
       aclForm.find(".bh-dir-acl-table-search").attr("disabled",true);
       aclForm.find(".bh-dir-acl-table-search").val("");
       // jquery and bootstrap buttons act different
-      if (nl.sara.beehub.view.acl.getView() === "directory") {
+      if (nl.sara.beehub.view.acl.getView() === "directory"){
         nl.sara.beehub.view.acl.getAddAclButton().button('enable');
       } else {
         nl.sara.beehub.view.acl.getAddAclButton().prop('disabled', false);
@@ -396,7 +396,7 @@
       aclForm.find(".bh-dir-acl-table-search").attr("disabled",false);
       aclForm.find(".bh-dir-acl-table-search").val("");
       // jquery and bootstrap buttons act different
-      if (nl.sara.beehub.view.acl.getView() === "directory") {
+      if (nl.sara.beehub.view.acl.getView() === "directory"){
         nl.sara.beehub.view.acl.getAddAclButton().button('disable');
       } else {
         nl.sara.beehub.view.acl.getAddAclButton().prop('disabled', true);
