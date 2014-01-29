@@ -22,5 +22,5 @@ if ( isset($this) && ( false !== strpos( $this->user_prop_getcontenttype(), 'xml
       <div id="qunit"></div>
       <div id="qunit-fixture">
     <?php endif; ?>
-    <?php require 'views/navbar.php' ?>
+    <?php require( 'views/navbar.php' ); ?>
     <div class="container-fluid">

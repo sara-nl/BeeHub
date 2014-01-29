@@ -216,7 +216,7 @@ function setUpDatabase() {
 function loadTestConfig() {
   $configFile = \dirname( __FILE__ ) . \DIRECTORY_SEPARATOR . 'config.ini';
   if ( !\file_exists( $configFile ) ) {
-    print( 'No configuration file exists. Please copy ' . \dirname( \dirname( __FILE__ ) ) . \DIRECTORY_SEPARATOR . 'config_example.ini to ' . $configFile . ' and edit it to set the right configuration options\n' );
+    print( 'No configuration file exists. Please copy ' . \dirname(  __DIR__ ) . \DIRECTORY_SEPARATOR . 'config_example.ini to ' . $configFile . " and edit it to set the right configuration options\n" );
     die( 1 );
   }
   \BeeHub::loadConfig( $configFile );
