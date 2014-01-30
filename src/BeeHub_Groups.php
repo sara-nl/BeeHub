@@ -69,7 +69,7 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
       }
     }
 
-    $groupdir = DAV::unslashify(BeeHub::$CONFIG['environment']['datadir']) . $group_name;
+    $groupdir = BeeHub::$CONFIG['environment']['datadir'] . $group_name;
     // Check for existing groupdir
     if (file_exists($groupdir)) {
       BeeHub_DB::execute(

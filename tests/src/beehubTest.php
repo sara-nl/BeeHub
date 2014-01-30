@@ -128,7 +128,7 @@ class beehubTest extends BeeHub_Tests_Db_Test_Case {
 
   public function testLocalPath() {
     $config = \BeeHub::config();
-    $this->assertSame( $config['environment']['datadir'] . '/some/path', \BeeHub::localPath( '/some/path' ), 'BeeHub::localPath() should prepend the path of the data dir to the path provided' );
+    $this->assertSame( $config['environment']['datadir'] . 'some/path', \BeeHub::localPath( '/some/path' ), 'BeeHub::localPath() should prepend the path of the data dir to the path provided' );
   }
 
 
