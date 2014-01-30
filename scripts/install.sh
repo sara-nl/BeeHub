@@ -113,8 +113,9 @@ else
 
   # Create a config.ini based on the questions just asked
   cat >config.ini <<EOS
-datadir                  = "${DATADIR}"
-simplesamlphp_autoloader = "${SIMPLESAML}/lib/_autoload.php"
+[environment]
+datadir       = "${DATADIR}"
+simplesamlphp = "${SIMPLESAML}"
 
 [namespace]
 wheel_path    = "/system/users/${WHEEL}"
@@ -134,61 +135,92 @@ sender_name    = "${MAIL_NAME}"
 EOS
 fi
 
-# Prepare a directory to install extra tools in
-rm -rf tools 2>/dev/null | true
-mkdir tools
-
-# Then install Composer and let it install dependencies for this project
-curl -sS https://getcomposer.org/installer | php -- --install-dir=tools
-php tools/composer.phar install
-
-# Initialize submodules
-git submodule init
-
 # Check whether we have to create a default principals.js
 chmod -v 2777 public/system/js/server/
 if [[ -e public/system/js/server/principals.js ]]; then
   cat > public/system/js/server/principals.js <<EOM
-nl.sara.beehub.principals = {"users":{},"groups":{},"sponsors":{}};
+nl.sara.beehub.principals = {"users":{ ${WHEEL}:"Administrator" },"groups":{},"sponsors":{}};
 EOM
 fi
-
-# I have separated some installation steps into different files. This makes it easier to install or reconfigure just a small part.
-./scripts/update_dependencies.sh
-export SIMPLESAML
-./scripts/install_simplesamlphp.sh
-./scripts/install_db.php
 
 # Initialize the datadir, so the minimal number of subdirectories are created
 START=''
 while [[ "${START}" != "y" ]] && [[ "${START}" != "n" ]]; do
+  echo ""
   echo "Initialize data dir? This will remove all end-user data (i.e. all data accessible through webDAV. Are you sure (y/n)? "
   read START
 done
 FAILURE="false"
 if [[ "${START}" == "y" ]]; then
-  mkdir -p "${DATADIR}/home" || FAILURE="true"
-  mkdir -p "${DATADIR}/system/groups" || FAILURE="true"
-  mkdir -p "${DATADIR}/system/sponsors" || FAILURE="true"
-  mkdir -p "${DATADIR}/system/users" || FAILURE="true"
+  rm -rvf "${DATADIR}*" "${DATADIR}.*"
+  mkdir -p "${DATADIR}home" || FAILURE="true"
+  mkdir -p "${DATADIR}system/groups" || FAILURE="true"
+  mkdir -p "${DATADIR}system/sponsors" || FAILURE="true"
+  mkdir -p "${DATADIR}system/users" || FAILURE="true"
   if [[ "${FAILURE}" == "true" ]]; then
     echo "Unable to create the system directories"
   else
     setfattr -n 'user.DAV%3A%20owner' -v "/system/users/${WHEEL}" "${DATADIR}"
-    setfattr -n 'user.DAV%3A%20owner' -v "/system/users/${WHEEL}" "${DATADIR}/home"
-    setfattr -n 'user.DAV%3A%20owner' -v "/system/users/${WHEEL}" "${DATADIR}/system"
-    setfattr -n 'user.DAV%3A%20owner' -v "/system/users/${WHEEL}" "${DATADIR}/system/groups"
-    setfattr -n 'user.DAV%3A%20owner' -v "/system/users/${WHEEL}" "${DATADIR}/system/sponsors"
-    setfattr -n 'user.DAV%3A%20owner' -v "/system/users/${WHEEL}" "${DATADIR}/system/users"
+    setfattr -n 'user.DAV%3A%20owner' -v "/system/users/${WHEEL}" "${DATADIR}home"
+    setfattr -n 'user.DAV%3A%20owner' -v "/system/users/${WHEEL}" "${DATADIR}system"
+    setfattr -n 'user.DAV%3A%20owner' -v "/system/users/${WHEEL}" "${DATADIR}system/groups"
+    setfattr -n 'user.DAV%3A%20owner' -v "/system/users/${WHEEL}" "${DATADIR}system/sponsors"
+    setfattr -n 'user.DAV%3A%20owner' -v "/system/users/${WHEEL}" "${DATADIR}system/users"
   fi
 else
   FAILURE="true"
 fi
 # If no datadir initialization was done; let the user (of this script) know that he/she should do this himself/herself
 if [[ "${FAILURE}" == "true" ]]; then
-  echo "Don't forget to create the data directory, /home/ /system/, /system/users/, /system/groups/, /system/sponsors/ directories and for all these directories run:"
+  echo ""
+  echo "Don't forget to create in the data directory, /home/ /system/, /system/users/, /system/groups/, /system/sponsors/ directories and for all these directories run:"
   echo "setfattr -n 'user.DAV%3A%20owner' -v '/system/users/${WHEEL}' path/to/dir"
+  echo ""
 fi
+
+# Initialize submodules
+git submodule init
+
+# Prepare a directory to install extra tools in
+rm -rf tools 2>/dev/null | true
+mkdir tools
+
+# Then install Composer and let it install dependencies for this project
+curl -sS https://getcomposer.org/installer | php -- --install-dir=tools
+COMPOSER_RESULT=0
+php tools/composer.phar install || COMPOSER_RESULT=1
+if [[ ${COMPOSER_RESULT} -ne 0 ]]; then
+  echo ""
+  echo "For some reason Composer could not install all dependencies. Please fix the problem (see Composer output above) and run the following scripts to finish the installation:"
+  echo "  php $(pwd)/tools/composer.phar install"
+  echo "  $(pwd)/scripts/update_dependencies.sh"
+  echo "  $(pwd)/scripts/install_simplesamlphp.php"
+  echo "  $(pwd)/scripts/install_db.php"
+  exit 2
+fi
+
+# I have separated some installation steps into different files. This makes it easier to install or reconfigure just a small part.
+DEPENDENCIES_RESULT=0
+./scripts/update_dependencies.sh || DEPENDENCIES_RESULT=1
+if [[ ${DEPENDENCIES_RESULT} -ne 0 ]]; then
+  echo ""
+  echo "For some reason there was a problem with updating the dependencies. Please fix the problem (see output above) and run the following scripts to finish the installation:"
+  echo "  $(pwd)/scripts/update_dependencies.sh"
+  echo "  $(pwd)/scripts/install_simplesamlphp.php"
+  echo "  $(pwd)/scripts/install_db.php"
+  exit 3
+fi
+
+SIMPLESAML_RESULT=0
+./scripts/install_simplesamlphp.php || SIMPLESAML_RESULT=1
+if [[ ${SIMPLESAML_RESULT} -ne 0 ]]; then
+  echo ""
+  echo "For some reason there was a problem with installing simpleSAMLphp. Please fix the problem (see output above) and run the following scripts to finish the installation:"
+  echo "  $(pwd)/scripts/install_simplesamlphp.php"
+  echo "  $(pwd)/scripts/install_db.php"
+  exit 4
+fi
+./scripts/install_db.php || true
 
 # Some last information
 echo ""

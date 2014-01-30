@@ -37,7 +37,7 @@ DAV::bootstrap();
 set_exception_handler( array( 'BeeHub', 'exception_handler' ) );
 
 // We need SimpleSamlPHP
-require_once( BeeHub::$CONFIG['environment']['simplesamlphp_autoloader'] );
+require_once( BeeHub::$CONFIG['environment']['simplesamlphp'] . 'lib' . DIRECTORY_SEPARATOR . '_autoload.php' );
 
 DAV::$PROTECTED_PROPERTIES[ DAV::PROP_GROUP_MEMBER_SET ] = true;
 DAV::$ACL_PROPERTIES[BeeHub::PROP_SPONSOR] = 'sponsor';

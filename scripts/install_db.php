@@ -1,4 +1,4 @@
-#!/user/bin/php
+#!/usr/bin/php
 <?php
 /**
  * Installs the BeeHub tables in mySQL
@@ -28,7 +28,7 @@ if ( ( $argc > 1 ) && ( ( $argv[1] === "-h" ) || ( $argv[1] === "--help" ) ) ) {
 $path = dirname( __DIR__ ) . DIRECTORY_SEPARATOR;
 
 // Load config and try to connect to mySQL
-$config = parse_ini_file( $path . 'config.ini' );
+$config = parse_ini_file( $path . 'config.ini', true );
 $mysql = new mysqli( $config['mysql']['host'], $config['mysql']['username'], $config['mysql']['password'], $config['mysql']['database'] );
 if ( $mysql->connect_error ) {
   print( "Could not connect to the database! Please check your configuration in " . $path . "config.ini\n" );
@@ -59,6 +59,7 @@ while ( ( $line = fgets( $filePointer ) ) !== false ) {
     if ( $mysql->real_query( $query ) === false ) {
       print( "Unable to perform query:\n" );
       print( $query . "\n" );
+      print( "Please try to fix the problem and run this script again to install a clean database: " . $argv[0] . "\n" );
       exit( 1 );
     }
     $query = '';

@@ -1,4 +1,4 @@
-#!/user/bin/php
+#!/usr/bin/php
 <?php
 /**
  * Install SimpleSamlPHP
@@ -28,7 +28,7 @@ if ( ( $argc > 1 ) && ( ( $argv[1] === "-h" ) || ( $argv[1] === "--help" ) ) ) {
 $path = dirname( __DIR__ ) . DIRECTORY_SEPARATOR;
 
 // Load config and try to connect to mySQL
-$beehubConfig = parse_ini_file( $path . 'config.ini' );
+$beehubConfig = parse_ini_file( $path . 'config.ini', true );
 
 # Link to simplesamlphp
 if ( substr( $beehubConfig['environment']['simplesamlphp'], -1 ) !== DIRECTORY_SEPARATOR ) {
@@ -84,7 +84,7 @@ $config['BeeHub'] = array(
   'NameIDPolicy' => 'urn:oasis:names:tc:SAML:2.0:nameid-format:persistent'
 );
 
-file_put_contents( $configFile, '<?php' . "\n" . '$config = ' . var_export( $config, true ) );
+file_put_contents( $configFile, '<?php' . "\n" . '$config = ' . var_export( $config, true ) . ';' );
 
 // And load and add the SURFconext metadata
 $metadataFile = $beehubConfig['environment']['simplesamlphp'] . DIRECTORY_SEPARATOR . 'metadata' . DIRECTORY_SEPARATOR . 'saml20-idp-remote.php';
@@ -96,6 +96,6 @@ $metadata = array (
   'certFingerprint'     => array('a36aac83b9a552b3dc724bfc0d7bba6283af5f8e')
 );
 
-file_put_contents( $metadataFile, "\n" . '$metadata[\'https://engine.surfconext.nl/authentication/idp/metadata\'] = ' . var_export( $metadata, true ), FILE_APPEND );
+file_put_contents( $metadataFile, "\n" . '$metadata[\'https://engine.surfconext.nl/authentication/idp/metadata\'] = ' . var_export( $metadata, true ) . ';', FILE_APPEND );
 
-exit 0
+exit( 0 );

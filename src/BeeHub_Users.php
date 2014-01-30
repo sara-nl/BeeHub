@@ -80,7 +80,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
       }
     }
 
-    $userdir = DAV::unslashify(BeeHub::$CONFIG['environment']['datadir']) . DIRECTORY_SEPARATOR . 'home' . DIRECTORY_SEPARATOR . $user_name;
+    $userdir = DAV::unslashify(BeeHub::$CONFIG['environment']['datadir']) . 'home' . DIRECTORY_SEPARATOR . $user_name;
     // Check for existing groupdir
     if ( file_exists( $userdir ) ) {
       BeeHub_DB::execute(

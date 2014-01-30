@@ -137,7 +137,11 @@ class BeeHub {
    * @return  string         The location where the data is stored in the storage backend
    */
   public static function localPath($path) {
-    return DAV::unslashify(self::$CONFIG['environment']['datadir'] . rawurldecode($path));
+    $path = rawurldecode( $path );
+    if ( substr( $path, 0, 1 ) === '/' ) {
+      $path = substr( $path, 1 );
+    }
+    return DAV::unslashify( self::$CONFIG['environment']['datadir'] . $path );
   }
 
 
@@ -398,6 +402,12 @@ class BeeHub {
       $path = dirname( dirname( __FILE__ ) ) . DIRECTORY_SEPARATOR . 'config.ini';
     }
     BeeHub::$CONFIG = parse_ini_file( $path, true );
+    if ( substr( BeeHub::$CONFIG['environment']['simplesamlphp'], -1 ) !== DIRECTORY_SEPARATOR ) {
+      BeeHub::$CONFIG['environment']['simplesamlphp'] .= DIRECTORY_SEPARATOR;
+    }
+    if ( substr( BeeHub::$CONFIG['environment']['datadir'], -1 ) !== DIRECTORY_SEPARATOR ) {
+      BeeHub::$CONFIG['environment']['datadir'] .= DIRECTORY_SEPARATOR;
+    }
   }
 
 
