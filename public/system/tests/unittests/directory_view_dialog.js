@@ -24,10 +24,78 @@
   
   var aclTableSearch =    '.bh-dir-acl-table-search';
   var aclResourceForm =   '#bh-dir-acl-resource-form';
-  
+  var aclRadio1 =         '.bh-dir-acl-add-radio1';
+  var aclRadio2 =         '.bh-dir-acl-add-radio2';
+  var aclRadio3 =         '.bh-dir-acl-add-radio3';
+
+  // Needed for testing autocomplete 
   var autocompleteLength = 5;
+  var ui = {
+      item: {
+        displayname:    "Bar",
+        icon:           '<i class="icon-user"></i><i class="icon-user"></i>',
+        label:          "Bar (bar) ",
+        name:           "/system/groups/bar",
+        value:          "Bar (bar) "
+      }
+  }
 
   module("dialog view");
+  
+  /**
+   * Test autocomplete in acl form
+   * 
+   */
+  var testAutocomplete = function(){
+    // Test if autocomplete is configured
+    deepEqual($(dialog).find( aclTableSearch ).autocomplete("option", "source").length, autocompleteLength, "Length of autocomplete sources should be "+autocompleteLength);
+
+    // Test select event
+    // Value before select
+    deepEqual($(dialog).find(aclTableSearch).val(),"", "Value should be empty string");
+    deepEqual($(dialog).find(aclTableSearch).attr("name"), undefined, "Attribute name should be undefined");
+    deepEqual(nl.sara.beehub.view.acl.getAddAclButton().prop('disabled'), true, "Add button should be disabled");
+    // Select
+    $(dialog).find( aclTableSearch ).data("ui-autocomplete")._trigger("select", 'autocompleteselect', ui);
+    // Test values after select
+    deepEqual($(dialog).find(aclTableSearch).val(), ui.item.label, "Value should be "+ui.item.label);
+    deepEqual($(dialog).find(aclTableSearch).attr("name"), ui.item.name, "Attribute name should be "+ui.item.name);
+    deepEqual(nl.sara.beehub.view.acl.getAddAclButton().prop('disabled'), false, "Add button should be enabled");
+
+    // Change with value
+    deepEqual(nl.sara.beehub.view.acl.getAddAclButton().prop('disabled'), false, "Add button should be enabled");
+    $(dialog).find( aclTableSearch ).data("ui-autocomplete")._trigger("change", 'autocompletechange', ui);
+    deepEqual(nl.sara.beehub.view.acl.getAddAclButton().prop('disabled'), false, "Add button should be enabled");
+    
+    // Change with no value
+    deepEqual(nl.sara.beehub.view.acl.getAddAclButton().prop('disabled'), false, "Add button should be enabled");
+    $(dialog).find( aclTableSearch ).data("ui-autocomplete")._trigger("change", 'autocompletechange', undefined);
+    deepEqual(nl.sara.beehub.view.acl.getAddAclButton().prop('disabled'), true, "Add button should be disabled");
+  };
+  
+  /**
+   * Test radio button in acl form
+   * 
+   */
+  var testRadioButtons = function(){
+    // Button 1
+    $(dialog).find(aclRadio1).click();
+    deepEqual($(dialog).find(aclTableSearch).attr("disabled"), "disabled", "Search field should be disabled");
+    deepEqual($(dialog).find(aclTableSearch).val(), "", "Search field value should be empty string");
+    deepEqual(nl.sara.beehub.view.acl.getAddAclButton().prop('disabled') , false, "Add button should be enabled");
+    
+    // Button 2
+    $(dialog).find(aclRadio2).click();
+    deepEqual($(dialog).find(aclTableSearch).attr("disabled"), "disabled", "Search field should be disabled");
+    deepEqual($(dialog).find(aclTableSearch).val(), "", "Search field value should be empty string");
+    deepEqual(nl.sara.beehub.view.acl.getAddAclButton().prop('disabled') , false, "Add button should be enabled");
+    
+    // Button 3
+    $(dialog).find(aclRadio3).click();
+    deepEqual($(dialog).find(aclTableSearch).attr("disabled"), undefined, "Search field should be enabled");
+    deepEqual($(dialog).find(aclTableSearch).val(), "", "Search field value should be empty string");
+    deepEqual(nl.sara.beehub.view.acl.getAddAclButton().prop('disabled') , true, "Add button should be disabled");
+  }
   
   /**
    * Test if clear view is working
@@ -64,10 +132,12 @@
   });
   
   /**
-   * Test
+   * Test showAcl
+   * 
+   * changing resourcePath is not tested
    */
   test('nl.sara.beehub.view.dialog.showAcl', function(){
-    expect(2);
+    expect(22);
     
     nl.sara.beehub.view.acl.setView("resource", currentDirectory);
     var html = nl.sara.beehub.view.acl.createDialogViewHtml();
@@ -75,20 +145,21 @@
     var rememberDialog = $.fn.dialog; 
     //Overwrite dialog
     $.fn.dialog = function(){
-      var formView = nl.sara.beehub.view.acl.getFormView();
-
-      // Test if html is added in dialog
-      deepEqual($(dialog).find(aclResourceForm).length, 1, "Dialog content should be -Show error test-.");
-      // Test if autocomplete is configured
-      deepEqual($(dialog).find( aclTableSearch ).autocomplete("option", "source").length, autocompleteLength, "Length of autocomplete sources should be "+autocompleteLength);
-//      $(dialog).find( aclTableSearch ).data("ui-autocomplete")._trigger("change");
-//      $(dialog).find( aclTableSearch ).data("ui-autocomplete")._trigger("select");
+      // Do not open dialog
     }
     
     nl.sara.beehub.view.dialog.showAcl(html, currentDirectory);
-
-
-    // Put back original dialog function
+    // Test if html is added in dialog
+    deepEqual($(dialog).find(aclResourceForm).length, 1, "Dialog content should be -Show error test-.");
+    
+    // Add button should be disabled
+    deepEqual(nl.sara.beehub.view.acl.getAddAclButton().prop('disabled') , true, "Add button should be disabled");
+    
+    testAutocomplete();
+    
+    testRadioButtons();
+    
+//    // Put back original dialog function
     $.fn.dialog = rememberDialog;
   });
 })();
