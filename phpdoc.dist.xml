@@ -2,7 +2,7 @@
 <phpdoc>
   <title>BeeHub Documentation</title>
   <parser>
-    <target>docs-parser</target>
+    <target>doc-parser</target>
     <default-package-name>BeeHub</default-package-name>
   </parser>
   <transformer>

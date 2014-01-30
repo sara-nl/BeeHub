@@ -9,3 +9,4 @@ config.ini
 /public/system/simplesaml
 /public/system/js/webdavlib.js
 /simplesamlphp/
+/doc-parser/
