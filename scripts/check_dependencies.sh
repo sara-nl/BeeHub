@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 echo 'Checking for dependencies:'
 FAILURE=0
 
@@ -17,6 +19,7 @@ function check_dependency {
 check_dependency php
 check_dependency composer.phar
 check_dependency litmus
+check_dependency mysql
 
 if [[ $FAILURE -ne 0 ]]; then
   echo "Not all dependencies are installed, please do so" >&2

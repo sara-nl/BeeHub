@@ -41,41 +41,74 @@ REALM=""
 MAIL_ADDRESS=""
 MAIL_NAME=""
 while [[ "${CONTINUE}" != "y" ]]; do
-  echo "In what directory should the data be stored that is accessible through webDAV? [${DATADIR}] "
-  read DATADIR_2
-  if [[ "${DATADIR_2}" != "" ]]; then
-    DATADIR="${DATADIR_2}"
-  fi
-  echo "Where is SimpleSAMLphp installed? [${SIMPLESAML}] "
-  read SIMPLESAML_2
-  if [[ "${SIMPLESAML_2}" != "" ]]; then
-    SIMPLESAML="${SIMPLESAML_2}"
-  fi
+  while [[ 1 -eq 1 ]]; do
+    echo "In what directory should the data be stored that is accessible through webDAV? [${DATADIR}] "
+    read DATADIR_2
+    if [[ "${DATADIR_2}" != "" ]]; then
+      DATADIR="${DATADIR_2}"
+    fi
+    if [[ "${DATADIR:0:1}" != "/" ]]; then
+      DATADIR="/${DATADIR}"
+    fi
+    DIR_EXISTS=1
+    ls "${DATADIR}/" >/dev/null 2>&1 || DIR_EXISTS=0
+    if [[ "${DATADIR}" == "/" ]] || [[ ${DIR_EXISTS} -eq 0 ]]; then
+      echo "The specified directory does not exist"
+    else
+      break
+    fi
+  done
+  while [[ 1 -eq 1 ]]; do
+    echo "Where is SimpleSAMLphp installed? [${SIMPLESAML}] "
+    read SIMPLESAML_2
+    if [[ "${SIMPLESAML_2}" != "" ]]; then
+      SIMPLESAML="${SIMPLESAML_2}"
+    fi
+    if [[ "${SIMPLESAML:0:1}" != "/" ]]; then
+      SIMPLESAML="/${SIMPLESAML}"
+    fi
+    DIR_EXISTS=1
+    ls "${SIMPLESAML}/" >/dev/null 2>&1 || DIR_EXISTS=0
+    if [[ "${SIMPLESAML}" == "/" ]] || [[ ${DIR_EXISTS} -eq 0 ]]; then
+      echo "The specified directory does not exist"
+    else
+      break
+    fi
+  done
   echo "What username should the administrator have? [${WHEEL}] "
   read WHEEL_2
   if [[ "${WHEEL_2}" != "" ]]; then
     WHEEL="${WHEEL_2}"
   fi
-  echo "What host runs the mySQL database? [${MYSQL_HOST}] "
-  read MYSQL_HOST_2
-  if [[ "${MYSQL_HOST_2}" != "" ]]; then
-    MYSQL_HOST="${MYSQL_HOST_2}"
-  fi
-  echo "What is the mySQL username? [${MYSQL_USERNAME}] "
-  read MYSQL_USERNAME_2
-  if [[ "${MYSQL_USERNAME_2}" != "" ]]; then
-    MYSQL_USERNAME="${MYSQL_USERNAME_2}"
-  fi
-  echo "What is the mySQL password? [${MYSQL_PASSWORD}] "
-  read MYSQL_PASSWORD_2
-  if [[ "${MYSQL_PASSWORD_2}" != "" ]]; then
-    MYSQL_PASSWORD="${MYSQL_PASSWORD_2}"
-  fi
-  echo "What is the mySQL database? [${MYSQL_DATABASE}] "
-  read MYSQL_DATABASE_2
-  if [[ "${MYSQL_DATABASE_2}" != "" ]]; then
-    MYSQL_DATABASE="${MYSQL_DATABASE_2}"
-  fi
+  while [[ 1 -eq 1 ]]; do
+    echo "What host runs the mySQL database? [${MYSQL_HOST}] "
+    read MYSQL_HOST_2
+    if [[ "${MYSQL_HOST_2}" != "" ]]; then
+      MYSQL_HOST="${MYSQL_HOST_2}"
+    fi
+    echo "What is the mySQL username? [${MYSQL_USERNAME}] "
+    read MYSQL_USERNAME_2
+    if [[ "${MYSQL_USERNAME_2}" != "" ]]; then
+      MYSQL_USERNAME="${MYSQL_USERNAME_2}"
+    fi
+    echo "What is the mySQL password? [${MYSQL_PASSWORD}] "
+    read MYSQL_PASSWORD_2
+    if [[ "${MYSQL_PASSWORD_2}" != "" ]]; then
+      MYSQL_PASSWORD="${MYSQL_PASSWORD_2}"
+    fi
+    echo "What is the mySQL database? [${MYSQL_DATABASE}] "
+    read MYSQL_DATABASE_2
+    if [[ "${MYSQL_DATABASE_2}" != "" ]]; then
+      MYSQL_DATABASE="${MYSQL_DATABASE_2}"
+    fi
+    MYSQL_WORKS=1
+    mysql "--host=${MYSQL_HOST}" "--user=${MYSQL_USERNAME}" "--password=${MYSQL_PASSWORD}" "--database=${MYSQL_DATABASE}" "--execute=SHOW TABLES;" >/dev/null 2>&1 || MYSQL_WORKS=0
+    if [[ ${MYSQL_WORKS} -eq 0 ]]; then
+      echo -e "\nEither you entered wrong mysql connection information, or the mySQL server is unreachable. Please make sure the mySQL server is running and reachable and/or retry entering your mySQL connection information"
+    else
+      break
+    fi
+  done
   echo "When using HTTP authentication, what realm should be used? [${REALM}] "
   read REALM_2
   if [[ "${REALM_2}" != "" ]]; then
