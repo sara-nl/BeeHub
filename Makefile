@@ -8,7 +8,7 @@ list:
 	@echo " - test; run server tests"
 
 install: vendor public/system/simplesaml config.ini init_submodules
-	@echo "Make sure your Apache webserver is configured as follows:"
+	@echo -ne "\nMake sure your Apache webserver is configured as follows:\n"
 	@echo " - Use $(pwd)public/ as document root"
 	@echo " - \"AccessFileName .htaccess\" and \"AllowOverride All\" for the document root, or copy the directives in $(pwd)public/.htaccess into the Directory section of the central Apache configuration"
 	@echo " - Have at least the following modules installed:"
@@ -35,22 +35,22 @@ config.ini:
 	@./scripts/create_config.sh
 
 vendor:
-	@make check_cli_dependencies ;\
+	@make check_cli_dependencies && \
 	composer.phar install
 
 public/system/simplesaml: config.ini check_cli_dependencies
 	@./scripts/install_simplesamlphp.php
 
 init_submodules:
-	@git submodule init ;\
-	git submodule update ;\
+	@git submodule init && \
+	git submodule update && \
 	make public/system/js/webdavlib.js
 
 public/system/js/webdavlib.js:
-	@cd js-webdav-client ;\
-	make dist.js ;\
-	cd .. ;\
-	rm -vf public/system/js/webdavlib.js ;\
+	@cd js-webdav-client && \
+	make dist.js && \
+	cd .. && \
+	rm -vf public/system/js/webdavlib.js && \
 	ln -vs "$(pwd)/js-webdav-client/dist.js" public/system/js/webdavlib.js
 
 tests/config.ini:
@@ -59,5 +59,5 @@ tests/config.ini:
 
 public/system/phpdoc: vendor src/* views/*
 	@rm -rf public/system/phpdoc 2>/dev/null || true
-	@mkdir public/system/phpdoc 2>/dev/null ;\
+	@mkdir public/system/phpdoc 2>/dev/null && \
 	./vendor/bin/phpdoc.php

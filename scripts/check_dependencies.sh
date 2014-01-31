@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -e
-
 echo 'Checking for dependencies:'
 FAILURE=0
 
