@@ -326,5 +326,20 @@
     
     testInfoDialog(testFunction);
   })
+  
+  /**
+   * Test scrollTo
+   */
+//  test('nl.sara.beehub.view.dialog.scrollTo', function(){
+//    expect(5);
+//    
+//    var testFunction = function(resource){
+//      console.log($(dialog).scrollTop());
+//      nl.sara.beehub.view.dialog.scrollTo(10);
+//      console.log($(dialog).scrollTop());
+//    };
+//    
+//    testInfoDialog(testFunction);
+//  })
 })();
 // End of file
