@@ -4,9 +4,7 @@
 nbproject
 config.ini
 /.htaccess
-/tools/
 /vendor/
 /public/system/simplesaml
 /public/system/js/webdavlib.js
-/simplesamlphp/
 /doc-parser/
