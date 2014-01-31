@@ -100,7 +100,7 @@ function delTreeContents( $dir ) {
  */
 function setUpStorageBackend() {
   $config = \BeeHub::config();
-  if ( empty( $config['environment']['datadir'] ) || ! is_dir( $config['environment']['datadir'] ) ) {
+  if ( empty( $config['environment']['datadir'] ) || ! is_dir( $config['environment']['datadir'] ) || ! @touch( $config['environment']['datadir'] . 'tempfile' ) ) {
     return false;
   }
 
@@ -114,7 +114,7 @@ function setUpStorageBackend() {
   }
 
   // Set extended attributes and create a controlled environment
-  $basePath = $config['environment']['datadir'] . \DIRECTORY_SEPARATOR;
+  $basePath = $config['environment']['datadir'];
   \umask( 0007 );
   \xattr_set( $config['environment']['datadir'], \rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
   \mkdir( $basePath . 'home' );
