@@ -27,6 +27,7 @@
   var aclRadio1 =         '.bh-dir-acl-add-radio1';
   var aclRadio2 =         '.bh-dir-acl-add-radio2';
   var aclRadio3 =         '.bh-dir-acl-add-radio3';
+  var dialogButton=       '#bh-dir-dialog-button';
 
   // Needed for testing autocomplete 
   var autocompleteLength = 5;
@@ -161,6 +162,37 @@
     
 //    // Put back original dialog function
     $.fn.dialog = rememberDialog;
+  });
+  
+  /**
+   * Test setDialogReady
+   */
+  test('nl.sara.beehub.view.dialog.setDialogReady', function(){
+    expect(1);
+    
+    var html = '<div class="ui-dialog-buttonset"><button aria-disabled="false"\
+      role="button" class="ui-button ui-widget ui-state-default ui-corner-all\
+      ui-button-text-only" id="bh-dir-cancel-dialog-button" type="button">\
+      <span class="ui-button-text">Cancel</span></button><button aria-disabled="false"\
+      role="button" class="ui-button ui-widget ui-state-default ui-corner-all\
+      ui-button-text-only btn-danger" id="bh-dir-dialog-button" type="button">\
+      <span class="ui-button-text">Copy</span></button></div>';
+    $(dialog).html(html);
+    
+    var button = $(dialog).find(dialogButton);
+    console.log(button);
+    deepEqual(button.find('.ui-button-text').html(),"Copy", "Button text should be Copy");
+    nl.sara.beehub.view.dialog.setDialogReady();
+    deepEqual(button.find('.ui-button-text').html(),"Ready", "Button text should be Copy");
+
+//    $('#bh-dir-dialog-button').button("enable");
+
+//    $('#bh-dir-dialog-button').removeClass("btn-danger");
+//    $('#bh-dir-cancel-dialog-button').hide();
+//    $('#bh-dir-dialog-button').unbind('click').click(function(){
+//      $("#bh-dir-dialog").dialog("close");
+//      actionFunction();
+//    });
   });
 })();
 // End of file
