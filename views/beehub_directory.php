@@ -91,7 +91,7 @@ require 'views/header.php';
 
   <!--	CONTENT: Home button-->
   <button
-    <?= ( $this->path === '/home/' . BeeHub_Auth::inst()->current_user()->name . '/' ) ? 'disabled="disabled"' : 'id="' . DAV::xmlescape( preg_replace('@^' . BeeHub::USERS_PATH . '(.*)@', '/home/\1/', BeeHub_Auth::inst()->current_user()->path) ) . '"' ?>
+    <?= ( ! BeeHub_Auth::inst()->is_authenticated() || ( $this->path === '/home/' . BeeHub_Auth::inst()->current_user()->name . '/' ) ) ? 'disabled="disabled"' : 'id="' . DAV::xmlescape( preg_replace('@^' . BeeHub::USERS_PATH . '(.*)@', '/home/\1/', BeeHub_Auth::inst()->current_user()->path) ) . '"' ?>
     class="btn btn-small bh-dir-content-gohome" data-toggle="tooltip"
     title="Go to home folder">
     <i class="icon-home"></i> Home
@@ -150,18 +150,18 @@ require 'views/header.php';
   <table>
     <tr>
       <td id="bh-dir-tree-cancel" hidden="hidden"><i class="icon-remove" style="cursor: pointer"></i></td>
-      <td class="bh-dir-tree-header" <?= $_COOKIE['beehub-showtree'] === 'false' ? 'hidden="hidden"' : '' ?> >Browse</td>
+      <td class="bh-dir-tree-header" <?= @$_COOKIE['beehub-showtree'] === 'false' ? 'hidden="hidden"' : '' ?> >Browse</td>
     </tr>
   </table>
 </div>
 
 <!-- Arrow to show the tree -->
-<a class="bh-dir-tree-slide-trigger <?= $_COOKIE['beehub-showtree'] !== 'false' ? 'active' : '' ?> ">
-  <i class="icon-folder-<?= $_COOKIE['beehub-showtree'] !== 'false' ? 'open' : 'close' ?>"></i>
+<a class="bh-dir-tree-slide-trigger <?= @$_COOKIE['beehub-showtree'] !== 'false' ? 'active' : '' ?> ">
+  <i class="icon-folder-<?= @$_COOKIE['beehub-showtree'] !== 'false' ? 'open' : 'close' ?>"></i>
 </a>
 
 <!-- Tree slide out, dynatree - tree view -->
-<div id="bh-dir-tree" class="bh-dir-tree-slide" <?= $_COOKIE['beehub-showtree'] === 'false' ? 'hidden="hidden"' : '' ?>>
+<div id="bh-dir-tree" class="bh-dir-tree-slide" <?= @$_COOKIE['beehub-showtree'] === 'false' ? 'hidden="hidden"' : '' ?>>
   <ul class="dynatree-container">
     <?php
     // Fill the tree nodes
