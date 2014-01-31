@@ -29,11 +29,7 @@ set -e
 cd "$( dirname "${BASH_SOURCE[0]}" )/../"
 
 # Update Composer and all dependencies installed through Composer
-php tools/composer.phar self-update
-php tools/composer.phar update
-
-# Load submodules
-git submodule update
+composer.phar update
 
 # 'compile' js-webdav-client and link the file
 cd js-webdav-client

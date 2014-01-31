@@ -34,11 +34,19 @@ $beehubConfig = parse_ini_file( $path . 'config.ini', true );
 if ( substr( $beehubConfig['environment']['simplesamlphp'], -1 ) !== DIRECTORY_SEPARATOR ) {
   $beehubConfig['environment']['simplesamlphp'] .= DIRECTORY_SEPARATOR;
 }
-unlink( 'public' . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR . 'simplesaml' );
-symlink( $beehubConfig['environment']['simplesamlphp'] . 'www', $path . 'public' . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR . 'simplesaml' );
+@unlink( 'public' . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR . 'simplesaml' );
+if ( false === symlink( $beehubConfig['environment']['simplesamlphp'] . 'www', $path . 'public' . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR . 'simplesaml' ) ) {
+  print( "Unable to link simpleSAMLphp to BeeHub. Please check that this location exists:\n" );
+  print( $beehubConfig['environment']['simplesamlphp'] . "www\n" );
+  print( "And that this script is able to create a link here:\n" );
+  print( $path . 'public' . DIRECTORY_SEPARATOR . 'system' . DIRECTORY_SEPARATOR . "simplesaml\n" );
+  print( "After fixing the problem, please rerun this script:\n" );
+  print( $argv[0] . "\n" );
+  exit( 1 );
+}
 
 // Then load and change the simpleSAMLphp configuration
-$configFile = $beehubConfig['environment']['simplesamlphp'] . DIRECTORY_SEPARATOR . 'config' . DIRECTORY_SEPARATOR . 'authsources.php';
+$configFile = $beehubConfig['environment']['simplesamlphp'] . 'config' . DIRECTORY_SEPARATOR . 'authsources.php';
 require_once( $configFile );
 
 $config['BeeHub'] = array(
@@ -87,7 +95,7 @@ $config['BeeHub'] = array(
 file_put_contents( $configFile, '<?php' . "\n" . '$config = ' . var_export( $config, true ) . ';' );
 
 // And load and add the SURFconext metadata
-$metadataFile = $beehubConfig['environment']['simplesamlphp'] . DIRECTORY_SEPARATOR . 'metadata' . DIRECTORY_SEPARATOR . 'saml20-idp-remote.php';
+$metadataFile = $beehubConfig['environment']['simplesamlphp'] . 'metadata' . DIRECTORY_SEPARATOR . 'saml20-idp-remote.php';
 $metadata = array (
   'name' => array(
     'en' => 'SURFconext',
