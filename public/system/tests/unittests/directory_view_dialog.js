@@ -104,13 +104,10 @@
    * 
    * @param {Function}  testFunction  Function to call after environment setup
    */
-  var testInfoDialog = function(testFunction){
-    // Setup environment
-    var resource = new nl.sara.beehub.ClientResource(currentDirectory);
-    resource.displayname = "currentDirectory";
-    
+  var testInfoDialog = function(testFunction, resources){
+    // Setup environment    
     nl.sara.beehub.controller.actionAction = "copy";
-    nl.sara.beehub.controller.actionResources = [resource];
+    nl.sara.beehub.controller.actionResources = resources;
     
     var rememberDialog = $.fn.dialog; 
     //Overwrite dialog
@@ -124,7 +121,7 @@
     
     nl.sara.beehub.view.dialog.showResourcesDialog(actionFunction);   
     
-    testFunction(resource);
+    testFunction(resources);
     
     // Put back original dialog function
     $.fn.dialog = rememberDialog;
@@ -253,14 +250,14 @@
   test('nl.sara.beehub.view.dialog.showProgressBar', function(){
     expect(7);
   
-    var testFunction = function(resource){
+    var testFunction = function(resources){
 
       
-      var info = $( "tr[id='dialog_tr_" + resource.path + "']" ).find( '.info' );
+      var info = $( "tr[id='dialog_tr_" + resources[0].path + "']" ).find( '.info' );
       // Test values before
       deepEqual(info.find(".bar").length, 0, "No progress bar should be found.");
       
-      nl.sara.beehub.view.dialog.showProgressBar(resource, 70);
+      nl.sara.beehub.view.dialog.showProgressBar(resources[0], 70);
 
       deepEqual(info.find('.bar').length, 1, "One progressbar should be found.");
       deepEqual(info.find('.bar').attr('style'), "width: 70%", "Width should be 70% here.");
@@ -269,8 +266,10 @@
       deepEqual(info.children([0]).hasClass('progress-success'), true, "Class progress should be set.");
       deepEqual(info.children([0]).hasClass('progress-striped'), true, "Class progress should be set.");
     }
+    var resource = new nl.sara.beehub.ClientResource(currentDirectory);
+    resource.displayname = "currentDirectory";
     
-    testInfoDialog(testFunction);
+    testInfoDialog(testFunction, [resource]);
   });
   
    /**
@@ -280,16 +279,19 @@
   test('nl.sara.beehub.view.dialog.updateResourceInfo', function(){
     expect(1);
   
-    var testFunction = function(resource){
-      nl.sara.beehub.view.dialog.updateResourceInfo(resource, "Test info");
+    var testFunction = function(resources){
+      nl.sara.beehub.view.dialog.updateResourceInfo(resources[0], "Test info");
       
-      var info = $( "tr[id='dialog_tr_" + resource.path + "']" ).find( '.info' );
+      var info = $( "tr[id='dialog_tr_" + resources[0].path + "']" ).find( '.info' );
       
       // Progress bar should be overwritten.
       deepEqual(info.html(), "<b>Test info</b>", "Info should be Test info in bold.");
     }
     
-    testInfoDialog(testFunction);
+    var resource = new nl.sara.beehub.ClientResource(currentDirectory);
+    resource.displayname = "currentDirectory";
+    
+    testInfoDialog(testFunction,[resource]);
   })
   
   /**
@@ -298,7 +300,7 @@
   test('nl.sara.beehub.view.dialog.setAlreadyExist', function(){
     expect(5);
     
-    var testFunction = function(resource){
+    var testFunction = function(resources){
       var overwriteFunction = function(){
         ok(true, "Overwrite function is called");
       };
@@ -311,7 +313,7 @@
         ok(true, "Cancel function is called");
       };
       
-      var info = $("tr[id='dialog_tr_"+resource.path+"']").find('.info');
+      var info = $("tr[id='dialog_tr_"+resources[0].path+"']").find('.info');
       
       // Test value before
       deepEqual(info.children().length,0, "Info should be empty");
@@ -324,22 +326,74 @@
       info.find('.renamebutton').click();
     };
     
-    testInfoDialog(testFunction);
+    var resource = new nl.sara.beehub.ClientResource(currentDirectory);
+    resource.displayname = "currentDirectory";
+    
+    testInfoDialog(testFunction,[resource]);
   })
   
   /**
    * Test scrollTo
    */
-//  test('nl.sara.beehub.view.dialog.scrollTo', function(){
-//    expect(5);
-//    
-//    var testFunction = function(resource){
-//      console.log($(dialog).scrollTop());
-//      nl.sara.beehub.view.dialog.scrollTo(10);
-//      console.log($(dialog).scrollTop());
-//    };
-//    
-//    testInfoDialog(testFunction);
-//  })
+  test('nl.sara.beehub.view.dialog.showResourcesDialog', function(){ 
+    expect(1026);
+    // Setup environment    
+    nl.sara.beehub.controller.actionAction = "copy";
+    nl.sara.beehub.controller.actionDestination = currentDirectory;
+    
+    var resources = [];
+    
+    for(var i=0; i<1020; i++){
+      var resource = new nl.sara.beehub.ClientResource("/test/test"+i);
+      resource.displayname = "displayname"+i;
+      resources.push(resource);
+    };
+    nl.sara.beehub.controller.actionResources = resources;
+    
+    var rememberDialog = $.fn.dialog; 
+    //Overwrite dialog
+    $.fn.dialog = function(input){
+      if (input === "close") {
+        ok(true, "Cancel close button is clicked");
+      } else {
+        deepEqual(input.title, "Copy to "+currentDirectory, "Title should be Copy to "+currentDirectory);
+        // Append buttons to dialog
+        $(dialog).append('<button id="'+input.buttons[0].id+'">'+input.buttons[0].text+'</button>');
+        $(dialog).append('<button id="'+input.buttons[1].id+'">'+input.buttons[1].text+'</button>');
+        // Set click handlers on buttons
+        $(dialog).find('#'+input.buttons[0].id).click(input.buttons[0].click);
+        $(dialog).find('#'+input.buttons[1].id).click(input.buttons[1].click);
+      }
+    }
+    
+    var rememberClearAllViews = nl.sara.beehub.controller.clearAllViews;
+    nl.sara.beehub.controller.clearAllViews = function(){
+      ok(true, "clearAllViews is called");
+    };
+    
+    var actionFunction = function() {
+      ok(true, "Action function is called");
+    };
+    
+    nl.sara.beehub.view.dialog.showResourcesDialog(actionFunction);  
+    
+    // Test if all resource fields are set
+    for(var i=0; i<1020; i++){
+      deepEqual($(dialog).find("tr[id='dialog_tr_/test/test"+i+"']").html(), '<td>displayname'+i+'</td><td class="info" width="60%"></td>', "Table value is "+i);
+    };
+    // Test click handlers
+    $(dialog).find(dialogCancelButton).click();
+    var button = $(dialog).find(dialogButton);
+
+    button.click();
+    
+    deepEqual(button.is(':enabled'), false, "Button should be disabled");
+    deepEqual(button.text(),"Copy items...", "Button text should be Copy items...");
+    
+    // Put back original dialog function
+    $.fn.dialog = rememberDialog;
+    
+    nl.sara.beehub.controller.clearAllViews = rememberClearAllViews;
+  })
 })();
 // End of file
