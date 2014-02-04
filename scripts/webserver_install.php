@@ -76,7 +76,45 @@ if ( $notGood ) {
 
 // The configuration checks out, let's install stuff
 
-// First import the database structure
+// First initialise the datadir
+$config = \BeeHub::config();
+$datadir = new \DirectoryIterator( $config['environment']['datadir'] );
+$hasChildren = false;
+foreach ( $datadir as $child ) {
+  if ( ! $child->isDot() ) {
+    $hasChildren = true;
+    break;
+  }
+}
+
+if ( $hasChildren ) {
+  print( "The data directory already has content. Skipping initialisation of data directory.\n" );
+}else{
+  print( "Initialising data directory..." );
+  if (
+    \mkdir( $config['environment']['datadir'] . 'home', 0770, true ) &&
+    \mkdir( $config['environment']['datadir'] . 'system', 0770, true ) &&
+    \mkdir( $config['environment']['datadir'] . \BeeHub::GROUPS_PATH, 0770, true ) &&
+    \mkdir( $config['environment']['datadir'] . \BeeHub::SPONSORS_PATH, 0770, true ) &&
+    \mkdir( $config['environment']['datadir'] . \BeeHub::USERS_PATH, 0770, true )
+  ){
+    $prop = rawurlencode( \DAV::PROP_OWNER );
+    $value = $config['namespace']['wheel_path'];
+    \xattr_set( $config['environment']['datadir'], $prop, $value );
+    \xattr_set( $config['environment']['datadir'] . 'home', $prop, $value );
+    \xattr_set( $config['environment']['datadir'] . 'system', $prop, $value );
+    \xattr_set( $config['environment']['datadir'] . \BeeHub::GROUPS_PATH, $prop, $value );
+    \xattr_set( $config['environment']['datadir'] . \BeeHub::SPONSORS_PATH, $prop, $value );
+    \xattr_set( $config['environment']['datadir'] . \BeeHub::USERS_PATH, $prop, $value );
+  }else{
+    \header( 'HTTP/1.1 500 Internal Server Error' );
+    print( "\nUnable to create the system directories\n" );
+    exit();
+  }
+  print( "ok\n" );
+}
+
+// Then import the database structure
 $mysql = \BeeHub_DB::mysqli();
 
 $result = $mysql->query( 'SHOW TABLES' );
@@ -114,47 +152,25 @@ if ( $result->num_rows > 0 ) {
 
   // And for now; the e-infra sponsor
   $mysql->real_query( 'INSERT INTO `beehub_sponsors` ( `sponsor_name`, `displayname`, `description` ) VALUES ( \'' . DEFAULT_SPONSOR_NAME . '\', \'' . DEFAULT_SPONSOR_DISPLAYNAME . '\', \'' . DEFAULT_SPONSOR_DESCRIPTION . '\' );' );
+
+  // Add a real user
+  $userStatement = $mysql->prepare( 'INSERT INTO `beehub_users` ( `user_name`, `displayname`, `email`, `password`, `sponsor_name` ) VALUES ( ?, ?, ?, ?, \'' . DEFAULT_SPONSOR_NAME . '\' );' );
+  $username = $_SERVER['PHP_AUTH_USER'];
+  $email = $_POST['email'];
+  $password = \crypt( $_SERVER['PHP_AUTH_PW'], '$6$rounds=5000$' . md5(time() . rand(0, 99999)) . '$');
+  $userStatement->bind_param( 'ssss', $username, $username, $email, $password );
+  $userStatement->execute();
+  $userStatement->close();
+  $sponsor = new \BeeHub_Sponsor( \BeeHub::SPONSORS_PATH . DEFAULT_SPONSOR_NAME );
+  $sponsor->change_memberships( array( $username ), true, true );
+  $userdir = $config['environment']['datadir'] . 'home' . \DIRECTORY_SEPARATOR . $username;
+  \mkdir( $userdir, 0770 );
+  \xattr_set( $userdir, \rawurlencode( \DAV::PROP_OWNER ), \BeeHub::USERS_PATH . \rawurlencode( $username ) );
+  \xattr_set( $userdir, \rawurlencode( \BeeHub::PROP_SPONSOR ), \BeeHub::SPONSORS_PATH . \rawurlencode( DEFAULT_SPONSOR_NAME ) );
 }
 
 // Create principals.js with displaynames of all principals
 \BeeHub_Principal::update_principals_json();
-
-// Then initialise the datadir
-$config = \BeeHub::config();
-$datadir = new \DirectoryIterator( $config['environment']['datadir'] );
-$hasChildren = false;
-foreach ( $datadir as $child ) {
-  if ( ! $child->isDot() ) {
-    $hasChildren = true;
-    break;
-  }
-}
-
-if ( $hasChildren ) {
-  print( "The data directory already has content. Skipping initialisation of data directory.\n" );
-}else{
-  print( "Initialising data directory..." );
-  if (
-    \mkdir( $config['environment']['datadir'] . 'home', 0770, true ) &&
-    \mkdir( $config['environment']['datadir'] . 'system' . \DIRECTORY_SEPARATOR . 'groups', 0770, true ) &&
-    \mkdir( $config['environment']['datadir'] . 'system' . \DIRECTORY_SEPARATOR . 'sponsors', 0770, true ) &&
-    \mkdir( $config['environment']['datadir'] . 'system' . \DIRECTORY_SEPARATOR . 'users', 0770, true )
-  ){
-    $prop = rawurlencode( \DAV::PROP_OWNER );
-    $value = $config['namespace']['wheel_path'];
-    \xattr_set( $config['environment']['datadir'], $prop, $value );
-    \xattr_set( $config['environment']['datadir'] . 'home', $prop, $value );
-    \xattr_set( $config['environment']['datadir'] . 'system', $prop, $value );
-    \xattr_set( $config['environment']['datadir'] . 'system' . \DIRECTORY_SEPARATOR . 'groups', $prop, $value );
-    \xattr_set( $config['environment']['datadir'] . 'system' . \DIRECTORY_SEPARATOR . 'sponsors', $prop, $value );
-    \xattr_set( $config['environment']['datadir'] . 'system' . \DIRECTORY_SEPARATOR . 'users', $prop, $value );
-  }else{
-    \header( 'HTTP/1.1 500 Internal Server Error' );
-    print( "\nUnable to create the system directories\n" );
-    exit();
-  }
-  print( "ok\n" );
-}
 
 
 /**
