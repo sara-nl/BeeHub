@@ -1,6 +1,6 @@
 # Installing BeeHub on your own server
 
-## Prerequisits
+## Prerequisites
 
 BeeHub is written in PHP and intended/tested in a Linux environment with Apache 2 as webserver. You require the following software to install and run a BeeHub server:
 
