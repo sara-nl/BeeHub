@@ -6,7 +6,7 @@ BeeHub is written in PHP and intended/tested in a Linux environment with Apache 
 
 * Apache 2.2 or higher
 * Apache modules: mod_rewrite and mod_ssl
-* PHP 5.3 or higher, both the CLI as the Apache2 interface
+* PHP 5.3 or higher, both the CLI and the Apache2 interface
 * PHP extensions: fileinfo, mbstring, mysqli, session and pcntl. And from the PECL repository: xattr.
 * mySQL 5 or higher
 * git
@@ -22,7 +22,7 @@ At the moment of writing, js-webdav-lib requires the following:
 * java
 * unzip
 
-One or more dependencies installed by Composer also require PHP extensions. At the moment of writing, most noticable:
+One or more dependencies installed by Composer also require PHP extensions. At the moment of writing, most noticeable:
 
 * dom
 * xsl
