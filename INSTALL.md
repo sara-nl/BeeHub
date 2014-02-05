@@ -48,3 +48,13 @@ To install BeeHub, you can simply run 'make install' and the installation script
    - Apache has write access to the data directory
    - Apache has write access to /public/system/js/server/principals.js
 7. Run 'make install'. If the installation fails, fix te indicated problem and just run 'make install' again.
+
+## Testing the installation
+
+To test your installation, simply run:
+
+```
+make test
+```
+
+IMPORTANT: You need a separate test configuration. If it is not present yet, you will be asked some questions to create this. It is important to create a separate database (and preferably mySQL user) and data directory for your tests. Running the tests will erase all data in the database and the datadir!

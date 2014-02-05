@@ -37,8 +37,8 @@ HTTPD_HOST=''
 HTTPD_PORT=80
 while [[ 1 -eq 1 ]]; do
   echo -en "\nMake sure your Apache webserver is configured as follows:\n"
-  echo " - Use $(pwd)public/ as document root"
-  echo " - \"AccessFileName .htaccess\" and \"AllowOverride All\" for the document root, or copy the directives in $(pwd)public/.htaccess into the Directory section of the central Apache configuration"
+  echo " - Use $(pwd)/public/ as document root"
+  echo " - \"AccessFileName .htaccess\" and \"AllowOverride All\" for the document root, or copy the directives in $(pwd)/public/.htaccess into the Directory section of the central Apache configuration"
   echo " - Have at least the following modules installed:"
   echo "   * mod_rewrite"
   echo "   * mod_ssl"
@@ -61,7 +61,7 @@ while [[ 1 -eq 1 ]]; do
   echo ""
 
   SSL_PORT=$[HTTPD_PORT+363];
-  if curl --silent --fail "https://${HTTPD_HOST}:${SSL_PORT}/some/unexisting/path/" &&
+  if curl --insecure --silent --fail "https://${HTTPD_HOST}:${SSL_PORT}/some/unexisting/path/" &&
      curl --silent --fail "http://${HTTPD_HOST}:${HTTPD_PORT}/some/unexisting/path/"; then
     break
   else
@@ -99,7 +99,7 @@ while [[ "${CONTINUE}" != "y" ]]; do
   read CONTINUE
 done
 
-curl --fail --form-string "email=${EMAIL}" --user "${USERNAME}:${PASSWORD}" "https://${HTTPD_HOST}:${SSL_PORT}/"
+curl --insecure --form-string "email=${EMAIL}" --user "${USERNAME}:${PASSWORD}" "https://${HTTPD_HOST}:${SSL_PORT}/"
 
 # Set the configuration so it will not allow webserver installation
 mv config.ini config.ini.orig
@@ -111,7 +111,5 @@ while read LINE; do
   fi
 done < config.ini.orig
 rm config.ini.orig
-
-echo "Done configuring the webservice"
 
 exit 0

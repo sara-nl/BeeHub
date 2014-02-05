@@ -70,6 +70,7 @@ if ( ( $version[0] == 5 ) && ( $version[1] < 4 ) ) {
 // If we encountered an error, abort now!
 if ( $notGood ) {
   \header( 'HTTP/1.1 500 Internal Server Error' );
+  \ob_end_flush();
   print( "Your PHP configuration is not correct.\n" );
   exit();
 }
@@ -108,6 +109,7 @@ if ( $hasChildren ) {
     \xattr_set( $config['environment']['datadir'] . \BeeHub::USERS_PATH, $prop, $value );
   }else{
     \header( 'HTTP/1.1 500 Internal Server Error' );
+    \ob_end_flush();
     print( "\nUnable to create the system directories\n" );
     exit();
   }
@@ -116,6 +118,12 @@ if ( $hasChildren ) {
 
 // Then import the database structure
 $mysql = \BeeHub_DB::mysqli();
+if ( $mysql->connect_errno ) {
+  \header( 'HTTP/1.1 500 Internal Server Error' );
+  \ob_end_flush();
+  print( "\nFailed to connect to MySQL: (" . $mysql->connect_errno . ") " . $mysql->connect_error . "\n" );
+  exit();
+}
 
 $result = $mysql->query( 'SHOW TABLES' );
 if ( $result->num_rows > 0 ) {
@@ -132,6 +140,7 @@ if ( $result->num_rows > 0 ) {
     if ( \substr( $query, -1 ) === ';' ) {
       if ( $mysql->real_query( $query ) === false ) {
         \header( 'HTTP/1.1 500 Internal Server Error' );
+        \ob_end_flush();
         print( "\nUnable to create database structure\n" );
         exit();
       }
@@ -172,6 +181,9 @@ if ( $result->num_rows > 0 ) {
 // Create principals.js with displaynames of all principals
 \BeeHub_Principal::update_principals_json();
 
+// Let 'them' know everything went well
+print( "\nDone configuring webserver\n" );
+\ob_end_flush();
 
 /**
  * Checks whether a PHP configuration value is correct
@@ -186,7 +198,7 @@ function test_config( $key, $value ) {
     print( "ok\n" );
     return true;
   }else{
-    print( 'WRONG (actual value: ' . \strval( \ini_get( $key ) ) . "\n" );
+    print( 'WRONG (actual value: ' . \strval( \ini_get( $key ) ) . " )\n" );
     return false;
   }
 }
