@@ -20,6 +20,12 @@
 // Bootstrap the application
 require_once '../src/beehub_bootstrap.php';
 
+$config = BeeHub::config();
+if ( @$config['install']['run_install'] === 'true' ) {
+  require_once( dirname( __DIR__) . DIRECTORY_SEPARATOR . 'scripts' . DIRECTORY_SEPARATOR . 'webserver_install.php' );
+  exit();
+}
+
 // IE 8 or older really don't work at all anymore. Prompt the user to upgrade
 if ( ( $_SERVER['REQUEST_METHOD'] === 'GET' ) &&
      ( ( ( DAV::determine_client() & ~ DAV::CLIENT_IE ) & ( DAV::CLIENT_IE_OLD | DAV::CLIENT_IE8 ) ) > 0 )

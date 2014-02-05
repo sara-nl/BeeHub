@@ -58,6 +58,7 @@ while [[ "${CONTINUE}" != "y" ]]; do
       break
     fi
   done
+
   while [[ 1 -eq 1 ]]; do
     echo "Where is SimpleSAMLphp installed? [${SIMPLESAML}] "
     read SIMPLESAML_2
@@ -75,11 +76,13 @@ while [[ "${CONTINUE}" != "y" ]]; do
       break
     fi
   done
+
   echo "What username should the administrator have? [${WHEEL}] "
   read WHEEL_2
   if [[ "${WHEEL_2}" != "" ]]; then
     WHEEL="${WHEEL_2}"
   fi
+
   while [[ 1 -eq 1 ]]; do
     echo "What host runs the mySQL database? [${MYSQL_HOST}] "
     read MYSQL_HOST_2
@@ -109,21 +112,25 @@ while [[ "${CONTINUE}" != "y" ]]; do
       break
     fi
   done
+
   echo "When using HTTP authentication, what realm should be used? [${REALM}] "
   read REALM_2
   if [[ "${REALM_2}" != "" ]]; then
     REALM="${REALM_2}"
   fi
+
   echo "When sending e-mail, which sender address should be used? [${MAIL_ADDRESS}] "
   read MAIL_ADDRESS_2
   if [[ "${MAIL_ADDRESS_2}" != "" ]]; then
     MAIL_ADDRESS="${MAIL_ADDRESS_2}"
   fi
+
   echo "What name should be used for sending e-mail? [${MAIL_NAME}] "
   read MAIL_NAME_2
   if [[ "${MAIL_NAME_2}" != "" ]]; then
     MAIL_NAME="${MAIL_NAME_2}"
   fi
+
   echo ""
   echo "Do you want to store these values (y/n)? [n] "
   read CONTINUE
@@ -157,6 +164,9 @@ realm = "${REALM}"
 [email]
 sender_address = "${MAIL_ADDRESS}"
 sender_name    = "${MAIL_NAME}"
+
+[install]
+run_install = "false"
 EOS
 
 exit 0

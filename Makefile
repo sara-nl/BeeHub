@@ -8,17 +8,7 @@ list:
 	@echo " - test; run server tests"
 
 install: vendor public/system/simplesaml config.ini init_submodules
-	@echo -ne "\nMake sure your Apache webserver is configured as follows:\n"
-	@echo " - Use $(pwd)public/ as document root"
-	@echo " - \"AccessFileName .htaccess\" and \"AllowOverride All\" for the document root, or copy the directives in $(pwd)public/.htaccess into the Directory section of the central Apache configuration"
-	@echo " - Have at least the following modules installed:"
-	@echo "   * mod_rewrite"
-	@echo "   * mod_ssl"
-	@echo "   * php 5.3 or higher"
-	@echo " - Listen for HTTP connections (preferably on port 80)"
-	@echo " - Listen for HTTPS connections (preferably on port 443, but always 363 ports after the HTTP port)"
-	@echo " - Apache has write access to the data directory and all subdirectories"
-	@echo -ne "\nTo finish the installation, please use your browser to visit the website your Apache webserver is configured to respond to.\n"
+	@./scripts/webserver_install.sh
 
 docs: public/system/phpdoc
 
