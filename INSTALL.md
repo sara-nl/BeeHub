@@ -13,7 +13,7 @@ BeeHub is written in PHP and intended/tested in a Linux environment with Apache 
 * make
 * simpleSAMLphp; see http://simplesamlphp.org/
 * Composer.phar; a dependency manager for PHP, see https://getcomposer.org
-* Litmus webDAV test suite; see http://www.webdav.org/neon/litmus/
+* Litmus webDAV test suite (compiled with ssl support); see http://www.webdav.org/neon/litmus/
 
 ### Requirements by dependencies:
 
