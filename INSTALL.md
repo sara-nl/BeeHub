@@ -14,6 +14,18 @@ BeeHub is written in PHP and intended/tested in a Linux environment with Apache 
 * simpleSAMLphp; see http://simplesamlphp.org/
 * Composer.phar; a dependency manager for PHP, see https://getcomposer.org
 * Litmus webDAV test suite (compiled with ssl support); see http://www.webdav.org/neon/litmus/
+
+### Requirements by dependencies:
+
+At the moment of writing, js-webdav-lib requires the following:
+
+* java
+* unzip
+
+One or more dependencies installed by Composer also require PHP extensions. At the moment of writing, most noticeable:
+
+* dom
+* xsl
  
 ### e.g.: In Ubuntu 12.04
 
@@ -30,18 +42,6 @@ $ ./configure
 $ make
 $ sudo make install
 ```
-
-### Requirements by dependencies:
-
-At the moment of writing, js-webdav-lib requires the following:
-
-* java
-* unzip
-
-One or more dependencies installed by Composer also require PHP extensions. At the moment of writing, most noticeable:
-
-* dom
-* xsl
 
 ## Installing BeeHub
 
