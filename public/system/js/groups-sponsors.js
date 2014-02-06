@@ -240,15 +240,14 @@ $(function() {
 	/*
 	 * Action when the groupsname field will change
 	 */
-	 $('#bh-groups-group-name').change(function () {
+	 $('#bh-gs-group-name').change(function () {
 		 groupNameListener($(this));
 	 });
-
 	 /*
 	 * Action when the Create group button is clicked
 	 */
-	 $('#bh-groups-create-group-form').submit(function (e) {
-		 if (!groupNameListener($('#bh-groups-group-name'))) {
+	 $('#bh-gs-create-group-form').submit(function (e) {
+		 if (!groupNameListener($('#bh-gs-group-name'))) {
 			 e.preventDefault();
 		 }
 	 });

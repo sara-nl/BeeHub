@@ -19,19 +19,24 @@
 "use strict";
 
 (function(){
-  var currentDirectory =      "/foo/client_tests/";
-  var dialog = '#bh-dir-dialog';
+  var currentDirectory =            "/foo/client_tests/";
+  var testFile =                    "/foo/client_tests/file2.txt";
+    
+  var dialog =                      '#bh-dir-dialog';
   
-  var aclTableSearch =      '.bh-dir-acl-table-search';
-  var aclResourceForm =     '#bh-dir-acl-resource-form';
-  var aclRadio1 =           '.bh-dir-acl-add-radio1';
-  var aclRadio2 =           '.bh-dir-acl-add-radio2';
-  var aclRadio3 =           '.bh-dir-acl-add-radio3';
-  var dialogButton=         '#bh-dir-dialog-button';
-  var dialogCancelButton=   '#bh-dir-cancel-dialog-button';
+  var aclTableSearch =              '.bh-dir-acl-table-search';
+  var aclResourceForm =             '#bh-dir-acl-resource-form';
+  var aclRadio1 =                   '.bh-dir-acl-add-radio1';
+  var aclRadio2 =                   '.bh-dir-acl-add-radio2';
+  var aclRadio3 =                   '.bh-dir-acl-add-radio3';
+  var dialogButton=                 '#bh-dir-dialog-button';
+  var aclDirectoryButton =          '#bh-dir-acl-directory-button';
+  var dialogCancelButton=           '#bh-dir-cancel-dialog-button';
+  var dialogRenameOverwriteButton=  '#bh-dir-rename-overwrite-button';
+  var dialogRenameCancelButton=     "#bh-dir-rename-cancel-button";
 
   // Needed for testing autocomplete 
-  var autocompleteLength = 5;
+  var autocompleteLength = 6;
   var ui = {
       item: {
         displayname:    "Bar",
@@ -179,6 +184,8 @@
     }
     
     nl.sara.beehub.view.dialog.showAcl(html, currentDirectory);
+    nl.sara.beehub.view.acl.getAddAclButton().button();
+    
     // Test if html is added in dialog
     deepEqual($(dialog).find(aclResourceForm).length, 1, "Dialog content should be -Show error test-.");
     
@@ -189,7 +196,85 @@
     
     testRadioButtons();
     
-//    // Put back original dialog function
+    // Put back original dialog function
+    $.fn.dialog = rememberDialog;
+  });
+  
+  /**
+   * Test
+   */
+  test('nl.sara.beehub.view.dialog.showAddRuleDialog', function(){
+   expect(1);
+    
+    nl.sara.beehub.view.acl.setView("directory", currentDirectory);
+    var html = nl.sara.beehub.view.acl.createHtmlAclForm("tab");
+    
+    var testFunction = function(){
+      ok(true, "Test function is called.");
+    };
+    
+    var rememberDialog = $.fn.dialog; 
+    //Overwrite dialog
+    $.fn.dialog = function(input){
+      var html = '<div id="bh-dir-acl-directory-button"></div></div>'
+      $(dialog).append(html);
+      
+      // Initialize button
+      var button = nl.sara.beehub.view.acl.getAddAclButton().button();
+      
+      ok(true, "Dialog is called.");
+    }
+
+    nl.sara.beehub.view.dialog.showAddRuleDialog(testFunction, html);
+    
+    console.log($(dialog));
+//
+//    // Test if html is added in dialog
+//    deepEqual($(dialog).find(aclResourceForm).length, 1, "Dialog content should be -Show error test-.");
+//    
+//    // Add button should be disabled
+//    deepEqual(nl.sara.beehub.view.acl.getAddAclButton().prop('disabled') , true, "Add button should be disabled");
+    
+//    testAutocomplete();
+    
+//    testRadioButtons();
+    
+    // Put back original dialog function
+    $.fn.dialog = rememberDialog;
+  });
+  
+  /**
+   * Test
+   */
+  test('nl.sara.beehub.view.dialog.getFormAce', function(){
+    expect(4);
+    
+    nl.sara.beehub.view.acl.setView("resource", currentDirectory);
+    var html = nl.sara.beehub.view.acl.createDialogViewHtml();
+    
+    var rememberDialog = $.fn.dialog; 
+    //Overwrite dialog
+    $.fn.dialog = function(){
+      // Do not open dialog
+    }
+    
+    nl.sara.beehub.view.dialog.showAcl(html, currentDirectory);
+    var aclForm = nl.sara.beehub.view.acl.getFormView();
+    
+    aclForm.find(aclTableSearch).attr('name',"test");
+    var ace = nl.sara.beehub.view.dialog.getFormAce();
+    deepEqual(ace.permissions, "allow read", "Permissions should be allow read.");
+    deepEqual(ace.principal, "test", "Principal should be test.");
+    
+    $(dialog).find(".bh-dir-acl-add-radio1").prop("checked", true); 
+    ace = nl.sara.beehub.view.dialog.getFormAce();
+    deepEqual(ace.principal, "DAV: authenticated", "Principal should be DAV: authenticated.");
+
+    $(dialog).find(".bh-dir-acl-add-radio2").prop("checked", true); 
+    ace = nl.sara.beehub.view.dialog.getFormAce();
+    deepEqual(ace.principal, "DAV: all", "Principal should be DAV: all.");
+
+  // Put back original dialog function
     $.fn.dialog = rememberDialog;
   });
   
@@ -292,7 +377,7 @@
     resource.displayname = "currentDirectory";
     
     testInfoDialog(testFunction,[resource]);
-  })
+  });
   
   /**
    * Test setAlreadyExist
@@ -330,7 +415,7 @@
     resource.displayname = "currentDirectory";
     
     testInfoDialog(testFunction,[resource]);
-  })
+  });
   
   /**
    * Test scrollTo
@@ -394,6 +479,61 @@
     $.fn.dialog = rememberDialog;
     
     nl.sara.beehub.controller.clearAllViews = rememberClearAllViews;
-  })
+  });
+  
+  /**
+   * Test showOverwriteDialog
+   */
+  test('nl.sara.beehub.view.dialog.showOverwriteDialog', function(){
+    expect(4);
+    
+    var rememberDialog = $.fn.dialog; 
+    // Overwrite dialog
+    $.fn.dialog = function(input){
+      if (input === "close") {
+        ok(true, "Dialog is called with value close");
+      } else {
+        ok(true, "Dialog is called.");
+      }
+    }
+    
+    var resource = new nl.sara.beehub.ClientResource(testFile);
+    var fileNew = testFile;
+    
+    var overwriteFunction = function(){
+      ok(true, "Overwrite function is called.");
+    };
+    
+    nl.sara.beehub.view.dialog.showOverwriteDialog(resource, fileNew, overwriteFunction);
+    
+    // Test if title is ok
+    deepEqual($(dialog).find('i').html(), testFile, "File should be "+testFile);
+    // Test Overwrite button click handler
+    $(dialogRenameOverwriteButton).click();
+    // Test Cancel button click handler
+    $(dialogRenameCancelButton).click();
+    
+    // Put back original dialog function
+    $.fn.dialog = rememberDialog;
+  });
+  
+   /**
+   * Test closeDialog
+   */
+  test('nl.sara.beehub.view.dialog.closeDialog', function(){
+    expect(1);
+    
+    var rememberDialog = $.fn.dialog; 
+    // Overwrite dialog
+    $.fn.dialog = function(input){
+      deepEqual(input,"close", "Input should be close.")
+    }
+    
+    nl.sara.beehub.view.dialog.closeDialog();
+   
+    // Put back original dialog function
+    $.fn.dialog = rememberDialog;
+  });
+  
 })();
 // End of file
