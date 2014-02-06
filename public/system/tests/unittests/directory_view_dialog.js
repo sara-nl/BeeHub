@@ -26,6 +26,7 @@
   
   var aclTableSearch =              '.bh-dir-acl-table-search';
   var aclResourceForm =             '#bh-dir-acl-resource-form';
+  var aclDirectoryForm =             '#bh-dir-acl-directory-form';
   var aclRadio1 =                   '.bh-dir-acl-add-radio1';
   var aclRadio2 =                   '.bh-dir-acl-add-radio2';
   var aclRadio3 =                   '.bh-dir-acl-add-radio3';
@@ -187,7 +188,7 @@
     nl.sara.beehub.view.acl.getAddAclButton().button();
     
     // Test if html is added in dialog
-    deepEqual($(dialog).find(aclResourceForm).length, 1, "Dialog content should be -Show error test-.");
+    deepEqual($(dialog).find(aclResourceForm).length, 1, "Dialog content should be not empty.");
     
     // Add button should be disabled
     deepEqual(nl.sara.beehub.view.acl.getAddAclButton().prop('disabled') , true, "Add button should be disabled");
@@ -204,7 +205,7 @@
    * Test
    */
   test('nl.sara.beehub.view.dialog.showAddRuleDialog', function(){
-   expect(1);
+   expect(24);
     
     nl.sara.beehub.view.acl.setView("directory", currentDirectory);
     var html = nl.sara.beehub.view.acl.createHtmlAclForm("tab");
@@ -212,7 +213,7 @@
     var testFunction = function(){
       ok(true, "Test function is called.");
     };
-    
+   
     var rememberDialog = $.fn.dialog; 
     //Overwrite dialog
     $.fn.dialog = function(input){
@@ -221,23 +222,24 @@
       
       // Initialize button
       var button = nl.sara.beehub.view.acl.getAddAclButton().button();
+      button.unbind('click').click(input.buttons[1].click);
       
       ok(true, "Dialog is called.");
     }
 
     nl.sara.beehub.view.dialog.showAddRuleDialog(testFunction, html);
     
-    console.log($(dialog));
-//
-//    // Test if html is added in dialog
-//    deepEqual($(dialog).find(aclResourceForm).length, 1, "Dialog content should be -Show error test-.");
-//    
-//    // Add button should be disabled
-//    deepEqual(nl.sara.beehub.view.acl.getAddAclButton().prop('disabled') , true, "Add button should be disabled");
+    nl.sara.beehub.view.acl.getAddAclButton().click();
+
+    // Test if html is added in dialog
+    deepEqual($(dialog).find(aclDirectoryForm).length, 1, "Dialog content should be not empty.");
     
-//    testAutocomplete();
+    // Add button should be disabled
+    deepEqual(nl.sara.beehub.view.acl.getAddAclButton().prop('disabled') , true, "Add button should be disabled");
     
-//    testRadioButtons();
+    testAutocomplete();
+    
+    testRadioButtons();
     
     // Put back original dialog function
     $.fn.dialog = rememberDialog;
@@ -421,14 +423,14 @@
    * Test scrollTo
    */
   test('nl.sara.beehub.view.dialog.showResourcesDialog', function(){ 
-    expect(1026);
+    expect(26);
     // Setup environment    
     nl.sara.beehub.controller.actionAction = "copy";
     nl.sara.beehub.controller.actionDestination = currentDirectory;
     
     var resources = [];
     
-    for(var i=0; i<1020; i++){
+    for(var i=0; i<20; i++){
       var resource = new nl.sara.beehub.ClientResource("/test/test"+i);
       resource.displayname = "displayname"+i;
       resources.push(resource);
@@ -463,7 +465,7 @@
     nl.sara.beehub.view.dialog.showResourcesDialog(actionFunction);  
     
     // Test if all resource fields are set
-    for(var i=0; i<1020; i++){
+    for(var i=0; i<20; i++){
       deepEqual($(dialog).find("tr[id='dialog_tr_/test/test"+i+"']").html(), '<td>displayname'+i+'</td><td class="info" width="60%"></td>', "Table value is "+i);
     };
     // Test click handlers
