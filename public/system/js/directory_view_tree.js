@@ -40,7 +40,7 @@
    */
   nl.sara.beehub.view.tree.init = function() {
     nl.sara.beehub.view.tree.attachEvents( treeNode );
-    $(".bh-dir-tree-slide-trigger").click(handle_tree_slide_click);
+    $(".bh-dir-tree-slide-trigger").unbind('click').click(handle_tree_slide_click);
   };
 
   var directoryClickHandlerAlternative = null;
@@ -133,6 +133,8 @@
         // If there is no list loaded yet; load one now!
         var url = expander.siblings( 'a' ).attr( 'href' );
         nl.sara.beehub.controller.getTreeNode( url, function( status, data ) {
+          // TODO callback status in controller
+          // TODO alert should be dialog
           // Callback
           if (status !== 207) {
             alert( 'Could not load the subdirectories' );

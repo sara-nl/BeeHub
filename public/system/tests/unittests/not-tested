@@ -1,0 +1,4 @@
+- nl.sara.beehub.view.dialog.scrollTo
+- changing resourcePath in nl.sara.beehub.view.dialog.showAcl
+- callback of treeExpandHandler in tree view
+- overleg Niek regel 137 in tree view , createElement hoort hier ook bij
