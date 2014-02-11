@@ -19,13 +19,17 @@
 "use strict";
 
 (function(){
-//  var currentDirectory =            "/foo/client_tests/";
+  var foo =                     "/foo";
+  var client_tests =            "/foo/client_tests";
+  var directory =               "/foo/client_tests/directory";
+  
 //  var testFile =                    "/foo/client_tests/file2.txt";
   var treeNode = $( "#bh-dir-tree ul.dynatree-container" );
   
-  var treeSlideTrigger = ".bh-dir-tree-slide-trigger";
+  var treeSlideTrigger = ".bh-dir-tree-slide-trigger"; 
   var treeHeader =        "#bh-dir-tree-header";
   var treeSlide =         ".bh-dir-tree-slide";
+  var treeOverlay =       '.bh-tree-overlay';
   var treeHeaderClass =   ".bh-dir-tree-header";
   var tree =              "#bh-dir-tree";
   var treeCancelButton =  "#bh-dir-tree-cancel";
@@ -312,7 +316,21 @@
    * Test addPath
    */
   test("nl.sara.beehub.view.tree.addPath", function(){
-    ok(false, "Not yet implemented");
+    expect(5);
+    nl.sara.beehub.view.tree.addPath(directory+'/test1');
+    
+    var fooDir = $( 'a[href="' + foo + '/"]', treeNode).parent();
+    var client_testsDir = $( 'a[href="' + client_tests + '/"]', treeNode).parent();
+    var directoryDir = $( 'a[href="' + directory + '/"]', treeNode).parent();
+    
+    testTreeExpandHandler(fooDir, true);
+    testTreeExpandHandler(client_testsDir, true);
+    testTreeExpandHandler(directoryDir, true);
+
+//    deepEqual(fooDir.hasClass('dynatree-expanded'), true, "Class dynatree-expanded should be set.");
+//    deepEqual(client_testsDir.hasClass('dynatree-expanded'), true, "Class dynatree-expanded should be set.");
+//    deepEqual(directoryDir.hasClass('dynatree-expanded'), true, "Class dynatree-expanded should be set.");
+
   });
   
   /**
@@ -359,12 +377,25 @@
    * Test
    */
   test("nl.sara.beehub.view.tree.setModal", function(){
-    expect(2);
+    expect(12);
     
     nl.sara.beehub.view.tree.setModal(true);
+    deepEqual($(treeHeader).hasClass('ui-front'), true, "Class ui-front should be set.");
+    deepEqual($('a'+treeSlideTrigger).hasClass('ui-front'), true, "Class ui-front should be set.");
+    deepEqual($(tree).hasClass('ui-front'), true, "Class ui-front should be set.");
+    deepEqual($( 'div'+treeOverlay).length, 1, "Div overlay should be present." );
+    
     nl.sara.beehub.view.tree.setModal(false);
+    deepEqual($(treeHeader).hasClass('ui-front'), false, "Class ui-front should be unset.");
+    deepEqual($('a'+treeSlideTrigger).hasClass('ui-front'), false, "Class ui-front should be unset.");
+    deepEqual($(tree).hasClass('ui-front'), false, "Class ui-front should be unset.");
+    deepEqual($( 'div'+treeOverlay).length, 0, "Div overlay should be not present." );
+    
     nl.sara.beehub.view.tree.setModal(true);
-
+    deepEqual($(treeHeader).hasClass('ui-front'), true, "Class ui-front should be set.");
+    deepEqual($('a'+treeSlideTrigger).hasClass('ui-front'), true, "Class ui-front should be set.");
+    deepEqual($(tree).hasClass('ui-front'), true, "Class ui-front should be set.");
+    deepEqual($( 'div'+treeOverlay).length, 1, "Div overlay should be present." );
   });
 })();
 // End of file

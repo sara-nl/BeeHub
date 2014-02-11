@@ -382,10 +382,10 @@
     // Determine which path we want to extend now
     expandedPath += parents.shift() + '/';
     var parentLink = $( 'a[href="' + encodeURI( expandedPath ) + '"]', treeNode );
+
     if ( parentLink.length === 0 ) {
       throw "Unable to add directory to the tree: parent directory does not exist";
     }
-
     // It exists, let's expand this directory if it is not expanded already
     var parentSpan = parentLink.parent('span');
     if ( ! parentSpan.hasClass( 'dynatree-expanded' ) ) {
@@ -566,7 +566,6 @@
     var treeElements = treeHeader
             .add( 'a.bh-dir-tree-slide-trigger' )
             .add ( '#bh-dir-tree' );
-    console.log(treeElements);
     if ( modal ) {
       treeElements.addClass( 'ui-front' );
       treeHeader.before( '<div class="bh-tree-overlay ui-widget-overlay ui-front"></div>' );
