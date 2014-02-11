@@ -259,7 +259,7 @@
       $("#bh-dir-tree-header").addClass('bh-dir-nomask');
       $("#bh-dir-tree").addClass('bh-dir-nomask');
     } else {
-      $(".bh-dir-tree-header").removeClass('bh-dir-nomask');
+      $("#bh-dir-tree-header").removeClass('bh-dir-nomask');
       $("#bh-dir-tree").removeClass('bh-dir-nomask');
     }
   };
@@ -273,7 +273,7 @@
    */
   nl.sara.beehub.view.tree.cancelButton = function(action){
     if (action === 'show') {
-      $('#bh-dir-tree-cancel').click(function(){
+      $('#bh-dir-tree-cancel').unbind('click').click(function(){
         nl.sara.beehub.view.tree.setModal( false );
         nl.sara.beehub.controller.setCopyMoveView(false);
         nl.sara.beehub.view.tree.clearView();
@@ -282,6 +282,7 @@
       return;
     };
     if (action === 'hide') {
+      $('#bh-dir-tree-cancel').unbind('click');
       $('#bh-dir-tree-cancel').hide();
       return;
     }
@@ -556,7 +557,7 @@
   
   
   /**
-   * Change whether the directory tree is modal
+   * Change when the directory tree is modal
    * 
    * @param {Boolean} modal  If set to true, the directory tree will be modal
    */
@@ -565,6 +566,7 @@
     var treeElements = treeHeader
             .add( 'a.bh-dir-tree-slide-trigger' )
             .add ( '#bh-dir-tree' );
+    console.log(treeElements);
     if ( modal ) {
       treeElements.addClass( 'ui-front' );
       treeHeader.before( '<div class="bh-tree-overlay ui-widget-overlay ui-front"></div>' );

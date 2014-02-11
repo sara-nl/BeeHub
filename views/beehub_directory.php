@@ -641,10 +641,10 @@ try {
 if ( RUN_CLIENT_TESTS ) {
   $footer .= '
     <script src="/system/tests/unittests/directory_view_tree.js"></script>
-    <script src="/system/tests/unittests/directory_view_content.js"></script>
-    <script src="/system/tests/unittests/directory_view_acl.js"></script>
-    <script src="/system/tests/unittests/directory_view_dialog.js"></script>
   ';
+  //     <script src="/system/tests/unittests/directory_view_content.js"></script>
+  //     <script src="/system/tests/unittests/directory_view_acl.js"></script>
+  //     <script src="/system/tests/unittests/directory_view_dialog.js"></script>
 }
 
 require 'views/footer.php';

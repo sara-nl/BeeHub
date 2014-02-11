@@ -23,7 +23,12 @@
 //  var testFile =                    "/foo/client_tests/file2.txt";
   var treeNode = $( "#bh-dir-tree ul.dynatree-container" );
   
-  var treeSlideTrigger = ".bh-dir-tree-slide-trigger"
+  var treeSlideTrigger = ".bh-dir-tree-slide-trigger";
+  var treeHeader =        "#bh-dir-tree-header";
+  var treeSlide =         ".bh-dir-tree-slide";
+  var treeHeaderClass =   ".bh-dir-tree-header";
+  var tree =              "#bh-dir-tree";
+  var treeCancelButton =  "#bh-dir-tree-cancel";
   
   module("tree view",{
     setup: function(){
@@ -171,5 +176,195 @@
     deepEqual($(treeSlideTrigger+" i").hasClass('icon-folder-open'), false, "icon-folder-open should be removed");
     deepEqual($(treeSlideTrigger+" i").hasClass('icon-folder-close'), true, "icon-folder-close should be added");
   })
+  
+  /**
+   * Test noMask
+   */
+  test("nl.sara.beehub.view.tree.noMask", function(){
+    expect(6);
+    
+    nl.sara.beehub.view.tree.noMask(true);
+    deepEqual($(treeHeader).hasClass('bh-dir-nomask'), true, "bh-dir-nomask class should be set");
+    deepEqual($(tree).hasClass('bh-dir-nomask'), true, "bh-dir-nomask class should be set");
+    nl.sara.beehub.view.tree.noMask(false);
+    deepEqual($(treeHeader).hasClass('bh-dir-nomask'), false, "bh-dir-nomask class should be unset");
+    deepEqual($(tree).hasClass('bh-dir-nomask'), false, "bh-dir-nomask class should be unset");
+    nl.sara.beehub.view.tree.noMask(true);
+    deepEqual($(treeHeader).hasClass('bh-dir-nomask'), true, "bh-dir-nomask class should be set");
+    deepEqual($(tree).hasClass('bh-dir-nomask'), true, "bh-dir-nomask class should be set");
+  })
+  
+  /**
+   * Test cancelButton
+   */
+  test("nl.sara.beehub.view.tree.cancelButton", function(){
+    expect(9);
+    
+    // Setup environment
+    var rememberSetModal = nl.sara.beehub.view.tree.setModal;
+    nl.sara.beehub.view.tree.setModal = function(value){
+      deepEqual(value, false, "Setmodel is called with value false.")
+    };
+    
+    var rememberSetCopyMoveView = nl.sara.beehub.controller.setCopyMoveView;
+    nl.sara.beehub.controller.setCopyMoveView = function(value){
+      deepEqual(value, false, "CopyMoveView is called with value false.")
+    };
+    
+    var rememberClearView = nl.sara.beehub.view.tree.clearView;
+    nl.sara.beehub.view.tree.clearView = function(){
+      ok(true, "ClearView is called.");
+    };
+    
+    nl.sara.beehub.view.tree.cancelButton("show");
+    deepEqual($(treeCancelButton).is(":hidden"), false, "Cancel button should be shown.");
+    $(treeCancelButton).click();
+    
+    nl.sara.beehub.view.tree.cancelButton("hide");
+    deepEqual($(treeCancelButton).is(":hidden"), true, "Cancel button should be hidden.");
+    // No functions should be called
+    $(treeCancelButton).click();
+
+    // Test again if show works
+    nl.sara.beehub.view.tree.cancelButton("show");
+    deepEqual($(treeCancelButton).is(":hidden"), false, "Cancel button should be shown.");
+    $(treeCancelButton).click();
+    
+    // Back to original environment
+    nl.sara.beehub.view.tree.setModal = rememberSetModal;
+    nl.sara.beehub.controller.setCopyMoveView = rememberSetCopyMoveView;
+    nl.sara.beehub.view.tree.clearView = rememberClearView;
+  });
+  
+  /**
+   * Test closeTree, showTree
+   */
+  test('nl.sara.beehub.view.tree.closeTree, showTree', function(){
+    expect(15);
+    
+    // Set up test environment
+    var rememberSlideUp = $.fn.slideUp; 
+    //Overwrite slideUp
+    $.fn.slideUp = function(input){
+      deepEqual(input,"slow", "SlideUp is called with value slow")
+    };
+    
+    var rememberSlideDown = $.fn.slideDown; 
+    //Overwrite slideDown
+    $.fn.slideDown = function(input){
+      deepEqual(input,"slow", "SlideDown is called with value slow")
+    };
+    
+    nl.sara.beehub.view.tree.closeTree();
+    deepEqual($(treeSlideTrigger).hasClass("active"), false, "No class active should be set.");
+    deepEqual($(treeSlideTrigger+" i").hasClass("icon-folder-open"), false, "No class icon-folder-open should be set.");
+    deepEqual($(treeSlideTrigger+" i").hasClass("icon-folder-close"), true, "Class icon-folder-close should be set.");
+    deepEqual($(treeHeaderClass).is(":hidden"), true, "Header should be hidden");
+    
+    nl.sara.beehub.view.tree.showTree();
+    deepEqual($(treeSlideTrigger).hasClass("active"), true, "Class active should be set.");
+    deepEqual($(treeSlideTrigger+" i").hasClass("icon-folder-open"), true, "Class icon-folder-open should be set.");
+    deepEqual($(treeSlideTrigger+" i").hasClass("icon-folder-close"), false, "No class icon-folder-close should be set.");
+    deepEqual($(treeHeaderClass).is(":hidden"), false, "Header should be shown");
+
+    nl.sara.beehub.view.tree.closeTree();
+    deepEqual($(treeSlideTrigger).hasClass("active"), false, "No class active should be set.");
+    deepEqual($(treeSlideTrigger+" i").hasClass("icon-folder-open"), false, "No class icon-folder-open should be set.");
+    deepEqual($(treeSlideTrigger+" i").hasClass("icon-folder-close"), true, "Class icon-folder-close should be set.");
+    deepEqual($(treeHeaderClass).is(":hidden"), true, "Header should be hidden");
+   
+    // Back to original environment
+    $.fn.slideUp = rememberSlideUp; 
+    $.fn.slideUp = rememberSlideUp; 
+  })
+  
+  /**
+   * Test clearView
+   */
+  test("nl.sara.beehub.view.tree.clearView", function(){
+    expect(3);
+    
+    // Set up test environment
+    var rememberSetOnActivate = nl.sara.beehub.view.tree.setOnActivate;
+    nl.sara.beehub.view.tree.setOnActivate = function(value){
+      deepEqual(value, "Browse", "SetOnActivate should be called with value Browse");
+    };
+    
+    var rememberCloseTree = nl.sara.beehub.view.tree.closeTree;
+    nl.sara.beehub.view.tree.closeTree = function(){
+      ok(true, "Close tree is called.");
+    }
+    
+    $.cookie( 'beehub-showtree', "false" , { path: '/' });
+    nl.sara.beehub.view.tree.clearView(); 
+    
+    $.cookie( 'beehub-showtree', "true" , { path: '/' });
+    // Close tree should not be called
+    nl.sara.beehub.view.tree.clearView();
+
+    // Put back original environment
+    $.cookie( 'beehub-showtree', "false" , { path: '/' });
+    nl.sara.beehub.view.tree.setOnActivate = rememberSetOnActivate;
+    nl.sara.beehub.view.tree.closeTree = rememberCloseTree;
+  });
+  
+  /**
+   * Test addPath
+   */
+  test("nl.sara.beehub.view.tree.addPath", function(){
+    ok(false, "Not yet implemented");
+  });
+  
+  /**
+   * Test removePath
+   */
+  test("nl.sara.beehub.view.tree.removePath", function(){
+    ok(false, "Not yet implemented");
+  })
+  
+  /**
+   * Test updateResource
+   */
+  test("nl.sara.beehub.view.tree.updateResource", function(){
+    expect(2);
+    
+    // Setup environment
+    var rememberremovePath = nl.sara.beehub.view.tree.removePath;
+    nl.sara.beehub.view.tree.removePath = function(path){
+      deepEqual(path, "/olddir/", "RemovePath should be called with /olddir/.")
+    };
+    
+    var rememberAddPath = nl.sara.beehub.view.tree.addPath;
+    nl.sara.beehub.view.tree.addPath = function(path){
+      deepEqual(path, "/newdir/", "AddPath should be called with /newdir/.")
+    };
+    
+    var resourceOrg = new nl.sara.beehub.ClientResource("/olddir/");
+    var resourceNew = new nl.sara.beehub.ClientResource("/newdir/");
+    
+    // Nothing should happen because type collection is not set
+    nl.sara.beehub.view.tree.updateResource(resourceOrg, resourceNew);
+    
+    resourceOrg.type = "collection";
+    resourceNew.type = "collection";
+    
+    nl.sara.beehub.view.tree.updateResource(resourceOrg, resourceNew);
+
+    // Put back environment
+    nl.sara.beehub.view.tree.removePath = rememberremovePath;
+    nl.sara.beehub.view.tree.addPath = rememberAddPath;
+  })
+  
+  /**
+   * Test
+   */
+  test("nl.sara.beehub.view.tree.setModal", function(){
+    expect(2);
+    
+    nl.sara.beehub.view.tree.setModal(true);
+    nl.sara.beehub.view.tree.setModal(false);
+    nl.sara.beehub.view.tree.setModal(true);
+
+  });
 })();
 // End of file
