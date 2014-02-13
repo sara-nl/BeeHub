@@ -143,5 +143,90 @@
     deepEqual($(maskLoading).is(":hidden"), true, "Loading mask should be hidden.");
   })
   
+  /**
+   * Test
+   */
+  test("nl.sara.beehub.view.hideMasks", function(){
+    expect(6);
+    
+    nl.sara.beehub.view.maskView("mask", true);
+    nl.sara.beehub.view.maskView("transparant", true);
+    nl.sara.beehub.view.maskView("loading", true);
+    
+    deepEqual($(mask).is(":hidden"), false, "Mask should be shown.");
+    deepEqual($(maskTransparant).is(":hidden"), false, "Transparant mask should be shown.");
+    deepEqual($(maskLoading).is(":hidden"), false, "Loading mask should be shown.");
+
+    nl.sara.beehub.view.hideMasks();
+    
+    deepEqual($(mask).is(":hidden"), true, "Mask should be hidden.");
+    deepEqual($(maskTransparant).is(":hidden"), true, "Transparant mask should be hidden.");
+    deepEqual($(maskLoading).is(":hidden"), true, "Loading mask should be hidden.");
+
+  });
+
+  /**
+   * Test showFixedButtons
+   */
+  test("nl.sara.beehub.view.showFixedButtons", function(){
+    expect(4);
+    
+    // Setup environment
+    var rememberContentAllFixedButtons = nl.sara.beehub.view.content.allFixedButtons;
+    nl.sara.beehub.view.content.allFixedButtons = function(value){
+      if (view === "content"){
+       deepEqual(value, "show", "AllFixedButtons should be called with value shown.");
+      } else {
+       deepEqual(value, "hide", "AllFixedButtons should be called with value hide.");
+      }
+    };
+    
+    var rememberAclAllFixedButtons = nl.sara.beehub.view.acl.allFixedButtons;
+    nl.sara.beehub.view.acl.allFixedButtons = function(value){
+      if (view === "content"){
+        deepEqual(value, "hide", "AllFixedButtons should be called with value hide.");
+       } else {
+        deepEqual(value, "show", "AllFixedButtons should be called with value shown.");
+       }
+    };
+    
+    var view = "acl";
+    nl.sara.beehub.view.showFixedButtons("acl");
+    view = "content";
+    nl.sara.beehub.view.showFixedButtons("content");
+    
+    // Back to original environment
+    nl.sara.beehub.view.content.allFixedButtons = rememberContentAllFixedButtons;
+    nl.sara.beehub.view.acl.allFixedButtons = rememberAclAllFixedButtons;
+  });
+  
+  /**
+   * Test
+   */
+  test("nl.sara.beehub.view.addResource", function(){
+    expect(3);
+    
+    // Setup environment
+    var rememberContentAddResource = nl.sara.beehub.view.content.addResource;
+    nl.sara.beehub.view.content.addResource = function(resource) {
+      deepEqual(resource.path, "/test/", "Addresource should be called with resource.path /test/.");
+    };
+    
+    var rememberTreeAddPath = nl.sara.beehub.view.tree.addPath;
+    nl.sara.beehub.view.tree.addPath = function(path){
+      deepEqual(path, "/test/", "AddPath should be called with resource.path /test/.");
+    };
+    
+    var resource1 = new nl.sara.beehub.ClientResource("/test/");
+    nl.sara.beehub.view.addResource(resource1);
+    
+    var resource2 = new nl.sara.beehub.ClientResource("/test/");
+    resource2.type = "collection";
+    nl.sara.beehub.view.addResource(resource2);
+    
+    // Back to original environment
+    nl.sara.beehub.view.content.addResource = rememberContentAddResource;
+    nl.sara.beehub.view.tree.addPath = rememberTreeAddPath;
+  });
 })();
 // End of file
