@@ -228,5 +228,77 @@
     nl.sara.beehub.view.content.addResource = rememberContentAddResource;
     nl.sara.beehub.view.tree.addPath = rememberTreeAddPath;
   });
+  
+  /**
+   * Test updateResource
+   */
+  test("nl.sara.beehub.view.updateResource", function(){
+    expect(4);
+    
+    // Setup environment
+    var resource1 = new nl.sara.beehub.ClientResource("/test1/");
+    var resource2 = new nl.sara.beehub.ClientResource("/test2/");
+    
+    var rememberContentUpdateResource = nl.sara.beehub.view.content.updateResource;
+    nl.sara.beehub.view.content.updateResource = function(resourceOrg, resourceNew){
+      deepEqual(resourceOrg.path, "/test1/", "Content Update resource should be called.");
+      deepEqual(resourceNew.path, "/test2/", "Content Update resource should be called.")
+    }
+
+    var rememberTreeUpdateResource = nl.sara.beehub.view.tree.updateResource;
+    nl.sara.beehub.view.tree.updateResource = function(resourceOrg, resourceNew){
+      deepEqual(resourceOrg.path, "/test1/", "Tree Update resource should be called.");
+      deepEqual(resourceNew.path, "/test2/", "Tree Update resource should be called.")
+    }
+    
+    nl.sara.beehub.view.updateResource(resource1, resource2);
+    
+    // Back to original environment
+    nl.sara.beehub.view.content.updateResource = rememberContentUpdateResource;
+    nl.sara.beehub.view.tree.updateResource = rememberTreeUpdateResource;
+  });
+  
+  /**
+   * Test deleteResource
+   */
+  test("nl.sara.beehub.view.deleteResource", function(){
+    expect(2);
+    
+    // Setup environment
+    var resource = new nl.sara.beehub.ClientResource("/test/");
+    
+    var rememberContentDeleteResource = nl.sara.beehub.view.content.deleteResource;
+    nl.sara.beehub.view.content.deleteResource = function(resource){
+      deepEqual(resource.path, "/test/", "Content Delete resource should be called.");
+    }
+
+    var rememberTreeRemovePath = nl.sara.beehub.view.tree.removePath;
+    nl.sara.beehub.view.tree.removePath = function(path){
+      deepEqual(path, "/test/", "Remove path resource should be called.");
+    }
+    
+    nl.sara.beehub.view.deleteResource(resource);
+    
+    // Back to original environment
+    nl.sara.beehub.view.content.deleteResource = rememberContentDeleteResource;
+    nl.sara.beehub.view.tree.removePath = rememberTreeRemovePath;
+  });
+  
+  /**
+   * Test
+   */
+  test("nl.sara.beehub.view.setCustomAclOnResource", function(){
+    expect(1);
+    
+    var rememberSetCustomAclOnResource = nl.sara.beehub.view.content.setCustomAclOnResource;
+    nl.sara.beehub.view.content.setCustomAclOnResource = function(value1, value2){
+      ok(true, "SetCurtomAclOnResource is called");
+    };
+    
+    nl.sara.beehub.view.setCustomAclOnResource("test","test");
+    
+    nl.sara.beehub.view.content.setCustomAclOnResource = rememberSetCustomAclOnResource;
+  });
+  
 })();
 // End of file
