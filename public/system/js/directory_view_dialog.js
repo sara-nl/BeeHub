@@ -1,5 +1,5 @@
 /**
- * Copyright ©2013 SARA bv, The Netherlands
+ * Copyright ©2013 SURFsara bv, The Netherlands
  *
  * This file is part of the beehub client
  *
@@ -16,6 +16,8 @@
  * You should have received a copy of the GNU Lesser General Public License
  * along with beehub.  If not, see <http://www.gnu.org/licenses/>.
  */
+
+"use strict";
 
 /** 
  * Beehub Client dialogs
@@ -51,7 +53,6 @@
       modal: true,
       maxHeight: 400,
       closeOnEscape: false,
-      dialogClass: "custom-dialog",
       buttons: [{
         text: "Ok",
         click: function() {
@@ -73,7 +74,7 @@
     if ( resourcePath.substr( -1 ) === '/' ) {
       resourcePath = resourcePath.substr( 0, resourcePath.length -1 );
     }
-    
+
     $('#bh-dir-dialog').html(html);
     // auto complete for searching users and groups
     setupAutoComplete();
@@ -90,7 +91,6 @@
       minWidth:800,
 //      maxHeight: 400,
       closeOnEscape: false,
-      dialogClass: "custom-dialog",
       buttons: [{
         text: "Close",
         click: function(){
@@ -99,6 +99,79 @@
       }]
     });
     nl.sara.beehub.view.acl.getAddAclButton().prop('disabled', true);
+  };
+
+  /*
+   * Show add rule dialog
+   * 
+   * Public function
+   * 
+   * @param {String} error The error to show
+   */
+  nl.sara.beehub.view.dialog.showAddRuleDialog = function(addFunction, html) {
+    // createForm
+    $('#bh-dir-dialog').html(html);
+
+    // radiobutton handlers
+    setAddRadioButtons();
+    
+    // auto complete for searching users and groups
+    setupAutoComplete();
+
+    $('#bh-dir-dialog').dialog({
+      title: " Add acl rule",
+      modal: true,
+      maxHeight: 400,
+      closeOnEscape: false,
+      dialogClass: "custom-dialog",
+      resizable: false,
+      width: 370,
+      buttons: [{
+        text: "Cancel",
+        click: function() {
+          $(this).dialog("close");
+        }
+      },{
+        text: "Add rule",
+        id: "bh-dir-acl-directory-button",
+        click: function() {
+          addFunction( nl.sara.beehub.view.dialog.getFormAce() );
+        }
+      }]
+    });
+    nl.sara.beehub.view.acl.getAddAclButton().button('disable');
+  };
+  
+  /**
+   * Get value from the Acl add rule form
+   * 
+   * @return {Object} Principal and permissions
+   */
+  nl.sara.beehub.view.dialog.getFormAce = function(){
+    var principal = '';
+    var aclForm = nl.sara.beehub.view.acl.getFormView();
+    switch(aclForm.find('input[name = "bh-dir-view-acl-optionRadio"]:checked').val())
+    {
+    // all
+    case "all":
+      principal="DAV: all";
+      break;
+    // Everybody
+    case "authenticated":
+      principal="DAV: authenticated";
+      break;
+    // User or group
+    case "user_or_group":
+      principal=aclForm.find(".bh-dir-acl-table-search").attr('name');
+      break;
+    default:
+      // This should never happen
+    }
+    var ace = {
+        "principal": principal,
+        "permissions": aclForm.find(".bh-dir-acl-table-permisions option:selected").val()
+    };
+    return ace;
   };
   
   /*
@@ -129,7 +202,12 @@
   * @param Integer  progress Progress of action
   */
   nl.sara.beehub.view.dialog.showProgressBar = function(resource, progress){
-    $("tr[id='dialog_tr_"+resource.path+"']").find('.info').html("<div class='progress progress-success progress-striped'><div class='bar' style='width: "+progress+"%;'>"+progress+"%</div></div>");
+    var innerDiv = $( '<div class="bar"></div>' );
+    innerDiv.attr( 'style', 'width: ' + progress + '%' );
+    innerDiv.text( progress + '%' );
+    var outerDiv = $( '<div class="progress progress-success progress-striped"></div>' );
+    outerDiv.append( innerDiv );
+    $( "tr[id='dialog_tr_" + resource.path + "']" ).find( '.info' ).empty().append( outerDiv );
   };
   
   /*
@@ -141,7 +219,9 @@
   * @param String   info     Information for dialog
   */
   nl.sara.beehub.view.dialog.updateResourceInfo = function(resource, info){
-    $("tr[id='dialog_tr_"+resource.path+"']").find('.info').html("<b>"+info+"</b>");
+    var bold = $( "<b></b>" );
+    bold.text( info );
+    $( "tr[id='dialog_tr_" + resource.path + "']" ).find( '.info' ).empty().append( bold );
   };
   
   /*
@@ -283,7 +363,6 @@
           });
     $("#bh-dir-rename-overwrite-button").click(overwriteFunction);
     $("#bh-dir-rename-cancel-button").click(function(){
-      $("tr[id='"+resource.path+"']").find(".bh-dir-rename-td").find(':input').val(resource.displayname);
       $("#bh-dir-dialog").dialog("close");
     });
   };
@@ -302,7 +381,7 @@
   /**
    * Initialize autocomplete for searching users and groups
    */
-  setupAutoComplete = function(){
+  var setupAutoComplete = function(){
     var searchList = [];
     var formView = nl.sara.beehub.view.acl.getFormView();
         
@@ -363,7 +442,7 @@
    * Add radio buttons handlers in Add acl rule form
    * 
    */
-  setAddRadioButtons = function(){
+  var setAddRadioButtons = function(){
     var aclForm = nl.sara.beehub.view.acl.getFormView();
     aclForm.find(".bh-dir-acl-add-radio1").click(function(){
       aclForm.find(".bh-dir-acl-table-search").attr("disabled",true);
@@ -396,77 +475,5 @@
       }
     });
   };
-  
-  /**
-   * Get value from the Acl add rule form
-   * 
-   * @return {Object} Principal and permissions
-   */
-  getFormAce= function(){
-    var principal = '';
-    var aclForm = nl.sara.beehub.view.acl.getFormView();
-    switch(aclForm.find('input[name = "bh-dir-view-acl-optionRadio"]:checked').val())
-    {
-    // all
-    case "all":
-      principal="DAV: all";
-      break;
-    // Everybody
-    case "authenticated":
-      principal="DAV: authenticated";
-      break;
-    // User or group
-    case "user_or_group":
-      principal=aclForm.find(".bh-dir-acl-table-search").attr('name');
-      break;
-    default:
-      // This should never happen
-    }
-    var ace = {
-        "principal": principal,
-        "permissions": aclForm.find(".bh-dir-acl-table-permisions option:selected").val(),
-    };
-    return ace;
-  }
-  
-  /*
-   * Show add rule dialog
-   * 
-   * Public function
-   * 
-   * @param {String} error The error to show
-   */
-  nl.sara.beehub.view.dialog.showAddRuleDialog = function(addFunction, html) {
-    // createForm
-    $('#bh-dir-dialog').html(html);
-
-    // radiobutton handlers
-    setAddRadioButtons("tab");
-    
-    // auto complete for searching users and groups
-    setupAutoComplete("tab");
-
-    $('#bh-dir-dialog').dialog({
-      title: " Add acl rule",
-      modal: true,
-      maxHeight: 400,
-      closeOnEscape: false,
-      dialogClass: "custom-dialog",
-      resizable: false,
-      width: 370,
-      buttons: [{
-        text: "Cancel",
-        click: function() {
-          $(this).dialog("close");
-        }
-      },{
-        text: "Add rule",
-        id: "bh-dir-aclform-add-button",
-        click: function() {
-          addFunction(getFormAce("tab"));
-        }
-      }]
-    });
-    $("#bh-dir-aclformtab-add-button").button('disable');
-  };
+ 
 })();

@@ -2,7 +2,7 @@
 /**
  * Sets up an environment to emulate a webserver environment
  *
- * Copyright ©2007-2013 SURFsara b.v., Amsterdam, The Netherlands
+ * Copyright ©2007-2014 SURFsara b.v., Amsterdam, The Netherlands
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -21,80 +21,10 @@
 declare( encoding = 'UTF-8' );
 namespace BeeHub\tests;
 
-/**
- * Resets the $_SERVER super global to a fixed state
- *
- * @return  void
- */
-function reset_SERVER() {
-  $_SERVER = array();
-  $_SERVER['HTTPS'] = true;
-  $_SERVER['REQUEST_URI'] = '/';
-  $_SERVER['SCRIPT_NAME'] = 'bootstrap.php'; // Strange enough, PHPunit seems to use this, so let's set it to some value
-  $_SERVER['REQUEST_METHOD'] = 'GET';
-  $_SERVER['PHP_AUTH_USER'] = 'user';
-  $_SERVER['PHP_AUTH_PW'] = 'password';
-  $_SERVER['HTTP_REFERER'] = 'http://www.example.org/';
-  $_SERVER['SERVER_NAME'] = 'beehub.nl';
-  $_SERVER['SERVER_PORT'] = 443;
-  $_SERVER['HTTP_USER_AGENT'] = 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:24.0) Gecko/20100101 Firefox/24.0';
-  $_SERVER['CONTENT_TYPE'] = 'application/x-www-form-urlencoded';
-  $_SERVER['QUERY_STRING'] = '';
-  $_SERVER['CONTENT_LENGTH'] = 100;
-  $_SERVER['HTTP_X_EXPECTED_ENTITY_LENGTH'] = '100';
-  $_SERVER['HTTP_DESTINATION'] = 'http://beehub.nl/destination';
-  $_SERVER['HTTP_OVERWRITE'] = 'F';
-  $_SERVER['HTTP_DEPTH'] = '0';
-  $_SERVER['HTTP_RANGE'] = '';
-  $_SERVER['HTTP_CONTENT_RANGE'] = '';
-  $_SERVER['HTTP_TIMEOUT'] = '';
-  $_SERVER['HTTP_IF'] = '';
-  $_SERVER['HTTP_IF_MATCH'] = '';
-  $_SERVER['HTTP_IF_UNMODIFIED_SINCE'] = '';
-  $_SERVER['HTTP_IF_MODIFIED_SINCE'] = '';
-  $_SERVER['HTTP_IF_UNMODIFIED_SINCE'] = '';
-  $_SERVER['HTTP_IF_MATCH'] = '';
-  $_SERVER['HTTP_IF_NONE_MATCH'] = '';
-  $_SERVER['HTTP_CONTENT_LANGUAGE'] = 'en';
-  $_SERVER['HTTP_LOCK_TOKEN'] = '';
-  $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_METHOD'] = '';
-  $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'] = '';
-  $_SERVER['HTTP_ORIGIN'] = '';
-  $_SERVER['SERVER_PROTOCOL'] = 'https';
-}
+require_once( \dirname( __FILE__ ) . \DIRECTORY_SEPARATOR . 'environment_building.php' );
 reset_SERVER();
 
-
-/**
- * Returns an array with the parsed configuration file
- *
- * @param   boolean  $parse  If set to true, the configuration file will be parsed, even if we have a parsed version in cache
- * @return  array            The configuration.
- * @see     parse_ini_file
- */
-function getConfig( $parse = false ) {
-  static $config = null;
-  if ( $parse || \is_null( $config ) ) {
-    $config = \parse_ini_file( \dirname( __FILE__ ) . \DIRECTORY_SEPARATOR . 'config.ini', true );
-  }
-  return $config;
-}
-
-
-// Check for configuration file
-if ( !\file_exists( \dirname( __FILE__ ) . \DIRECTORY_SEPARATOR . 'config.ini' ) ) {
-  print( "No configuration file exists. Please copy ' . \dirname( __FILE__ ) . \DIRECTORY_SEPARATOR . 'config_example.ini to ' . \dirname( __FILE__ ) . \DIRECTORY_SEPARATOR . 'config.ini and edit it to set the right configuration options\n" );
-  die( 1 );
-}
-
 // Load dependencies
-require_once( \dirname( \dirname( __FILE__ ) ) . \DIRECTORY_SEPARATOR . 'vendor' . \DIRECTORY_SEPARATOR . 'autoload.php' );
-require_once( \dirname( __FILE__ ) . \DIRECTORY_SEPARATOR . 'dbtests_data' . \DIRECTORY_SEPARATOR . 'db_testcase.php' );
-require_once( \dirname( \dirname( __FILE__ ) ) . \DIRECTORY_SEPARATOR . 'webdav-php' . \DIRECTORY_SEPARATOR . 'tests' . \DIRECTORY_SEPARATOR . 'mocks' . \DIRECTORY_SEPARATOR . 'dav_cache.php' );
-\spl_autoload_register('\spl_autoload');
-require_once( \dirname( \dirname( __FILE__ ) ) . '/src/beehub_bootstrap.php' );
-\DAV::$testMode = true;
-
 function loadMocks() {
   $mockPath = \realpath( \dirname( __FILE__ ) ) . \DIRECTORY_SEPARATOR . 'mocks' . \DIRECTORY_SEPARATOR;
   $dir = new \DirectoryIterator( $mockPath );
@@ -105,5 +35,28 @@ function loadMocks() {
   }
 }
 loadMocks();
+
+require_once( \dirname( __DIR__ ) . \DIRECTORY_SEPARATOR . 'vendor' . \DIRECTORY_SEPARATOR . 'autoload.php' );
+require_once( __DIR__ . \DIRECTORY_SEPARATOR . 'dbtests_data' . \DIRECTORY_SEPARATOR . 'db_testcase.php' );
+require_once( \dirname( __DIR__ ) . \DIRECTORY_SEPARATOR . 'src' . \DIRECTORY_SEPARATOR . 'beehub_bootstrap.php' );
+\DAV::$testMode = true;
+
+// Check for configuration file
+loadTestConfig();
+
+
+/**
+ * Because we can't be sure we're using PHP 5.4 or higher, we can't use traits.
+ * Instead, we use this global function to do the general setup for tests
+ *
+ * @return  void
+ */
+function setUp() {
+  reset_SERVER();
+  \DAV::$REGISTRY = new \BeeHub_Registry();
+  \DAV::$LOCKPROVIDER = new \BeeHub_Lock_Provider();
+  \DAV::$ACLPROVIDER  = new \BeeHub_ACL_Provider();
+  \BeeHub::setAuth( new BeeHub_Auth( new \SimpleSAML_Auth_Simple( 'BeeHub' ) ) );
+}
 
 // End of file

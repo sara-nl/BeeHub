@@ -30,7 +30,7 @@ class BeeHub_ResourceTest extends \PHPUnit_Framework_TestCase {
 
   public function setUp() {
     parent::setUp();
-    reset_SERVER();
+    setUp();
   }
 
 
@@ -154,7 +154,8 @@ class BeeHub_ResourceTest extends \PHPUnit_Framework_TestCase {
     $this->assertSame( '/system/users/jane', $resource->user_prop_owner() );
 
     $ownerlessResource = $this->getMock( '\BeeHub_Resource', array( 'init_props', 'user_prop_acl_internal' ), array( $_SERVER['REQUEST_URI'] ) );
-    $this->assertSame( '/system/users/john', $ownerlessResource->user_prop_owner(), 'All resources have owners. If none is specified, then it defaults to wheel (/system/users/john in this case)' );
+    $config = \BeeHub::config();
+    $this->assertSame( $config['namespace']['wheel_path'], $ownerlessResource->user_prop_owner(), 'All resources have owners. If none is specified, then it defaults to wheel' );
   }
 
 

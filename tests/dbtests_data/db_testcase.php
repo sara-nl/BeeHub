@@ -2,7 +2,7 @@
 /**
  * Contains an abstract test case for database tests
  *
- * Copyright ©2007-2013 SURFsara b.v., Amsterdam, The Netherlands
+ * Copyright ©2007-2014 SURFsara b.v., Amsterdam, The Netherlands
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -26,32 +26,33 @@ namespace BeeHub\tests;
  * @package     BeeHub
  * @subpackage  tests
  */
-abstract class BeeHub_Tests_Db_Test_Case extends \PHPUnit_Extensions_Database_TestCase {
+abstract class BeeHub_Tests_Db_Test_Case extends \PHPUnit_Framework_TestCase {
 
-  static private $connection = null;
-
-  private $dbUnitConnection = null;
-
-
-  final public function getConnection() {
-    if ( \is_null( $this->dbUnitConnection ) ) {
-      $config = getConfig();
-      if ( \is_null( self::$connection ) ) {
-        self::$connection = new \PDO( 'mysql:dbname=' . $config['mysql']['database'] . ';host=' . $config['mysql']['host'], $config['mysql']['username'], $config['mysql']['password'] );
-      }
-      $this->dbUnitConnection = $this->createDefaultDBConnection( self::$connection, $config['mysql']['database'] );
+  public function setUp() {
+    $config = \BeeHub::config();
+    if ( empty( $config['mysql']['host'] ) ) {
+      $this->markTestSkipped( 'No mySQL credentials specified; all tests depending on mySQL are skipped' );
+      return;
     }
-
-    return $this->dbUnitConnection;
+    setUpDatabase();
+    parent::setUp();
+    setUp();
   }
 
 
-  public function getDataSet() {
-    if ( \file_exists( \dirname( __FILE__ ) . \DIRECTORY_SEPARATOR . 'basicDataset.xml' ) ) {
-      return $this->createXMLDataSet( \dirname( __FILE__ ) . \DIRECTORY_SEPARATOR . 'basicDataset.xml' );
-    }else{
-      return new PHPUnit_Extensions_Database_DataSet_DefaultDataSet();
-    }
+  /**
+   * Mocks BeeHub_Auth to make it show as if a certain user is logged in
+   *
+   * @param   string  $path  The path to the user
+   * @return  void
+   */
+  protected function setCurrentUser( $path ) {
+    $user = new \BeeHub_User( $path );
+    $auth = $this->getMock( '\BeeHub\tests\BeeHub_Auth', array( 'current_user' ), array( new \SimpleSAML_Auth_Simple( 'BeeHub' ) ) );
+    $auth->expects( $this->any() )
+         ->method( 'current_user' )
+         ->will( $this->returnValue( $user ) );
+    \BeeHub::setAuth( $auth );
   }
 
 } // Class BeeHub_Tests_Db_Test_Case

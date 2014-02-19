@@ -30,12 +30,14 @@ set_include_path(
   dirname(__FILE__) . PATH_SEPARATOR .
   get_include_path()
 );
-require_once( dirname( dirname( __FILE__ ) ) . DIRECTORY_SEPARATOR .'webdav-php' . DIRECTORY_SEPARATOR . 'lib' . DIRECTORY_SEPARATOR . 'bootstrap.php' );
 
+require_once( dirname( dirname( __FILE__ ) ) . DIRECTORY_SEPARATOR .'vendor' . DIRECTORY_SEPARATOR . 'autoload.php' );
+
+DAV::bootstrap();
 set_exception_handler( array( 'BeeHub', 'exception_handler' ) );
 
 // We need SimpleSamlPHP
-require_once( BeeHub::$CONFIG['environment']['simplesamlphp_autoloader'] );
+require_once( BeeHub::$CONFIG['environment']['simplesamlphp'] . 'lib' . DIRECTORY_SEPARATOR . '_autoload.php' );
 
 DAV::$PROTECTED_PROPERTIES[ DAV::PROP_GROUP_MEMBER_SET ] = true;
 DAV::$ACL_PROPERTIES[BeeHub::PROP_SPONSOR] = 'sponsor';
@@ -46,6 +48,20 @@ BeeHub::handle_method_spoofing();
 DAV::$REGISTRY     = BeeHub_Registry::inst();
 DAV::$LOCKPROVIDER = BeeHub_Lock_Provider::inst();
 DAV::$ACLPROVIDER  = BeeHub_ACL_Provider::inst();
-DAV::$UNAUTHORIZED = array( BeeHub_Auth::inst(), 'unauthorized' );
+DAV::$UNAUTHORIZED = array( BeeHub::getAuth(), 'unauthorized' );
+
+if ( ( APPLICATION_ENV === BeeHub::ENVIRONMENT_TEST ) && isset( $_GET['test'] ) ) {
+  define( 'RUN_CLIENT_TESTS', true );
+}else{
+  define( 'RUN_CLIENT_TESTS', false );
+}
+
+// If we want to run the client tests, load the test configuration and reset the storage backend (of the test environment)
+if ( APPLICATION_ENV === BeeHub::ENVIRONMENT_TEST ) {
+  require_once( dirname( dirname ( __FILE__ ) ) . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR . 'environment_building.php' );
+  \BeeHub\tests\loadTestConfig();
+  \BeeHub\tests\setUpDatabase();
+  \BeeHub\tests\setUpStorageBackend();
+}
 
 // End of file

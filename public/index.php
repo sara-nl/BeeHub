@@ -2,7 +2,7 @@
 /**
  * Entry point for the web server
  *
- * Copyright ©2013 SURFsara b.v., Amsterdam, The Netherlands
+ * Copyright ©2014 SURFsara b.v., Amsterdam, The Netherlands
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -19,6 +19,12 @@
 
 // Bootstrap the application
 require_once '../src/beehub_bootstrap.php';
+
+$config = BeeHub::config();
+if ( @$config['install']['run_install'] === 'true' ) {
+  require_once( dirname( __DIR__) . DIRECTORY_SEPARATOR . 'scripts' . DIRECTORY_SEPARATOR . 'webserver_install.php' );
+  exit();
+}
 
 // IE 8 or older really don't work at all anymore. Prompt the user to upgrade
 if ( ( $_SERVER['REQUEST_METHOD'] === 'GET' ) &&
@@ -43,7 +49,11 @@ if ( !isset($_GET['nosystem']) &&
 }
 
 // After bootstrapping, start authentication
-if ( !empty( $_SERVER['HTTPS'] ) ) {
+if ( APPLICATION_ENV === BeeHub::ENVIRONMENT_TEST ) {
+  $_SERVER['PHP_AUTH_USER'] = 'john';
+  $_SERVER['PHP_AUTH_PW'] = 'password_of_john';
+  BeeHub_Auth::inst()->handle_authentication( BeeHub_Auth::is_authentication_required() );
+}elseif ( !empty( $_SERVER['HTTPS'] ) ) {
   BeeHub_Auth::inst()->handle_authentication( BeeHub_Auth::is_authentication_required() );
 }
 

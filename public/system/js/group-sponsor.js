@@ -1,8 +1,31 @@
+/**
+ * Copyright ©2013 SURFsara bv, The Netherlands
+ *
+ * This file is part of the beehub client
+ *
+ * beehub client is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as published
+ * by the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * beehub-client is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public License
+ * along with beehub.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ * @author Laura Leistikow (laura.leistikow@surfsara.nl)
+ */
+
+"use strict";
+
 $(function (){	
   // Workaround for bug in mouse item selection
   $.fn.typeahead.Constructor.prototype.blur = function() {
 	var that = this;
-	setTimeout(function () { that.hide() }, 250);
+	setTimeout(function () { that.hide(); }, 250);
   };
   
   var path = location.pathname;
@@ -12,15 +35,19 @@ $(function (){
   } 
   // Check if it is group or sponsor page 
   var group_or_sponsor="";
-  if ( path.substr(0, nl.sara.beehub.groups_path.length) == nl.sara.beehub.groups_path ) {
+  if ( path.substr(0, nl.sara.beehub.groups_path.length) === nl.sara.beehub.groups_path ) {
     group_or_sponsor = "group";
-  } else if ( path.substr(0, nl.sara.beehub.sponsors_path.length) == nl.sara.beehub.sponsors_path ) {
+  } else if ( path.substr(0, nl.sara.beehub.sponsors_path.length) === nl.sara.beehub.sponsors_path ) {
     group_or_sponsor = "sponsor";
   }
+
+  var map = {};
+  var invitedUser = '';
+
   $('#bh-gs-invite-typeahead').typeahead({
 	  source: function (query, process) {
 	        // implementation
-		    users = [];
+		    var users = [];
 		    map = {};
 		    $.each(nl.sara.beehub.principals.users, function (userName, displayName) {
 		        map[displayName+" ("+userName+")"] = userName;
@@ -34,7 +61,7 @@ $(function (){
 	    },
 	    matcher: function (item) {
 	        // implementation
-	    	if (item.toLowerCase().indexOf(this.query.trim().toLowerCase()) != -1) {
+	    	if ( item.toLowerCase().indexOf(this.query.trim().toLowerCase()) !== -1 ) {
 	    		return true;
 	    	}
 	    },
@@ -49,7 +76,7 @@ $(function (){
 	    }
 	    // check if username is valid
   }).blur(function(){
-	    if(map[$(this).val()] == null) {
+	    if( map[ $( this ).val() ] === null ) {
 	        $('#bh-gs-invite-typeahead').val('');
 	        invitedUser = ""; 
 	      }
@@ -59,34 +86,34 @@ $(function (){
    * Action when the invite button is clicked
    */
   $('#bh-gs-invite-gs-form').submit(function (event) {
+    // Closure for ajax request
+    function callback(group_or_sponsor, invitedUser) {
+      return function(status){
+        if (status === 409) {
+          alert('You are not allowed to remove all the '+group_or_sponsor+' administrators from a '+group_or_sponsor+'. Leave at least one '+group_or_sponsor+' administrator in the '+group_or_sponsor+' or appoint a new '+group_or_sponsor+' administrator!');
+          return;
+        }
+        if (status === 403) {
+         alert('You are not allowed to perform this action!');
+         return;
+        }
+        if (status !== 200) {
+          alert('Something went wrong on the server. No changes were made.');
+          return;
+        };
+        $('#bh-gs-invite-typeahead').val("");
+        if (group_or_sponsor === "group") {
+           alert(nl.sara.beehub.principals.users[invitedUser] + " has been invited.");
+        } else if (group_or_sponsor === "sponsor") {
+          alert(nl.sara.beehub.principals.users[invitedUser] + " has been added.");
+          window.location.reload();
+        }
+      };
+    }
+
 	  event.preventDefault();
 	  if (invitedUser !== ""){
 		  var client = new nl.sara.webdav.Client();
-		  
-		  // Closure for ajax request
-		  function callback(group_or_sponsor, invitedUser) {
-		    return function(status){
-	        if (status === 409) {
-	          alert('You are not allowed to remove all the '+group_or_sponsor+' administrators from a '+group_or_sponsor+'. Leave at least one '+group_or_sponsor+' administrator in the '+group_or_sponsor+' or appoint a new '+group_or_sponsor+' administrator!');  
-	          return;
-	        }
-	        if (status === 403) {
-	         alert('You are not allowed to perform this action!');  
-	         return;
-	        }
-	        if (status != 200) {
-	        alert('Something went wrong on the server. No changes were made.');
-	        return;
-	        };
-	        $('#bh-gs-invite-typeahead').val("");
-	        if (group_or_sponsor == "group") {
-	           alert(nl.sara.beehub.principals.users[invitedUser] + " has been invited.");
-	        } else if (group_or_sponsor == "sponsor") {
-	          alert(nl.sara.beehub.principals.users[invitedUser] + " has been added.");
-	          window.location.reload();
-	        }
-	      }
-		  }
 		  
 			client.post(window.location.pathname, callback(group_or_sponsor, invitedUser), 'add_members[]='+invitedUser);
 	  }
@@ -113,14 +140,14 @@ $(function (){
     client.proppatch(
       location.pathname,
       function(status, data) {
-    	if (status === 207) {
-	        $('#bh-gs-display-name-value').text($('input[name="displayname"]').val());
-	        $('#bh-gs-description-value').text($('textarea[name="description"]').val());
-	        $('#bh-gs-display').removeClass('hide');
-	        $('#bh-gs-edit').addClass('hide');
-    	} else {
-    		alert("Something went wrong. The '+group_or_sponsor+' is not changed.")
-    	}
+        if (status === 207) {
+            $('#bh-gs-display-name-value').text($('input[name="displayname"]').val());
+            $('#bh-gs-description-value').text($('textarea[name="description"]').val());
+            $('#bh-gs-display').removeClass('hide');
+            $('#bh-gs-edit').addClass('hide');
+        } else {
+          alert( "Something went wrong. The '+group_or_sponsor+' is not changed." );
+        }
       }, setProps);
 
     return false;
@@ -156,7 +183,7 @@ $(function (){
 	       alert('You are not allowed to perform this action!');  
 	       return;
 	      }
-	      if (status != 200) {
+	      if ( status !== 200 ) {
 	      alert('Something went wrong on the server. No changes were made.');
 	      return;
 	      };
@@ -166,10 +193,10 @@ $(function (){
 	      var cell = button.parent('td');
 	        cell.prepend(promotebutton);
 	        button.remove();
-	    }
+	    };
 	  }
 		client.post(window.location.pathname, callback(group_or_sponsor, button), 'delete_admins[]='+button.val());
-  }
+  };
 
   $('.demote_link').click(handleDemote);
 
@@ -181,23 +208,23 @@ $(function (){
 	  // Closure for ajax request
 	  function callback(button) {
 	    return function(status){
-	      if (status === 403) {
-	        alert('You are not allowed to perform this action!');  
-	        return;
-	        }
-	        if (status !== 200) {
-	        alert('Something went wrong on the server. No changes were made.'+status);
-	        return;
-	        };
-	        var demotebutton = $('<button type="button" value="'+button.val()+'" class="btn btn-primary demote_link">Demote to member</button>');
-	        demotebutton.click(handleDemote);
-	        var cell = button.parent('td');
-	          cell.prepend(demotebutton);
-	          button.remove();
-	      }
+        if (status === 403) {
+          alert('You are not allowed to perform this action!');
+          return;
+        }
+        if (status !== 200) {
+          alert('Something went wrong on the server. No changes were made.'+status);
+          return;
+        };
+        var demotebutton = $('<button type="button" value="'+button.val()+'" class="btn btn-primary demote_link">Demote to member</button>');
+        demotebutton.click(handleDemote);
+        var cell = button.parent('td');
+        cell.prepend(demotebutton);
+        button.remove();
+      };
 	  }
 		client.post(window.location.pathname, callback(button), 'add_admins[]='+button.val());
-  }
+  };
   $('.promote_link').click(handlePromote);
   
   var handleRemove = function(button){
@@ -207,7 +234,7 @@ $(function (){
     function callback(group_or_sponsor) {
       return function(status){
         if (status === 409) {
-          alert('You are not allowed to remove all the '+group_or_sponsor+' administrators from a '+group_or_sponsor+'. Leave at least one '+group_or_sponsor+' administrator in the '+group_or_sponsor+' or appoint a new '+group_or_sponsor+' administrator!');  
+          alert('You are not allowed to remove all the '+group_or_sponsor+' administrators from a '+group_or_sponsor+'. Leave at least one '+group_or_sponsor+' administrator in the '+group_or_sponsor+' or appoint a new '+group_or_sponsor+' administrator!');
           return;
         }
         if (status !== 200) {
@@ -215,9 +242,9 @@ $(function (){
           return;
         };
         $('#bh-gs-user-'+button.val()).remove();
-     }
-  }
-	client.post(window.location.pathname, callback(group_or_sponsor) , 'delete_members[]='+button.val());
+      };
+    }
+    client.post(window.location.pathname, callback(group_or_sponsor) , 'delete_members[]='+button.val());
   }; // End of remove_link event listener
   $('.remove_link').on('click', function (e) {
 		handleRemove($(this));

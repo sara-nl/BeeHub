@@ -28,13 +28,6 @@ namespace BeeHub\tests;
  */
 class BeeHub_AuthTest extends BeeHub_Tests_Db_Test_Case {
 
-  public function setUp() {
-    parent::setUp();
-    reset_SERVER();
-    \DAV::$REGISTRY = \BeeHub_Registry::inst();
-  }
-
-
   public function testInst() {
     $this->assertInstanceOf( 'BeeHub_Auth', BeeHub_Auth::inst(), 'BeeHub_Auth::inst() should return an instance of BeeHub_Auth' );
   }

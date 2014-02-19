@@ -26,13 +26,12 @@ namespace BeeHub\tests;
  * @package     BeeHub
  * @subpackage  tests
  */
-class BeeHub_PrincipalTest extends BeeHub_Tests_Db_Test_Case {
+class BeeHub_PrincipalTest extends \PHPUnit_Framework_TestCase {
 
   public function setUp() {
     parent::setUp();
-    reset_SERVER();
+    setUp();
     $_REQUEST['REQUEST_URI'] = '/system/users/jane';
-    \DAV::$REGISTRY = \BeeHub_Registry::inst();
   }
 
 

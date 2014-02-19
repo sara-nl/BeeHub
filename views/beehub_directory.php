@@ -27,7 +27,14 @@ declare( encoding = 'UTF-8' );
 */
 
 // Load the default page header
-$header = '<link href="/system/css/dynatree/ui.dynatree.css" rel="stylesheet" type="text/css" />';
+if ( RUN_CLIENT_TESTS ) {
+  if ( $_SERVER['REQUEST_URI'] !== '/foo/client_tests/?test' ) {
+    header( 'Location: /foo/client_tests/?test' );
+    die();
+  }
+}else{
+  $header = '<link href="/system/css/dynatree/ui.dynatree.css" rel="stylesheet" type="text/css" />';
+}
 require 'views/header.php';
 ?>
 
@@ -91,7 +98,7 @@ require 'views/header.php';
 
   <!--	CONTENT: Home button-->
   <button
-    id="<?= DAV::xmlescape( preg_replace('@^' . BeeHub::USERS_PATH . '(.*)@', '/home/\1/', BeeHub_Auth::inst()->current_user()->path) ) ?>"
+    <?= ( ! BeeHub_Auth::inst()->is_authenticated() || ( $this->path === '/home/' . BeeHub_Auth::inst()->current_user()->name . '/' ) ) ? 'disabled="disabled"' : 'id="' . DAV::xmlescape( preg_replace('@^' . BeeHub::USERS_PATH . '(.*)@', '/home/\1/', BeeHub_Auth::inst()->current_user()->path) ) . '"' ?>
     class="btn btn-small bh-dir-content-gohome" data-toggle="tooltip"
     title="Go to home folder">
     <i class="icon-home"></i> Home
@@ -135,7 +142,7 @@ require 'views/header.php';
 
   <!-- 	ACL VIEW -->
   <!-- ACL: Add button-->
-  <button data-toggle="tooltip" title="Add rule" class="btn btn-small bh-dir-acl-add hide" >
+  <button id="bh-dir-acl-directory-button" data-toggle="tooltip" title="Add rule" class="btn btn-small bh-dir-acl-add hide" >
     <i class="icon-plus"></i> Add rule
   </button> 
 </div>
@@ -150,18 +157,18 @@ require 'views/header.php';
   <table>
     <tr>
       <td id="bh-dir-tree-cancel" hidden="hidden"><i class="icon-remove" style="cursor: pointer"></i></td>
-      <td class="bh-dir-tree-header" <?= $_COOKIE['beehub-showtree'] === 'false' ? 'hidden="hidden"' : '' ?> >Browse</td>
+      <td class="bh-dir-tree-header" <?= @$_COOKIE['beehub-showtree'] === 'false' ? 'hidden="hidden"' : '' ?> >Browse</td>
     </tr>
   </table>
 </div>
 
 <!-- Arrow to show the tree -->
-<a class="bh-dir-tree-slide-trigger <?= $_COOKIE['beehub-showtree'] !== 'false' ? 'active' : '' ?> " href="#">
-  <i class="icon-folder-<?= $_COOKIE['beehub-showtree'] !== 'false' ? 'open' : 'close' ?>"></i>
+<a class="bh-dir-tree-slide-trigger <?= @$_COOKIE['beehub-showtree'] !== 'false' ? 'active' : '' ?> ">
+  <i class="icon-folder-<?= @$_COOKIE['beehub-showtree'] !== 'false' ? 'open' : 'close' ?>"></i>
 </a>
 
 <!-- Tree slide out, dynatree - tree view -->
-<div id="bh-dir-tree" class="bh-dir-tree-slide" <?= $_COOKIE['beehub-showtree'] === 'false' ? 'hidden="hidden"' : '' ?>>
+<div id="bh-dir-tree" class="bh-dir-tree-slide" <?= @$_COOKIE['beehub-showtree'] === 'false' ? 'hidden="hidden"' : '' ?>>
   <ul class="dynatree-container">
     <?php
     // Fill the tree nodes
@@ -285,6 +292,7 @@ require 'views/header.php';
         }
 
         // For all resources, fill table
+        $writableFiles = false;
         $current_user_privilege_set_collection = $this->user_prop_current_user_privilege_set();
         foreach ( $subResources as $inode ) :
           $member = DAV::$REGISTRY->resource($this->path . $inode);
@@ -292,6 +300,14 @@ require 'views/header.php';
             continue;
           }
           $owner = BeeHub_Registry::inst()->resource( $member->user_prop_owner() );
+          
+          // Determine if it is a file and is writable. If so, we'll want to keep the upload button enabled
+          if ( ! $writableFiles && ( $member->prop_resourcetype() !== DAV_Collection::RESOURCETYPE ) ) {
+            try {
+              $member->assert( DAVACL::PRIV_WRITE );
+              $writableFiles = true;
+            }catch ( DAV_Status $e ) {}
+          }
           ?>
           <tr id="<?= DAV::xmlescape( DAV::unslashify($member->path) ) ?>">
             <td>
@@ -385,7 +401,7 @@ require 'views/header.php';
   <!-- Acl tab -->
   <div id="bh-dir-panel-acl" class="tab-pane fade">
   	<div id="bh-dir-acl-directory-acl">
-	    <table id="bh-dir-acl-table" class="table table-striped table-hover table-condensed">
+	    <table class="table table-striped table-hover table-condensed bh-dir-acl-table">
 	      <thead class="bh-dir-acl-table-header">
 	        <tr>
 	          <th>Principal</th>
@@ -602,6 +618,37 @@ $footer = '
   <script type="text/javascript" src="/system/js/directory_view_acl.js"></script>
   <script type="text/javascript" src="/system/js/directory_resource.js"></script>
 ';
+
+// If the directory ($this) is not writable nor any of the files in it, then you
+// won't be able to upload anything to this directory. So disable the button.
+try {
+  $this->assert( DAVACL::PRIV_WRITE );
+}catch ( DAV_Status $e ) {
+  if ( ! $writableFiles ) {
+    $footer .= '
+      <script type="text/javascript">
+        $( function() {
+          $( \'.bh-dir-content-upload\' )
+            .unbind( \'click\' )
+            .removeClass( \'bh-dir-content-upload\' )
+            .attr( \'disabled\', \'disabled\' );
+        } );
+      </script>
+    ';
+  }
+}
+
+if ( RUN_CLIENT_TESTS ) {
+  $footer .= '
+    <script src="/system/tests/unittests/directory_controller.js"></script> ';
+//     <script src="/system/tests/unittests/directory_view.js"></script>   		
+//     <script src="/system/tests/unittests/directory_view_tree.js"></script>
+//     <script src="/system/tests/unittests/directory_view_content.js"></script>
+//     <script src="/system/tests/unittests/directory_view_acl.js"></script>
+//     <script src="/system/tests/unittests/directory_view_dialog.js"></script>
+//   ';
+}
+
 require 'views/footer.php';
 
 // End of file

@@ -28,12 +28,6 @@ namespace BeeHub\tests;
  */
 class beehubTest extends BeeHub_Tests_Db_Test_Case {
 
-  public function setUp() {
-    parent::setUp();
-    reset_SERVER();
-  }
-
-
   public function testBest_xhtml_type() {
     // For now it should always return 'text/html'
     $this->assertEquals( \BeeHub::best_xhtml_type(), 'text/html', 'BeeHub::best_xml_type() should return correct value' );
@@ -134,7 +128,7 @@ class beehubTest extends BeeHub_Tests_Db_Test_Case {
 
   public function testLocalPath() {
     $config = \BeeHub::config();
-    $this->assertSame( $config['environment']['datadir'] . '/some/path', \BeeHub::localPath( '/some/path' ), 'BeeHub::localPath() should prepend the path of the data dir to the path provided' );
+    $this->assertSame( $config['environment']['datadir'] . 'some/path', \BeeHub::localPath( '/some/path' ), 'BeeHub::localPath() should prepend the path of the data dir to the path provided' );
   }
 
 
