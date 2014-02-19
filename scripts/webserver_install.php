@@ -130,24 +130,12 @@ if ( $result->num_rows > 0 ) {
   print( "MySQL database already contains tables. Skipping initialisation of database.\n" );
 }else{
   print( "Creating database structure..." );
-  $query = '';
-  $filePointer = \fopen( \dirname( __DIR__ ) . \DIRECTORY_SEPARATOR . 'db' . \DIRECTORY_SEPARATOR . 'db_structure.sql', 'r' );
-  while ( ( $line = \fgets( $filePointer ) ) !== false ) {
-    if ( \substr( $line, 0, 2 ) === '--' ) {
-      continue;
-    }
-    $query .= ' ' . \trim( $line );
-    if ( \substr( $query, -1 ) === ';' ) {
-      if ( $mysql->real_query( $query ) === false ) {
-        \header( 'HTTP/1.1 500 Internal Server Error' );
-        \ob_end_flush();
-        print( "\nUnable to create database structure\n" );
-        exit();
-      }
-      $query = '';
-    }
+  if ( \BeeHub_DB::createDbTables() === false ) {
+    \header( 'HTTP/1.1 500 Internal Server Error' );
+    \ob_end_flush();
+    print( "\nUnable to create database structure\n" );
+    exit();
   }
-  \fclose( $filePointer );
   print( "ok\n" );
 
   // Then add the administrator user

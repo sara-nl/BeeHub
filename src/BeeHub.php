@@ -421,6 +421,24 @@ class BeeHub {
     }
     return self::$CONFIG;
   }
+  
+  
+  /**
+   * Changes one particular configuration field
+   * 
+   * @param   string  $section  The section containing the field
+   * @param   string  $field    The field to change
+   * @param   mixed   $value    The new value for the field
+   * @return  void
+   */
+  public static function changeConfigField( $section, $field, $value ) {
+    $section = strval( $section );
+    $field = strval( $field );
+    if ( !isset( self::$CONFIG[$section] ) || !is_array( self::$CONFIG[$section] ) ) {
+      self::$CONFIG[$section] = array();
+    }
+    self::$CONFIG[$section][$field] = $value;
+  }
 
 
   /**
