@@ -290,6 +290,27 @@
     client.propfind(path, callback ,1,properties);
   };
   
+  /**
+   * Create getTreeNode callback
+   * 
+   * Public function
+   * 
+   * @param {String}          url       Path
+   * @param {DOM object}      parent    DOM object with parent of the node
+   * @param {DOM object}      expander  DOM object
+   * @param {Function}        callback  Callback function
+   */
+  nl.sara.beehub.controller.createGetTreeNodeCallback = function(url, parent, expander, callback){
+   return function( status, data ) {
+      // Callback
+      if (status !== 207) {
+        nl.sara.beehub.view.dialog.showError( 'Could not load the subdirectories.' );
+        return;
+      };
+      nl.sara.beehub.view.tree.createTreeNode(data, url, parent, expander, callback);
+    } 
+  };
+  
   // CREATE NEW FOLDER
   /*
    * Create new folder. When new foldername already exist add counter to the name

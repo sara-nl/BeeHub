@@ -132,62 +132,56 @@
       }else{
         // If there is no list loaded yet; load one now!
         var url = expander.siblings( 'a' ).attr( 'href' );
-        nl.sara.beehub.controller.getTreeNode( url, function( status, data ) {
-          // TODO callback status in controller
-          // TODO alert should be dialog
-          // Callback
-          if (status !== 207) {
-            alert( 'Could not load the subdirectories' );
-            return;
-          };
-
-          var childArray = [];
-          var childCollections = {};
-          for ( var pathindex in data.getResponseNames() ) {
-            var path = data.getResponseNames()[pathindex];
-
-            // We only want to add children and only if they are directories
-            if ( ( url !== path) &&
-                 ( data.getResponse( path ).getProperty( 'DAV:','resourcetype' ) !== null ) &&
-                 ( nl.sara.webdav.codec.ResourcetypeCodec.COLLECTION === data.getResponse( path ).getProperty( 'DAV:','resourcetype' ).getParsedValue() )
-               )
-            {
-              childArray.push( path.toLowerCase() );
-              childCollections[ path.toLowerCase() ] = path;
-            }
-          }
-
-          childArray.sort();
-          var list = $( '<ul></ul>' );
-          for ( var index in childArray ) {
-            var path = childCollections[ childArray[ index ] ];
-            var element = createTreeElement( path, ( parseInt( index ) === ( childArray.length - 1 ) ) );
-            list.append( element );
-          }
-
-          // Once expanded, some attribute will never apply anymore
-          parent.removeClass( 'dynatree-lazy' );
-          if ( list.children().length > 0 ) {
-            parent.after( list );
-            parent.addClass( 'dynatree-has-children' );
-            expander.addClass( 'dynatree-expander' );
-            expander.removeClass( 'dynatree-connector' );
-            nl.sara.beehub.view.tree.attachEvents( parent );
-            treeExpandHandler( expander, callback );
-          }else{
-            parent.removeClass( 'dynatree-has-children' );
-            expander.removeClass( 'dynatree-expander' );
-            expander.addClass( 'dynatree-connector' );
-            expander.off( 'click' );
-
-            if ( callback !== undefined ) {
-              callback();
-            }
-          }
-        } );
+        nl.sara.beehub.controller.getTreeNode( url, nl.sara.beehub.controller.createGetTreeNodeCallback(url, parent, expander));
       }
     }
   }
+  
+  nl.sara.beehub.view.tree.createTreeNode = function(data, url, parent, expander, callback){
+    var childArray = [];
+    var childCollections = {};
+    for ( var pathindex in data.getResponseNames() ) {
+      var path = data.getResponseNames()[pathindex];
+
+      // We only want to add children and only if they are directories
+      if ( ( url !== path) &&
+           ( data.getResponse( path ).getProperty( 'DAV:','resourcetype' ) !== null ) &&
+           ( nl.sara.webdav.codec.ResourcetypeCodec.COLLECTION === data.getResponse( path ).getProperty( 'DAV:','resourcetype' ).getParsedValue() )
+         )
+      {
+        childArray.push( path.toLowerCase() );
+        childCollections[ path.toLowerCase() ] = path;
+      }
+    }
+
+    childArray.sort();
+    var list = $( '<ul></ul>' );
+    for ( var index in childArray ) {
+      var path = childCollections[ childArray[ index ] ];
+      var element = createTreeElement( path, ( parseInt( index ) === ( childArray.length - 1 ) ) );
+      list.append( element );
+    }
+
+    // Once expanded, some attribute will never apply anymore
+    parent.removeClass( 'dynatree-lazy' );
+    if ( list.children().length > 0 ) {
+      parent.after( list );
+      parent.addClass( 'dynatree-has-children' );
+      expander.addClass( 'dynatree-expander' );
+      expander.removeClass( 'dynatree-connector' );
+      nl.sara.beehub.view.tree.attachEvents( parent );
+      treeExpandHandler( expander, callback );
+    }else{
+      parent.removeClass( 'dynatree-has-children' );
+      expander.removeClass( 'dynatree-expander' );
+      expander.addClass( 'dynatree-connector' );
+      expander.off( 'click' );
+
+      if ( callback !== undefined ) {
+        callback();
+      }
+    }
+  };
 
   function createTreeElement( path, last ) {
     var name = path;

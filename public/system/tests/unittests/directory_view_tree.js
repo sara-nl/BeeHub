@@ -48,6 +48,12 @@
    * @param {Boolean}       expanded  Expanded value before click
    */
   var testTreeExpandHandler = function(expander, expanded){
+    expect(1);
+    var rememberGetTreeNode = nl.sara.beehub.controller.getTreeNode;
+    nl.sara.beehub.controller.getTreeNode = function(url, callback){
+        deepEqual(url, "test", "getTreenode shoulb be called with value.");
+    };
+    
     var parent = expander.parent();
     if (expanded){
       $(parent).siblings( 'ul' ).each(function(key, value){
@@ -82,10 +88,12 @@
           deepEqual($(parent).hasClass( 'dynatree-exp-e' ), true, "dynatree-exp-e should be added");
         }
       } else {
-        ok(false, "Not yet implemented, refactoring code is needed.");
+        // nl.sara.beehub.controller.getTreeNode should be called
+        ok(false, "Not yet implemented.");
       }
-
-    }
+    };
+    
+    nl.sara.beehub.controller.getTreeNode = rememberGetTreeNode;
   };
   
   /**
@@ -316,20 +324,17 @@
    * Test addPath
    */
   test("nl.sara.beehub.view.tree.addPath", function(){
-    expect(5);
-    nl.sara.beehub.view.tree.addPath(directory+'/test1');
-    
-    var fooDir = $( 'a[href="' + foo + '/"]', treeNode).parent();
-    var client_testsDir = $( 'a[href="' + client_tests + '/"]', treeNode).parent();
-    var directoryDir = $( 'a[href="' + directory + '/"]', treeNode).parent();
-    
-    testTreeExpandHandler(fooDir, true);
-    testTreeExpandHandler(client_testsDir, true);
-    testTreeExpandHandler(directoryDir, true);
-
-//    deepEqual(fooDir.hasClass('dynatree-expanded'), true, "Class dynatree-expanded should be set.");
-//    deepEqual(client_testsDir.hasClass('dynatree-expanded'), true, "Class dynatree-expanded should be set.");
-//    deepEqual(directoryDir.hasClass('dynatree-expanded'), true, "Class dynatree-expanded should be set.");
+//    expect(5);
+//    nl.sara.beehub.view.tree.addPath(directory+'/test1');
+//    
+//    var fooDir = $( 'a[href="' + foo + '/"]', treeNode).parent();
+//    var client_testsDir = $( 'a[href="' + client_tests + '/"]', treeNode).parent();
+//    var directoryDir = $( 'a[href="' + directory + '/"]', treeNode).parent();
+//    
+//    testTreeExpandHandler(fooDir, true);
+//    testTreeExpandHandler(client_testsDir, true);
+//    testTreeExpandHandler(directoryDir, true);
+    ok(false, "Not yet implemented");
 
   });
   
