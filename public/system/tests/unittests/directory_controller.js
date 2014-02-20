@@ -342,6 +342,103 @@
     nl.sara.webdav.Property = rememberProperty;
   });
   
+//  nl.sara.beehub.controller.renameResource = function(resource, fileNameNew, overwriteMode){
+//    var webdav = new nl.sara.webdav.Client();
+//    webdav.move(resource.path, createRenameCallback(resource, fileNameNew, overwriteMode), path +fileNameNew,  overwriteMode);
+//  };
+  
+  /**
+   * Test renameResource
+   * 
+   * This function also tests createRenameCallback
+   */
+  test("nl.sara.beehub.controller.renameResource", function(){
+    expect(28);
+   
+    var testOverwrite = 3; 
+    var testCallback = false;
+    var firstTest = true;
+    
+    // Setup environment
+    var rememberClient = nl.sara.webdav.Client;
+    nl.sara.webdav.Client = function(){
+      this.move = function(path, callback, newPath, overWriteMode) {
+        deepEqual(path, currentDirectory+"/original", "Move should be called called with path original");
+        deepEqual(newPath, currentDirectory+"/new", "Move should be called with new name new.")
+        deepEqual(overWriteMode, testOverwrite, "Overwrite mode should be ");
+        // Test callback function with different status
+        if (firstTest) {
+          firstTest = false;
+          callback(412);
+          callback(201);
+          callback(204);
+        };
+      };
+    };
+    
+    nl.sara.webdav.Client.FAIL_ON_OVERWRITE = 3;
+    nl.sara.webdav.Client.SILENT_OVERWRITE = 5;
+    
+    var rememberShowOverwriteDialog = nl.sara.beehub.view.dialog.showOverwriteDialog
+    nl.sara.beehub.view.dialog.showOverwriteDialog = function(resource, fileNameNew, callback){
+      deepEqual(resource.path, currentDirectory+"/original", "Overwrite dialog should be called with resource "+currentDirectory+"/original");
+      deepEqual(fileNameNew, "new", "Overwrite dialog should be called with resource new");
+      testOverwrite = 5;
+      // Test overwrite
+      if (!testCallback) {
+        testCallback = true;
+        callback();
+      };
+    };
+    
+    var rememberGetUnknownResourceValues = nl.sara.beehub.view.content.getUnknownResourceValues
+    nl.sara.beehub.view.content.getUnknownResourceValues = function(resource){
+      resource.displayname   = "displayname";
+      resource.type          = "type";
+      resource.contentlength = "contentlength";
+      resource.lastmodified  = "lastmodified";
+      resource.owner         = "owner";
+      return resource
+    }
+    
+    var rememberUpdateResource = nl.sara.beehub.view.updateResource;
+    nl.sara.beehub.view.updateResource = function(resource, resourceNew){
+      deepEqual(resource.path, currentDirectory+"/original", "Resource path should be "+ currentDirectory+"/original");
+      deepEqual(resource.type, "type", "Resource type should be type");
+      deepEqual(resource.displayname, "displayname", "Resource displayname should be displayname.");
+      deepEqual(resource.lastmodified, "lastmodified", "Resource lastmodified should be getlastmodified.");
+      deepEqual(resource.owner, "owner", "Resource owner should be owner.");
+      
+      deepEqual(resourceNew.path, currentDirectory+"/new", "Resource path should be "+ currentDirectory+"/new");
+      deepEqual(resourceNew.type, "type", "Resource type should be type.");
+      deepEqual(resourceNew.displayname, "new", "Resource displayname should be new.");
+      deepEqual(resourceNew.lastmodified, "lastmodified", "Resource lastmodified should be getlastmodified.");
+      deepEqual(resourceNew.owner, "owner", "Resource owner should be owner.");
+    };
+    
+    var rememberDeleteResource = nl.sara.beehub.view.deleteResource;
+    nl.sara.beehub.view.deleteResource = function(resource) {
+      ok(false, "not ready");
+    };
+    
+    var rememberCloseDialog = nl.sara.beehub.view.dialog.closeDialog;
+    nl.sara.beehub.view.dialog.closeDialog = function(){
+      ok(true, "Close dialog is called.");
+    }
+    
+    var resource = new nl.sara.beehub.ClientResource(currentDirectory+"/original");
+    
+    nl.sara.beehub.controller.renameResource(resource,"new", nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
+    
+    // Back to original environment
+    nl.sara.webdav.Client = rememberClient;
+    nl.sara.beehub.view.dialog.showOverwriteDialog = rememberShowOverwriteDialog;
+    nl.sara.beehub.view.content.getUnknownResourceValues = rememberGetUnknownResourceValues;
+    nl.sara.beehub.view.updateResource = rememberUpdateResource;
+    nl.sara.beehub.view.deleteResource = rememberDeleteResource;
+    nl.sara.beehub.view.dialog.closeDialog = rememberCloseDialog;
+  });
+  
   ///**
   // * Test addSlash
   // */

@@ -1194,58 +1194,7 @@
     }
     return aceObject;
   };
-//  /**
-//   * Show add acl rule dialog.
-//   * 
-//   */
-//  aclPropToObject = function(acl){
-//    var aceObjects = [];
-//    for (key in acl.getAces()) {
-//      var aceObject = {};
-//      var ace = acl.getAces()[key];
-//      // check if the ace contains not supported entry's
-//      if (ace.invertprincipal) {
-//        aceObject['notsupported'] = true;
-//      };
-//      // set values
-//      // TODO change the way to check this
-//      if (ace.principal.tagname != undefined) {
-//        aceObject['principal'] =  "DAV: "+ ace.principal.tagname;
-//      } else {
-//        aceObject['principal'] = ace.principal;
-//      }           
-//      if (ace.grantdeny == 1) {
-//        aceObject['access'] = 'grant';
-//      } else {
-//        aceObject['access'] = 'deny';
-//      }
-//      // TODO only DAV: privileges are supported
-//      var privileges = [];
-//      var supportedPrivileges =  ['all', 'read', 'write', 'read-acl', 'write-acl'];
-//      for (key in ace.getPrivilegeNames('DAV:')) {
-//        var priv = ace.getPrivilegeNames('DAV:')[key];
-//        var supported = false;
-//        // TODO probably nicer to make an object and ask value instead of read the list each time.
-//        for (key in supportedPrivileges) {
-//          var support = supportedPrivileges[key];
-//          if (support == priv) {
-//            supported = true;
-//          };
-//        };
-//        // remember this ace is not supported
-//        if (!supported){
-//          aceObject['notsupported'] = true;
-//        }
-//        privileges['DAV: '+priv]='on';
-//        
-//      };
-//      aceObject['privileges'] = privileges;
-//      aceObject['protected'] = ace.isprotected;
-//      aceObject['inherited'] = (ace.inherited.length? ace.inherited : '');
-//      aceObjects.push(aceObject);
-//    };
-//    return aceObjects;
-//  }
+
   var createCloseAclDialogFunction = function(resourcePath) {
     return function(){
       // Check whether there is a resource specific ACL set
