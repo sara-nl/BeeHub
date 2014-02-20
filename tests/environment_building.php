@@ -210,6 +210,8 @@ function setUpDatabase() {
   foreach ( $queries as $query ) {
     \BeeHub_DB::mysqli()->query( $query );
   }
+  
+  \BeeHub_Principal::update_principals_json();
 }
 
 
@@ -220,6 +222,7 @@ function loadTestConfig() {
     die( 1 );
   }
   \BeeHub::loadConfig( $configFile );
+  \BeeHub::changeConfigField( 'namespace', 'wheel_path', '/system/users/john' );
 }
 
 // End of file

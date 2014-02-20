@@ -200,5 +200,31 @@ class BeeHub_DB {
     return $retval;
   }
 
+
+  /**
+   * Creates the database tables
+   * 
+   * @return  boolean  True on success, false of failure
+   */
+  public static function createDbTables() {
+    $mysql = \BeeHub_DB::mysqli();
+    $query = '';
+    $filePointer = \fopen( \dirname( __DIR__ ) . \DIRECTORY_SEPARATOR . 'db' . \DIRECTORY_SEPARATOR . 'db_structure.sql', 'r' );
+    while ( ( $line = \fgets( $filePointer ) ) !== false ) {
+      if ( \substr( $line, 0, 2 ) === '--' ) {
+        continue;
+      }
+      $query .= ' ' . \trim( $line );
+      if ( \substr( $query, -1 ) === ';' ) {
+        if ( $mysql->real_query( $query ) === false ) {
+          return false;
+        }
+        $query = '';
+      }
+    }
+    \fclose( $filePointer );
+    return true;
+  }
+
 } // class BeeHub_DB
 

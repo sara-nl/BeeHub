@@ -47,6 +47,23 @@ class beehubTest extends BeeHub_Tests_Db_Test_Case {
   }
 
 
+  public function testChangeConfigField() {
+    $config = \BeeHub::config();
+    $section = 'test_section';
+    $field = 'test_field';
+    // Make sure the new value is not the same as the previous value
+    if ( isset( $config[$section] ) && isset( $config[$section][$field] ) ) {
+      $newValue = strval( $config[$section][$field] ) . '!';
+    }else{
+      $newValue = 'qwerty';
+    }
+    \BeeHub::changeConfigField( $section, $field, $newValue );
+    
+    $changedConfig = \BeeHub::config();
+    $this->assertSame( $newValue, $changedConfig[$section][$field] );
+  }
+
+
   public function testEscapeshellarg() {
     $this->assertEquals( \BeeHub::escapeshellarg( 'some text \' with quotes in it' ), "'" . 'some text \'\\\'\' with quotes in it' . "'", 'BeeHub::best_xml_type() should return correct value' );
   }

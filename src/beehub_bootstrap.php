@@ -60,8 +60,13 @@ if ( ( APPLICATION_ENV === BeeHub::ENVIRONMENT_TEST ) && isset( $_GET['test'] ) 
 if ( APPLICATION_ENV === BeeHub::ENVIRONMENT_TEST ) {
   require_once( dirname( dirname ( __FILE__ ) ) . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR . 'environment_building.php' );
   \BeeHub\tests\loadTestConfig();
+  if ( \BeeHub_DB::createDbTables() === false ) {
+    die( 'Unable to create database structure' );
+  }
   \BeeHub\tests\setUpDatabase();
   \BeeHub\tests\setUpStorageBackend();
+  $_SERVER['PHP_AUTH_USER'] = 'john';
+  $_SERVER['PHP_AUTH_PW'] = 'password_of_john';
 }
 
 // End of file
