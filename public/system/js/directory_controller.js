@@ -437,6 +437,36 @@
     };
   };
   
+  /*
+   * Make view copy or move ready
+   * 
+   * Public function
+   * 
+   * @param Boolean view true or false
+   * 
+   */
+  nl.sara.beehub.controller.setCopyMoveView = function(view){
+    if (view) {
+      // show cancel button
+      nl.sara.beehub.view.tree.cancelButton('show');
+      // mask all views
+      nl.sara.beehub.view.maskView(true);
+      // unmask tree
+      nl.sara.beehub.view.tree.noMask(true);
+      // hide slideTrigger
+      nl.sara.beehub.view.tree.slideTrigger('left'); 
+      nl.sara.beehub.view.tree.slideTrigger('hide'); 
+    } else {
+      // hide cancel button
+      nl.sara.beehub.view.tree.cancelButton('hide');
+      // unmask views
+      nl.sara.beehub.view.maskView(false);
+      nl.sara.beehub.view.tree.noMask(false);
+      // show slide trigger
+      nl.sara.beehub.view.tree.slideTrigger('show');
+    }
+  };
+  
   // COPY, MOVE, UPLOAD, DELETE
   /*
    * Initialize action Copy, Move, Upload or Delete
@@ -506,36 +536,6 @@
         startAction();
       });
     };
-  };
-  
-  /*
-   * Make view copy or move ready
-   * 
-   * Public function
-   * 
-   * @param Boolean view true or false
-   * 
-   */
-  nl.sara.beehub.controller.setCopyMoveView = function(view){
-    if (view) {
-      // show cancel button
-      nl.sara.beehub.view.tree.cancelButton('show');
-      // mask all views
-      nl.sara.beehub.view.maskView(true);
-      // unmask tree
-      nl.sara.beehub.view.tree.noMask(true);
-      // hide slideTrigger
-      nl.sara.beehub.view.tree.slideTrigger('left'); 
-      nl.sara.beehub.view.tree.slideTrigger('hide'); 
-    } else {
-      // hide cancel button
-      nl.sara.beehub.view.tree.cancelButton('hide');
-      // unmask views
-      nl.sara.beehub.view.maskView(false);
-      nl.sara.beehub.view.tree.noMask(false);
-      // show slide trigger
-      nl.sara.beehub.view.tree.slideTrigger('show');
-    }
   };
   
   /*

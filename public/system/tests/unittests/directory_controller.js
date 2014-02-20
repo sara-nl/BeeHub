@@ -439,88 +439,74 @@
     nl.sara.beehub.view.dialog.closeDialog = rememberCloseDialog;
   });
   
-  ///**
-  // * Test addSlash
-  // */
-  //test( 'addSlash', function() {
-  //  deepEqual( nl.sara.beehub.controller.addSlash("/home/laura"), "/home/laura/", "Add slash to /home/laura" );
-  //  deepEqual( nl.sara.beehub.controller.addSlash("/home/laura/"), "/home/laura/", "Add no slash to /home/laura/" );
-  //} );
-  //
-
-  //
-
-  //
-  //
-  ////test('extractPropsFromPropfindRequest', function(){
-  ////  //TODO 
-  ////  // Hiervoor moet ik data object na kunnen maken
-  ////});
-  //
-  ///**
-  // * Test getTreeNode
-  // * 
-  // */
-  //asyncTest('getTreeNode', function(){
-  //  var path="/home/laura/folder/";
-  //  var callback = function(status, data){
-  //    start();
-  //    deepEqual( status, "testStatus", 'getTreeNode should send request to server' );
-  //  }
-  //  var client = new nl.sara.webdav.Client();
-  //  var resourcetypeProp = new nl.sara.webdav.Property();
-  //  resourcetypeProp.tagname = 'resourcetype';
-  //  resourcetypeProp.namespace='DAV:';
-  //  var properties = [resourcetypeProp];
-  //  var config = {
-  //      "path":       "/home/laura/folder/",
-  //      "client" :    client,
-  //      "properties": properties,
-  //      "callback"  : callback
-  //  }
-  //  // Prepare to mock AJAX
-  //  var server = new MockHttpServer( function ( request ) {
-  //    // Prepare a response
-  //    request.receive( "testStatus" );
-  //  } );
-  //  server.start();
-  //  
-  //  nl.sara.beehub.controller.getTreeNode(config); 
-  // 
-  //  // End mocking of AJAX
-  //  server.stop();
-  //});
-  //
-  ///**
-  // * Test getTreeNode
-  // * 
-  // */
-  //asyncTest('createNewFolder', function(){ 
-  //  var path="/home/laura/folder/";
-  //  var callback = function(status, data){
-  //    start();
-  ////    var testfunc = controller.createNewFolderCallback(0,"new_folder").bind(controller)(201,"test");
-  //    var testfunc = nl.sara.beehub.controller.createNewFolderCallback(0,"new_folder");
-  //    deepEqual(testfunc,"Test");
-  ////    deepEqual( status, "testStatus", 'createNewFolder should send request to server' );
-  //  }
-  //  var client = new nl.sara.webdav.Client();
-  //
-  //  var config = {
-  //      "path":       "/home/laura/folder/",
-  //      "client" :    client,
-  //      "foldername"  : "new_folder",
-  //      "callback"    : callback
-  //  }
-  //  // Prepare to mock AJAX
-  //  var server = new MockHttpServer( function ( request ) {
-  //    // Prepare a response
-  //    request.receive( "testStatus" );
-  //  } );
-  //  server.start();
-  //  nl.sara.beehub.controller.createNewFolder(config); 
-  //  // End mocking of AJAX
-  //  server.stop();
-  //});
-  //// End of file
+  /**
+   * Test setCopyMoveView
+   */
+  test("nl.sara.beehub.controller.setCopyMoveView", function(){
+    expect(9);
+    
+    var showValue = "show";
+    var maskValue = true;
+    var noMaskValue = true;
+    var slideTrigger = {
+        first: "left",
+        second:"hide"
+    }
+    
+    // Setup environment
+    var rememberCancelButton = nl.sara.beehub.view.tree.cancelButton;
+    nl.sara.beehub.view.tree.cancelButton = function(value){
+      deepEqual(value, showValue, "Cancel button should be called with value "+showValue);
+    };
+    
+    var rememberMaskView = nl.sara.beehub.view.maskView;
+    nl.sara.beehub.view.maskView = function(value){
+      deepEqual(value, maskValue, "Mask view should be called with value "+showValue);
+    };
+    
+    var rememberNoMask = nl.sara.beehub.view.tree.noMask;
+    nl.sara.beehub.view.tree.noMask= function(value){
+      deepEqual(value, noMaskValue, "Nomask should be called with value "+noMaskValue);
+    };
+    
+    var rememberSlideTrigger = nl.sara.beehub.view.tree.slideTrigger;   
+    nl.sara.beehub.view.tree.slideTrigger = function(value){
+      if ((value === slideTrigger.first) || (value === slideTrigger.second)) {
+        ok(true, "slideTrigger is called.");
+      } else {
+        ok(false, "Slidetrigger is called with wrong value.");
+      }
+    }
+    
+    nl.sara.beehub.controller.setCopyMoveView(true);
+    
+    var showValue = "hide";
+    var maskValue = false;
+    var noMaskValue = false;
+    var slideTrigger = {
+        first: "show",
+        second:"show"
+    };
+    
+    nl.sara.beehub.controller.setCopyMoveView(false);
+    
+    // Back to original environment
+    nl.sara.beehub.view.tree.cancelButton = rememberCancelButton;
+    nl.sara.beehub.view.maskView =  rememberMaskView;
+    nl.sara.beehub.view.tree.noMask = rememberNoMask;
+    nl.sara.beehub.view.tree.slideTrigger = rememberSlideTrigger; 
+  })
+  
+  /**
+   * Test upload
+   */
+  test("nl.sara.beehub.controller.initAction, upload", function() {
+    expect(1);
+    
+    var items = [];
+//    items.push({name:"test1"});
+//    items.push({name:"test2"});
+    
+    nl.sara.beehub.controller.initAction("upload", items);
+  });
 })();
