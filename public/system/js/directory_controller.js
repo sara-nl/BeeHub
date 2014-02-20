@@ -207,7 +207,6 @@
     if (data.getResponse(path).getProperty('DAV:','getcontentlength').getParsedValue() !== null) {
       resource.contentlength = data.getResponse(path).getProperty('DAV:','getcontentlength').getParsedValue();
     };
-    console.log(resource);
     return resource;
   };
   

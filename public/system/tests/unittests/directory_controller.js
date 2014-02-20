@@ -145,15 +145,6 @@
     deepEqual( nl.sara.beehub.controller.bytesToSize(15000000000000, 0), "14 TB", "15000000000000 bytes, precision 0");
   });
   
-//  nl.sara.beehub.controller.getTreeNode = function(path, callback){
-//    var client = new nl.sara.webdav.Client();
-//    var resourcetypeProp = new nl.sara.webdav.Property();
-//    resourcetypeProp.tagname = 'resourcetype';
-//    resourcetypeProp.namespace='DAV:';
-//    var properties = [resourcetypeProp];
-//    client.propfind(path, callback ,1,properties);
-//  };
-  
   /**
    * Test getTreeNode
    */
@@ -221,18 +212,22 @@
     nl.sara.beehub.view.dialog.showError = rememberShowError;
     nl.sara.beehub.view.tree.createTreeNode = rememberCreateTreeNode;
   });
-   
-
-  
+     
   /**
-   * Test
+   * Test createNewFolder
+   * 
+   * This test includes private functions: createNewFolderCallback,
+   * extractPropsFromPropfindRequest, getResourcePropsFromServer
+   * 
    */
   test("nl.sara.beehub.controller.createNewFolder", function(){
-    expect(1);
+    expect(78);
     
     // Set up environment
     var tested405 = false;
     var pathName = currentDirectory+"/new_folder";
+    var testTypeResult = "";
+    var testError="";
     
     var rememberClient = nl.sara.webdav.Client;
     nl.sara.webdav.Client = function(){
@@ -244,8 +239,10 @@
           pathName = currentDirectory+"/new_folder_1";
           callback(405,"/test");
         }
+        testError = "You are not allowed to create a new folder.";
         callback(403,"/test");
-//        // Unknown return value
+        // Unknown return value
+        testError = "Unknown error.";
         callback(1,"/test");
       };
       
@@ -254,16 +251,16 @@
         deepEqual(val, 1, "Val should be 1.");
         deepEqual(properties.length, 6, "Properties");
         deepEqual(properties[0].tagname, "resourcetype", "Tagname should be resourcetype");
-        deepEqual(properties[0].namespace, "DAV:", "Namespace should be DAV:");
-        deepEqual(properties[1].tagname, "getcontenttype", "Tagname should be");
+        deepEqual(properties[0].namespace, "DAV:", "Namespace should be DAV: ");
+        deepEqual(properties[1].tagname, "getcontenttype", "Tagname should be getcontenttype");
         deepEqual(properties[1].namespace, "DAV:", "Namespace should be DAV:");
-        deepEqual(properties[2].tagname, "displayname", "Tagname should be");
+        deepEqual(properties[2].tagname, "displayname", "Tagname should be displayname");
         deepEqual(properties[2].namespace, "DAV:", "Namespace should be DAV:");
-        deepEqual(properties[3].tagname, "owner", "Tagname should be");
+        deepEqual(properties[3].tagname, "owner", "Tagname should be owner");
         deepEqual(properties[3].namespace, "DAV:", "Namespace should be DAV:");
-        deepEqual(properties[4].tagname, "getlastmodified", "Tagname should be");
+        deepEqual(properties[4].tagname, "getlastmodified", "Tagname should be getlastmodified");
         deepEqual(properties[4].namespace, "DAV:", "Namespace should be DAV:");
-        deepEqual(properties[5].tagname, "getcontentlength", "Tagname should be");
+        deepEqual(properties[5].tagname, "getcontentlength", "Tagname should be getcontentlength");
         deepEqual(properties[5].namespace, "DAV:", "Namespace should be DAV:");
        
         var propertyObject = function(namespace, property){
@@ -271,13 +268,9 @@
         };
         
         propertyObject.prototype.getParsedValue = function(){
-          if ((this.property === "resourcetype") {}|| (this.property === "getcontenttype")){
-            console.log("in "+this.property);
-
+          if (this.property === "resourcetype") {
             return testType;
           } else {
-            console.log("in2 "+this.property);
-
             return this.property;
           };
         }
@@ -301,26 +294,37 @@
         var data = new dataObject;
         
         var testType = nl.sara.webdav.codec.ResourcetypeCodec.COLLECTION;
+        testTypeResult = "collection";
+        testError = "Unknown error.";
         callback(207,data);
         callback(1,data);
-        testType = "notcollection"
+        testType = null;
+        testTypeResult = "getcontenttype";
         callback(207,data);
       };
     };
   
     var rememberAddResource = nl.sara.beehub.view.addResource;
     nl.sara.beehub.view.addResource = function(resource){
-      ok(false, "Not yet implmented.");
+      deepEqual(resource.path, "testPath", "Resource path should be testPath.");
+      deepEqual(resource.type, testTypeResult, "Resource type should be "+testTypeResult);
+      deepEqual(resource.displayname, "displayname", "Resource displayname should be displayname.");
+      deepEqual(resource.lastmodified, "getlastmodified", "Resource lastmodified should be getlastmodified.");
+      deepEqual(resource.owner, "owner", "Resource owner should be owner.");
     }
     
     var rememberTriggerRenameClick = nl.sara.beehub.view.content.triggerRenameClick;
     nl.sara.beehub.view.content.triggerRenameClick = function(resource){
-      ok(false, "Not yet implmented.");
+      deepEqual(resource.path, "testPath", "Resource path should be testPath.");
+      deepEqual(resource.type, testTypeResult, "Resource type should be "+testTypeResult);
+      deepEqual(resource.displayname, "displayname", "Resource displayname should be displayname.");
+      deepEqual(resource.lastmodified, "getlastmodified", "Resource lastmodified should be getlastmodified.");
+      deepEqual(resource.owner, "owner", "Resource owner should be owner.");
     }
     
     var rememberShowError = nl.sara.beehub.view.dialog.showError;
     nl.sara.beehub.view.dialog.showError = function(error){
-      ok(false, "Not yet implmented.");
+      deepEqual(error, testError, "Error should be Unknown error.");
     }
     
     var rememberProperty = nl.sara.webdav.Property;
