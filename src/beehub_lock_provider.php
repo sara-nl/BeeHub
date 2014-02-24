@@ -99,11 +99,13 @@ public function getlock($path) {
 
 
 public function setlock($lockroot, $depth, $owner, $timeout) {
-  if ( DAV::DEPTH_0 !== $depth )
+  $resource = DAV::$REGISTRY->resource( $lockroot );
+  if ( ( $resource->prop_resourcetype() === DAV_Collection::RESOURCETYPE ) && ( DAV::DEPTH_0 !== $depth ) ) {
     throw new DAV_Status(
       DAV::HTTP_NOT_IMPLEMENTED,
       'Locks of depth infinity are not implemented.'
     );
+  }
 //   if (preg_match("@^(?:{BeeHub::$USERS_PATH}|{BeeHub::$GROUPS_PATH}).+\$@", $lockroot))
 //     throw new DAV_Status(DAV::HTTP_FORBIDDEN);
   $timeout = self::timeout($timeout);
