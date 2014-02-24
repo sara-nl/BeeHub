@@ -52,13 +52,9 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
     if (empty($displayname) ||
         in_array( strtolower($group_name), BeeHub::$FORBIDDEN_GROUP_NAMES ) ||
         !preg_match('/^[a-zA-Z0-9]{1}[a-zA-Z0-9_\-\.]{0,254}$/D', $group_name)) {
-      throw new DAV_Status(DAV::HTTP_BAD_REQUEST);
+      throw new DAV_Status( DAV::HTTP_BAD_REQUEST, 'Group name has the wrong format. The name can be a maximum of 255 characters long and should start with an alphanumeric character, followed by alphanumeric character, followed by alphanumeric characters or one of the following: _-.' );
     }
     $groupdir = DAV::unslashify(BeeHub::$CONFIG['environment']['datadir']) . DIRECTORY_SEPARATOR . $group_name;
-    // Check for existing groupdir
-    if (file_exists($groupdir)) {
-      throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
-    }
 
     // Store in the database
     try {
@@ -68,10 +64,16 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
       );
     }catch (Exception $exception) {
       if ($exception->getCode() === 1062) { // Duplicate key: bad request!
-        throw new DAV_Status(DAV::HTTP_BAD_REQUEST);
+        throw new DAV_Status( DAV::HTTP_CONFLICT, 'Group name already in use. Please choose another group name!' );
       }else{
         throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
       }
+    }
+
+    // Check for existing groupdir
+    if ( file_exists( $groupdir ) ) {
+      BeeHub_DB::execute( 'DELETE FROM `beehub_groups` WHERE `group_name`=?', 's', $group_name );
+      throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR );
     }
 
     // Fetch the user and store extra properties
