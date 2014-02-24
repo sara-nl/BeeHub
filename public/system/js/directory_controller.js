@@ -487,7 +487,7 @@
         exist:      0,
         forbidden:  0
     };
-    
+
     // When action is not upload items is an array of resources
     if (action !== "upload"){
       // actionResources, array with all resources for the action
@@ -498,6 +498,7 @@
       nl.sara.beehub.controller.actionResources = [];
       // actionFiles, maps resource to file
       actionFiles = {};
+
       // put items in actionFiles and actionResources
       $.each(items, function(i, item){
         var resource = new nl.sara.beehub.ClientResource(path + item.name);
@@ -618,6 +619,7 @@
         
       // Forbidden
       case 403:
+        console.log("nu");
         // Update summary
         summary.forbidden++;
         // Update dialog info
@@ -858,6 +860,10 @@
         summary.forbidden++;
         // Update dialog info
         nl.sara.beehub.view.dialog.updateResourceInfo(resource,"Forbidden");
+        
+        if (!single) {
+          startNextAction();
+        };
         break;
       default:
         // Update summary
