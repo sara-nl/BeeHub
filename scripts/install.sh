@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# TODO: merge this with the new installation script
+
 # Prepare the environment and initialize submodules
 set -e
 pushd "$( dirname "${BASH_SOURCE[0]}" )/../"

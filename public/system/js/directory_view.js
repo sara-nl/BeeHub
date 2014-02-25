@@ -39,14 +39,14 @@ nl.sara.beehub.view.init = function() {
   
   // Change tab listeners
   // Content tab
-  $('a[href="#bh-dir-panel-contents"]').on('shown', function(e){
+  $('a[href="#bh-dir-panel-contents"]').unbind('click').click(function(e){
     if ( $.cookie( "beehub-showtree" ) !== "false" ) {
       nl.sara.beehub.view.tree.showTree();
     }
     nl.sara.beehub.view.showFixedButtons('content');
   });
   // Acl tab
-  $('a[href="#bh-dir-panel-acl"]').on('shown', function(e){
+  $('a[href="#bh-dir-panel-acl"]').unbind('click').click(function(e){
     nl.sara.beehub.view.tree.closeTree();
     nl.sara.beehub.view.showFixedButtons('acl');
   });
@@ -167,6 +167,6 @@ nl.sara.beehub.view.deleteResource = function(resource){
  * @param {Boolean} ownAcl True or false
  */
 nl.sara.beehub.view.setCustomAclOnResource = function(ownACL, resourcePath){
-  nl.sara.beehub.view.acl.setCustomAclOnResource(ownACL, resourcePath);
+  nl.sara.beehub.view.content.setCustomAclOnResource(ownACL, resourcePath);
 };
 

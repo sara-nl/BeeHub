@@ -1,9 +1,10 @@
 .buildpath
 .project
 .settings
+nbproject
 config.ini
-/public/system/client
+/.htaccess
+/vendor/
 /public/system/simplesaml
 /public/system/js/webdavlib.js
-/simplesamlphp/
-/simplesamlphp-1.10.0
+/doc-parser/
