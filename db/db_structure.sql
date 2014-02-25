@@ -56,11 +56,11 @@ DROP TABLE IF EXISTS `beehub_group_members`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `beehub_group_members` (
+  `group_name` varchar(255) character set ascii collate ascii_bin NOT NULL COMMENT 'urldecoded group name',
+  `user_name` varchar(255) character set ascii collate ascii_bin NOT NULL COMMENT 'urldecoded username',
   `is_admin` tinyint(1) NOT NULL default '0' COMMENT 'Is this user also a group admin?',
   `is_invited` tinyint(1) NOT NULL default '0' COMMENT 'Is the user invited/accepted by a group admin?',
   `is_requested` tinyint(1) NOT NULL default '0' COMMENT 'Is the membership requested/accepted by the user?',
-  `group_name` varchar(255) character set ascii collate ascii_bin NOT NULL COMMENT 'urldecoded group name',
-  `user_name` varchar(255) character set ascii collate ascii_bin NOT NULL COMMENT 'urldecoded username',
   PRIMARY KEY  (`group_name`,`user_name`),
   KEY `user_name` (`user_name`),
   KEY `is_admin` (`is_admin`),

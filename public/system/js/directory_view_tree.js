@@ -40,7 +40,7 @@
    */
   nl.sara.beehub.view.tree.init = function() {
     nl.sara.beehub.view.tree.attachEvents( treeNode );
-    $(".bh-dir-tree-slide-trigger").click(handle_tree_slide_click);
+    $(".bh-dir-tree-slide-trigger").unbind('click').click(handle_tree_slide_click);
   };
 
   var directoryClickHandlerAlternative = null;
@@ -132,60 +132,56 @@
       }else{
         // If there is no list loaded yet; load one now!
         var url = expander.siblings( 'a' ).attr( 'href' );
-        nl.sara.beehub.controller.getTreeNode( url, function( status, data ) {
-          // Callback
-          if (status !== 207) {
-            alert( 'Could not load the subdirectories' );
-            return;
-          };
-
-          var childArray = [];
-          var childCollections = {};
-          for ( var pathindex in data.getResponseNames() ) {
-            var path = data.getResponseNames()[pathindex];
-
-            // We only want to add children and only if they are directories
-            if ( ( url !== path) &&
-                 ( data.getResponse( path ).getProperty( 'DAV:','resourcetype' ) !== null ) &&
-                 ( nl.sara.webdav.codec.ResourcetypeCodec.COLLECTION === data.getResponse( path ).getProperty( 'DAV:','resourcetype' ).getParsedValue() )
-               )
-            {
-              childArray.push( path.toLowerCase() );
-              childCollections[ path.toLowerCase() ] = path;
-            }
-          }
-
-          childArray.sort();
-          var list = $( '<ul></ul>' );
-          for ( var index in childArray ) {
-            var path = childCollections[ childArray[ index ] ];
-            var element = createTreeElement( path, ( parseInt( index ) === ( childArray.length - 1 ) ) );
-            list.append( element );
-          }
-
-          // Once expanded, some attribute will never apply anymore
-          parent.removeClass( 'dynatree-lazy' );
-          if ( list.children().length > 0 ) {
-            parent.after( list );
-            parent.addClass( 'dynatree-has-children' );
-            expander.addClass( 'dynatree-expander' );
-            expander.removeClass( 'dynatree-connector' );
-            nl.sara.beehub.view.tree.attachEvents( parent );
-            treeExpandHandler( expander, callback );
-          }else{
-            parent.removeClass( 'dynatree-has-children' );
-            expander.removeClass( 'dynatree-expander' );
-            expander.addClass( 'dynatree-connector' );
-            expander.off( 'click' );
-
-            if ( callback !== undefined ) {
-              callback();
-            }
-          }
-        } );
+        nl.sara.beehub.controller.getTreeNode( url, nl.sara.beehub.controller.createGetTreeNodeCallback(url, parent, expander));
       }
     }
   }
+  
+  nl.sara.beehub.view.tree.createTreeNode = function(data, url, parent, expander, callback){
+    var childArray = [];
+    var childCollections = {};
+    for ( var pathindex in data.getResponseNames() ) {
+      var path = data.getResponseNames()[pathindex];
+
+      // We only want to add children and only if they are directories
+      if ( ( url !== path) &&
+           ( data.getResponse( path ).getProperty( 'DAV:','resourcetype' ) !== null ) &&
+           ( nl.sara.webdav.codec.ResourcetypeCodec.COLLECTION === data.getResponse( path ).getProperty( 'DAV:','resourcetype' ).getParsedValue() )
+         )
+      {
+        childArray.push( path.toLowerCase() );
+        childCollections[ path.toLowerCase() ] = path;
+      }
+    }
+
+    childArray.sort();
+    var list = $( '<ul></ul>' );
+    for ( var index in childArray ) {
+      var path = childCollections[ childArray[ index ] ];
+      var element = createTreeElement( path, ( parseInt( index ) === ( childArray.length - 1 ) ) );
+      list.append( element );
+    }
+
+    // Once expanded, some attribute will never apply anymore
+    parent.removeClass( 'dynatree-lazy' );
+    if ( list.children().length > 0 ) {
+      parent.after( list );
+      parent.addClass( 'dynatree-has-children' );
+      expander.addClass( 'dynatree-expander' );
+      expander.removeClass( 'dynatree-connector' );
+      nl.sara.beehub.view.tree.attachEvents( parent );
+      treeExpandHandler( expander, callback );
+    }else{
+      parent.removeClass( 'dynatree-has-children' );
+      expander.removeClass( 'dynatree-expander' );
+      expander.addClass( 'dynatree-connector' );
+      expander.off( 'click' );
+
+      if ( callback !== undefined ) {
+        callback();
+      }
+    }
+  };
 
   function createTreeElement( path, last ) {
     var name = path;
@@ -257,7 +253,7 @@
       $("#bh-dir-tree-header").addClass('bh-dir-nomask');
       $("#bh-dir-tree").addClass('bh-dir-nomask');
     } else {
-      $(".bh-dir-tree-header").removeClass('bh-dir-nomask');
+      $("#bh-dir-tree-header").removeClass('bh-dir-nomask');
       $("#bh-dir-tree").removeClass('bh-dir-nomask');
     }
   };
@@ -271,7 +267,7 @@
    */
   nl.sara.beehub.view.tree.cancelButton = function(action){
     if (action === 'show') {
-      $('#bh-dir-tree-cancel').click(function(){
+      $('#bh-dir-tree-cancel').unbind('click').click(function(){
         nl.sara.beehub.view.tree.setModal( false );
         nl.sara.beehub.controller.setCopyMoveView(false);
         nl.sara.beehub.view.tree.clearView();
@@ -280,6 +276,7 @@
       return;
     };
     if (action === 'hide') {
+      $('#bh-dir-tree-cancel').unbind('click');
       $('#bh-dir-tree-cancel').hide();
       return;
     }
@@ -379,10 +376,10 @@
     // Determine which path we want to extend now
     expandedPath += parents.shift() + '/';
     var parentLink = $( 'a[href="' + encodeURI( expandedPath ) + '"]', treeNode );
+
     if ( parentLink.length === 0 ) {
       throw "Unable to add directory to the tree: parent directory does not exist";
     }
-
     // It exists, let's expand this directory if it is not expanded already
     var parentSpan = parentLink.parent('span');
     if ( ! parentSpan.hasClass( 'dynatree-expanded' ) ) {
@@ -554,7 +551,7 @@
   
   
   /**
-   * Change whether the directory tree is modal
+   * Change when the directory tree is modal
    * 
    * @param {Boolean} modal  If set to true, the directory tree will be modal
    */

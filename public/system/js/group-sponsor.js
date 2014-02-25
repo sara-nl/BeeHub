@@ -40,10 +40,14 @@ $(function (){
   } else if ( path.substr(0, nl.sara.beehub.sponsors_path.length) === nl.sara.beehub.sponsors_path ) {
     group_or_sponsor = "sponsor";
   }
+
+  var map = {};
+  var invitedUser = '';
+
   $('#bh-gs-invite-typeahead').typeahead({
 	  source: function (query, process) {
 	        // implementation
-		    users = [];
+		    var users = [];
 		    map = {};
 		    $.each(nl.sara.beehub.principals.users, function (userName, displayName) {
 		        map[displayName+" ("+userName+")"] = userName;
