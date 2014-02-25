@@ -23,6 +23,58 @@
   
   var currentDirectory = "/foo/client_tests";
   
+  var rememberClearAllViews =               nl.sara.beehub.view.clearAllViews;
+  var rememberMaskView =                    nl.sara.beehub.view.maskView;
+  var rememberInputDisable =                nl.sara.beehub.view.inputDisable;
+  var rememberShowError =                   nl.sara.beehub.view.showError;
+  var rememberClient =                      nl.sara.webdav.Client;
+  var rememberProperty =                    nl.sara.webdav.Property;
+  var rememberCreateTreeNode =              nl.sara.beehub.view.tree.createTreeNode;
+  var rememberAddResource =                 nl.sara.beehub.view.addResource;
+  var rememberTriggerRenameClick =          nl.sara.beehub.view.content.triggerRenameClick;
+  var rememberShowOverwriteDialog =         nl.sara.beehub.view.dialog.showOverwriteDialog
+  var rememberGetUnknownResourceValues =    nl.sara.beehub.view.content.getUnknownResourceValues
+  var rememberUpdateResource =              nl.sara.beehub.view.updateResource;
+  var rememberDeleteResource =              nl.sara.beehub.view.deleteResource;
+  var rememberCloseDialog =                 nl.sara.beehub.view.dialog.closeDialog;
+  var rememberCancelButton =                nl.sara.beehub.view.tree.cancelButton;
+  var rememberMaskView =                    nl.sara.beehub.view.maskView;
+  var rememberNoMask =                      nl.sara.beehub.view.tree.noMask;
+  var rememberSlideTrigger =                nl.sara.beehub.view.tree.slideTrigger;   
+  var rememberShowResourceDialog =          nl.sara.beehub.view.dialog.showResourcesDialog;
+  var rememberSetAlreadyExist =             nl.sara.beehub.view.dialog.setAlreadyExist;
+  var rememberResource =                    nl.sara.beehub.view.addResource;
+  var rememberUpdateResource =              nl.sara.beehub.view.dialog.updateResourceInfo;
+  var rememberUsersPath =                   nl.sara.beehub.users_path;
+  var rememberGroupsPath =                  nl.sara.beehub.groups_path;
+
+  var backToOriginalEnvironment = function(){
+    nl.sara.beehub.view.clearAllViews =                     rememberClearAllViews;
+    nl.sara.beehub.view.maskView =                          rememberMaskView;
+    nl.sara.beehub.view.inputDisable =                      rememberInputDisable;
+    nl.sara.beehub.view.showError =                         rememberShowError;
+    nl.sara.webdav.Client =                                 rememberClient;
+    nl.sara.webdav.Property =                               rememberProperty;
+    nl.sara.beehub.view.tree.createTreeNode =               rememberCreateTreeNode;
+    nl.sara.beehub.view.addResource =                       rememberAddResource;
+    nl.sara.beehub.view.content.triggerRenameClick =        rememberTriggerRenameClick;
+    nl.sara.beehub.view.dialog.showOverwriteDialog =        rememberShowOverwriteDialog;
+    nl.sara.beehub.view.content.getUnknownResourceValues =  rememberGetUnknownResourceValues;
+    nl.sara.beehub.view.updateResource =                    rememberUpdateResource;
+    nl.sara.beehub.view.deleteResource =                    rememberDeleteResource;
+    nl.sara.beehub.view.dialog.closeDialog =                rememberCloseDialog;
+    nl.sara.beehub.view.tree.cancelButton =                 rememberCancelButton;
+    nl.sara.beehub.view.maskView =                          rememberMaskView;
+    nl.sara.beehub.view.tree.noMask =                       rememberNoMask;
+    nl.sara.beehub.view.tree.slideTrigger =                 rememberSlideTrigger; 
+    nl.sara.beehub.view.dialog.showResourcesDialog =        rememberShowResourceDialog;
+    nl.sara.beehub.view.dialog.setAlreadyExist =            rememberSetAlreadyExist;
+    nl.sara.beehub.view.addResource =                       rememberResource;
+    nl.sara.beehub.view.dialog.updateResourceInfo =         rememberUpdateResource;
+    nl.sara.beehub.users_path =                             rememberUsersPath;
+    nl.sara.beehub.groups_path =                            rememberGroupsPath;
+  }
+  
   var getDataObject = function(path, testType){
     var propertyObject = function(namespace, property){
       this.property = property;
@@ -73,14 +125,14 @@
   test("nl.sara.beehub.controller.clearAllViews", function(){
     expect(1);
   
-    var rememberClearAllViews = nl.sara.beehub.view.clearAllViews;
     nl.sara.beehub.view.clearAllViews = function(){
       ok(true, "nl.sara.beehub.view.clearAllViews is called.");
     };
     
     nl.sara.beehub.controller.clearAllViews();
     
-    nl.sara.beehub.view.clearAllViews = rememberClearAllViews;
+    // Put back original functions
+    backToOriginalEnvironment();
   });
   
   /**
@@ -89,7 +141,6 @@
   test("nl.sara.beehub.controller.maskView", function(){
     expect(6);
     
-    var rememberMaskView = nl.sara.beehub.view.maskView;
     nl.sara.beehub.view.maskView = function(type, show){
       deepEqual(type, typeTest, "nl.sara.beehub.view.maskView should be called with type value "+typeTest);
       deepEqual(show, showTest, "nl.sara.beehub.view.maskView should be called with show value "+showTest);
@@ -102,9 +153,10 @@
     nl.sara.beehub.controller.maskView(typeTest, showTest);
     typeTest = "loading";
     showTest = false
-    nl.sara.beehub.controller.maskView(typeTest, showTest);
+    nl.sara.beehub.controller.maskView(typeTest, showTest);   
     
-    nl.sara.beehub.view.maskView = rememberMaskView;
+    // Put back original functions
+    backToOriginalEnvironment();
   });
   
   /**
@@ -113,7 +165,6 @@
   test("nl.sara.beehub.controller.inputDisable", function(){
     expect(2);
     
-    var rememberInputDisable = nl.sara.beehub.view.inputDisable;
     nl.sara.beehub.view.inputDisable = function(value){
       deepEqual(value, testValue, "nl.sara.beehub.view.inputDisable should be called with value "+testValue);
     };
@@ -122,8 +173,9 @@
     nl.sara.beehub.controller.inputDisable(testValue);
     testValue = false;
     nl.sara.beehub.controller.inputDisable(testValue);
-    
-    nl.sara.beehub.view.inputDisable = rememberInputDisable;
+  
+    // Put back original functions
+    backToOriginalEnvironment();
   });
   
   /**
@@ -132,14 +184,14 @@
   test("nl.sara.beehub.controller.showError", function(){
     expect(1);
     
-    var rememberShowError = nl.sara.beehub.view.showError;
     nl.sara.beehub.view.dialog.showError = function(value){
       deepEqual(value, "test", "nl.sara.beehub.view.showError should be called with value test.");
     };
     
     nl.sara.beehub.controller.showError("test");
   
-    nl.sara.beehub.view.showError = rememberShowError;
+    // Put back original functions
+    backToOriginalEnvironment();
   });
   
   /**
@@ -161,6 +213,9 @@
     deepEqual( nl.sara.beehub.controller.getDisplayName(username), "Laura Leistikow", "User laura" );
     deepEqual( nl.sara.beehub.controller.getDisplayName(groupname), "Test group", "Group group" );
     deepEqual( nl.sara.beehub.controller.getDisplayName(name), "", "Name undefined" );
+    
+    // Put back original functions
+    backToOriginalEnvironment();
   } );
   
   /**
@@ -188,7 +243,6 @@
       ok(true, "Callback function is called.");
     };
     
-    var rememberClient = nl.sara.webdav.Client;
     nl.sara.webdav.Client = function(){
       this.propfind = function(path, callback ,val ,properties){
         deepEqual(path, "/test", "Propfind should be called with path value "+path);
@@ -199,15 +253,14 @@
       };
     };
     
-    var rememberProperty = nl.sara.webdav.Property;
     nl.sara.webdav.Property = function(){
       // Do nothing
     };
     
     nl.sara.beehub.controller.getTreeNode("/test", callback);
     
-    nl.sara.webdav.Client = rememberClient;
-    nl.sara.webdav.Property = rememberProperty;
+    // Put back original functions
+    backToOriginalEnvironment();
   });
   
   /**
@@ -221,12 +274,10 @@
       ok(true, "Callback function is called.");
     }
     
-    var rememberShowError = nl.sara.beehub.view.dialog.showError;
     nl.sara.beehub.view.dialog.showError = function(error){
       deepEqual(error,'Could not load the subdirectories.', "Show error should be called with value testError.");
     };
     
-    var rememberCreateTreeNode = nl.sara.beehub.view.tree.createTreeNode;
     nl.sara.beehub.view.tree.createTreeNode = function(data, url, parent, expander, callback){
       deepEqual(data, "data", "createTreeNode should be called with data value data.");
       deepEqual(url, "/test", "createTreeNode should be called with url value /test.");
@@ -241,9 +292,8 @@
     // Test status not equal 207
     testFunction(200, "data");
     
-    // Back to original environment
-    nl.sara.beehub.view.dialog.showError = rememberShowError;
-    nl.sara.beehub.view.tree.createTreeNode = rememberCreateTreeNode;
+    // Put back original functions
+    backToOriginalEnvironment();
   });
      
   /**
@@ -262,7 +312,6 @@
     var testTypeResult = "";
     var testError="";
     
-    var rememberClient = nl.sara.webdav.Client;
     nl.sara.webdav.Client = function(){
       this.mkcol = function(path, callback) {
         deepEqual(path, pathName, "Mkkol is called with path "+currentDirectory+"/new_folder");
@@ -311,7 +360,6 @@
       };
     };
   
-    var rememberAddResource = nl.sara.beehub.view.addResource;
     nl.sara.beehub.view.addResource = function(resource){
       deepEqual(resource.path, "testPath", "Resource path should be testPath.");
       deepEqual(resource.type, testTypeResult, "Resource type should be "+testTypeResult);
@@ -320,7 +368,6 @@
       deepEqual(resource.owner, "owner", "Resource owner should be owner.");
     }
     
-    var rememberTriggerRenameClick = nl.sara.beehub.view.content.triggerRenameClick;
     nl.sara.beehub.view.content.triggerRenameClick = function(resource){
       deepEqual(resource.path, "testPath", "Resource path should be testPath.");
       deepEqual(resource.type, testTypeResult, "Resource type should be "+testTypeResult);
@@ -329,24 +376,18 @@
       deepEqual(resource.owner, "owner", "Resource owner should be owner.");
     }
     
-    var rememberShowError = nl.sara.beehub.view.dialog.showError;
     nl.sara.beehub.view.dialog.showError = function(error){
       deepEqual(error, testError, "Error should be Unknown error.");
     }
     
-    var rememberProperty = nl.sara.webdav.Property;
     nl.sara.webdav.Property = function(){
       // Do nothing
     };
     
     nl.sara.beehub.controller.createNewFolder();
-    
-    // Back to original environment
-    nl.sara.webdav.Client = rememberClient;
-    nl.sara.beehub.view.addResource = rememberAddResource;
-    nl.sara.beehub.view.content.triggerRenameClick = rememberTriggerRenameClick;
-    nl.sara.beehub.view.dialog.showError = rememberShowError;
-    nl.sara.webdav.Property = rememberProperty;
+  
+    // Put back original functions
+    backToOriginalEnvironment();
   });
   
 //  nl.sara.beehub.controller.renameResource = function(resource, fileNameNew, overwriteMode){
@@ -367,7 +408,6 @@
     var firstTest = true;
     
     // Setup environment
-    var rememberClient = nl.sara.webdav.Client;
     nl.sara.webdav.Client = function(){
       this.move = function(path, callback, newPath, overWriteMode) {
         deepEqual(path, currentDirectory+"/original", "Move should be called called with path original");
@@ -386,7 +426,6 @@
     nl.sara.webdav.Client.FAIL_ON_OVERWRITE = 3;
     nl.sara.webdav.Client.SILENT_OVERWRITE = 5;
     
-    var rememberShowOverwriteDialog = nl.sara.beehub.view.dialog.showOverwriteDialog
     nl.sara.beehub.view.dialog.showOverwriteDialog = function(resource, fileNameNew, callback){
       deepEqual(resource.path, currentDirectory+"/original", "Overwrite dialog should be called with resource "+currentDirectory+"/original");
       deepEqual(fileNameNew, "new", "Overwrite dialog should be called with resource new");
@@ -398,7 +437,6 @@
       };
     };
     
-    var rememberGetUnknownResourceValues = nl.sara.beehub.view.content.getUnknownResourceValues
     nl.sara.beehub.view.content.getUnknownResourceValues = function(resource){
       resource.displayname   = "displayname";
       resource.type          = "type";
@@ -408,7 +446,6 @@
       return resource
     }
     
-    var rememberUpdateResource = nl.sara.beehub.view.updateResource;
     nl.sara.beehub.view.updateResource = function(resource, resourceNew){
       deepEqual(resource.path, currentDirectory+"/original", "Resource path should be "+ currentDirectory+"/original");
       deepEqual(resource.type, "type", "Resource type should be type");
@@ -423,12 +460,10 @@
       deepEqual(resourceNew.owner, "owner", "Resource owner should be owner.");
     };
     
-    var rememberDeleteResource = nl.sara.beehub.view.deleteResource;
     nl.sara.beehub.view.deleteResource = function(resource) {
       ok(false, "not ready");
     };
     
-    var rememberCloseDialog = nl.sara.beehub.view.dialog.closeDialog;
     nl.sara.beehub.view.dialog.closeDialog = function(){
       ok(true, "Close dialog is called.");
     }
@@ -437,13 +472,8 @@
     
     nl.sara.beehub.controller.renameResource(resource,"new", nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
     
-    // Back to original environment
-    nl.sara.webdav.Client = rememberClient;
-    nl.sara.beehub.view.dialog.showOverwriteDialog = rememberShowOverwriteDialog;
-    nl.sara.beehub.view.content.getUnknownResourceValues = rememberGetUnknownResourceValues;
-    nl.sara.beehub.view.updateResource = rememberUpdateResource;
-    nl.sara.beehub.view.deleteResource = rememberDeleteResource;
-    nl.sara.beehub.view.dialog.closeDialog = rememberCloseDialog;
+    // Put back original functions
+    backToOriginalEnvironment();
   });
   
   /**
@@ -461,22 +491,18 @@
     }
     
     // Setup environment
-    var rememberCancelButton = nl.sara.beehub.view.tree.cancelButton;
     nl.sara.beehub.view.tree.cancelButton = function(value){
       deepEqual(value, showValue, "Cancel button should be called with value "+showValue);
     };
     
-    var rememberMaskView = nl.sara.beehub.view.maskView;
     nl.sara.beehub.view.maskView = function(value){
       deepEqual(value, maskValue, "Mask view should be called with value "+showValue);
     };
     
-    var rememberNoMask = nl.sara.beehub.view.tree.noMask;
     nl.sara.beehub.view.tree.noMask= function(value){
       deepEqual(value, noMaskValue, "Nomask should be called with value "+noMaskValue);
     };
     
-    var rememberSlideTrigger = nl.sara.beehub.view.tree.slideTrigger;   
     nl.sara.beehub.view.tree.slideTrigger = function(value){
       if ((value === slideTrigger.first) || (value === slideTrigger.second)) {
         ok(true, "slideTrigger is called.");
@@ -497,11 +523,8 @@
     
     nl.sara.beehub.controller.setCopyMoveView(false);
     
-    // Back to original environment
-    nl.sara.beehub.view.tree.cancelButton = rememberCancelButton;
-    nl.sara.beehub.view.maskView =  rememberMaskView;
-    nl.sara.beehub.view.tree.noMask = rememberNoMask;
-    nl.sara.beehub.view.tree.slideTrigger = rememberSlideTrigger; 
+    // Put back original functions
+    backToOriginalEnvironment();
   })
   
   /**
@@ -522,12 +545,10 @@
        { "name": "file2" }
     ];
     
-    var rememberShowResourceDialog = nl.sara.beehub.view.dialog.showResourcesDialog;
     nl.sara.beehub.view.dialog.showResourcesDialog =  function(actionFunction){
       actionFunction();
     };
     
-    var rememberClient = nl.sara.webdav.Client;
     nl.sara.webdav.Client = function(){
       this.head = function(path, callback, string){    
 
@@ -550,17 +571,14 @@
       }
     };
     
-    var rememberSetAlreadyExist = nl.sara.beehub.view.dialog.setAlreadyExist;
     nl.sara.beehub.view.dialog.setAlreadyExist = function(resource, overwrite, rename, cancel){
       deepEqual(resource.path,currentDirectory+"/file1", "Already exists should be called with "+currentDirectory+"/file1");
     };
         
     nl.sara.beehub.controller.initAction(items, "upload");
     
-    // Back to original environment
-    nl.sara.beehub.view.dialog.showResourcesDialog = rememberShowResourceDialog;
-    nl.sara.webdav.Client = rememberClient;
-    nl.sara.beehub.view.dialog.setAlreadyExist = rememberSetAlreadyExist;
+    // Put back original functions
+    backToOriginalEnvironment();
   });
   
   /**
@@ -585,12 +603,10 @@
     var putEmptyFileStatus = 0;
     var putFileStatus = 0;
     
-    var rememberShowResourceDialog = nl.sara.beehub.view.dialog.showResourcesDialog;
     nl.sara.beehub.view.dialog.showResourcesDialog =  function(actionFunction){
       actionFunction();
     };
     
-    var rememberClient = nl.sara.webdav.Client;
     nl.sara.webdav.Client = function(){
       this.head = function(path, callback, string){    
 
@@ -623,12 +639,10 @@
       }
     };
     
-    var rememberResource = nl.sara.beehub.view.addResource;
     nl.sara.beehub.view.addResource = function(resource){
       deepEqual(resource.path,"file1", "Path should be file1.");
     };
     
-    var rememberProperty = nl.sara.webdav.Property;
     nl.sara.webdav.Property = function(){
       // Do nothing
     };
@@ -667,12 +681,8 @@
     putFileStatus = 204;
     nl.sara.beehub.controller.initAction(items, "upload");
     
-    
-    // Back to original environment
-    nl.sara.beehub.view.dialog.showResourcesDialog = rememberShowResourceDialog;
-    nl.sara.webdav.Client = rememberClient;
-    nl.sara.beehub.view.addResource = rememberResource;
-    nl.sara.webdav.Property = rememberProperty;
+    // Put back original functions
+    backToOriginalEnvironment();
   });
   
   /**
@@ -693,12 +703,10 @@
        { "name": "file2", "type":"type" }
     ];
     
-    var rememberShowResourceDialog = nl.sara.beehub.view.dialog.showResourcesDialog;
     nl.sara.beehub.view.dialog.showResourcesDialog =  function(actionFunction){
       actionFunction();
     };
     
-    var rememberClient = nl.sara.webdav.Client;
     nl.sara.webdav.Client = function(){
       this.head = function(path, callback, string){    
 
@@ -727,18 +735,15 @@
       };    
     };
     
-    var rememberUpdateResource = nl.sara.beehub.view.dialog.updateResourceInfo;
     nl.sara.beehub.view.dialog.updateResourceInfo = function(resource, info){
       deepEqual(resource.path, currentDirectory+"/file1","Resource path should be "+currentDirectory+"/file1.");
       deepEqual(info, "Forbidden","Info should be forbidden.");
     }
     
     nl.sara.beehub.controller.initAction(items, "upload");
-    
-    
-    // Back to original environment
-    nl.sara.webdav.Client = rememberClient;
-    nl.sara.beehub.view.dialog.updateResourceInfo = rememberUpdateResource;
+
+    // Put back original functions
+    backToOriginalEnvironment();
   });
   
   /**
@@ -764,12 +769,10 @@
     var putEmptyFileStatus = 0;
     var putFileStatus = 0;
     
-    var rememberShowResourceDialog = nl.sara.beehub.view.dialog.showResourcesDialog;
     nl.sara.beehub.view.dialog.showResourcesDialog =  function(actionFunction){
       actionFunction();
     };
     
-    var rememberClient = nl.sara.webdav.Client;
     nl.sara.webdav.Client = function(){
       this.head = function(path, callback, string){    
 
@@ -801,7 +804,6 @@
       };
     };
     
-    var rememberUpdateResource = nl.sara.beehub.view.dialog.updateResourceInfo;
     nl.sara.beehub.view.dialog.updateResourceInfo = function(resource, info){
       deepEqual(resource.path, currentDirectory+"/file1","Resource path should be "+currentDirectory+"/file1.");
       deepEqual(info, "test","Info should be test.");
@@ -830,10 +832,9 @@
     
     putEmptyFileStatus = 204;
     nl.sara.beehub.controller.initAction(items, "upload");
-   
-    // Back to original environment
-    nl.sara.webdav.Client = rememberClient;
-    nl.sara.beehub.view.dialog.updateResourceInfo = rememberUpdateResource;
+
+    // Put back original functions
+    backToOriginalEnvironment();
   });
   
   /**
@@ -854,12 +855,10 @@
        { "name": "file2", "type":"type" }
     ];
     
-    var rememberShowResourceDialog = nl.sara.beehub.view.dialog.showResourcesDialog;
     nl.sara.beehub.view.dialog.showResourcesDialog =  function(actionFunction){
       actionFunction();
     };
     
-    var rememberClient = nl.sara.webdav.Client;
     nl.sara.webdav.Client = function(){
       this.head = function(path, callback, string){    
 
@@ -888,7 +887,6 @@
       };    
     };
     
-    var rememberUpdateResource = nl.sara.beehub.view.dialog.updateResourceInfo;
     nl.sara.beehub.view.dialog.updateResourceInfo = function(resource, info){
       deepEqual(resource.path, currentDirectory+"/file1","Resource path should be "+currentDirectory+"/file1.");
       deepEqual(info, "test","Info should be test.");
@@ -896,10 +894,8 @@
     
     nl.sara.beehub.controller.initAction(items, "upload");
     
-    
-    // Back to original environment
-    nl.sara.webdav.Client = rememberClient;
-    nl.sara.beehub.view.dialog.updateResourceInfo = rememberUpdateResource;
+    // Put back original functions
+    backToOriginalEnvironment();
   });
   
   /**
@@ -919,12 +915,10 @@
        { "name": "file2", "type":"type" }
     ];
     
-    var rememberShowResourceDialog = nl.sara.beehub.view.dialog.showResourcesDialog;
     nl.sara.beehub.view.dialog.showResourcesDialog =  function(actionFunction){
       actionFunction();
-    };
+    }; 
     
-    var rememberClient = nl.sara.webdav.Client;
     nl.sara.webdav.Client = function(){
       this.head = function(path, callback, string){    
 
@@ -947,17 +941,887 @@
       }; 
     };
     
-    var rememberUpdateResource = nl.sara.beehub.view.dialog.updateResourceInfo;
     nl.sara.beehub.view.dialog.updateResourceInfo = function(resource, info){
       deepEqual(resource.path, currentDirectory+"/file1","Resource path should be "+currentDirectory+"/file1.");
       deepEqual(info, "Unknown error.","Info should be unknown error.");
-    }
+    };
     
     nl.sara.beehub.controller.initAction(items, "upload");
+
+    // Put back original functions
+    backToOriginalEnvironment();
+  });
+  
+  /**
+   * Test upload 7
+   * 
+   * Test upload with file 
+   * - that excists on the server
+   * - view should be updated and next action should start
+   * - rename button is pressed, unknown status response at head request
+   */
+  test("nl.sara.beehub.controller.initAction, upload", function() {
+    expect(11);
     
+    // Set up environment
+    var items =  [
+       // Test file
+       { "name": "file1", "type":"type"},
+       // Next file
+       { "name": "file2", "type":"type" }
+    ];
     
-    // Back to original environment
-    nl.sara.webdav.Client = rememberClient;
-    nl.sara.beehub.view.dialog.updateResourceInfo = rememberUpdateResource;
+    nl.sara.beehub.view.dialog.showResourcesDialog =  function(actionFunction){
+      actionFunction();
+    };
+    
+    nl.sara.beehub.view.dialog.updateResourceInfo = function(resource, info){
+      deepEqual(resource.path, currentDirectory+"/file1", "Path should be "+currentDirectory+"/file1");
+      deepEqual(info,"Unknown error.", "Info should ben unknown error.");
+    };
+    
+    nl.sara.webdav.Client = function(){
+      this.head = function(path, callback, string){   
+        switch(path)
+        {
+        case currentDirectory+"/file1_2":
+          ok(true, "Path is ok.");
+          deepEqual(string, undefined, "Teststring should be undefined.");
+          callback(1);
+          break;
+        case currentDirectory+"/file1_1":
+        case currentDirectory+"/file1":
+          // File excists
+          ok(true, "Path is ok.");
+          deepEqual(string, "", "Teststring should be empty.");
+          callback(200);
+          break;
+        case currentDirectory+"/file2":
+          // File does not excists
+          ok(true, "Next action is started.");
+          deepEqual(string, "", "Teststring should be empty.");
+          break;
+        default:
+          ok(false, "This should not happen.");
+        }
+      }; 
+    };
+      
+    nl.sara.beehub.view.dialog.setAlreadyExist = function(resource, overwrite, rename, cancel){
+      deepEqual(resource.path,currentDirectory+"/file1", "Already exists should be called with "+currentDirectory+"/file1");
+      rename();
+    };
+        
+    nl.sara.beehub.controller.initAction(items, "upload");
+    
+    // Put back original functions
+    backToOriginalEnvironment();
+  });
+  
+  /**
+   * Test upload 8
+   * 
+   * Test upload with file 
+   * - that excists on the server
+   * - view should be updated and next action should start
+   * - rename button is pressed, 404 status response at head request
+   * - forbidden to upload file
+   */
+  test("nl.sara.beehub.controller.initAction, upload", function() {
+    expect(14);
+    
+    // Set up environment
+    var items =  [
+       // Test file
+       { "name": "file1", "type":"type"},
+       // Next file
+       { "name": "file2", "type":"type" }
+    ];
+    
+    nl.sara.beehub.view.dialog.showResourcesDialog =  function(actionFunction){
+      actionFunction();
+    };
+    
+    nl.sara.beehub.view.dialog.updateResourceInfo = function(resource, info){
+      deepEqual(resource.path, currentDirectory+"/file1", "Path should be "+currentDirectory+"/file1");
+      deepEqual(info,"Unknown error.", "Info should ben unknown error.");
+    };
+    
+    nl.sara.webdav.Client = function(){
+      this.head = function(path, callback, string){   
+        switch(path)
+        {
+        case currentDirectory+"/file1_2":
+          ok(true, "Path is ok.");
+          deepEqual(string, undefined, "Teststring should be undefined.");
+          callback(404);
+          break;
+        case currentDirectory+"/file1_1":
+        case currentDirectory+"/file1":
+          // File excists
+          ok(true, "Path is ok.");
+          deepEqual(string, "", "Teststring should be empty.");
+          callback(200);
+          break;
+        case currentDirectory+"/file2":
+          // File does not excists
+          ok(true, "Next action is started.");
+          deepEqual(string, "", "Teststring should be empty.");
+          break;
+        default:
+          ok(false, "This should not happen.");
+        }
+      }; 
+      this.put = function(destination, callback, string, type){
+        deepEqual(destination, currentDirectory+"/file1_2", "Destination should be "+currentDirectory+"/file1_2");
+        deepEqual(type, "type", "Type should be type.");
+        deepEqual(string, "", "String should be empty.");
+        callback(403);
+      };
+    };
+    
+    nl.sara.beehub.view.dialog.updateResourceInfo = function(resource, info){
+      deepEqual(resource.path, currentDirectory+"/file1","Resource path should be "+currentDirectory+"/file1.");
+      deepEqual(info, "Forbidden","Info should be forbidden.");
+    };
+    
+    nl.sara.beehub.view.dialog.setAlreadyExist = function(resource, overwrite, rename, cancel){
+      deepEqual(resource.path,currentDirectory+"/file1", "Already exists should be called with "+currentDirectory+"/file1");
+      rename();
+    };
+        
+    nl.sara.beehub.controller.initAction(items, "upload");
+    
+    // Put back original functions
+    backToOriginalEnvironment();
+  });
+  
+  /**
+   * Test upload 9
+   * 
+   * Test upload with file 
+   * - that excists on the server
+   * - view should be updated and next action should start
+   * - rename button is pressed, 404 status response at head request
+   * - unknown status response on upload empty file
+   */
+  test("nl.sara.beehub.controller.initAction, upload", function() {
+    expect(14);
+    
+    // Set up environment
+    var items =  [
+       // Test file
+       { "name": "file1", "type":"type"},
+       // Next file
+       { "name": "file2", "type":"type" }
+    ];
+    
+    nl.sara.beehub.view.dialog.showResourcesDialog =  function(actionFunction){
+      actionFunction();
+    };
+    
+    nl.sara.beehub.view.dialog.updateResourceInfo = function(resource, info){
+      deepEqual(resource.path, currentDirectory+"/file1", "Path should be "+currentDirectory+"/file1");
+      deepEqual(info,"Unknown error.", "Info should ben unknown error.");
+    };
+    
+    nl.sara.webdav.Client = function(){
+      this.head = function(path, callback, string){   
+        switch(path)
+        {
+        case currentDirectory+"/file1_2":
+          ok(true, "Path is ok.");
+          deepEqual(string, undefined, "Teststring should be undefined.");
+          callback(404);
+          break;
+        case currentDirectory+"/file1_1":
+        case currentDirectory+"/file1":
+          // File excists
+          ok(true, "Path is ok.");
+          deepEqual(string, "", "Teststring should be empty.");
+          callback(200);
+          break;
+        case currentDirectory+"/file2":
+          // File does not excists
+          ok(true, "Next action is started.");
+          deepEqual(string, "", "Teststring should be empty.");
+          break;
+        default:
+          ok(false, "This should not happen.");
+        }
+      }; 
+      this.put = function(destination, callback, string, type){
+        deepEqual(destination, currentDirectory+"/file1_2", "Destination should be "+currentDirectory+"/file1_2");
+        deepEqual(type, "type", "Type should be type.");
+        deepEqual(string, "", "String should be empty.");
+        callback(1, "test");
+      };
+    };
+    
+    nl.sara.beehub.view.dialog.updateResourceInfo = function(resource, info){
+      deepEqual(resource.path, currentDirectory+"/file1","Resource path should be "+currentDirectory+"/file1.");
+      deepEqual(info, "test","Info should be test.");
+    };
+    
+    nl.sara.beehub.view.dialog.setAlreadyExist = function(resource, overwrite, rename, cancel){
+      deepEqual(resource.path,currentDirectory+"/file1", "Already exists should be called with "+currentDirectory+"/file1");
+      rename();
+    };
+        
+    nl.sara.beehub.controller.initAction(items, "upload");
+    
+    // Put back original functions
+    backToOriginalEnvironment();
+  });
+  
+  /**
+   * Test upload 10
+   * 
+   * Test upload with file 
+   * - that excists on the server
+   * - view should be updated and next action should start
+   * - rename button is pressed, 404 status response at head request
+   * - no errors - rename is succeeded after one already excists
+   */
+  test("nl.sara.beehub.controller.initAction, upload", function() {
+    expect(60);
+    
+    var putEmptyFileStatus;
+    var putFileStatus;
+    
+    // Set up environment
+    var items =  [
+       // Test file
+       { "name": "file1", "type":"type"},
+       // Next file
+       { "name": "file2", "type":"type" }
+    ];
+    
+    nl.sara.beehub.view.dialog.showResourcesDialog =  function(actionFunction){
+      actionFunction();
+    };
+    
+    nl.sara.beehub.view.dialog.updateResourceInfo = function(resource, info){
+      deepEqual(resource.path, currentDirectory+"/file1", "Path should be "+currentDirectory+"/file1");
+      deepEqual(info,"Unknown error.", "Info should ben unknown error.");
+    };
+    
+    nl.sara.webdav.Client = function(){
+      this.head = function(path, callback, string){   
+        switch(path)
+        {
+        case currentDirectory+"/file1_2":
+          ok(true, "Path is ok.");
+          deepEqual(string, undefined, "Teststring should be undefined.");
+          callback(404);
+          break;
+        case currentDirectory+"/file1_1":
+        case currentDirectory+"/file1":
+          // File excists
+          ok(true, "Path is ok.");
+          deepEqual(string, "", "Teststring should be empty.");
+          callback(200);
+          break;
+        case currentDirectory+"/file2":
+          // File does not excists
+          ok(true, "Next action is started.");
+          deepEqual(string, "", "Teststring should be empty.");
+          break;
+        default:
+          ok(false, "This should not happen.");
+        }
+      }; 
+      this.put = function(destination, callback, string, type){
+        deepEqual(destination, currentDirectory+"/file1_2", "Destination should be "+currentDirectory+"/file1_2");
+        deepEqual(type, "type", "Type should be type.");
+        deepEqual(string, "", "String should be empty.");
+        callback(putEmptyFileStatus);
+      };
+      this.propfind = function(resourcepath, callback ,value ,properties){
+        var data = getDataObject("file1", null);
+        callback(207, data);
+      }
+    };
+    
+    nl.sara.beehub.view.dialog.updateResourceInfo = function(resource, info){
+      deepEqual(resource.path, currentDirectory+"/file1","Resource path should be "+currentDirectory+"/file1.");
+      deepEqual(info, "test","Info should be test.");
+    };
+    
+    nl.sara.beehub.view.dialog.setAlreadyExist = function(resource, overwrite, rename, cancel){
+      deepEqual(resource.path,currentDirectory+"/file1", "Already exists should be called with "+currentDirectory+"/file1");
+      rename();
+    };    
+    
+    nl.sara.beehub.view.addResource = function(resource){
+      deepEqual(resource.path,"file1", "Path should be file1.");
+    };
+    
+    nl.sara.webdav.Property = function(){
+      // Do nothing
+    };
+    
+    nl.sara.webdav.Client.getAjax = function(what, destination, callback, headers){
+      deepEqual(what,"PUT","What should be PUT");
+      deepEqual(destination,currentDirectory+"/file1_2","Destination should be "+currentDirectory+"/file1_2");
+      
+      var ajax = {
+        upload : {
+          addEventListener : function(){
+            // not tested
+          }
+        },
+        send : function(path){
+          callback(putFileStatus);
+        } 
+      };
+      return ajax;
+    }
+    
+    // Test status 201 and 204
+    putEmptyFileStatus = 201;
+    putFileStatus = 201;
+    nl.sara.beehub.controller.initAction(items, "upload");
+    
+    putEmptyFileStatus = 201;
+    putFileStatus = 204;
+    nl.sara.beehub.controller.initAction(items, "upload");
+    
+    putEmptyFileStatus = 204;
+    putFileStatus = 201;
+    nl.sara.beehub.controller.initAction(items, "upload");
+    
+    putEmptyFileStatus = 204;
+    putFileStatus = 204;
+    nl.sara.beehub.controller.initAction(items, "upload");
+            
+    // Put back original functions
+    backToOriginalEnvironment();
+  });
+  
+  /**
+   * Test upload 11
+   * 
+   * Test upload with file 
+   * - that excists on the server
+   * - view should be updated and next action should start
+   * - rename button is pressed, 404 status response at head request
+   * - unknown status response on upload file
+   */
+  test("nl.sara.beehub.controller.initAction, upload", function() {
+    expect(34);
+    
+    var putEmptyFileStatus;
+    var putFileStatus;
+    
+    // Set up environment
+    var items =  [
+       // Test file
+       { "name": "file1", "type":"type"},
+       // Next file
+       { "name": "file2", "type":"type" }
+    ];
+    
+    nl.sara.beehub.view.dialog.showResourcesDialog =  function(actionFunction){
+      actionFunction();
+    };
+    
+    nl.sara.beehub.view.dialog.updateResourceInfo = function(resource, info){
+      deepEqual(resource.path, currentDirectory+"/file1", "Path should be "+currentDirectory+"/file1");
+      deepEqual(info,"Unknown error.", "Info should ben unknown error.");
+    };
+    
+    nl.sara.webdav.Client = function(){
+      this.head = function(path, callback, string){   
+        switch(path)
+        {
+        case currentDirectory+"/file1_2":
+          ok(true, "Path is ok.");
+          deepEqual(string, undefined, "Teststring should be undefined.");
+          callback(404);
+          break;
+        case currentDirectory+"/file1_1":
+        case currentDirectory+"/file1":
+          // File excists
+          ok(true, "Path is ok.");
+          deepEqual(string, "", "Teststring should be empty.");
+          callback(200);
+          break;
+        case currentDirectory+"/file2":
+          // File does not excists
+          ok(true, "Next action is started.");
+          deepEqual(string, "", "Teststring should be empty.");
+          break;
+        default:
+          ok(false, "This should not happen.");
+        }
+      }; 
+      this.put = function(destination, callback, string, type){
+        deepEqual(destination, currentDirectory+"/file1_2", "Destination should be "+currentDirectory+"/file1_2");
+        deepEqual(type, "type", "Type should be type.");
+        deepEqual(string, "", "String should be empty.");
+        callback(putEmptyFileStatus);
+      };
+      this.propfind = function(resourcepath, callback ,value ,properties){
+        var data = getDataObject("file1", null);
+        callback(207, data);
+      };
+      this.remove = function(destination){
+        deepEqual(destination, currentDirectory+"/file1_2", "Resource path should be "+currentDirectory+"/file1_2");
+      };
+    };
+    
+    nl.sara.beehub.view.dialog.updateResourceInfo = function(resource, info){
+      deepEqual(resource.path, currentDirectory+"/file1","Resource path should be "+currentDirectory+"/file1.");
+      deepEqual(info, "test","Info should be test.");
+    };
+    
+    nl.sara.beehub.view.dialog.setAlreadyExist = function(resource, overwrite, rename, cancel){
+      deepEqual(resource.path,currentDirectory+"/file1", "Already exists should be called with "+currentDirectory+"/file1");
+      rename();
+    };    
+    
+    nl.sara.beehub.view.addResource = function(resource){
+      deepEqual(resource.path,"file1", "Path should be file1.");
+    };
+    
+    nl.sara.webdav.Property = function(){
+      // Do nothing
+    };
+    
+    nl.sara.webdav.Client.getAjax = function(what, destination, callback, headers){
+      deepEqual(what,"PUT","What should be PUT");
+      deepEqual(destination,currentDirectory+"/file1_2","Destination should be "+currentDirectory+"/file1_2");
+      
+      var ajax = {
+        upload : {
+          addEventListener : function(){
+            // not tested
+          }
+        },
+        send : function(path){
+          callback(1, "test");
+        } 
+      };
+      return ajax;
+    }
+    
+    // Test status 201 and 204
+    putEmptyFileStatus = 201;
+    nl.sara.beehub.controller.initAction(items, "upload");
+    
+    putEmptyFileStatus = 204;
+    nl.sara.beehub.controller.initAction(items, "upload");
+    
+    // Put back original functions
+    backToOriginalEnvironment();
+  });
+  
+  /**
+   * Test upload 12
+   * 
+   * Test upload with file 
+   * - that excists on the server
+   * - view should be updated and next action should start
+   * - cancel button is pressed
+   */
+  test("nl.sara.beehub.controller.initAction, upload", function() {
+    expect(7);
+    
+    // Set up environment
+    var items =  [
+       // Test file
+       { "name": "file1", "type":"type"},
+       // Next file
+       { "name": "file2", "type":"type" }
+    ];
+    
+    nl.sara.beehub.view.dialog.showResourcesDialog =  function(actionFunction){
+      actionFunction();
+    };
+    
+    nl.sara.beehub.view.dialog.updateResourceInfo = function(resource, info){
+      deepEqual(resource.path, currentDirectory+"/file1", "Path should be "+currentDirectory+"/file1");
+      deepEqual(info,"Canceled", "Info should be canceled.");
+    };
+    
+    nl.sara.webdav.Client = function(){
+      this.head = function(path, callback, string){   
+        switch(path)
+        {
+        case currentDirectory+"/file1":
+          // File excists
+          ok(true, "Path is ok.");
+          deepEqual(string, "", "Teststring should be empty.");
+          callback(200);
+          break;
+        case currentDirectory+"/file2":
+          // File does not excists
+          ok(true, "Next action is started.");
+          deepEqual(string, "", "Teststring should be empty.");
+          break;
+        default:
+          ok(false, "This should not happen.");
+        }
+      }; 
+    };
+      
+    nl.sara.beehub.view.dialog.setAlreadyExist = function(resource, overwrite, rename, cancel){
+      deepEqual(resource.path,currentDirectory+"/file1", "Already exists should be called with "+currentDirectory+"/file1");
+      cancel();
+    };
+        
+    nl.sara.beehub.controller.initAction(items, "upload");
+    
+    // Put back original functions
+    backToOriginalEnvironment();
+  });
+  
+  /**
+   * Test upload 13
+   * 
+   * Test upload with file 
+   * - that excists on the server
+   * - view should be updated and next action should start
+   * - overwrite button is pressed
+   * - forbidden status response on upload file
+   */
+  test("nl.sara.beehub.controller.initAction, upload", function() {
+    expect(10);
+    
+    // Set up environment
+    var items =  [
+       // Test file
+       { "name": "file1", "type":"type"},
+       // Next file
+       { "name": "file2", "type":"type" }
+    ];
+    
+    nl.sara.beehub.view.dialog.showResourcesDialog =  function(actionFunction){
+      actionFunction();
+    };
+    
+    nl.sara.beehub.view.dialog.updateResourceInfo = function(resource, info){
+      deepEqual(resource.path, currentDirectory+"/file1", "Path should be "+currentDirectory+"/file1");
+      deepEqual(info,"Forbidden", "Info should be forbidden.");
+    };
+    
+    nl.sara.webdav.Client = function(){
+      this.head = function(path, callback, string){   
+        switch(path)
+        {
+        case currentDirectory+"/file1":
+          // File excists
+          ok(true, "Path is ok.");
+          deepEqual(string, "", "Teststring should be empty.");
+          callback(200);
+          break;
+        case currentDirectory+"/file2":
+          // File does not excists
+          ok(true, "Next action is started.");
+          deepEqual(string, "", "Teststring should be empty.");
+          break;
+        default:
+          ok(false, "This should not happen.");
+        }
+      }; 
+      this.put = function(destination, callback, string, type){
+        deepEqual(destination, currentDirectory+"/file1", "Destination should be "+currentDirectory+"/file1");
+        deepEqual(type, "type", "Type should be type.");
+        deepEqual(string, "", "String should be empty.");
+        callback(403);
+      };
+    };
+      
+    nl.sara.beehub.view.dialog.setAlreadyExist = function(resource, overwrite, rename, cancel){
+      deepEqual(resource.path,currentDirectory+"/file1", "Already exists should be called with "+currentDirectory+"/file1");
+      overwrite();
+    };
+        
+    nl.sara.beehub.controller.initAction(items, "upload");
+    
+    // Put back original functions
+    backToOriginalEnvironment();
+  });
+  
+  /**
+   * Test upload 13
+   * 
+   * Test upload with file 
+   * - that excists on the server
+   * - view should be updated and next action should start
+   * - overwrite button is pressed
+   * - unknown status response on upload file
+   */
+  test("nl.sara.beehub.controller.initAction, upload", function() {
+    expect(10);
+    
+    // Set up environment
+    var items =  [
+       // Test file
+       { "name": "file1", "type":"type"},
+       // Next file
+       { "name": "file2", "type":"type" }
+    ];
+    
+    nl.sara.beehub.view.dialog.showResourcesDialog =  function(actionFunction){
+      actionFunction();
+    };
+    
+    nl.sara.beehub.view.dialog.updateResourceInfo = function(resource, info){
+      deepEqual(resource.path, currentDirectory+"/file1", "Path should be "+currentDirectory+"/file1");
+      deepEqual(info,"test", "Info should be test.");
+    };
+    
+    nl.sara.webdav.Client = function(){
+      this.head = function(path, callback, string){   
+        switch(path)
+        {
+        case currentDirectory+"/file1":
+          // File excists
+          ok(true, "Path is ok.");
+          deepEqual(string, "", "Teststring should be empty.");
+          callback(200);
+          break;
+        case currentDirectory+"/file2":
+          // File does not excists
+          ok(true, "Next action is started.");
+          deepEqual(string, "", "Teststring should be empty.");
+          break;
+        default:
+          ok(false, "This should not happen.");
+        }
+      }; 
+      this.put = function(destination, callback, string, type){
+        deepEqual(destination, currentDirectory+"/file1", "Destination should be "+currentDirectory+"/file1");
+        deepEqual(type, "type", "Type should be type.");
+        deepEqual(string, "", "String should be empty.");
+        callback(1, "test");
+      };
+    };
+      
+    nl.sara.beehub.view.dialog.setAlreadyExist = function(resource, overwrite, rename, cancel){
+      deepEqual(resource.path,currentDirectory+"/file1", "Already exists should be called with "+currentDirectory+"/file1");
+      overwrite();
+    };
+        
+    nl.sara.beehub.controller.initAction(items, "upload");
+    
+    // Put back original functions
+    backToOriginalEnvironment();
+  });
+  
+  /**
+   * Test upload 14
+   * 
+   * Test upload with file 
+   * - that excists on the server
+   * - view should be updated and next action should start
+   * - overwrite button is pressed
+   * - succesfull upload
+   */
+  test("nl.sara.beehub.controller.initAction, upload", function() {
+    expect(44);
+    
+    var putEmptyFileStatus = 0;
+    var putFileStatus = 0;
+    
+    // Set up environment
+    var items =  [
+       // Test file
+       { "name": "file1", "type":"type"},
+       // Next file
+       { "name": "file2", "type":"type" }
+    ];
+    
+    nl.sara.beehub.view.dialog.showResourcesDialog =  function(actionFunction){
+      actionFunction();
+    };
+    
+    nl.sara.webdav.Client = function(){
+      this.head = function(path, callback, string){   
+        switch(path)
+        {
+        case currentDirectory+"/file1":
+          // File excists
+          ok(true, "Path is ok.");
+          deepEqual(string, "", "Teststring should be empty.");
+          callback(200);
+          break;
+        case currentDirectory+"/file2":
+          ok(true, "Next action is started.");
+          deepEqual(string, "", "Teststring should be empty.");
+          break;
+        default:
+          ok(false, "This should not happen.");
+        }
+      }; 
+      this.put = function(destination, callback, string, type){
+        deepEqual(destination, currentDirectory+"/file1", "Destination should be "+currentDirectory+"/file1");
+        deepEqual(type, "type", "Type should be type.");
+        deepEqual(string, "", "String should be empty.");
+        callback(putEmptyFileStatus);
+      };
+      this.propfind = function(resourcepath, callback ,value ,properties){
+        var data = getDataObject("file1", null);
+        callback(207, data);
+      };
+    };
+      
+    nl.sara.beehub.view.dialog.setAlreadyExist = function(resource, overwrite, rename, cancel){
+      deepEqual(resource.path,currentDirectory+"/file1", "Already exists should be called with "+currentDirectory+"/file1");
+      overwrite();
+    };
+    
+    nl.sara.beehub.view.addResource = function(resource){
+      deepEqual(resource.path,"file1", "Path should be file1.");
+    };
+    
+    nl.sara.webdav.Property = function(){
+      // Do nothing
+    };
+    
+    nl.sara.webdav.Client.getAjax = function(what, destination, callback, headers){
+      deepEqual(what,"PUT","What should be PUT");
+      deepEqual(destination,currentDirectory+"/file1","Destination should be "+currentDirectory+"/file1");
+      
+      var ajax = {
+        upload : {
+          addEventListener : function(){
+            // not tested
+          }
+        },
+        send : function(path){
+          callback(putFileStatus);
+        } 
+      };
+      return ajax;
+    }
+    
+    // Test status 201 and 204
+    putEmptyFileStatus = 201;
+    putFileStatus = 201;
+    nl.sara.beehub.controller.initAction(items, "upload");
+    
+    putEmptyFileStatus = 201;
+    putFileStatus = 204;
+    nl.sara.beehub.controller.initAction(items, "upload");
+    
+    putEmptyFileStatus = 204;
+    putFileStatus = 201;
+    nl.sara.beehub.controller.initAction(items, "upload");
+    
+    putEmptyFileStatus = 204;
+    putFileStatus = 204;
+    nl.sara.beehub.controller.initAction(items, "upload");
+    
+    // Put back original functions
+    backToOriginalEnvironment();
+  });
+ 
+  /**
+   * Test upload 14
+   * 
+   * Test upload with file 
+   * - that excists on the server
+   * - view should be updated and next action should start
+   * - overwrite button is pressed
+   * - unknown status on ajax upload
+   */
+  test("nl.sara.beehub.controller.initAction, upload", function() {
+    expect(26);
+    
+    var putEmptyFileStatus = 0;
+    var putFileStatus = 0;
+    
+    // Set up environment
+    var items =  [
+       // Test file
+       { "name": "file1", "type":"type"},
+       // Next file
+       { "name": "file2", "type":"type" }
+    ];
+    
+    nl.sara.beehub.view.dialog.showResourcesDialog =  function(actionFunction){
+      actionFunction();
+    };
+    
+    nl.sara.beehub.view.dialog.updateResourceInfo = function(resource, info){
+      deepEqual(resource.path, currentDirectory+"/file1", "Path should be "+currentDirectory+"/file1");
+      deepEqual(info,"test", "Info should be test.");
+    };
+    
+    nl.sara.webdav.Client = function(){
+      this.head = function(path, callback, string){   
+        switch(path)
+        {
+        case currentDirectory+"/file1":
+          // File excists
+          ok(true, "Path is ok.");
+          deepEqual(string, "", "Teststring should be empty.");
+          callback(200);
+          break;
+        case currentDirectory+"/file2":
+          ok(true, "Next action is started.");
+          deepEqual(string, "", "Teststring should be empty.");
+          break;
+        default:
+          ok(false, "This should not happen.");
+        }
+      }; 
+      this.put = function(destination, callback, string, type){
+        deepEqual(destination, currentDirectory+"/file1", "Destination should be "+currentDirectory+"/file1");
+        deepEqual(type, "type", "Type should be type.");
+        deepEqual(string, "", "String should be empty.");
+        callback(putEmptyFileStatus);
+      };
+      this.propfind = function(resourcepath, callback ,value ,properties){
+        var data = getDataObject("file1", null);
+        callback(207, data);
+      };
+      this.remove = function(destination){
+        deepEqual(destination, currentDirectory+"/file1", "Resource path should be "+currentDirectory+"/file1");
+      };
+    };
+      
+    nl.sara.beehub.view.dialog.setAlreadyExist = function(resource, overwrite, rename, cancel){
+      deepEqual(resource.path,currentDirectory+"/file1", "Already exists should be called with "+currentDirectory+"/file1");
+      overwrite();
+    };
+    
+    nl.sara.beehub.view.addResource = function(resource){
+      deepEqual(resource.path,"file1", "Path should be file1.");
+    };
+    
+    nl.sara.webdav.Property = function(){
+      // Do nothing
+    };
+    
+    nl.sara.webdav.Client.getAjax = function(what, destination, callback, headers){
+      deepEqual(what,"PUT","What should be PUT");
+      deepEqual(destination,currentDirectory+"/file1","Destination should be "+currentDirectory+"/file1");
+      
+      var ajax = {
+        upload : {
+          addEventListener : function(){
+            // not tested
+          }
+        },
+        send : function(path){
+          callback(1, "test");
+        } 
+      };
+      return ajax;
+    }
+      
+    // Test status 201 and 204
+    putEmptyFileStatus = 201;
+    nl.sara.beehub.controller.initAction(items, "upload");
+    
+    putEmptyFileStatus = 204;
+    nl.sara.beehub.controller.initAction(items, "upload");
+    
+    // Put back original functions
+    backToOriginalEnvironment();
   });
 })();

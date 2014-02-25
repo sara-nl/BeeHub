@@ -619,7 +619,6 @@
         
       // Forbidden
       case 403:
-        console.log("nu");
         // Update summary
         summary.forbidden++;
         // Update dialog info
