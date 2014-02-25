@@ -163,7 +163,7 @@ $(function() {
 	});
 
 	function filterByName(){ 
-	  filterfield=$(this);
+	  var filterfield=$(this);
     // when field is empty, filter icon
     $(this).parent().find('[id="bh-gs-icon-erase"]').remove();
     $(this).parent().find('[id="bh-gs-icon-filter"]').remove();

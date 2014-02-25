@@ -116,11 +116,13 @@ public function getlock($path) {
  * @throws  DAV_Status             When trying to use a different depth than \DAV::DEPTH_0
  */
 public function setlock($lockroot, $depth, $owner, $timeout) {
-  if ( DAV::DEPTH_0 !== $depth )
+  $resource = DAV::$REGISTRY->resource( $lockroot );
+  if ( ( $resource->prop_resourcetype() === DAV_Collection::RESOURCETYPE ) && ( DAV::DEPTH_0 !== $depth ) ) {
     throw new DAV_Status(
       DAV::HTTP_NOT_IMPLEMENTED,
       'Locks of depth infinity are not implemented.'
     );
+  }
   $timeout = self::timeout($timeout);
   $stmt = BeeHub_DB::execute('SELECT UUID()');
   $row = $stmt->fetch_row();

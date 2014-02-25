@@ -61,7 +61,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
     // User name must be one of the following characters a-zA-Z0-9_-., starting with an alphanumeric character and must be between 1 and 255 characters long
     if (empty($displayname) ||
         !preg_match('/^[a-zA-Z0-9]{1}[a-zA-Z0-9_\-\.]{0,254}$/D', $user_name)) {
-      throw new DAV_Status(DAV::HTTP_BAD_REQUEST);
+      throw new DAV_Status( DAV::HTTP_BAD_REQUEST, 'User name has the wrong format. The name can be a maximum of 255 characters long and should start with an alphanumeric character, followed by alphanumeric character, followed by alphanumeric characters or one of the following: _-.' );
     }
 
     // Store in the database
