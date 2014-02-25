@@ -74,7 +74,7 @@
     if ( resourcePath.substr( -1 ) === '/' ) {
       resourcePath = resourcePath.substr( 0, resourcePath.length -1 );
     }
-    
+
     $('#bh-dir-dialog').html(html);
     // auto complete for searching users and groups
     setupAutoComplete();
@@ -99,6 +99,79 @@
       }]
     });
     nl.sara.beehub.view.acl.getAddAclButton().prop('disabled', true);
+  };
+
+  /*
+   * Show add rule dialog
+   * 
+   * Public function
+   * 
+   * @param {String} error The error to show
+   */
+  nl.sara.beehub.view.dialog.showAddRuleDialog = function(addFunction, html) {
+    // createForm
+    $('#bh-dir-dialog').html(html);
+
+    // radiobutton handlers
+    setAddRadioButtons();
+    
+    // auto complete for searching users and groups
+    setupAutoComplete();
+
+    $('#bh-dir-dialog').dialog({
+      title: " Add acl rule",
+      modal: true,
+      maxHeight: 400,
+      closeOnEscape: false,
+      dialogClass: "custom-dialog",
+      resizable: false,
+      width: 370,
+      buttons: [{
+        text: "Cancel",
+        click: function() {
+          $(this).dialog("close");
+        }
+      },{
+        text: "Add rule",
+        id: "bh-dir-acl-directory-button",
+        click: function() {
+          addFunction( nl.sara.beehub.view.dialog.getFormAce() );
+        }
+      }]
+    });
+    nl.sara.beehub.view.acl.getAddAclButton().button('disable');
+  };
+  
+  /**
+   * Get value from the Acl add rule form
+   * 
+   * @return {Object} Principal and permissions
+   */
+  nl.sara.beehub.view.dialog.getFormAce = function(){
+    var principal = '';
+    var aclForm = nl.sara.beehub.view.acl.getFormView();
+    switch(aclForm.find('input[name = "bh-dir-view-acl-optionRadio"]:checked').val())
+    {
+    // all
+    case "all":
+      principal="DAV: all";
+      break;
+    // Everybody
+    case "authenticated":
+      principal="DAV: authenticated";
+      break;
+    // User or group
+    case "user_or_group":
+      principal=aclForm.find(".bh-dir-acl-table-search").attr('name');
+      break;
+    default:
+      // This should never happen
+    }
+    var ace = {
+        "principal": principal,
+        "permissions": aclForm.find(".bh-dir-acl-table-permisions option:selected").val()
+    };
+    return ace;
   };
   
   /*
@@ -290,7 +363,6 @@
           });
     $("#bh-dir-rename-overwrite-button").click(overwriteFunction);
     $("#bh-dir-rename-cancel-button").click(function(){
-      $("tr[id='"+resource.path+"']").find(".bh-dir-rename-td").find(':input').val(resource.displayname);
       $("#bh-dir-dialog").dialog("close");
     });
   };
@@ -403,77 +475,5 @@
       }
     });
   };
-  
-  /**
-   * Get value from the Acl add rule form
-   * 
-   * @return {Object} Principal and permissions
-   */
-  nl.sara.beehub.view.dialog.getFormAce = function(){
-    var principal = '';
-    var aclForm = nl.sara.beehub.view.acl.getFormView();
-    switch(aclForm.find('input[name = "bh-dir-view-acl-optionRadio"]:checked').val())
-    {
-    // all
-    case "all":
-      principal="DAV: all";
-      break;
-    // Everybody
-    case "authenticated":
-      principal="DAV: authenticated";
-      break;
-    // User or group
-    case "user_or_group":
-      principal=aclForm.find(".bh-dir-acl-table-search").attr('name');
-      break;
-    default:
-      // This should never happen
-    }
-    var ace = {
-        "principal": principal,
-        "permissions": aclForm.find(".bh-dir-acl-table-permisions option:selected").val()
-    };
-    return ace;
-  };
-  
-  /*
-   * Show add rule dialog
-   * 
-   * Public function
-   * 
-   * @param {String} error The error to show
-   */
-  nl.sara.beehub.view.dialog.showAddRuleDialog = function(addFunction, html) {
-    // createForm
-    $('#bh-dir-dialog').html(html);
-
-    // radiobutton handlers
-    setAddRadioButtons();
-    
-    // auto complete for searching users and groups
-    setupAutoComplete();
-
-    $('#bh-dir-dialog').dialog({
-      title: " Add acl rule",
-      modal: true,
-      maxHeight: 400,
-      closeOnEscape: false,
-      dialogClass: "custom-dialog",
-      resizable: false,
-      width: 370,
-      buttons: [{
-        text: "Cancel",
-        click: function() {
-          $(this).dialog("close");
-        }
-      },{
-        text: "Add rule",
-        id: "bh-dir-acl-directory-button",
-        click: function() {
-          addFunction( nl.sara.beehub.view.dialog.getFormAce() );
-        }
-      }]
-    });
-    nl.sara.beehub.view.acl.getAddAclButton().button('disable');
-  };
+ 
 })();

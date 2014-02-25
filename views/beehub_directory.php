@@ -27,7 +27,14 @@ declare( encoding = 'UTF-8' );
 */
 
 // Load the default page header
-$header = '<link href="/system/css/dynatree/ui.dynatree.css" rel="stylesheet" type="text/css" />';
+if ( RUN_CLIENT_TESTS ) {
+  if ( $_SERVER['REQUEST_URI'] !== '/foo/client_tests/?test' ) {
+    header( 'Location: /foo/client_tests/?test' );
+    die();
+  }
+}else{
+  $header = '<link href="/system/css/dynatree/ui.dynatree.css" rel="stylesheet" type="text/css" />';
+}
 require 'views/header.php';
 ?>
 
@@ -135,7 +142,7 @@ require 'views/header.php';
 
   <!-- 	ACL VIEW -->
   <!-- ACL: Add button-->
-  <button data-toggle="tooltip" title="Add rule" class="btn btn-small bh-dir-acl-add hide" >
+  <button id="bh-dir-acl-directory-button" data-toggle="tooltip" title="Add rule" class="btn btn-small bh-dir-acl-add hide" >
     <i class="icon-plus"></i> Add rule
   </button> 
 </div>
@@ -394,7 +401,7 @@ require 'views/header.php';
   <!-- Acl tab -->
   <div id="bh-dir-panel-acl" class="tab-pane fade">
   	<div id="bh-dir-acl-directory-acl">
-	    <table id="bh-dir-acl-table" class="table table-striped table-hover table-condensed">
+	    <table class="table table-striped table-hover table-condensed bh-dir-acl-table">
 	      <thead class="bh-dir-acl-table-header">
 	        <tr>
 	          <th>Principal</th>
@@ -629,6 +636,17 @@ try {
       </script>
     ';
   }
+}
+
+if ( RUN_CLIENT_TESTS ) {
+  $footer .= '
+    <script src="/system/tests/unittests/directory_controller.js"></script> ';
+//     <script src="/system/tests/unittests/directory_view.js"></script>   		
+//     <script src="/system/tests/unittests/directory_view_tree.js"></script>
+//     <script src="/system/tests/unittests/directory_view_content.js"></script>
+//     <script src="/system/tests/unittests/directory_view_acl.js"></script>
+//     <script src="/system/tests/unittests/directory_view_dialog.js"></script>
+//   ';
 }
 
 require 'views/footer.php';

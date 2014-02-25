@@ -243,7 +243,6 @@ $(function() {
 	 $('#bh-gs-group-name').change(function () {
 		 groupNameListener($(this));
 	 });
-
 	 /*
 	 * Action when the Create group button is clicked
 	 */

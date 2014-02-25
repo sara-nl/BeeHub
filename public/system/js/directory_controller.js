@@ -65,6 +65,17 @@
             .replace(/>/g, '&gt;');
   };
   
+  /**
+   * Go to page
+   * 
+   * Public function
+   * 
+   * @param {String} location
+   */
+  nl.sara.beehub.controller.goToPage = function(location) {
+    window.location.href=location;
+  };
+  
   /*
    * Clear all views
    * 
@@ -279,6 +290,27 @@
     client.propfind(path, callback ,1,properties);
   };
   
+  /**
+   * Create getTreeNode callback
+   * 
+   * Public function
+   * 
+   * @param {String}          url       Path
+   * @param {DOM object}      parent    DOM object with parent of the node
+   * @param {DOM object}      expander  DOM object
+   * @param {Function}        callback  Callback function
+   */
+  nl.sara.beehub.controller.createGetTreeNodeCallback = function(url, parent, expander, callback){
+   return function( status, data ) {
+      // Callback
+      if (status !== 207) {
+        nl.sara.beehub.view.dialog.showError( 'Could not load the subdirectories.' );
+        return;
+      };
+      nl.sara.beehub.view.tree.createTreeNode(data, url, parent, expander, callback);
+    } 
+  };
+  
   // CREATE NEW FOLDER
   /*
    * Create new folder. When new foldername already exist add counter to the name
@@ -405,6 +437,36 @@
     };
   };
   
+  /*
+   * Make view copy or move ready
+   * 
+   * Public function
+   * 
+   * @param Boolean view true or false
+   * 
+   */
+  nl.sara.beehub.controller.setCopyMoveView = function(view){
+    if (view) {
+      // show cancel button
+      nl.sara.beehub.view.tree.cancelButton('show');
+      // mask all views
+      nl.sara.beehub.view.maskView(true);
+      // unmask tree
+      nl.sara.beehub.view.tree.noMask(true);
+      // hide slideTrigger
+      nl.sara.beehub.view.tree.slideTrigger('left'); 
+      nl.sara.beehub.view.tree.slideTrigger('hide'); 
+    } else {
+      // hide cancel button
+      nl.sara.beehub.view.tree.cancelButton('hide');
+      // unmask views
+      nl.sara.beehub.view.maskView(false);
+      nl.sara.beehub.view.tree.noMask(false);
+      // show slide trigger
+      nl.sara.beehub.view.tree.slideTrigger('show');
+    }
+  };
+  
   // COPY, MOVE, UPLOAD, DELETE
   /*
    * Initialize action Copy, Move, Upload or Delete
@@ -425,7 +487,7 @@
         exist:      0,
         forbidden:  0
     };
-    
+
     // When action is not upload items is an array of resources
     if (action !== "upload"){
       // actionResources, array with all resources for the action
@@ -436,6 +498,7 @@
       nl.sara.beehub.controller.actionResources = [];
       // actionFiles, maps resource to file
       actionFiles = {};
+
       // put items in actionFiles and actionResources
       $.each(items, function(i, item){
         var resource = new nl.sara.beehub.ClientResource(path + item.name);
@@ -474,36 +537,6 @@
         startAction();
       });
     };
-  };
-  
-  /*
-   * Make view copy or move ready
-   * 
-   * Public function
-   * 
-   * @param Boolean view true or false
-   * 
-   */
-  nl.sara.beehub.controller.setCopyMoveView = function(view){
-    if (view) {
-      // show cancel button
-      nl.sara.beehub.view.tree.cancelButton('show');
-      // mask all views
-      nl.sara.beehub.view.maskView(true);
-      // unmask tree
-      nl.sara.beehub.view.tree.noMask(true);
-      // hide slideTrigger
-      nl.sara.beehub.view.tree.slideTrigger('left'); 
-      nl.sara.beehub.view.tree.slideTrigger('hide'); 
-    } else {
-      // hide cancel button
-      nl.sara.beehub.view.tree.cancelButton('hide');
-      // unmask views
-      nl.sara.beehub.view.maskView(false);
-      nl.sara.beehub.view.tree.noMask(false);
-      // show slide trigger
-      nl.sara.beehub.view.tree.slideTrigger('show');
-    }
   };
   
   /*
@@ -586,6 +619,7 @@
         
       // Forbidden
       case 403:
+        console.log("nu");
         // Update summary
         summary.forbidden++;
         // Update dialog info
@@ -826,6 +860,10 @@
         summary.forbidden++;
         // Update dialog info
         nl.sara.beehub.view.dialog.updateResourceInfo(resource,"Forbidden");
+        
+        if (!single) {
+          startNextAction();
+        };
         break;
       default:
         // Update summary
@@ -1025,7 +1063,6 @@
         return;
       };
       // TODO return als privilege is niet bekend
-      // put all the retrieved values into the store
       var value = data.getResponseNames()[0];
       var propstatus = data.getResponse(value).getProperty('DAV:','acl').status;
       // Status 403, forbidden, stop
@@ -1078,7 +1115,6 @@
    */
   var createAceObject = function(ace){
     var aceObject = {};
-
     if (ace.principal.tagname !== undefined) {
       aceObject['principal'] =  "DAV: "+ ace.principal.tagname;
     } else {
@@ -1164,58 +1200,7 @@
     }
     return aceObject;
   };
-//  /**
-//   * Show add acl rule dialog.
-//   * 
-//   */
-//  aclPropToObject = function(acl){
-//    var aceObjects = [];
-//    for (key in acl.getAces()) {
-//      var aceObject = {};
-//      var ace = acl.getAces()[key];
-//      // check if the ace contains not supported entry's
-//      if (ace.invertprincipal) {
-//        aceObject['notsupported'] = true;
-//      };
-//      // set values
-//      // TODO change the way to check this
-//      if (ace.principal.tagname != undefined) {
-//        aceObject['principal'] =  "DAV: "+ ace.principal.tagname;
-//      } else {
-//        aceObject['principal'] = ace.principal;
-//      }           
-//      if (ace.grantdeny == 1) {
-//        aceObject['access'] = 'grant';
-//      } else {
-//        aceObject['access'] = 'deny';
-//      }
-//      // TODO only DAV: privileges are supported
-//      var privileges = [];
-//      var supportedPrivileges =  ['all', 'read', 'write', 'read-acl', 'write-acl'];
-//      for (key in ace.getPrivilegeNames('DAV:')) {
-//        var priv = ace.getPrivilegeNames('DAV:')[key];
-//        var supported = false;
-//        // TODO probably nicer to make an object and ask value instead of read the list each time.
-//        for (key in supportedPrivileges) {
-//          var support = supportedPrivileges[key];
-//          if (support == priv) {
-//            supported = true;
-//          };
-//        };
-//        // remember this ace is not supported
-//        if (!supported){
-//          aceObject['notsupported'] = true;
-//        }
-//        privileges['DAV: '+priv]='on';
-//        
-//      };
-//      aceObject['privileges'] = privileges;
-//      aceObject['protected'] = ace.isprotected;
-//      aceObject['inherited'] = (ace.inherited.length? ace.inherited : '');
-//      aceObjects.push(aceObject);
-//    };
-//    return aceObjects;
-//  }
+
   var createCloseAclDialogFunction = function(resourcePath) {
     return function(){
       // Check whether there is a resource specific ACL set
