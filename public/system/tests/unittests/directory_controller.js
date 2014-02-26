@@ -56,6 +56,8 @@
   var rememberSetModal =                    nl.sara.beehub.view.tree.setModal;
   var rememberUsersPath =                   nl.sara.beehub.users_path;
   var rememberGroupsPath =                  nl.sara.beehub.groups_path;
+  var rememberFailOnOverwrite =             nl.sara.webdav.Client.FAIL_ON_OVERWRITE;
+  var rememberSilelentOverwrite =           nl.sara.webdav.Client.SILENT_OVERWRITE;
 
   var backToOriginalEnvironment = function(){
     nl.sara.beehub.view.clearAllViews =                     rememberClearAllViews;
@@ -85,6 +87,8 @@
     nl.sara.beehub.view.tree.clearView =                    rememberClearView;
     nl.sara.beehub.users_path =                             rememberUsersPath;
     nl.sara.beehub.groups_path =                            rememberGroupsPath;
+    nl.sara.webdav.Client.FAIL_ON_OVERWRITE =               rememberFailOnOverwrite;
+    nl.sara.webdav.Client.SILENT_OVERWRITE =                rememberSilelentOverwrite;
   }
   
   var getDataObject = function(path, testType){
@@ -130,10 +134,11 @@
     return items
   };
   
-  var setupCopyMoveTestEnvironment = function(status){
+  var setupCopyMoveTestEnvironment = function(status, secondStatus, existAction, thirdStatus){
     var inModal = true;
     var inView = true;
     var first412 = true;
+    var second412 = true
     
     nl.sara.beehub.view.dialog.showResourcesDialog =  function(actionFunction){
       actionFunction();
@@ -145,19 +150,30 @@
     };
     
     nl.sara.webdav.Client = function(){
-      this.copy = function(path, callback){
+      nl.sara.webdav.Client.FAIL_ON_OVERWRITE = 3;
+      nl.sara.webdav.Client.SILENT_OVERWRITE = 5;
+      
+      this.copy = function(path, callback, destination, overwrite){
         switch(path)
         {
         case currentDirectory+"/directory/file1":
         case currentDirectory+"/file1":
         case parentDirectory+"/file1":
           ok(true, "Path is ok.");
+          if (overwrite === 5) {
+            callback(201);
+            return;
+          }
+          // prevent recursion
           if (status === 412) {
             if (first412){
               first412 = false;
               callback(status);
+            } else if (second412) {
+              second412 = false
+              callback(secondStatus);
             } else {
-              callback(201);
+              callback(thirdStatus);
             }
           } else {
             callback(status);
@@ -172,7 +188,7 @@
           ok(false, "This should not happen.");
         }
       };
-      this.move = function(path, callback){
+      this.move = function(path, callback, destination, overwrite){
         switch(path)
         {
         case currentDirectory+"/directory/file1":
@@ -180,12 +196,20 @@
         case parentDirectory+"/file1":
           // File excists
           ok(true, "Path is ok.");
+          if (overwrite === 5) {
+            callback(201);
+            return;
+          }
+          // prevent recursion
           if (status === 412) {
             if (first412){
               first412 = false;
               callback(status);
+            } else if (second412) {
+              second412 = false
+              callback(secondStatus);
             } else {
-              callback(201);
+              callback(thirdStatus);
             }
           } else {
             callback(status);
@@ -208,6 +232,18 @@
     
     nl.sara.beehub.view.dialog.setAlreadyExist = function(resource, overwrite, rename, cancel){
       deepEqual(resource.path,currentDirectory+"/directory/file1", "Already exists should be called with "+currentDirectory+"/file1");
+      if (existAction === "cancel"){
+        cancel();
+        return;
+      };
+      if (existAction === "overwrite"){
+        overwrite();
+        return;
+      };
+      if (existAction === "rename"){
+        rename();
+        return;
+      };
     };
     
     // Test view changes and go on
@@ -1976,7 +2012,7 @@
    * - Note: renaming is not shown in add resource because the getDataObject function
    *   gives always the same values back
    */
-  test("nl.sara.beehub.controller.initAction, copy", function() {
+  test("nl.sara.beehub.controller.initAction, copy 1", function() {
     expect(14);
      
     setupCopyMoveTestEnvironment(201);
@@ -1996,7 +2032,7 @@
    * - Note: renaming is not shown in add resource because the getDataObject function
    *   gives always the same values back
    */
-  test("nl.sara.beehub.controller.initAction, copy", function() {
+  test("nl.sara.beehub.controller.initAction, copy 2", function() {
     expect(14);
     
     setupCopyMoveTestEnvironment(204);
@@ -2016,7 +2052,7 @@
    * - Note: renaming is not shown in add resource because the getDataObject function
    *   gives always the same values back
    */
-  test("nl.sara.beehub.controller.initAction, copy", function() {
+  test("nl.sara.beehub.controller.initAction, copy 3", function() {
     expect(14);
     
     setupCopyMoveTestEnvironment(204);
@@ -2036,7 +2072,7 @@
    * - Note: renaming is not shown in add resource because the getDataObject function
    *   gives always the same values back
    */
-  test("nl.sara.beehub.controller.initAction, copy", function() {
+  test("nl.sara.beehub.controller.initAction, copy 4", function() {
     expect(13);
     
     setupCopyMoveTestEnvironment(403);
@@ -2056,7 +2092,7 @@
    * - Note: renaming is not shown in add resource because the getDataObject function
    *   gives always the same values back
    */
-  test("nl.sara.beehub.controller.initAction, copy", function() {
+  test("nl.sara.beehub.controller.initAction, copy 5", function() {
     expect(13);
     
     setupCopyMoveTestEnvironment(403);
@@ -2076,7 +2112,7 @@
    * - Note: renaming is not shown in add resource because the getDataObject function
    *   gives always the same values back
    */
-  test("nl.sara.beehub.controller.initAction, copy", function() {
+  test("nl.sara.beehub.controller.initAction, copy 6", function() {
     expect(13);
     
     setupCopyMoveTestEnvironment(501);
@@ -2096,7 +2132,7 @@
    * - Note: renaming is not shown in add resource because the getDataObject function
    *   gives always the same values back
    */
-  test("nl.sara.beehub.controller.initAction, copy", function() {
+  test("nl.sara.beehub.controller.initAction, copy 7", function() {
     expect(13);
     
     setupCopyMoveTestEnvironment(512);
@@ -2116,7 +2152,7 @@
    * - Note: renaming is not shown in add resource because the getDataObject function
    *   gives always the same values back
    */
-  test("nl.sara.beehub.controller.initAction, copy", function() {
+  test("nl.sara.beehub.controller.initAction, copy 8", function() {
     expect(13);
     
     setupCopyMoveTestEnvironment(1);
@@ -2136,7 +2172,7 @@
    * - Note: renaming is not shown in add resource because the getDataObject function
    *   gives always the same values back
    */
-  test("nl.sara.beehub.controller.initAction, copy", function() {
+  test("nl.sara.beehub.controller.initAction, copy 9", function() {
     expect(13);
     
     setupCopyMoveTestEnvironment(1);
@@ -2156,10 +2192,10 @@
    * - Note: renaming is not shown in add resource because the getDataObject function
    *   gives always the same values back
    */
-  test("nl.sara.beehub.controller.initAction, copy", function() {
+  test("nl.sara.beehub.controller.initAction, copy 10", function() {
     expect(17);
     
-    setupCopyMoveTestEnvironment(412);
+    setupCopyMoveTestEnvironment(412, 201);
 
     nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory), "copy");
     // activate directory
@@ -2176,15 +2212,296 @@
    * - Note: renaming is not shown in add resource because the getDataObject function
    *   gives always the same values back
    */
-  test("nl.sara.beehub.controller.initAction, copy", function() {
+  test("nl.sara.beehub.controller.initAction, copy 11", function() {
     expect(12);
     
-    setupCopyMoveTestEnvironment(412);
+    setupCopyMoveTestEnvironment(412, 201);
 
     nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory+"/directory"), "copy");
     // activate directory
     treeNode.find("a[href$='"+currentDirectory+"/directory/']").click();
   });
+  
+  /**
+   * Test copy to child directory
+   * 
+   * Test move a resource
+   * - view should be updated and next action should start
+   * - status response 412 - file exists- then cancel
+   * 
+   * - Note: renaming is not shown in add resource because the getDataObject function
+   *   gives always the same values back
+   */
+  test("nl.sara.beehub.controller.initAction, copy 12", function() {
+    expect(14);
+    
+    setupCopyMoveTestEnvironment(412, 1, "cancel");
+
+    nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory+"/directory"), "copy");
+    // activate directory
+    treeNode.find("a[href$='"+currentDirectory+"/directory/']").click();
+  });
+  
+  /**
+   * Test copy to child directory
+   * 
+   * Test copy a resource
+   * - view should be updated and next action should start
+   * - status response 412 - file exists- then rename with status response 201
+   * 
+   * - Note: renaming is not shown in add resource because the getDataObject function
+   *   gives always the same values back
+   */
+  test("nl.sara.beehub.controller.initAction, copy 13", function() {
+    expect(16);
+    
+    setupCopyMoveTestEnvironment(412, 201, "rename");
+
+    nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory+"/directory"), "copy");
+    // activate directory
+    treeNode.find("a[href$='"+currentDirectory+"/directory/']").click();
+  });
+  
+  /**
+   * Test copy to child directory
+   * 
+   * Test copy a resource
+   * - view should be updated and next action should start
+   * - status response 412 - file exists- then rewrite with status response 201
+   * 
+   * - Note: renaming is not shown in add resource because the getDataObject function
+   *   gives always the same values back
+   */
+  test("nl.sara.beehub.controller.initAction, copy 14", function() {
+    expect(16);
+    
+    setupCopyMoveTestEnvironment(412, 201, "overwrite");
+
+    nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory+"/directory"), "copy");
+    // activate directory
+    treeNode.find("a[href$='"+currentDirectory+"/directory/']").click();
+  });
+  
+  /**
+   * Test copy to child directory
+   * 
+   * Test copy a resource
+   * - view should be updated and next action should start
+   * - status response 412 - file exists- then rename with status response 204
+   * 
+   * - Note: renaming is not shown in add resource because the getDataObject function
+   *   gives always the same values back
+   */
+  test("nl.sara.beehub.controller.initAction, copy 15", function() {
+    expect(16);
+    
+    setupCopyMoveTestEnvironment(412, 204, "rename");
+
+    nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory+"/directory"), "copy");
+    // activate directory
+    treeNode.find("a[href$='"+currentDirectory+"/directory/']").click();
+  });
+  
+  /**
+   * Test copy to child directory
+   * 
+   * Test copy a resource
+   * - view should be updated and next action should start
+   * - status response 412 - file exists- then overwrite with status response 204
+   * 
+   * - Note: renaming is not shown in add resource because the getDataObject function
+   *   gives always the same values back
+   */
+  test("nl.sara.beehub.controller.initAction, copy 16", function() {
+    expect(16);
+    
+    setupCopyMoveTestEnvironment(412, 204, "overwrite");
+
+    nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory+"/directory"), "copy");
+    // activate directory
+    treeNode.find("a[href$='"+currentDirectory+"/directory/']").click();
+  });
+   
+  /**
+   * Test copy to child directory
+   * 
+   * Test copy a resource
+   * - view should be updated and next action should start
+   * - status response 412 - file exists- then rename with status response 403
+   * 
+   * - Note: renaming is not shown in add resource because the getDataObject function
+   *   gives always the same values back
+   */
+  test("nl.sara.beehub.controller.initAction, copy 17", function() {
+    expect(15);
+    
+    setupCopyMoveTestEnvironment(412, 403, "rename");
+
+    nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory+"/directory"), "copy");
+    // activate directory
+    treeNode.find("a[href$='"+currentDirectory+"/directory/']").click();
+  });
+  
+  /**
+   * Test copy to child directory
+   * 
+   * Test copy a resource
+   * - view should be updated and next action should start
+   * - status response 412 - file exists- then overwrite with status response 403
+   * 
+   * - Note: renaming is not shown in add resource because the getDataObject function
+   *   gives always the same values back
+   */
+  test("nl.sara.beehub.controller.initAction, copy 18", function() {
+    expect(16);
+    
+    setupCopyMoveTestEnvironment(412, 403, "overwrite");
+
+    nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory+"/directory"), "copy");
+    // activate directory
+    treeNode.find("a[href$='"+currentDirectory+"/directory/']").click();
+  });
+  
+  /**
+   * Test copy to child directory
+   * 
+   * Test copy a resource
+   * - view should be updated and next action should start
+   * - status response 412 - file exists- then rename with status response 501
+   * 
+   * - Note: renaming is not shown in add resource because the getDataObject function
+   *   gives always the same values back
+   */
+  test("nl.sara.beehub.controller.initAction, copy 19", function() {
+    expect(15);
+    
+    setupCopyMoveTestEnvironment(412, 501, "rename");
+
+    nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory+"/directory"), "copy");
+    // activate directory
+    treeNode.find("a[href$='"+currentDirectory+"/directory/']").click();
+  });
+  
+  /**
+   * Test copy to child directory
+   * 
+   * Test copy a resource
+   * - view should be updated and next action should start
+   * - status response 412 - file exists- then overwrite with status response 501
+   * 
+   * - Note: renaming is not shown in add resource because the getDataObject function
+   *   gives always the same values back
+   */
+  test("nl.sara.beehub.controller.initAction, copy 20", function() {
+    expect(16);
+    
+    setupCopyMoveTestEnvironment(412, 501, "overwrite");
+
+    nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory+"/directory"), "copy");
+    // activate directory
+    treeNode.find("a[href$='"+currentDirectory+"/directory/']").click();
+  });
+  
+  /**
+   * Test copy to child directory
+   * 
+   * Test copy a resource
+   * - view should be updated and next action should start
+   * - status response 412 - file exists- then rename with status response 512
+   * 
+   * - Note: renaming is not shown in add resource because the getDataObject function
+   *   gives always the same values back
+   */
+  test("nl.sara.beehub.controller.initAction, copy 21", function() {
+    expect(15);
+    
+    setupCopyMoveTestEnvironment(412, 512, "rename");
+
+    nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory+"/directory"), "copy");
+    // activate directory
+    treeNode.find("a[href$='"+currentDirectory+"/directory/']").click();
+  });
+  
+  /**
+   * Test copy to child directory
+   * 
+   * Test copy a resource
+   * - view should be updated and next action should start
+   * - status response 412 - file exists- then overwrite with status response 512
+   * 
+   * - Note: renaming is not shown in add resource because the getDataObject function
+   *   gives always the same values back
+   */
+  test("nl.sara.beehub.controller.initAction, copy 22", function() {
+    expect(16);
+    
+    setupCopyMoveTestEnvironment(412, 512, "overwrite");
+
+    nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory+"/directory"), "copy");
+    // activate directory
+    treeNode.find("a[href$='"+currentDirectory+"/directory/']").click();
+  });
+  
+  /**
+   * Test copy to child directory
+   * 
+   * Test copy a resource
+   * - view should be updated and next action should start
+   * - status response 412 - file exists- then rename with status response 412
+   * 
+   * - Note: renaming is not shown in add resource because the getDataObject function
+   *   gives always the same values back
+   */
+  test("nl.sara.beehub.controller.initAction, copy 23", function() {
+    expect(18);
+    
+    setupCopyMoveTestEnvironment(412, 412, "rename");
+
+    nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory+"/directory"), "copy");
+    // activate directory
+    treeNode.find("a[href$='"+currentDirectory+"/directory/']").click();
+  });
+  
+  /**
+   * Test copy to child directory
+   * 
+   * Test copy a resource
+   * - view should be updated and next action should start
+   * - status response 412 - file exists- then rename with status response 412
+   * 
+   * - Note: renaming is not shown in add resource because the getDataObject function
+   *   gives always the same values back
+   */
+  test("nl.sara.beehub.controller.initAction, copy 24", function() {
+    expect(15);
+    
+    setupCopyMoveTestEnvironment(412, 1, "rename");
+
+    nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory+"/directory"), "copy");
+    // activate directory
+    treeNode.find("a[href$='"+currentDirectory+"/directory/']").click();
+  });
+  
+  /**
+   * Test copy to child directory
+   * 
+   * Test copy a resource
+   * - view should be updated and next action should start
+   * - status response 412 - file exists- then overwrite with status response 412
+   * 
+   * - Note: renaming is not shown in add resource because the getDataObject function
+   *   gives always the same values back
+   */
+  test("nl.sara.beehub.controller.initAction, copy 25", function() {
+    expect(16);
+    
+    setupCopyMoveTestEnvironment(412, 1, "overwrite");
+
+    nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory+"/directory"), "copy");
+    // activate directory
+    treeNode.find("a[href$='"+currentDirectory+"/directory/']").click();
+  });
+  
   
   /**
    * Test move to same dir
@@ -2196,7 +2513,7 @@
    * - Note: renaming is not shown in add resource because the getDataObject function
    *   gives always the same values back
    */
-  test("nl.sara.beehub.controller.initAction, move", function() {
+  test("nl.sara.beehub.controller.initAction, move 1", function() {
     expect(6);
     
     setupCopyMoveTestEnvironment(1);
@@ -2216,7 +2533,7 @@
    * - Note: renaming is not shown in add resource because the getDataObject function
    *   gives always the same values back
    */
-  test("nl.sara.beehub.controller.initAction, move", function() {
+  test("nl.sara.beehub.controller.initAction, move 2", function() {
     expect(9);
      
     setupCopyMoveTestEnvironment(201);
@@ -2236,7 +2553,7 @@
    * - Note: renaming is not shown in add resource because the getDataObject function
    *   gives always the same values back
    */
-  test("nl.sara.beehub.controller.initAction, move", function() {
+  test("nl.sara.beehub.controller.initAction, move 3", function() {
     expect(9);
      
     setupCopyMoveTestEnvironment(204);
@@ -2256,7 +2573,7 @@
    * - Note: renaming is not shown in add resource because the getDataObject function
    *   gives always the same values back
    */
-  test("nl.sara.beehub.controller.initAction, move", function() {
+  test("nl.sara.beehub.controller.initAction, move 4", function() {
     expect(9);
      
     setupCopyMoveTestEnvironment(403);
@@ -2276,7 +2593,7 @@
    * - Note: renaming is not shown in add resource because the getDataObject function
    *   gives always the same values back
    */
-  test("nl.sara.beehub.controller.initAction, move", function() {
+  test("nl.sara.beehub.controller.initAction, move 5", function() {
     expect(9);
     
     setupCopyMoveTestEnvironment(501);
@@ -2296,7 +2613,7 @@
    * - Note: renaming is not shown in add resource because the getDataObject function
    *   gives always the same values back
    */
-  test("nl.sara.beehub.controller.initAction, move", function() {
+  test("nl.sara.beehub.controller.initAction, move 6", function() {
     expect(9);
     
     setupCopyMoveTestEnvironment(512);
@@ -2316,13 +2633,294 @@
    * - Note: renaming is not shown in add resource because the getDataObject function
    *   gives always the same values back
    */
-  test("nl.sara.beehub.controller.initAction, move", function() {
+  test("nl.sara.beehub.controller.initAction, move 7", function() {
     expect(8);
     
-    setupCopyMoveTestEnvironment(412);
+    setupCopyMoveTestEnvironment(412, 201);
 
     nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory+"/directory"), "move");
     // activate directory
     treeNode.find("a[href$='"+currentDirectory+"/directory/']").click();
   });
+  
+  /**
+   * Test move to child directory
+   * 
+   * Test move a resource
+   * - view should be updated and next action should start
+   * - status response 412 - file exists- then cancel
+   * 
+   * - Note: renaming is not shown in add resource because the getDataObject function
+   *   gives always the same values back
+   */
+  test("nl.sara.beehub.controller.initAction, move 8", function() {
+    expect(10);
+    
+    setupCopyMoveTestEnvironment(412, 1, "cancel");
+
+    nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory+"/directory"), "move");
+    // activate directory
+    treeNode.find("a[href$='"+currentDirectory+"/directory/']").click();
+  });
+  
+  /**
+   * Test move to child directory
+   * 
+   * Test move a resource
+   * - view should be updated and next action should start
+   * - status response 412 - file exists- then rename with status response 201
+   * 
+   * - Note: renaming is not shown in add resource because the getDataObject function
+   *   gives always the same values back
+   */
+  test("nl.sara.beehub.controller.initAction, move 9", function() {
+    expect(11);
+    
+    setupCopyMoveTestEnvironment(412, 201, "rename");
+
+    nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory+"/directory"), "move");
+    // activate directory
+    treeNode.find("a[href$='"+currentDirectory+"/directory/']").click();
+  });
+  
+  /**
+   * Test move to child directory
+   * 
+   * Test move a resource
+   * - view should be updated and next action should start
+   * - status response 412 - file exists- then rewrite with status response 201
+   * 
+   * - Note: renaming is not shown in add resource because the getDataObject function
+   *   gives always the same values back
+   */
+  test("nl.sara.beehub.controller.initAction, move 10", function() {
+    expect(11);
+    
+    setupCopyMoveTestEnvironment(412, 201, "overwrite");
+
+    nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory+"/directory"), "move");
+    // activate directory
+    treeNode.find("a[href$='"+currentDirectory+"/directory/']").click();
+  });
+  
+  /**
+   * Test move to child directory
+   * 
+   * Test move a resource
+   * - view should be updated and next action should start
+   * - status response 412 - file exists- then rename with status response 204
+   * 
+   * - Note: renaming is not shown in add resource because the getDataObject function
+   *   gives always the same values back
+   */
+  test("nl.sara.beehub.controller.initAction, move 11", function() {
+    expect(11);
+    
+    setupCopyMoveTestEnvironment(412, 204, "rename");
+
+    nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory+"/directory"), "move");
+    // activate directory
+    treeNode.find("a[href$='"+currentDirectory+"/directory/']").click();
+  });
+  
+  /**
+   * Test move to child directory
+   * 
+   * Test move a resource
+   * - view should be updated and next action should start
+   * - status response 412 - file exists- then overwrite with status response 204
+   * 
+   * - Note: renaming is not shown in add resource because the getDataObject function
+   *   gives always the same values back
+   */
+  test("nl.sara.beehub.controller.initAction, move 12", function() {
+    expect(11);
+    
+    setupCopyMoveTestEnvironment(412, 204, "overwrite");
+
+    nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory+"/directory"), "move");
+    // activate directory
+    treeNode.find("a[href$='"+currentDirectory+"/directory/']").click();
+  });
+   
+  /**
+   * Test move to child directory
+   * 
+   * Test move a resource
+   * - view should be updated and next action should start
+   * - status response 412 - file exists- then rename with status response 403
+   * 
+   * - Note: renaming is not shown in add resource because the getDataObject function
+   *   gives always the same values back
+   */
+  test("nl.sara.beehub.controller.initAction, move 13", function() {
+    expect(11);
+    
+    setupCopyMoveTestEnvironment(412, 403, "rename");
+
+    nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory+"/directory"), "move");
+    // activate directory
+    treeNode.find("a[href$='"+currentDirectory+"/directory/']").click();
+  });
+  
+  /**
+   * Test move to child directory
+   * 
+   * Test move a resource
+   * - view should be updated and next action should start
+   * - status response 412 - file exists- then overwrite with status response 403
+   * 
+   * - Note: renaming is not shown in add resource because the getDataObject function
+   *   gives always the same values back
+   */
+  test("nl.sara.beehub.controller.initAction, move 14", function() {
+    expect(11);
+    
+    setupCopyMoveTestEnvironment(412, 403, "overwrite");
+
+    nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory+"/directory"), "move");
+    // activate directory
+    treeNode.find("a[href$='"+currentDirectory+"/directory/']").click();
+  });
+  
+  /**
+   * Test move to child directory
+   * 
+   * Test move a resource
+   * - view should be updated and next action should start
+   * - status response 412 - file exists- then rename with status response 501
+   * 
+   * - Note: renaming is not shown in add resource because the getDataObject function
+   *   gives always the same values back
+   */
+  test("nl.sara.beehub.controller.initAction, move 15", function() {
+    expect(11);
+    
+    setupCopyMoveTestEnvironment(412, 501, "rename");
+
+    nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory+"/directory"), "move");
+    // activate directory
+    treeNode.find("a[href$='"+currentDirectory+"/directory/']").click();
+  });
+  
+  /**
+   * Test move to child directory
+   * 
+   * Test move a resource
+   * - view should be updated and next action should start
+   * - status response 412 - file exists- then overwrite with status response 501
+   * 
+   * - Note: renaming is not shown in add resource because the getDataObject function
+   *   gives always the same values back
+   */
+  test("nl.sara.beehub.controller.initAction, move 16", function() {
+    expect(11);
+    
+    setupCopyMoveTestEnvironment(412, 501, "overwrite");
+
+    nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory+"/directory"), "move");
+    // activate directory
+    treeNode.find("a[href$='"+currentDirectory+"/directory/']").click();
+  });
+  
+  /**
+   * Test move to child directory
+   * 
+   * Test move a resource
+   * - view should be updated and next action should start
+   * - status response 412 - file exists- then rename with status response 512
+   * 
+   * - Note: renaming is not shown in add resource because the getDataObject function
+   *   gives always the same values back
+   */
+  test("nl.sara.beehub.controller.initAction, move 17", function() {
+    expect(11);
+    
+    setupCopyMoveTestEnvironment(412, 512, "rename");
+
+    nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory+"/directory"), "move");
+    // activate directory
+    treeNode.find("a[href$='"+currentDirectory+"/directory/']").click();
+  });
+  
+  /**
+   * Test move to child directory
+   * 
+   * Test move a resource
+   * - view should be updated and next action should start
+   * - status response 412 - file exists- then overwrite with status response 512
+   * 
+   * - Note: renaming is not shown in add resource because the getDataObject function
+   *   gives always the same values back
+   */
+  test("nl.sara.beehub.controller.initAction, move 18", function() {
+    expect(11);
+    
+    setupCopyMoveTestEnvironment(412, 512, "overwrite");
+
+    nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory+"/directory"), "move");
+    // activate directory
+    treeNode.find("a[href$='"+currentDirectory+"/directory/']").click();
+  });
+  
+  /**
+   * Test move to child directory
+   * 
+   * Test move a resource
+   * - view should be updated and next action should start
+   * - status response 412 - file exists- then rename with status response 412
+   * 
+   * - Note: renaming is not shown in add resource because the getDataObject function
+   *   gives always the same values back
+   */
+  test("nl.sara.beehub.controller.initAction, move 19", function() {
+    expect(12);
+    
+    setupCopyMoveTestEnvironment(412, 412, "rename");
+
+    nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory+"/directory"), "move");
+    // activate directory
+    treeNode.find("a[href$='"+currentDirectory+"/directory/']").click();
+  });
+  
+  /**
+   * Test move to child directory
+   * 
+   * Test move a resource
+   * - view should be updated and next action should start
+   * - status response 412 - file exists- then rename with status response 412
+   * 
+   * - Note: renaming is not shown in add resource because the getDataObject function
+   *   gives always the same values back
+   */
+  test("nl.sara.beehub.controller.initAction, move 20", function() {
+    expect(11);
+    
+    setupCopyMoveTestEnvironment(412, 1, "rename");
+
+    nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory+"/directory"), "move");
+    // activate directory
+    treeNode.find("a[href$='"+currentDirectory+"/directory/']").click();
+  });
+  
+  /**
+   * Test move to child directory
+   * 
+   * Test move a resource
+   * - view should be updated and next action should start
+   * - status response 412 - file exists- then overwrite with status response 412
+   * 
+   * - Note: renaming is not shown in add resource because the getDataObject function
+   *   gives always the same values back
+   */
+  test("nl.sara.beehub.controller.initAction, move 21", function() {
+    expect(11);
+    
+    setupCopyMoveTestEnvironment(412, 1, "overwrite");
+
+    nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory+"/directory"), "move");
+    // activate directory
+    treeNode.find("a[href$='"+currentDirectory+"/directory/']").click();
+  });
+
 })();
