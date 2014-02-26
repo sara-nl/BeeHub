@@ -455,6 +455,64 @@ class BeeHub {
     }
     $exception->output();
   }
+  
+  
+  private static $extensions = null;
+  
+  
+  /**
+   * Determine the most appropriate content type for a file
+   * 
+   * @param   string  $path  The (webDAV) path to the file
+   * @return  string         The (MIME) content type
+   */
+  public static function determineContentType( $path ) {
+    if ( is_null( self::$extensions ) ) {
+      self::$extensions = array(
+        'doc' => 'application/msword',
+        'dot' => 'application/msword',
+        'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'dotx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.template',
+        'pot' => 'application/vnd.ms-powerpoint',
+        'pps' => 'application/vnd.ms-powerpoint',
+        'ppt' => 'application/vnd.ms-powerpoint',
+        'potx' => 'application/vnd.openxmlformats-officedocument.presentationml.template',
+        'ppsx' => 'application/vnd.openxmlformats-officedocument.presentationml.slideshow',
+        'pptx' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+        'wp' => 'application/wordperfect',
+        'wp5' => 'application/wordperfect',
+        'wp6' => 'application/wordperfect',
+        'wpd' => 'application/wordperfect',
+        'xls' => 'application/vnd.ms-excel',
+        'xlt' => 'application/vnd.ms-excel',
+        'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'xltx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.template'
+      );
+    }
+    
+    $contentType = null;
+    
+    $filename = basename( $path );
+    $lastDot = strrpos( $filename, '.' );
+    if ( $lastDot !== false ) {
+      $extension = substr( $filename, $lastDot + 1 );
+      if ( array_key_exists( $extension, self::$extensions ) ) {
+        $contentType = self::$extensions[ $extension ];
+      }
+    }
+    
+    if ( is_null( $contentType ) ) {
+      $finfo = new finfo( FILEINFO_MIME );
+      $contentType = $finfo->file( self::localPath( $path ) );
+      $finfo->close();
+    }
+    
+    if ( $contentType === false ) {
+      return null;
+    }
+    
+    return $contentType;
+  }
 
 } // class BeeHub
 
