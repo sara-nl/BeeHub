@@ -120,6 +120,123 @@
     return new dataObject;
   };
   
+  var getCopyMoveTestResources = function(dir){
+    var resource1 = new nl.sara.beehub.ClientResource(dir+"/file1");
+    var resource2 = new nl.sara.beehub.ClientResource(dir+"/file2"); 
+    resource1.displayname = "file1";
+    resource2.displayname = "file2";
+    var items =  [resource1, resource2]; 
+    
+    return items
+  };
+  
+  var setupCopyMoveTestEnvironment = function(status){
+    var inModal = true;
+    var inView = true;
+    var first412 = true;
+    
+    nl.sara.beehub.view.dialog.showResourcesDialog =  function(actionFunction){
+      actionFunction();
+    };
+    
+    nl.sara.beehub.view.dialog.updateResourceInfo = function(resource, info){
+      ok(true, "UpdateResourceInfo is called with resource "+resource.path);
+      ok(true, "UpdateResourceInfo is called with info "+info);
+    };
+    
+    nl.sara.webdav.Client = function(){
+      this.copy = function(path, callback){
+        switch(path)
+        {
+        case currentDirectory+"/directory/file1":
+        case currentDirectory+"/file1":
+        case parentDirectory+"/file1":
+          ok(true, "Path is ok.");
+          if (status === 412) {
+            if (first412){
+              first412 = false;
+              callback(status);
+            } else {
+              callback(201);
+            }
+          } else {
+            callback(status);
+          }
+          break;
+        case currentDirectory+"/directory/file2":
+        case currentDirectory+"/file2":
+        case parentDirectory+"/file2":
+          ok(true, "Next action is started.");
+          break;
+        default:
+          ok(false, "This should not happen.");
+        }
+      };
+      this.move = function(path, callback){
+        switch(path)
+        {
+        case currentDirectory+"/directory/file1":
+        case currentDirectory+"/file1":
+        case parentDirectory+"/file1":
+          // File excists
+          ok(true, "Path is ok.");
+          if (status === 412) {
+            if (first412){
+              first412 = false;
+              callback(status);
+            } else {
+              callback(201);
+            }
+          } else {
+            callback(status);
+          }
+          break;
+        case currentDirectory+"/directory/file2":
+        case currentDirectory+"/file2":
+        case parentDirectory+"/file2":
+          ok(true, "Next action is started.");
+          break;
+        default:
+          ok(false, "This should not happen.");
+        }
+      };
+      this.propfind = function(resourcepath, callback ,value ,properties){
+        var data = getDataObject("file1", null);
+        callback(207, data);
+      };
+    };
+    
+    nl.sara.beehub.view.dialog.setAlreadyExist = function(resource, overwrite, rename, cancel){
+      deepEqual(resource.path,currentDirectory+"/directory/file1", "Already exists should be called with "+currentDirectory+"/file1");
+    };
+    
+    // Test view changes and go on
+    nl.sara.beehub.controller.setCopyMoveView = function(value){
+      deepEqual(value, inView, "setCopyMoveView should be called.");
+      inView = false;
+    };
+    
+    nl.sara.beehub.view.tree.setModal = function(value){
+      // First time true, then false
+      deepEqual(value, inModal, "Set modal is called with value false.");
+      inModal = false;
+    };
+    
+    nl.sara.beehub.view.tree.clearView = function(){
+      // First time true, then false
+      ok(true, "Clearview is called.");
+    };
+    
+    nl.sara.beehub.view.addResource = function(resource){
+      deepEqual(resource.path,"file1", "Add resource should be called with file1");
+    };
+    
+    nl.sara.beehub.view.dialog.showError = function(error){
+      deepEqual(error, "Moving an item to itself is not possible. Use rename icon for renaming the resource(s)."
+          , "Error should be Moving an item to itself is not possible. Use rename icon for renaming the resource(s).");
+    } 
+  };
+  
   /**
    * Test htmlEscape
    */
@@ -1829,119 +1946,6 @@
     nl.sara.beehub.controller.initAction(items, "delete");
   });
   
-  var getCopyMoveTestResources = function(dir){
-    var resource1 = new nl.sara.beehub.ClientResource(dir+"/file1");
-    var resource2 = new nl.sara.beehub.ClientResource(dir+"/file2"); 
-    resource1.displayname = "file1";
-    resource2.displayname = "file2";
-    var items =  [resource1, resource2]; 
-    
-    return items
-  };
-  
-  var setupCopyMoveTestEnvironment = function(status){
-    var inModal = true;
-    var inView = true;
-    var first412 = true;
-    
-    nl.sara.beehub.view.dialog.showResourcesDialog =  function(actionFunction){
-      actionFunction();
-    };
-    
-    nl.sara.beehub.view.dialog.updateResourceInfo = function(resource, info){
-      ok(true, "UpdateResourceInfo is called with resource "+resource.path);
-      ok(true, "UpdateResourceInfo is called with info "+info);
-    };
-    
-    nl.sara.webdav.Client = function(){
-      this.copy = function(path, callback){
-        switch(path)
-        {
-        case currentDirectory+"/directory/file1":
-        case currentDirectory+"/file1":
-        case parentDirectory+"/file1":
-          ok(true, "Path is ok.");
-          if (status === 412) {
-            if (first412){
-              first412 = false;
-              callback(status);
-            } else {
-              callback(201);
-            }
-          } else {
-            callback(status);
-          }
-          break;
-        case currentDirectory+"/directory/file2":
-        case currentDirectory+"/file2":
-        case parentDirectory+"/file2":
-          ok(true, "Next action is started.");
-          break;
-        default:
-          ok(false, "This should not happen.");
-        }
-      };
-      this.move = function(path, callback){
-        switch(path)
-        {
-        case currentDirectory+"/directory/file1":
-        case currentDirectory+"/file1":
-        case parentDirectory+"/file1":
-          // File excists
-          ok(true, "Path is ok.");
-          if (status === 412) {
-            if (first412){
-              first412 = false;
-              callback(status);
-            } else {
-              callback(201);
-            }
-          } else {
-            callback(status);
-          }
-          break;
-        case currentDirectory+"/directory/file2":
-        case currentDirectory+"/file2":
-        case parentDirectory+"/file2":
-          ok(true, "Next action is started.");
-          break;
-        default:
-          ok(false, "This should not happen.");
-        }
-      };
-      this.propfind = function(resourcepath, callback ,value ,properties){
-        var data = getDataObject("file1", null);
-        callback(207, data);
-      };
-    };
-    
-    nl.sara.beehub.view.dialog.setAlreadyExist = function(resource, overwrite, rename, cancel){
-      deepEqual(resource.path,currentDirectory+"/directory/file1", "Already exists should be called with "+currentDirectory+"/file1");
-    };
-    
-    // Test view changes and go on
-    nl.sara.beehub.controller.setCopyMoveView = function(value){
-      deepEqual(value, inView, "setCopyMoveView should be called.");
-      inView = false;
-    };
-    
-    nl.sara.beehub.view.tree.setModal = function(value){
-      // First time true, then false
-      deepEqual(value, inModal, "Set modal is called with value false.");
-      inModal = false;
-    };
-    
-    nl.sara.beehub.view.tree.clearView = function(){
-      // First time true, then false
-      ok(true, "Clearview is called.");
-    };
-    
-    nl.sara.beehub.view.addResource = function(resource){
-      deepEqual(resource.path,"file1", "Add resource should be called with file1");
-    };
-    
-  };
-  
   /**
    * Test copy current dir
    * 
@@ -2182,12 +2186,143 @@
     treeNode.find("a[href$='"+currentDirectory+"/directory/']").click();
   });
   
-//    
-//    action = "move";
-//    inModal = true;
-//    inView = true;
-//    status = 204;
-//    nl.sara.beehub.controller.initAction(items, action);
-//    // activate directory
-//    treeNode.find("a[href$='"+currentDirectory+"/']").click();
+  /**
+   * Test move to same dir
+   * 
+   * Test copy a resource
+   * - view should be updated and next action should start
+   * - status is not used
+   * 
+   * - Note: renaming is not shown in add resource because the getDataObject function
+   *   gives always the same values back
+   */
+  test("nl.sara.beehub.controller.initAction, move", function() {
+    expect(6);
+    
+    setupCopyMoveTestEnvironment(1);
+
+    nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory), "move");
+    // activate directory
+    treeNode.find("a[href$='"+currentDirectory+"/']").click();
+  });
+  
+  /**
+   * Test move child dir
+   * 
+   * Test move a resource
+   * - view should be updated and next action should start
+   * - status response 201
+   * 
+   * - Note: renaming is not shown in add resource because the getDataObject function
+   *   gives always the same values back
+   */
+  test("nl.sara.beehub.controller.initAction, move", function() {
+    expect(9);
+     
+    setupCopyMoveTestEnvironment(201);
+
+    nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory+"/directory"), "move");
+    // activate directory
+    treeNode.find("a[href$='"+currentDirectory+"/directory/']").click();
+  });
+  
+  /**
+   * Test move child dir
+   * 
+   * Test move a resource
+   * - view should be updated and next action should start
+   * - status response 204
+   * 
+   * - Note: renaming is not shown in add resource because the getDataObject function
+   *   gives always the same values back
+   */
+  test("nl.sara.beehub.controller.initAction, move", function() {
+    expect(9);
+     
+    setupCopyMoveTestEnvironment(204);
+
+    nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory+"/directory"), "move");
+    // activate directory
+    treeNode.find("a[href$='"+currentDirectory+"/directory/']").click();
+  });
+  
+  /**
+   * Test move child dir
+   * 
+   * Test move a resource
+   * - view should be updated and next action should start
+   * - status response 403 - forbidden
+   * 
+   * - Note: renaming is not shown in add resource because the getDataObject function
+   *   gives always the same values back
+   */
+  test("nl.sara.beehub.controller.initAction, move", function() {
+    expect(9);
+     
+    setupCopyMoveTestEnvironment(403);
+
+    nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory+"/directory"), "move");
+    // activate directory
+    treeNode.find("a[href$='"+currentDirectory+"/directory/']").click();
+  });
+
+  /**
+   * Test move to parent directory
+   * 
+   * Test copy a resource
+   * - view should be updated and next action should start
+   * - status response 501 - parent
+   * 
+   * - Note: renaming is not shown in add resource because the getDataObject function
+   *   gives always the same values back
+   */
+  test("nl.sara.beehub.controller.initAction, move", function() {
+    expect(9);
+    
+    setupCopyMoveTestEnvironment(501);
+
+    nl.sara.beehub.controller.initAction(getCopyMoveTestResources(parentDirectory), "move");
+    // activate directory
+    treeNode.find("a[href$='"+parentDirectory+"/']").click();
+  });
+
+  /**
+   * Test move to parent directory
+   * 
+   * Test move a resource
+   * - view should be updated and next action should start
+   * - status response 512 - parent
+   * 
+   * - Note: renaming is not shown in add resource because the getDataObject function
+   *   gives always the same values back
+   */
+  test("nl.sara.beehub.controller.initAction, move", function() {
+    expect(9);
+    
+    setupCopyMoveTestEnvironment(512);
+
+    nl.sara.beehub.controller.initAction(getCopyMoveTestResources(parentDirectory), "move");
+    // activate directory
+    treeNode.find("a[href$='"+parentDirectory+"/']").click();
+  });
+  
+  /**
+   * Test move to child directory
+   * 
+   * Test move a resource
+   * - view should be updated and next action should start
+   * - status response 412 - file exists
+   * 
+   * - Note: renaming is not shown in add resource because the getDataObject function
+   *   gives always the same values back
+   */
+  test("nl.sara.beehub.controller.initAction, move", function() {
+    expect(8);
+    
+    setupCopyMoveTestEnvironment(412);
+
+    nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory+"/directory"), "move");
+    // activate directory
+    treeNode.find("a[href$='"+currentDirectory+"/directory/']").click();
+  });
 })();
