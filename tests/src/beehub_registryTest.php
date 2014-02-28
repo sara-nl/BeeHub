@@ -28,7 +28,15 @@ namespace BeeHub\tests;
  */
 class BeeHub_RegistryTest extends \PHPUnit_Framework_TestCase {
 
+  private $alternate_pid = false;
+
+
   public function setUp() {
+    // We need to prevent that we continue with tests in a different proces
+    if ( $this->alternate_pid ) {
+      exit();
+    }
+    
     parent::setUp();
     setUp();
   }
@@ -84,7 +92,7 @@ class BeeHub_RegistryTest extends \PHPUnit_Framework_TestCase {
         $this->markTestSkipped( "Unable to fork process" );
         return;
       }
-      \BeeHub_DB::forceReconnect();
+//      \BeeHub_DB::forceReconnect();
 
       if ( $pid !== 0 ) {
         // This is the parent process. I could put this code after the if statement,
@@ -99,6 +107,8 @@ class BeeHub_RegistryTest extends \PHPUnit_Framework_TestCase {
         \touch( 'locksAreSet.deleteMe' );
       } elseif ( $pid === 0 ) {
         // we are the child
+        $this->alternate_pid = true;
+        
         $counter = 0;  
         while( ! \file_exists( 'locksAreSet.deleteMe' ) ) {
           \sleep( 1 );
@@ -120,7 +130,7 @@ class BeeHub_RegistryTest extends \PHPUnit_Framework_TestCase {
         }
 
         \touch( 'writeLockSet.deleteMe' );
-        \BeeHub_DB::mysqli()->close();
+//        \BeeHub_DB::mysqli()->close();
         exit();
       }
       // Only the parent process will get to this
@@ -163,7 +173,7 @@ class BeeHub_RegistryTest extends \PHPUnit_Framework_TestCase {
         $this->markTestSkipped( "Unable to fork process" );
         return;
       }
-      \BeeHub_DB::forceReconnect();
+//      \BeeHub_DB::forceReconnect();
 
       if ( $pid !== 0 ) {
         // This is the parent process. I could put this code after the if statement,
@@ -178,6 +188,8 @@ class BeeHub_RegistryTest extends \PHPUnit_Framework_TestCase {
         \touch( 'locksAreSet.deleteMe' );
       } elseif ( $pid === 0 ) {
         // we are the child
+        $this->alternate_pid = true;
+
         $counter = 0;  
         while( ! \file_exists( 'locksAreSet.deleteMe' ) ) {
           \sleep( 1 );
@@ -193,7 +205,7 @@ class BeeHub_RegistryTest extends \PHPUnit_Framework_TestCase {
         }
 
         \touch( 'readLockSet.deleteMe' );
-        \BeeHub_DB::mysqli()->close();
+//        \BeeHub_DB::mysqli()->close();
         exit();
       }
       // Only the parent process will get to this
@@ -234,7 +246,7 @@ class BeeHub_RegistryTest extends \PHPUnit_Framework_TestCase {
         $this->markTestSkipped( "Unable to fork process" );
         return;
       }
-      \BeeHub_DB::forceReconnect();
+//      \BeeHub_DB::forceReconnect();
 
       if ( $pid !== 0 ) {
         // This is the parent process. I could put this code after the if statement,
@@ -249,6 +261,8 @@ class BeeHub_RegistryTest extends \PHPUnit_Framework_TestCase {
         \touch( 'locksAreSet.deleteMe' );
       } elseif ( $pid === 0 ) {
         // we are the child
+        $this->alternate_pid = true;
+
         $counter = 0;  
         while( ! \file_exists( 'locksAreSet.deleteMe' ) ) {
           \sleep( 1 );
@@ -264,7 +278,7 @@ class BeeHub_RegistryTest extends \PHPUnit_Framework_TestCase {
         }
 
         \touch( 'writeLockSet.deleteMe' );
-        \BeeHub_DB::mysqli()->close();
+//        \BeeHub_DB::mysqli()->close();
         exit();
       }
       // Only the parent process will get to this

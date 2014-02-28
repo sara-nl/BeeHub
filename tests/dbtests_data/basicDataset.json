@@ -1,0 +1,255 @@
+{
+  "users":
+  [
+    {
+      "name": "john",
+      "displayname": "John Doe",
+      "email": "john.doe@mailservice.com",
+      "password": "$6$rounds=5000$126b519331f5189c$cvGKahLo6.q/TSTeLMxGC8qpwHC6QIA37NCdn6xKpBJVCU3vBzwJkK3HS7.d4RwJcCG.oXMHBiv06oMnZCwjM0",
+      "default_sponsor": "sponsor_a",
+      "groups": [ "foo", "bar" ],
+      "sponsors": [ "sponsor_a", "sponsor_b" ]
+    },
+    {
+      "name": "jane",
+      "displayname": "Jane Doe",
+      "email": "jane.doe@mailservice.com",
+      "unverified_email": "j.doe@mailservice.com",
+      "password": "$6$rounds=5000$cvGKahLo6.q/TSTe$20dAPKtCcskhKC7SJ0ObfQodGu8dKhj5Eb4ipm09NK7RRJzTONJTsZgxASn3I1PtV6Yrwi186Xw9mn2mOxqKc.",
+      "surfconext_id": "qwertyuiop",
+      "surfconext_description": "Account at the top row of letters on my keyboard",
+      "x509": "CN=Jane Doe",
+      "verification_code": "somesecretcode",
+      "verification_expiration": "2038-01-19 03:14:07",
+      "password_reset_code": "someothersecretcode",
+      "password_reset_expiration": "2038-01-19 03:14:07"
+    },
+    {
+      "name": "johny",
+      "displayname": "Johny Doe",
+      "email": "johny.doe@mailservice.com",
+      "password": "$6$rounds=5000$126b519331f5189c$cvGKahLo6.q/TSTeLMxGC8qpwHC6QIA37NCdn6xKpBJVCU3vBzwJkK3HS7.d4RwJcCG.oXMHBiv06oMnZCwjM0",
+      "default_sponsor": "sponsor_a"
+    }
+  ],
+  "groups":
+  [
+    {
+      "name": "foo",
+      "displayname": "Foo",
+      "description": "Group of all Foo members",
+      "admins": [ "john" ],
+      "admin_accepted_memberships": [ "jane" ]
+    },
+    {
+      "name": "bar",
+      "displayname": "Bar",
+      "description": "Group of all Bar members",
+      "admins": [ "john" ],
+      "user_accepted_memberships": [ "jane" ]
+    }
+  ],
+  "sponsors":
+  [
+    {
+      "name": "e-infra",
+      "displayname": "e-Infra",
+      "description": "For now we need this sponsor as it is still hard-coded into BeeHub",
+      "admins": [ "john" ]
+    },
+    {
+      "name": "sponsor_a",
+      "displayname": "Company A",
+      "description": "Company A has paid for some storage",
+      "admins": [ "john" ]
+    },
+    {
+      "name": "sponsor_b",
+      "displayname": "Company B",
+      "description": "Company B has paid for even more storage",
+      "admins": [ "john" ],
+      "user_accepted_memberships": [ "jane" ]
+    }
+  ],
+  "beehub_system":
+  [
+    {
+      "name": "etag",
+      "counter": 2
+    }
+  ],
+  "files":
+  [
+    {
+      "path": "",
+      "props" :
+      {
+        "DAV: owner": "john"
+      }
+    },
+    {
+      "path": "home",
+      "props" :
+      {
+        "DAV: owner": "john"
+      }
+    },
+    {
+      "path": "home/john",
+      "props" :
+      {
+        "DAV: owner": "john",
+        "http://beehub%2Enl/ sponsor": "sponsor_a"
+      }
+    },
+    {
+      "path": "home/johny",
+      "props" :
+      {
+        "DAV: owner": "johny"
+      }
+    },
+    {
+      "path": "home/jane",
+      "props" :
+      {
+        "DAV: owner": "jane"
+      }
+    },
+    {
+      "path": "foo",
+      "props" :
+      {
+        "DAV: owner": "john",
+        "http://beehub%2Enl/ sponsor": "sponsor_a",
+        "DAV: acl": "[[\"/system/groups/foo\",false,[\"DAV: read\", \"DAV: write\"],false]]"
+      }
+    },
+    {
+      "path": "foo/file.txt",
+      "props" :
+      {
+        "DAV: owner": "john",
+        "http://beehub%2Enl/ sponsor": "sponsor_a",
+        "DAV: acl": "[[\"/system/groups/bar\",false,[\"DAV: read\"],false]]",
+        "DAV: getcontenttype": "text/plain; charset=UTF-8",
+        "DAV: getetag": "EA",
+        "test_namespace test_property": "this is a random dead property"
+      }
+    },
+    {
+      "path": "foo/file2.txt",
+      "props" :
+      {
+        "DAV: owner": "john",
+        "http://beehub%2Enl/ sponsor": "sponsor_a",
+        "DAV: getcontenttype": "text/plain; charset=UTF-8",
+        "DAV: getetag": "IA"
+      }
+    },
+    {
+      "path": "foo/directory",
+      "props" :
+      {
+        "DAV: owner": "john",
+        "http://beehub%2Enl/ sponsor": "sponsor_a",
+        "DAV: acl": "[[\"/system/users/johny\",false,[\"DAV: read\"],true]]",
+        "test_namespace test_property": "this is a random dead property"
+      }
+    },
+    {
+      "path": "foo/directory2",
+      "props" :
+      {
+        "DAV: owner": "john",
+        "http://beehub%2Enl/ sponsor": "sponsor_a"
+      }
+    },
+    {
+      "path": "foo/client_tests",
+      "props" :
+      {
+        "DAV: owner": "john",
+        "http://beehub%2Enl/ sponsor": "sponsor_a",
+        "DAV: acl": "[[\"/system/groups/foo\",false,[\"DAV: write\",\"DAV: write-acl\"],true],[\"DAV: authenticated\",true,[\"DAV: read\"],false],[\"DAV: all\",false,[\"DAV: read\"],false],[\"DAV: owner\",false,[\"DAV: read\"],false],[\"DAV: authenticated\",false,[\"DAV: write\"],false]]"
+      }
+    },
+    {
+      "path": "foo/client_tests/file.txt",
+      "props" :
+      {
+        "DAV: owner": "john",
+        "http://beehub%2Enl/ sponsor": "sponsor_a",
+        "DAV: acl": "[[\"/system/groups/bar\",false,[\"DAV: read\"],false]]",
+        "DAV: getcontenttype": "text/plain; charset=UTF-8",
+        "DAV: getetag": "EA",
+        "test_namespace test_property": "this is a random dead property"
+      }
+    },
+    {
+      "path": "foo/client_tests/file2.txt",
+      "props" :
+      {
+        "DAV: owner": "john",
+        "http://beehub%2Enl/ sponsor": "sponsor_a",
+        "DAV: getcontenttype": "text/plain; charset=UTF-8",
+        "DAV: getetag": "IA"
+      }
+    },
+    {
+      "path": "foo/client_tests/directory",
+      "props" :
+      {
+        "DAV: owner": "john",
+        "http://beehub%2Enl/ sponsor": "sponsor_a",
+        "DAV: acl": "[[\"/system/users/johny\",false,[\"DAV: read\"],true]]",
+        "test_namespace test_property": "this is a random dead property"
+      }
+    },
+    {
+      "path": "foo/client_tests/directory2",
+      "props" :
+      {
+        "DAV: owner": "john",
+        "http://beehub%2Enl/ sponsor": "sponsor_a"
+      }
+    },
+    {
+      "path": "bar",
+      "props" :
+      {
+        "DAV: owner": "john",
+        "http://beehub%2Enl/ sponsor": "sponsor_b",
+        "DAV: acl": "[[\"/system/groups/bar\",false,[\"DAV: read\", \"DAV: write\"],false]]"
+      }
+    },
+    {
+      "path": "system",
+      "props" :
+      {
+        "DAV: owner": "john"
+      }
+    },
+    {
+      "path": "system/groups",
+      "props" :
+      {
+        "DAV: owner": "john"
+      }
+    },
+    {
+      "path": "system/sponsors",
+      "props" :
+      {
+        "DAV: owner": "john"
+      }
+    },
+    {
+      "path": "system/users",
+      "props" :
+      {
+        "DAV: owner": "john"
+      }
+    }
+  ]
+}

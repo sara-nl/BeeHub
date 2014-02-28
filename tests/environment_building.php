@@ -100,94 +100,37 @@ function delTreeContents( $dir ) {
  */
 function setUpStorageBackend() {
   $config = \BeeHub::config();
-  if ( empty( $config['environment']['datadir'] ) || ! is_dir( $config['environment']['datadir'] ) || ! @touch( $config['environment']['datadir'] . 'tempfile' ) ) {
+  if ( empty( $config['environment']['datadir'] ) || ! \is_dir( $config['environment']['datadir'] ) || ! @\touch( $config['environment']['datadir'] . 'tempfile' ) ) {
     return false;
   }
 
   // Remove everything in the datadir
   delTreeContents( $config['environment']['datadir'] );
 
-  // Remove all extended attributes from the datadir
-  $attributes = \xattr_list( $config['environment']['datadir'] );
-  foreach ( $attributes as $attribute ) {
-    \xattr_remove( $config['environment']['datadir'], $attribute );
-  }
-
   // Set extended attributes and create a controlled environment
   $basePath = $config['environment']['datadir'];
   \umask( 0007 );
-  \xattr_set( $config['environment']['datadir'], \rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
   \mkdir( $basePath . 'home' );
-  \xattr_set( $basePath . 'home', \rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
   \mkdir( $basePath . 'home' . \DIRECTORY_SEPARATOR . 'john' );
-  \xattr_set( $basePath . 'home' . \DIRECTORY_SEPARATOR . 'john', \rawurlencode( \DAV::PROP_OWNER ), '/system/users/john' );
-  \xattr_set( $basePath . 'home' . \DIRECTORY_SEPARATOR . 'john', \rawurlencode( \BeeHub::PROP_SPONSOR ), '/system/sponsors/sponsor_a' );
   \mkdir( $basePath . 'home' . \DIRECTORY_SEPARATOR . 'johny' );
-  \xattr_set( $basePath . 'home' . \DIRECTORY_SEPARATOR . 'johny', \rawurlencode( \DAV::PROP_OWNER ), '/system/users/johny' );
   \mkdir( $basePath . 'home' . \DIRECTORY_SEPARATOR . 'jane' );
-  \xattr_set( $basePath . 'home' . \DIRECTORY_SEPARATOR . 'jane', \rawurlencode( \DAV::PROP_OWNER ), '/system/users/jane' );
   \mkdir( $basePath . 'foo' );
-  \xattr_set( $basePath . 'foo', \rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
-  \xattr_set( $basePath . 'foo', \rawurlencode( \DAV::PROP_ACL ), "[[\"/system/groups/foo\",false,[\"DAV: read\", \"DAV: write\"],false]]" );
-  \xattr_set( $basePath . 'foo', \rawurlencode( \BeeHub::PROP_SPONSOR ), '/system/sponsors/sponsor_a' );
   \file_put_contents( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'file.txt', 'Some contents of this file' );
-  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'file.txt', \rawurlencode( \DAV::PROP_ACL ), "[[\"/system/groups/bar\",false,[\"DAV: read\"],false]]" );
-  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'file.txt', \rawurlencode( \DAV::PROP_OWNER ), '/system/users/john' );
-  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'file.txt', \rawurlencode( \BeeHub::PROP_SPONSOR ), '/system/sponsors/sponsor_a' );
-  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'file.txt', \rawurlencode( \DAV::PROP_GETCONTENTTYPE ), "text/plain; charset=UTF-8" );
-  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'file.txt', \rawurlencode( \DAV::PROP_GETETAG ), '"EA"' );
-  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'file.txt', \rawurlencode( 'test_namespace test_property' ), 'this is a random dead property' );
   \touch( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'file.txt', 1388576096 );
   \file_put_contents( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'file2.txt', 'Lorem ipsum' );
-  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'file2.txt', \rawurlencode( \DAV::PROP_OWNER ), '/system/users/john' );
-  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'file2.txt', \rawurlencode( \BeeHub::PROP_SPONSOR ), '/system/sponsors/sponsor_a' );
-  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'file2.txt', \rawurlencode( \DAV::PROP_GETCONTENTTYPE ), "text/plain; charset=UTF-8" );
-  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'file2.txt', \rawurlencode( \DAV::PROP_GETETAG ), '"IA"' );
   \mkdir( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'directory' );
-  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'directory', \rawurlencode( \DAV::PROP_ACL ), "[[\"/system/users/johny\",false,[\"DAV: read\"],true]]" );
-  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'directory', \rawurlencode( \DAV::PROP_OWNER ), '/system/users/john' );
-  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'directory', \rawurlencode( \BeeHub::PROP_SPONSOR ), '/system/sponsors/sponsor_a' );
-  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'directory', \rawurlencode( 'test_namespace test_property' ), 'this is a random dead property' );
   \mkdir( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'directory2' );
-  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'directory2', \rawurlencode( \DAV::PROP_OWNER ), '/system/users/john' );
-  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'directory2', \rawurlencode( \BeeHub::PROP_SPONSOR ), '/system/sponsors/sponsor_a' );
   \mkdir( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'client_tests' );
-  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'client_tests', \rawurlencode( \DAV::PROP_ACL ), "[[\"/system/groups/foo\",false,[\"DAV: write\",\"DAV: write-acl\"],true],[\"DAV: authenticated\",true,[\"DAV: read\"],false],[\"DAV: all\",false,[\"DAV: read\"],false],[\"DAV: owner\",false,[\"DAV: read\"],false],[\"DAV: authenticated\",false,[\"DAV: write\"],false]]" );
-  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'client_tests', \rawurlencode( \DAV::PROP_OWNER ), '/system/users/john' );
-  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'client_tests', \rawurlencode( \BeeHub::PROP_SPONSOR ), '/system/sponsors/sponsor_a' );
   \file_put_contents( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'client_tests' . \DIRECTORY_SEPARATOR . 'file.txt', 'Some contents of this file' );
-  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'client_tests' . \DIRECTORY_SEPARATOR . 'file.txt', \rawurlencode( \DAV::PROP_ACL ), "[[\"/system/groups/bar\",false,[\"DAV: read\"],false]]" );
-  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'client_tests' . \DIRECTORY_SEPARATOR . 'file.txt', \rawurlencode( \DAV::PROP_OWNER ), '/system/users/john' );
-  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'client_tests' . \DIRECTORY_SEPARATOR . 'file.txt', \rawurlencode( \BeeHub::PROP_SPONSOR ), '/system/sponsors/sponsor_a' );
-  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'client_tests' . \DIRECTORY_SEPARATOR . 'file.txt', \rawurlencode( \DAV::PROP_GETCONTENTTYPE ), "text/plain; charset=UTF-8" );
-  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'client_tests' . \DIRECTORY_SEPARATOR . 'file.txt', \rawurlencode( \DAV::PROP_GETETAG ), '"EA"' );
-  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'client_tests' . \DIRECTORY_SEPARATOR . 'file.txt', \rawurlencode( 'test_namespace test_property' ), 'this is a random dead property' );
   \touch( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'client_tests' . \DIRECTORY_SEPARATOR . 'file.txt', 1388576096 );
   \file_put_contents( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'client_tests' . \DIRECTORY_SEPARATOR . 'file2.txt', 'Lorem ipsum' );
-  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'client_tests' . \DIRECTORY_SEPARATOR . 'file2.txt', \rawurlencode( \DAV::PROP_OWNER ), '/system/users/john' );
-  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'client_tests' . \DIRECTORY_SEPARATOR . 'file2.txt', \rawurlencode( \BeeHub::PROP_SPONSOR ), '/system/sponsors/sponsor_a' );
-  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'client_tests' . \DIRECTORY_SEPARATOR . 'file2.txt', \rawurlencode( \DAV::PROP_GETCONTENTTYPE ), "text/plain; charset=UTF-8" );
-  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'client_tests' . \DIRECTORY_SEPARATOR . 'file2.txt', \rawurlencode( \DAV::PROP_GETETAG ), '"IA"' );
   \mkdir( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'client_tests' . \DIRECTORY_SEPARATOR . 'directory' );
-  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'client_tests' . \DIRECTORY_SEPARATOR . 'directory', \rawurlencode( \DAV::PROP_ACL ), "[[\"/system/users/johny\",false,[\"DAV: read\"],true]]" );
-  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'client_tests' . \DIRECTORY_SEPARATOR . 'directory', \rawurlencode( \DAV::PROP_OWNER ), '/system/users/john' );
-  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'client_tests' . \DIRECTORY_SEPARATOR . 'directory', \rawurlencode( \BeeHub::PROP_SPONSOR ), '/system/sponsors/sponsor_a' );
-  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'client_tests' . \DIRECTORY_SEPARATOR . 'directory', \rawurlencode( 'test_namespace test_property' ), 'this is a random dead property' );
   \mkdir( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'client_tests' . \DIRECTORY_SEPARATOR . 'directory2' );
-  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'client_tests' . \DIRECTORY_SEPARATOR . 'directory2', \rawurlencode( \DAV::PROP_OWNER ), '/system/users/john' );
-  \xattr_set( $basePath . 'foo' . \DIRECTORY_SEPARATOR . 'client_tests' . \DIRECTORY_SEPARATOR . 'directory2', \rawurlencode( \BeeHub::PROP_SPONSOR ), '/system/sponsors/sponsor_a' );
   \mkdir( $basePath . 'bar' );
-  \xattr_set( $basePath . 'bar', \rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
-  \xattr_set( $basePath . 'bar', \rawurlencode( \DAV::PROP_ACL ), "[[\"/system/groups/bar\",false,[\"DAV: read\", \"DAV: write\"],false]]" );
-  \xattr_set( $basePath . 'bar', \rawurlencode( \BeeHub::PROP_SPONSOR ), '/system/sponsors/sponsor_b' );
   \mkdir( $basePath . 'system' );
-  \xattr_set( $basePath . 'system', \rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
   \mkdir( $basePath . 'system' . \DIRECTORY_SEPARATOR . 'groups' );
-  \xattr_set( $basePath . 'system' . \DIRECTORY_SEPARATOR . 'groups', \rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
   \mkdir( $basePath . 'system' . \DIRECTORY_SEPARATOR . 'sponsors' );
-  \xattr_set( $basePath . 'system' . \DIRECTORY_SEPARATOR . 'sponsors', \rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
   \mkdir( $basePath . 'system' . \DIRECTORY_SEPARATOR . 'users' );
-  \xattr_set( $basePath . 'system' . \DIRECTORY_SEPARATOR . 'users', \rawurlencode( \DAV::PROP_OWNER ), $config['namespace']['wheel_path'] );
 
   // Return true to indicate everything went well
   return true;
@@ -195,20 +138,16 @@ function setUpStorageBackend() {
 
 
 function setUpDatabase() {
-  $lines = \file( \dirname( __FILE__ ) . \DIRECTORY_SEPARATOR . 'dbtests_data' . \DIRECTORY_SEPARATOR . 'basicDataset.sql', \FILE_IGNORE_NEW_LINES | \FILE_SKIP_EMPTY_LINES );
-  $queries = array();
-  $query = '';
-  foreach ( $lines as $line ) {
-    $query .= \rtrim( $line );
-    if ( substr( $line, -1 ) === ';' ) {
-      $queries[] = $query;
-      $query = '';
-    }else{
-      $query .= ' ';
-    }
+  $db = \BeeHub::getNoSQL();
+  $collections = $db->listCollections();
+  foreach ($collections as $collection) {
+    $collection->drop();
   }
-  foreach ( $queries as $query ) {
-    \BeeHub_DB::mysqli()->query( $query );
+
+  $newCollections = \json_decode( \file_get_contents( \dirname( __FILE__ ) . \DIRECTORY_SEPARATOR . 'dbtests_data' . \DIRECTORY_SEPARATOR . 'basicDataset.json' ), true );
+  foreach ( $newCollections as $collectionName => $documents ) {
+    $collection = $db->createCollection( $collectionName );
+    $collection->batchInsert( $documents );
   }
   
   \BeeHub_Principal::update_principals_json();

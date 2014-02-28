@@ -272,11 +272,11 @@ class BeeHub {
   public static function notifications( BeeHub_Auth $auth ) {
     $notifications = array();
     if ($auth->is_authenticated()) {
-      $user = $auth->current_user();
+      $currentUser = $auth->current_user();
 
       // Fetch all group invitations
       $groupsCollection = BeeHub::getNoSQL()->groups;
-      $invitationsResultSet = $groupsCollection->find( array( 'admin_accepted_memberships' => $user->name ), array( 'name' => true, 'displayname' => true ) );
+      $invitationsResultSet = $groupsCollection->find( array( 'admin_accepted_memberships' => $currentUser->name ), array( 'name' => true, 'displayname' => true ) );
       foreach ( $invitationsResultSet as $row ) {
         $notifications[] = array(
             'type' => 'group_invitation',
@@ -288,7 +288,7 @@ class BeeHub {
       }
 
       // Fetch all group membership requests
-      $groupRequestsResultSet = $groupsCollection->find( array( 'user_accepted_memberships' => array( '$exists' => true ), 'admins' => $user->name ), array( 'name' => true, 'displayname' => true, 'user_accepted_memberships' => true ) );
+      $groupRequestsResultSet = $groupsCollection->find( array( 'user_accepted_memberships' => array( '$exists' => true ), 'admins' => $currentUser->name ), array( 'name' => true, 'displayname' => true, 'user_accepted_memberships' => true ) );
       foreach ( $groupRequestsResultSet as $group ) {
         foreach ( $group['user_accepted_memberships'] as $user_name ) {
           $user = BeeHub_Registry::inst()->resource( BeeHub::USERS_PATH . $user_name );
@@ -306,12 +306,12 @@ class BeeHub {
       }
 
       // If the user doesn't have a sponsor, he can't do anything.
-      if ( count( $user->prop( BeeHub::PROP_SPONSOR_MEMBERSHIP ) ) === 0 ) {
+      if ( count( $currentUser->prop( BeeHub::PROP_SPONSOR_MEMBERSHIP ) ) === 0 ) {
         $notifications[] = array( 'type'=>'no_sponsor', 'data'=>array() );
       }else{
         // Fetch all sponsor membership requests
         $sponsorsCollection = BeeHub::getNoSQL()->sponsors;
-        $sponsorRequestsResultSet = $sponsorsCollection->find( array( 'user_accepted_memberships' => array( '$exists' => true ), 'admins' => $user->name ), array( 'name' => true, 'displayname' => true, 'user_accepted_memberships' => true ) );
+        $sponsorRequestsResultSet = $sponsorsCollection->find( array( 'user_accepted_memberships' => array( '$exists' => true ), 'admins' => $currentUser->name ), array( 'name' => true, 'displayname' => true, 'user_accepted_memberships' => true ) );
         foreach ( $sponsorRequestsResultSet as $sponsor ) {
           foreach ( $sponsor['user_accepted_memberships'] as $user_name ) {
             $user = BeeHub_Registry::inst()->resource( BeeHub::USERS_PATH . $user_name );

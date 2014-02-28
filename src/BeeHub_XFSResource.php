@@ -164,8 +164,12 @@ class BeeHub_XFSResource extends BeeHub_Resource {
       throw DAV::forbidden();
 
     // Get the sponsor of this resource
-    if ( ($sponsor = $this->user_prop_sponsor()) )
+    if ( $sponsor = $this->user_prop_sponsor() ) {
       $sponsor = DAV::$REGISTRY->resource($sponsor);
+    }else{
+      // There is no sponsor set for this file. How can that be?
+      throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR, 'There is no sponsor set for this file!' );
+    }
 
     // If you are owner, and the new owner is sponsored by the resource sponsor
     if ( $this->user_prop_owner() === $cup->path &&

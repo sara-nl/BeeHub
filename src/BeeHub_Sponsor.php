@@ -191,7 +191,7 @@ BeeHub';
    * @param   array   $user_accepted_memberships   All memberships accepted by the user (username as key)
    * @return  void
    */
-  private function user_accept_membership( &$user_name, &$user, &$admins, &$members, &$user_accepted_memberships ) {
+  private function user_accept_membership( &$user_name, &$admins, &$members, &$user_accepted_memberships ) {
     // Check what we need to do and accept the membership if needed
     if ( array_key_exists( $user_name, $admins ) || array_key_exists( $user_name, $members ) ) {
       return; // Don't do anything if it is an admin or an existing user
@@ -205,7 +205,6 @@ BeeHub';
         'is_admin' => false,
         'is_accepted' => false
       );
-
     }
   }
   
@@ -390,7 +389,7 @@ BeeHub';
       // Check what we need to do and accept the membership if needed
       switch ( $type ) {
         case self::USER_ACCEPT:
-          $this->user_accept_membership( $user_name, $user, $admins, $members, $user_accepted_memberships );
+          $this->user_accept_membership( $user_name, $admins, $members, $user_accepted_memberships );
           break;
         case self::ADMIN_ACCEPT:
           $this->admin_accept_membership($user_name, $user, $admins, $members, $user_accepted_memberships);
@@ -405,6 +404,8 @@ BeeHub';
           $this->delete_member( $user_name, $user, $admins, $members, $user_accepted_memberships );
         break;
       }
+
+      DAV::$REGISTRY->forget( BeeHub::USERS_PATH . $user_name );
     }
     
     // And save the group document
