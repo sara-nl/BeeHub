@@ -70,7 +70,10 @@
   var rememberShowAddRuleDialog =                   nl.sara.beehub.view.dialog.showAddRuleDialog;
   var rememberHideMasks =                           nl.sara.beehub.view.hideMasks;
   var rememberCreateRow =                           nl.sara.beehub.view.acl.createRow;
-  
+  var rememberChangePermissions =                   nl.sara.beehub.view.acl.changePermissions;
+  var rememberMoveDownAclRule =                     nl.sara.beehub.view.acl.moveDownAclRule;
+  var rememberMoveUpAclRule =                       nl.sara.beehub.view.acl.moveUpAclRule;
+ 
   var backToOriginalEnvironment = function(){
     nl.sara.beehub.view.clearAllViews =                     rememberClearAllViews;
     nl.sara.beehub.view.maskView =                          rememberMaskView;
@@ -112,7 +115,10 @@
     nl.sara.beehub.view.dialog.clearView =                  rememberClearDialogView;   
     nl.sara.beehub.view.dialog.showAddRuleDialog =          rememberShowAddRuleDialog;    
     nl.sara.beehub.view.hideMasks =                         rememberHideMasks;   
-    nl.sara.beehub.view.acl.createRow =                     rememberCreateRow;                       
+    nl.sara.beehub.view.acl.createRow =                     rememberCreateRow;   
+    nl.sara.beehub.view.acl.changePermissions =             rememberChangePermissions;     
+    nl.sara.beehub.view.acl.moveDownAclRule =               rememberMoveDownAclRule;   
+    nl.sara.beehub.view.acl.moveUpAclRule =                 rememberMoveUpAclRule;                   
   }
   
   var getDataObject = function(path, testType, status, acl){
@@ -3298,7 +3304,26 @@
   })
   
   /**
-   * Test
+   * Test changePermissions
+   */
+  test("nl.sara.beehub.controller.changePermissions", function(){
+    expect(2);
+    
+    nl.sara.beehub.controller.saveAclOnServer = function(okfunc, notokfunc){
+      okfunc();
+      notokfunc();
+    };
+    
+    nl.sara.beehub.view.acl.changePermissions = function(row, oldVal){
+      deepEqual(row, "row", "Row should be row.");
+      deepEqual(oldVal, "oldVal", "Oldval should be oldVal.");
+    };
+    
+    nl.sara.beehub.controller.changePermissions("row", "oldVal");
+  });
+  
+  /**
+   * Test deleteAclRule
    */
   test("nl.sara.beehub.controller.deleteAclRule", function(){
     expect(4);
@@ -3329,5 +3354,73 @@
     firstTest = false;
     t = setTimeout(function(){ok(false, "This timeout should not be called.")},3000);
     nl.sara.beehub.controller.deleteAclRule("testRow", 1, t);
+  })
+  
+  /**
+   * Test moveDownAclRule
+   */
+  test("nl.sara.beehub.controller.moveDownAclRule", function(){
+    expect(3);
+    
+    var firstTest = true;
+    
+    var t = setTimeout(function(){ok(false, "This timeout should not be called.")},3000);
+    nl.sara.beehub.controller.saveAclOnServer = function(okfunc, notokfunc){
+      if (firstTest){
+        okfunc();
+      } else {
+        notokfunc();
+      }
+    };
+    
+    nl.sara.beehub.view.hideMasks = function(){
+      ok(true,"Hidemask is called.");
+    };
+    
+    nl.sara.beehub.view.acl.moveUpAclRule = function(row){
+      deepEqual(row, "row", "Row should be row.");
+    };
+    
+    // Test ok
+    nl.sara.beehub.controller.moveDownAclRule("row", t);
+    
+    // Test not ok
+    firstTest = false;
+    t = setTimeout(function(){ok(false, "This timeout should not be called.")},3000);
+    nl.sara.beehub.controller.moveDownAclRule("row", t);
+  })
+  
+    /**
+   * Test moveUpAclRule
+   */
+  test("nl.sara.beehub.controller.moveUpAclRule", function(){
+    expect(3);
+    
+    var firstTest = true;
+    
+    var t = setTimeout(function(){ok(false, "This timeout should not be called.")},3000);
+    nl.sara.beehub.controller.saveAclOnServer = function(okfunc, notokfunc){
+      if (firstTest){
+        okfunc();
+      } else {
+        notokfunc();
+      }
+    };
+    
+    nl.sara.beehub.view.hideMasks = function(){
+      ok(true,"Hidemask is called.");
+    };
+    
+    nl.sara.beehub.view.acl.moveDownAclRule = function(row){
+      deepEqual(row, "row", "Row should be row.");
+    };
+    
+    // Test ok
+    nl.sara.beehub.controller.moveUpAclRule("row", t);
+    
+    // Test not ok
+    firstTest = false;
+    t = setTimeout(function(){ok(false, "This timeout should not be called.")},3000);
+    nl.sara.beehub.controller.moveUpAclRule("row", t);
   })
 })();

@@ -1265,7 +1265,7 @@
    * Change permissions of a row
    * 
    */
-  nl.sara.beehub.controller.changePermissions = function(row, oldVal, callback){
+  nl.sara.beehub.controller.changePermissions = function(row, oldVal){
     var functionSaveAclOk = function(){
       // Do nothing
     };
