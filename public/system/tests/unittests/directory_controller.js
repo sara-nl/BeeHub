@@ -29,36 +29,45 @@
   var parentDirectory = "/foo";
   var treeNode = $( "#bh-dir-tree ul.dynatree-container" );
  
-  var rememberClearAllViews =               nl.sara.beehub.view.clearAllViews;
-  var rememberMaskView =                    nl.sara.beehub.view.maskView;
-  var rememberInputDisable =                nl.sara.beehub.view.inputDisable;
-  var rememberShowError =                   nl.sara.beehub.view.showError;
-  var rememberClient =                      nl.sara.webdav.Client;
-  var rememberProperty =                    nl.sara.webdav.Property;
-  var rememberCreateTreeNode =              nl.sara.beehub.view.tree.createTreeNode;
-  var rememberAddResource =                 nl.sara.beehub.view.addResource;
-  var rememberTriggerRenameClick =          nl.sara.beehub.view.content.triggerRenameClick;
-  var rememberShowOverwriteDialog =         nl.sara.beehub.view.dialog.showOverwriteDialog
-  var rememberGetUnknownResourceValues =    nl.sara.beehub.view.content.getUnknownResourceValues
-  var rememberUpdateResource =              nl.sara.beehub.view.updateResource;
-  var rememberDeleteResource =              nl.sara.beehub.view.deleteResource;
-  var rememberCloseDialog =                 nl.sara.beehub.view.dialog.closeDialog;
-  var rememberCancelButton =                nl.sara.beehub.view.tree.cancelButton;
-  var rememberMaskView =                    nl.sara.beehub.view.maskView;
-  var rememberNoMask =                      nl.sara.beehub.view.tree.noMask;
-  var rememberSlideTrigger =                nl.sara.beehub.view.tree.slideTrigger;   
-  var rememberShowResourceDialog =          nl.sara.beehub.view.dialog.showResourcesDialog;
-  var rememberSetAlreadyExist =             nl.sara.beehub.view.dialog.setAlreadyExist;
-  var rememberResource =                    nl.sara.beehub.view.addResource;
-  var rememberUpdateResource =              nl.sara.beehub.view.dialog.updateResourceInfo;
-  var rememberSetCopyMoveView =             nl.sara.beehub.controller.setCopyMoveView
-  var rememberClearView =                   nl.sara.beehub.view.tree.clearView;
-  var rememberSetModal =                    nl.sara.beehub.view.tree.setModal;
-  var rememberUsersPath =                   nl.sara.beehub.users_path;
-  var rememberGroupsPath =                  nl.sara.beehub.groups_path;
-  var rememberFailOnOverwrite =             nl.sara.webdav.Client.FAIL_ON_OVERWRITE;
-  var rememberSilelentOverwrite =           nl.sara.webdav.Client.SILENT_OVERWRITE;
-
+  var rememberClearAllViews =                       nl.sara.beehub.view.clearAllViews;
+  var rememberClearDialogView =                     nl.sara.beehub.view.dialog.clearView;
+  var rememberMaskView =                            nl.sara.beehub.view.maskView;
+  var rememberInputDisable =                        nl.sara.beehub.view.inputDisable;
+  var rememberShowError =                           nl.sara.beehub.view.showError;
+  var rememberClient =                              nl.sara.webdav.Client;
+  var rememberProperty =                            nl.sara.webdav.Property;
+  var rememberCreateTreeNode =                      nl.sara.beehub.view.tree.createTreeNode;
+  var rememberAddResource =                         nl.sara.beehub.view.addResource;
+  var rememberTriggerRenameClick =                  nl.sara.beehub.view.content.triggerRenameClick;
+  var rememberShowOverwriteDialog =                 nl.sara.beehub.view.dialog.showOverwriteDialog
+  var rememberGetUnknownResourceValues =            nl.sara.beehub.view.content.getUnknownResourceValues
+  var rememberUpdateResource =                      nl.sara.beehub.view.updateResource;
+  var rememberDeleteResource =                      nl.sara.beehub.view.deleteResource;
+  var rememberCloseDialog =                         nl.sara.beehub.view.dialog.closeDialog;
+  var rememberCancelButton =                        nl.sara.beehub.view.tree.cancelButton;
+  var rememberMaskView =                            nl.sara.beehub.view.maskView;
+  var rememberNoMask =                              nl.sara.beehub.view.tree.noMask;
+  var rememberSlideTrigger =                        nl.sara.beehub.view.tree.slideTrigger;   
+  var rememberShowResourceDialog =                  nl.sara.beehub.view.dialog.showResourcesDialog;
+  var rememberSetAlreadyExist =                     nl.sara.beehub.view.dialog.setAlreadyExist;
+  var rememberResource =                            nl.sara.beehub.view.addResource;
+  var rememberUpdateResource =                      nl.sara.beehub.view.dialog.updateResourceInfo;
+  var rememberSetCopyMoveView =                     nl.sara.beehub.controller.setCopyMoveView
+  var rememberClearView =                           nl.sara.beehub.view.tree.clearView;
+  var rememberSetModal =                            nl.sara.beehub.view.tree.setModal;
+  var rememberUsersPath =                           nl.sara.beehub.users_path;
+  var rememberGroupsPath =                          nl.sara.beehub.groups_path;
+  var rememberFailOnOverwrite =                     nl.sara.webdav.Client.FAIL_ON_OVERWRITE;
+  var rememberSilelentOverwrite =                   nl.sara.webdav.Client.SILENT_OVERWRITE;
+  var rememberGetAcl =                              nl.sara.beehub.view.acl.getAcl;
+  var rememberGetViewPath =                         nl.sara.beehub.view.acl.getViewPath;
+  var rememberSetView =                             nl.sara.beehub.view.acl.setView;
+  var rememberShowAcl =                             nl.sara.beehub.view.dialog.showAcl;
+  var rememberSetAddAclRuleDialogClickHandler =     nl.sara.beehub.view.acl.setAddAclRuleDialogClickHandler;
+  var rememberSaveAclOnServer =                     nl.sara.beehub.controller.saveAclOnServer;
+  var rememberAddRow =                              nl.sara.beehub.view.acl.addRow;
+  var rememberDeleteRowIndex =                      nl.sara.beehub.view.acl.deleteRowIndex;
+  
   var backToOriginalEnvironment = function(){
     nl.sara.beehub.view.clearAllViews =                     rememberClearAllViews;
     nl.sara.beehub.view.maskView =                          rememberMaskView;
@@ -89,14 +98,31 @@
     nl.sara.beehub.groups_path =                            rememberGroupsPath;
     nl.sara.webdav.Client.FAIL_ON_OVERWRITE =               rememberFailOnOverwrite;
     nl.sara.webdav.Client.SILENT_OVERWRITE =                rememberSilelentOverwrite;
+    nl.sara.beehub.view.acl.getAcl =                        rememberGetAcl;
+    nl.sara.beehub.view.acl.getViewPath =                   rememberGetViewPath;
+    nl.sara.beehub.view.acl.setView =                       rememberSetView;
+    nl.sara.beehub.view.dialog.showAcl =                    rememberShowAcl;
+    nl.sara.beehub.view.acl.setAddAclRuleDialogClickHandler=rememberSetAddAclRuleDialogClickHandler;  
+    nl.sara.beehub.controller.saveAclOnServer =             rememberSaveAclOnServer;                     ;
+    nl.sara.beehub.view.acl.addRow =                        rememberAddRow;
+    nl.sara.beehub.view.acl.deleteRowIndex =                rememberDeleteRowIndex;
+    nl.sara.beehub.view.dialog.clearView =                  rememberClearDialogView;          
   }
   
-  var getDataObject = function(path, testType){
+  var getDataObject = function(path, testType, status, acl){
     var propertyObject = function(namespace, property){
       this.property = property;
+      this.status = status;
     };
     
     propertyObject.prototype.getParsedValue = function(){
+      if (this.property === "acl"){
+        return {
+          getAces: function(){
+            return acl;
+          }
+        }
+      }
       if (this.property === "resourcetype") {
         return testType;
       } else {
@@ -2922,5 +2948,302 @@
     // activate directory
     treeNode.find("a[href$='"+currentDirectory+"/directory/']").click();
   });
+  
+  /**
+   * Test save acl on server
+   * 
+   */
+  test("nl.sara.beehub.controller.saveAclOnServer", function(){
+    expect(11);
+    
+    var status = 0;
+    var testError = "";
+    var addAclRuleDialog = false;
+    
+    nl.sara.beehub.view.acl.getAcl = function(){
+      var acl = {"test": "acl"};
+      return acl;
+    };
+    
+    nl.sara.beehub.view.acl.getViewPath = function(){
+      return "testPath";
+    }
+    
+    nl.sara.webdav.Client = function(){
+      this.acl = function(path, callback, acl){
+        deepEqual(path,"testPath", "Path should be testPath");
+        deepEqual(acl.test, "acl", "Acl test should be acl.");
+        callback(status);
+      }
+    }
+    
+    var aclOk = function(){
+      ok(true, "acl ok is called.");
+    };
+    
+    var aclError = function(){
+      ok(true, "acl Error is called.");
+    };
+    
+    nl.sara.beehub.view.dialog.showError = function(error){
+      deepEqual(error, testError, "Test error should be "+testError);
+    } 
+    
+    status = 200;
+    nl.sara.beehub.controller.saveAclOnServer(aclOk, aclError);
+    
+    status = 403;
+    testError = 'You are not allowed to change the acl.';
+    nl.sara.beehub.controller.saveAclOnServer(aclOk, aclError);
 
+    status = 1;
+    testError = 'Something went wrong on the server. No changes were made.';
+    nl.sara.beehub.controller.saveAclOnServer(aclOk, aclError);
+
+  });
+
+  /**
+   * Test getAclFromServer
+   */
+  test('nl.sara.beehub.controller.getAclFromServer', function(){
+    expect(63);
+    
+    var errorTest = "";
+    var testIndex = 0;
+    var addAclRuleDialogTest = false;
+    var closeDialogTest=false;
+    var allInherited = true;
+
+    var aclTestOnlyInherited = [{
+      principal         :     '/system/groups/foo',
+      principalString   :     '/system/groups/foo',
+      invertprincipal   :     false,
+      inherited         :     true,
+      isprotected       :     false,
+      grantdeny         :     2,
+      permString        :     "deny write, change acl",
+      getPrivilegeNames :     function(){return ["write","write-acl"]}
+     },{
+      principal         :     nl.sara.webdav.Ace.AUTHENTICATED,
+      principalString   :     'DAV: authenticated',
+      invertprincipal   :     true,
+      isprotected       :     false,
+      inherited         :     true,
+      grantdeny         :     1,
+      permString        :     "allow read",
+      getPrivilegeNames :     function(){return ["read"]}
+     },{
+      principal         :     nl.sara.webdav.Ace.ALL,
+      principalString   :     "DAV: all",
+      invertprincipal   :     false,
+      isprotected       :     false,
+      inherited         :     true,
+      grantdeny         :     1,
+      permString        :     "allow read",
+      getPrivilegeNames :     function(){return ["read"]}
+     },{
+      principal         :     {tagname: "owner"},
+      principalString   :     'DAV: owner',
+      invertprincipal   :     false,
+      inherited         :     true,
+      isprotected       :     false,
+      grantdeny         :     1,
+      permString        :     "allow read",
+      getPrivilegeNames :     function(){return ["read"]}
+     },{
+      principal         :     nl.sara.webdav.Ace.SELF,
+      principalString   :     'DAV: self',
+      invertprincipal   :     false,
+      isprotected       :     false,
+      inherited         :     true,
+      grantdeny         :     1,
+      permString        :     "allow read",
+      getPrivilegeNames :     function(){return ["read"]}
+     },{
+      principal         :     nl.sara.webdav.Ace.UNAUTHENTICATED,
+      principalString   :     'DAV: unauthenticated',
+      invertprincipal   :     false,
+      isprotected       :     false,
+      inherited         :     true,
+      grantdeny         :     1,
+      permString        :     "allow unknown privilege (combination)",
+      getPrivilegeNames :     function(){return ["write"]}
+      }
+    ];
+    
+    var aclTest = [{
+      principal         :     '/system/groups/foo',
+      principalString   :     '/system/groups/foo',
+      invertprincipal   :     false,
+      inherited         :     false,
+      isprotected       :     false,
+      grantdeny         :     2,
+      permString        :     "deny write, change acl",
+      getPrivilegeNames :     function(){return ["write","write-acl"]}
+     },{
+      principal         :     nl.sara.webdav.Ace.AUTHENTICATED,
+      principalString   :     'DAV: authenticated',
+      invertprincipal   :     true,
+      isprotected       :     false,
+      inherited         :     false,
+      grantdeny         :     1,
+      permString        :     "allow read",
+      getPrivilegeNames :     function(){return ["read"]}
+     },{
+      principal         :     nl.sara.webdav.Ace.ALL,
+      principalString   :     "DAV: all",
+      invertprincipal   :     false,
+      isprotected       :     false,
+      inherited         :     false,
+      grantdeny         :     1,
+      permString        :     "allow read",
+      getPrivilegeNames :     function(){return ["read"]}
+     },{
+      principal         :     {tagname: "owner"},
+      principalString   :     'DAV: owner',
+      invertprincipal   :     false,
+      inherited         :     false,
+      isprotected       :     false,
+      grantdeny         :     1,
+      permString        :     "allow read",
+      getPrivilegeNames :     function(){return ["read"]}
+     },{
+      principal         :     nl.sara.webdav.Ace.SELF,
+      principalString   :     'DAV: self',
+      invertprincipal   :     false,
+      isprotected       :     false,
+      inherited         :     false,
+      grantdeny         :     1,
+      permString        :     "allow read",
+      getPrivilegeNames :     function(){return ["read"]}
+     },{
+      principal         :     nl.sara.webdav.Ace.UNAUTHENTICATED,
+      principalString   :     'DAV: unauthenticated',
+      invertprincipal   :     false,
+      isprotected       :     false,
+      inherited         :     false,
+      grantdeny         :     1,
+      permString        :     "allow unknown privilege (combination)",
+      getPrivilegeNames :     function(){return ["write"]}
+      }
+    ];
+    
+    nl.sara.webdav.Property = function(){
+      // Do nothing
+    };
+    
+    nl.sara.webdav.Client = function(){
+      this.propfind = function(resourcePath, callback ,value, properties){
+        if (closeDialogTest){
+          var data = getDataObject("/test", null, 200, aclTest);
+          callback(207, data);
+          
+          allInherited = false;
+          data = getDataObject("/test", null, 200, aclTestOnlyInherited);
+          callback(207,data);
+          
+          // Do nothing
+          callback(1,data);
+        } else {
+         deepEqual(resourcePath, currentDirectory+'/test', "Resource path should be ");
+         deepEqual(properties[0].tagname, "acl", "Tagname should be acl");
+         deepEqual(properties[0].namespace, "DAV:", "Namespace should be DAV:");
+         
+         var data = getDataObject("/test", null, 0);
+         errorTest = 'Something went wrong at the server.';
+         callback(207, data);
+         
+         data = getDataObject("/test", null, 403);
+         errorTest = 'You are not allowed to view this acl.';
+         callback(207, data);
+         
+         data = getDataObject("/test", null, 1);
+         errorTest = 'Something went wrong at the server.';
+         callback(207, data);
+         
+         data = getDataObject("/test", null, 200, aclTest);
+         callback(207, data);
+        }
+      }
+    };
+    
+    nl.sara.beehub.view.setCustomAclOnResource = function(ownACL, resourcePath){
+      deepEqual(ownACL, allInherited, "OwnACL should be "+allInherited);
+      deepEqual(resourcePath, currentDirectory+"/test", "Path should be "+currentDirectory+"/test");
+    };
+    
+    nl.sara.beehub.view.dialog.showError = function(error){
+      deepEqual(error, errorTest, "Error should be "+errorTest);
+    }
+    
+    nl.sara.beehub.view.acl.setView = function(view, path){
+      if (closeDialogTest){
+        deepEqual(view, "directory", "View should be resource.");
+        deepEqual(path, currentDirectory+"/", "Path should be "+currentDirectory+'/test'); 
+      } else {
+         deepEqual(view, "resource", "View should be resource.");
+         deepEqual(path, currentDirectory+"/test", "Path should be "+currentDirectory+'/test'); 
+      }
+    }
+    
+    nl.sara.beehub.view.dialog.clearView = function(){
+      ok(true,"Clear view is called.");
+    }
+    
+    nl.sara.beehub.view.dialog.showAcl= function(html, resourcePath, closeDialogFunction){
+      if (html !== undefined) {
+        ok(true, "Html is not undefined.");
+      } else {
+        ok(false, "Html is undefined.");
+      }
+      deepEqual(resourcePath, currentDirectory+'/test', "Path should be "+currentDirectory+"/test");
+        closeDialogTest = true;
+        closeDialogFunction();
+        closeDialogTest=false;
+    }
+    
+    nl.sara.beehub.view.acl.setAddAclRuleDialogClickHandler = function(addAclRuleDialog){
+      var userInput = {
+          principal : "test",
+          permissions : "read"
+      }
+      addAclRuleDialogTest = true;
+      addAclRuleDialog(userInput);
+      addAclRuleDialogTest = false;
+    };
+    
+    nl.sara.beehub.view.acl.createRow = function(aceObject){
+      if (addAclRuleDialogTest) {
+        deepEqual(aceObject.principal,"test", "Principal should be test");
+        return "testRow"
+      }
+      deepEqual(aceObject.principal,aclTest[testIndex].principalString, "Principal should be "+aclTest[testIndex].principalString);
+      deepEqual(aceObject.invert,aclTest[testIndex].invertprincipal, "Invert should be "+aclTest[testIndex].invertprincipal);
+      deepEqual(aceObject.protected,aclTest[testIndex].isprotected, "Protected should be "+aclTest[testIndex].isprotected);
+      deepEqual(aceObject.invertprincipal,aclTest[testIndex].invertprincipal, "Invertprincipal should be "+aclTest[testIndex].invertprincipal);
+      deepEqual(aceObject.permissions,aclTest[testIndex].permString, "Permissions string should be "+aclTest[testIndex].permString);
+
+      testIndex++;
+      return "testRow";
+    };
+    
+    nl.sara.beehub.view.acl.addRow = function(row, index){
+      if (addAclRuleDialogTest) {
+        deepEqual(index, nl.sara.beehub.view.acl.getIndexLastProtected(), "Index should be "+nl.sara.beehub.view.acl.getIndexLastProtected());
+      } else {
+        deepEqual(index, testIndex-2, "Index should be "+testIndex);
+      }
+      deepEqual(row, "testRow", "Row should be testRow.");
+    };
+    
+    nl.sara.beehub.view.acl.deleteRowIndex = function(index){
+      deepEqual(index, nl.sara.beehub.view.acl.getIndexLastProtected() + 1 , "Index should be "+nl.sara.beehub.view.acl.getIndexLastProtected() + 1);
+    };
+    
+    nl.sara.beehub.controller.saveAclOnServer = function(okFunction, notOkFunction){
+      notOkFunction();
+    }
+    
+    nl.sara.beehub.controller.getAclFromServer(currentDirectory+'/test');
+  });
 })();

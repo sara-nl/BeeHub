@@ -1214,7 +1214,6 @@
             response = data.getResponse( resourcePath + '/' );
           }
           var aces = response.getProperty( 'DAV:', 'acl' ).getParsedValue().getAces();
-          
           // Determine if there are non-inherited and non-protected ACE's
           var ownACL = false;
           for ( var counter in aces ) {
