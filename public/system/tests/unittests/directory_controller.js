@@ -67,6 +67,9 @@
   var rememberSaveAclOnServer =                     nl.sara.beehub.controller.saveAclOnServer;
   var rememberAddRow =                              nl.sara.beehub.view.acl.addRow;
   var rememberDeleteRowIndex =                      nl.sara.beehub.view.acl.deleteRowIndex;
+  var rememberShowAddRuleDialog =                   nl.sara.beehub.view.dialog.showAddRuleDialog;
+  var rememberHideMasks =                           nl.sara.beehub.view.hideMasks;
+  var rememberCreateRow =                           nl.sara.beehub.view.acl.createRow;
   
   var backToOriginalEnvironment = function(){
     nl.sara.beehub.view.clearAllViews =                     rememberClearAllViews;
@@ -106,7 +109,10 @@
     nl.sara.beehub.controller.saveAclOnServer =             rememberSaveAclOnServer;                     ;
     nl.sara.beehub.view.acl.addRow =                        rememberAddRow;
     nl.sara.beehub.view.acl.deleteRowIndex =                rememberDeleteRowIndex;
-    nl.sara.beehub.view.dialog.clearView =                  rememberClearDialogView;          
+    nl.sara.beehub.view.dialog.clearView =                  rememberClearDialogView;   
+    nl.sara.beehub.view.dialog.showAddRuleDialog =          rememberShowAddRuleDialog;    
+    nl.sara.beehub.view.hideMasks =                         rememberHideMasks;   
+    nl.sara.beehub.view.acl.createRow =                     rememberCreateRow;                       
   }
   
   var getDataObject = function(path, testType, status, acl){
@@ -3134,8 +3140,9 @@
     
     nl.sara.webdav.Client = function(){
       this.propfind = function(resourcePath, callback ,value, properties){
+        var data = {};
         if (closeDialogTest){
-          var data = getDataObject("/test", null, 200, aclTest);
+          data = getDataObject("/test", null, 200, aclTest);
           callback(207, data);
           
           allInherited = false;
@@ -3144,12 +3151,13 @@
           
           // Do nothing
           callback(1,data);
+          allInherited = false;
         } else {
          deepEqual(resourcePath, currentDirectory+'/test', "Resource path should be ");
          deepEqual(properties[0].tagname, "acl", "Tagname should be acl");
          deepEqual(properties[0].namespace, "DAV:", "Namespace should be DAV:");
          
-         var data = getDataObject("/test", null, 0);
+         data = getDataObject("/test", null, 0);
          errorTest = 'Something went wrong at the server.';
          callback(207, data);
          
@@ -3215,15 +3223,16 @@
     nl.sara.beehub.view.acl.createRow = function(aceObject){
       if (addAclRuleDialogTest) {
         deepEqual(aceObject.principal,"test", "Principal should be test");
-        return "testRow"
+      } else {
+       deepEqual(aceObject.principal,aclTest[testIndex].principalString, "Principal should be "+aclTest[testIndex].principalString);
+       deepEqual(aceObject.invert,aclTest[testIndex].invertprincipal, "Invert should be "+aclTest[testIndex].invertprincipal);
+       deepEqual(aceObject.protected,aclTest[testIndex].isprotected, "Protected should be "+aclTest[testIndex].isprotected);
+       deepEqual(aceObject.invertprincipal,aclTest[testIndex].invertprincipal, "Invertprincipal should be "+aclTest[testIndex].invertprincipal);
+       deepEqual(aceObject.permissions,aclTest[testIndex].permString, "Permissions string should be "+aclTest[testIndex].permString);
+ 
+       testIndex++;
       }
-      deepEqual(aceObject.principal,aclTest[testIndex].principalString, "Principal should be "+aclTest[testIndex].principalString);
-      deepEqual(aceObject.invert,aclTest[testIndex].invertprincipal, "Invert should be "+aclTest[testIndex].invertprincipal);
-      deepEqual(aceObject.protected,aclTest[testIndex].isprotected, "Protected should be "+aclTest[testIndex].isprotected);
-      deepEqual(aceObject.invertprincipal,aclTest[testIndex].invertprincipal, "Invertprincipal should be "+aclTest[testIndex].invertprincipal);
-      deepEqual(aceObject.permissions,aclTest[testIndex].permString, "Permissions string should be "+aclTest[testIndex].permString);
-
-      testIndex++;
+      
       return "testRow";
     };
     
@@ -3246,4 +3255,79 @@
     
     nl.sara.beehub.controller.getAclFromServer(currentDirectory+'/test');
   });
+  
+  /**
+   * Test nl.sara.beehub.controller.addAclRule
+   */
+  test("nl.sara.beehub.controller.addAclRule", function(){
+    expect(5);
+    
+    nl.sara.beehub.view.dialog.showAddRuleDialog = function(actionFunction, html){
+      if (html.length > 0){
+        ok(true, "Html is created.");
+      }
+      var userInput = {
+          principal : "testPricipal",
+          permissions : "testPermissions"
+      };
+      actionFunction(userInput);
+    }
+    nl.sara.beehub.view.acl.createRow = function(ace){
+      return "testRow";
+    };
+    
+    nl.sara.beehub.view.acl.addRow = function(row, index){
+      deepEqual(row, "testRow", "Row should be testRow.");
+      deepEqual(index,0, "Index should be 0.");
+    }
+    
+    nl.sara.beehub.controller.saveAclOnServer = function(okfunc, notokfunc){
+      okfunc();
+      notokfunc();
+    };
+    
+    nl.sara.beehub.view.dialog.clearView = function(){
+      ok(true, "Clear view is called.");
+    } 
+    
+    nl.sara.beehub.view.acl.deleteRowIndex = function(index){
+      deepEqual(index, 1, "Index should be 1.");
+    }
+    
+    nl.sara.beehub.controller.addAclRule();
+  })
+  
+  /**
+   * Test
+   */
+  test("nl.sara.beehub.controller.deleteAclRule", function(){
+    expect(4);
+    
+    var firstTest = true;
+    
+    var t = setTimeout(function(){ok(false, "This timeout should not be called.")},3000);
+    
+    nl.sara.beehub.controller.saveAclOnServer = function(okfunc, notokfunc){
+      if (firstTest){
+        okfunc();
+      } else {
+        notokfunc();
+      }
+    } 
+    
+    nl.sara.beehub.view.acl.addRow = function(row, index){
+      deepEqual(row, "testRow", "Row should be testRow.");
+      deepEqual(index, 0, "Index should be 0.");
+    };
+    
+    nl.sara.beehub.view.hideMasks = function(){
+      ok(true, "Hidemasks is called.");
+    };
+    
+    nl.sara.beehub.controller.deleteAclRule("testRow", 1, t);
+    
+    firstTest = false;
+    t = setTimeout(function(){ok(false, "This timeout should not be called.")},3000);
+    nl.sara.beehub.controller.deleteAclRule("testRow", 1, t);
+  })
 })();
