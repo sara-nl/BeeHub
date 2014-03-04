@@ -25,15 +25,18 @@
       backToOriginalEnvironment();
     }
   });
+  
   var currentDirectory = "/foo/client_tests";
   var parentDirectory = "/foo";
   var treeNode = $( "#bh-dir-tree ul.dynatree-container" );
- 
+  
+  var rememberPrincipals =                           deepCopy(nl.sara.beehub.principals);
   var rememberClearAllViews =                       nl.sara.beehub.view.clearAllViews;
   var rememberClearDialogView =                     nl.sara.beehub.view.dialog.clearView;
   var rememberMaskView =                            nl.sara.beehub.view.maskView;
   var rememberInputDisable =                        nl.sara.beehub.view.inputDisable;
   var rememberShowError =                           nl.sara.beehub.view.showError;
+  var rememberDislogShowError =                     nl.sara.beehub.view.dialog.showError;
   var rememberClient =                              nl.sara.webdav.Client;
   var rememberProperty =                            nl.sara.webdav.Property;
   var rememberCreateTreeNode =                      nl.sara.beehub.view.tree.createTreeNode;
@@ -74,11 +77,13 @@
   var rememberMoveDownAclRule =                     nl.sara.beehub.view.acl.moveDownAclRule;
   var rememberMoveUpAclRule =                       nl.sara.beehub.view.acl.moveUpAclRule;
  
+  
   var backToOriginalEnvironment = function(){
     nl.sara.beehub.view.clearAllViews =                     rememberClearAllViews;
     nl.sara.beehub.view.maskView =                          rememberMaskView;
     nl.sara.beehub.view.inputDisable =                      rememberInputDisable;
     nl.sara.beehub.view.showError =                         rememberShowError;
+    nl.sara.beehub.view.dialog.showError =                  rememberDislogShowError;                   
     nl.sara.webdav.Client =                                 rememberClient;
     nl.sara.webdav.Property =                               rememberProperty;
     nl.sara.beehub.view.tree.createTreeNode =               rememberCreateTreeNode;
@@ -118,7 +123,21 @@
     nl.sara.beehub.view.acl.createRow =                     rememberCreateRow;   
     nl.sara.beehub.view.acl.changePermissions =             rememberChangePermissions;     
     nl.sara.beehub.view.acl.moveDownAclRule =               rememberMoveDownAclRule;   
-    nl.sara.beehub.view.acl.moveUpAclRule =                 rememberMoveUpAclRule;                   
+    nl.sara.beehub.view.acl.moveUpAclRule =                 rememberMoveUpAclRule;  
+    nl.sara.beehub.principals  =                            deepCopy(rememberPrincipals);
+  }
+  
+  /**
+   * Deepcopy an object
+   */
+  function deepCopy(p,c) {
+    var c = c||{};
+    for (var i in p) {
+      if (typeof p[i] === 'object') {
+        c[i] = (p[i].constructor === Array)?[]:{};
+        deepCopy(p[i],c[i]);
+      } else c[i] = p[i];}
+    return c;
   }
   
   var getDataObject = function(path, testType, status, acl){

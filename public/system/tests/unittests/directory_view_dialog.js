@@ -19,6 +19,14 @@
 "use strict";
 
 (function(){
+  
+  module( "dialog view", {
+    teardown: function() {
+      // clean up after each test
+      backToOriginalEnvironment();
+    }
+  });
+  
   var currentDirectory =            "/foo/client_tests/";
   var testFile =                    "/foo/client_tests/file2.txt";
     
@@ -37,7 +45,7 @@
   var dialogRenameCancelButton=     "#bh-dir-rename-cancel-button";
 
   // Needed for testing autocomplete 
-  var autocompleteLength = 6;
+  var autocompleteLength = 5;
   var ui = {
       item: {
         displayname:    "Bar",
@@ -47,9 +55,14 @@
         value:          "Bar (bar) "
       }
   }
-
-  module("dialog view");
   
+  var rememberDialog = $.fn.dialog; 
+  var rememberClearAllViews = nl.sara.beehub.controller.clearAllViews;
+
+  var backToOriginalEnvironment = function(){
+    $.fn.dialog = rememberDialog;
+    nl.sara.beehub.controller.clearAllViews = rememberClearAllViews;
+  }
   /**
    * Test autocomplete in acl form
    * 
@@ -115,7 +128,6 @@
     nl.sara.beehub.controller.actionAction = "copy";
     nl.sara.beehub.controller.actionResources = resources;
     
-    var rememberDialog = $.fn.dialog; 
     //Overwrite dialog
     $.fn.dialog = function(input){
       // Do nothing
@@ -128,9 +140,6 @@
     nl.sara.beehub.view.dialog.showResourcesDialog(actionFunction);   
     
     testFunction(resources);
-    
-    // Put back original dialog function
-    $.fn.dialog = rememberDialog;
   };
   
   /**
@@ -153,18 +162,13 @@
    */ 
   test('nl.sara.beehub.view.dialog.showError: Show error', function(){
     expect(1);
-    
-    var rememberDialog = $.fn.dialog;
-    
+        
     //Overwrite dialog
     $.fn.dialog = function(){
       deepEqual($(dialog).html(), "Show error test", "Dialog content should be -Show error test-.");
     }
 
     nl.sara.beehub.view.dialog.showError("Show error test");
-    
-    // Put back original dialog function
-    $.fn.dialog = rememberDialog;
   });
   
   /**
@@ -178,7 +182,6 @@
     nl.sara.beehub.view.acl.setView("resource", currentDirectory);
     var html = nl.sara.beehub.view.acl.createDialogViewHtml();
     
-    var rememberDialog = $.fn.dialog; 
     //Overwrite dialog
     $.fn.dialog = function(){
       // Do not open dialog
@@ -196,9 +199,6 @@
     testAutocomplete();
     
     testRadioButtons();
-    
-    // Put back original dialog function
-    $.fn.dialog = rememberDialog;
   });
   
   /**
@@ -214,7 +214,6 @@
       ok(true, "Test function is called.");
     };
    
-    var rememberDialog = $.fn.dialog; 
     //Overwrite dialog
     $.fn.dialog = function(input){
       var html = '<div id="bh-dir-acl-directory-button"></div></div>'
@@ -240,9 +239,6 @@
     testAutocomplete();
     
     testRadioButtons();
-    
-    // Put back original dialog function
-    $.fn.dialog = rememberDialog;
   });
   
   /**
@@ -254,7 +250,6 @@
     nl.sara.beehub.view.acl.setView("resource", currentDirectory);
     var html = nl.sara.beehub.view.acl.createDialogViewHtml();
     
-    var rememberDialog = $.fn.dialog; 
     //Overwrite dialog
     $.fn.dialog = function(){
       // Do not open dialog
@@ -275,9 +270,6 @@
     $(dialog).find(".bh-dir-acl-add-radio2").prop("checked", true); 
     ace = nl.sara.beehub.view.dialog.getFormAce();
     deepEqual(ace.principal, "DAV: all", "Principal should be DAV: all.");
-
-  // Put back original dialog function
-    $.fn.dialog = rememberDialog;
   });
   
   /**
@@ -305,7 +297,6 @@
       ok(true, "Action function is called.")
     }
     
-    var rememberDialog = $.fn.dialog; 
     //Overwrite dialog
     $.fn.dialog = function(input){
       deepEqual(input,"close", "Dialog close should be called");
@@ -325,9 +316,6 @@
     deepEqual(cancelButton.is(":hidden"), true, "Cancel button should be hidden");
     
     button.click();
-
-//  // Put back original dialog function
-    $.fn.dialog = rememberDialog;
   });
   
   /**
@@ -437,7 +425,6 @@
     };
     nl.sara.beehub.controller.actionResources = resources;
     
-    var rememberDialog = $.fn.dialog; 
     //Overwrite dialog
     $.fn.dialog = function(input){
       if (input === "close") {
@@ -453,7 +440,6 @@
       }
     }
     
-    var rememberClearAllViews = nl.sara.beehub.controller.clearAllViews;
     nl.sara.beehub.controller.clearAllViews = function(){
       ok(true, "clearAllViews is called");
     };
@@ -475,12 +461,7 @@
     button.click();
     
     deepEqual(button.is(':enabled'), false, "Button should be disabled");
-    deepEqual(button.text(),"Copy items...", "Button text should be Copy items...");
-    
-    // Put back original dialog function
-    $.fn.dialog = rememberDialog;
-    
-    nl.sara.beehub.controller.clearAllViews = rememberClearAllViews;
+    deepEqual(button.text(),"Copy items...", "Button text should be Copy items..."); 
   });
   
   /**
@@ -489,7 +470,6 @@
   test('nl.sara.beehub.view.dialog.showOverwriteDialog', function(){
     expect(4);
     
-    var rememberDialog = $.fn.dialog; 
     // Overwrite dialog
     $.fn.dialog = function(input){
       if (input === "close") {
@@ -514,9 +494,6 @@
     $(dialogRenameOverwriteButton).click();
     // Test Cancel button click handler
     $(dialogRenameCancelButton).click();
-    
-    // Put back original dialog function
-    $.fn.dialog = rememberDialog;
   });
   
    /**
@@ -525,16 +502,12 @@
   test('nl.sara.beehub.view.dialog.closeDialog', function(){
     expect(1);
     
-    var rememberDialog = $.fn.dialog; 
     // Overwrite dialog
     $.fn.dialog = function(input){
       deepEqual(input,"close", "Input should be close.")
     }
     
     nl.sara.beehub.view.dialog.closeDialog();
-   
-    // Put back original dialog function
-    $.fn.dialog = rememberDialog;
   });
   
 })();

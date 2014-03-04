@@ -38,8 +38,44 @@
     setup: function(){
       // Call init function
       nl.sara.beehub.view.tree.init();
+    },
+    teardown: function(){
+      // clean up after each test
+      backToOriginalEnvironment();
     }
   });
+  
+  var rememberGetTreeNode = nl.sara.beehub.controller.getTreeNode;
+  var rememberAttachEvents = nl.sara.beehub.view.tree.attachEvents;
+  var rememberCloseTree = nl.sara.beehub.view.tree.closeTree;
+  var rememberShowTree = nl.sara.beehub.view.tree.showTree;
+  var rememberSetModal = nl.sara.beehub.view.tree.setModal;
+  var rememberSetCopyMoveView = nl.sara.beehub.controller.setCopyMoveView;
+  var rememberClearView = nl.sara.beehub.view.tree.clearView;
+  var rememberSlideUp = $.fn.slideUp; 
+  var rememberSlideDown = $.fn.slideDown; 
+  var rememberSetOnActivate = nl.sara.beehub.view.tree.setOnActivate;
+  var rememberCloseTree = nl.sara.beehub.view.tree.closeTree;
+  var rememberShowTreeCookie = $.cookie( 'beehub-showtree');
+  var rememberremovePath = nl.sara.beehub.view.tree.removePath;
+  var rememberAddPath = nl.sara.beehub.view.tree.addPath;
+
+  var backToOriginalEnvironment = function(){
+    nl.sara.beehub.controller.getTreeNode = rememberGetTreeNode; 
+    nl.sara.beehub.view.tree.attachEvents = rememberAttachEvents;
+    nl.sara.beehub.view.tree.closeTree = rememberCloseTree;
+    nl.sara.beehub.view.tree.showTree = rememberShowTree;
+    nl.sara.beehub.view.tree.setModal = rememberSetModal;
+    nl.sara.beehub.controller.setCopyMoveView = rememberSetCopyMoveView;
+    nl.sara.beehub.view.tree.clearView = rememberClearView;
+    $.fn.slideUp = rememberSlideUp; 
+    $.fn.slideDown = rememberSlideDown; 
+    $.cookie( 'beehub-showtree', rememberShowTreeCookie , { path: '/' });
+    nl.sara.beehub.view.tree.setOnActivate = rememberSetOnActivate;
+    nl.sara.beehub.view.tree.closeTree = rememberCloseTree;
+    nl.sara.beehub.view.tree.removePath = rememberremovePath;
+    nl.sara.beehub.view.tree.addPath = rememberAddPath;
+  };
   
   /**
    * Test tree expand handler
@@ -49,7 +85,7 @@
    */
   var testTreeExpandHandler = function(expander, expanded){
     expect(1);
-    var rememberGetTreeNode = nl.sara.beehub.controller.getTreeNode;
+    
     nl.sara.beehub.controller.getTreeNode = function(url, callback){
         deepEqual(url, "test", "getTreenode shoulb be called with value.");
     };
@@ -92,8 +128,6 @@
         ok(false, "Not yet implemented.");
       }
     };
-    
-    nl.sara.beehub.controller.getTreeNode = rememberGetTreeNode;
   };
   
   /**
@@ -101,18 +135,15 @@
    */
   test( 'nl.sara.beehub.view.tree.init: Init', function() {
     expect(5);
-    var rememberAttachEvents = nl.sara.beehub.view.tree.attachEvents;
     
     nl.sara.beehub.view.tree.attachEvents = function(treeNode) {
       deepEqual(treeNode, treeNode, "Treenode should be the same.");
     };
     
-    var rememberCloseTree = nl.sara.beehub.view.tree.closeTree;
     nl.sara.beehub.view.tree.closeTree = function(){
       ok(true, "CloseTree is called.");
     }
     
-    var rememberShowTree = nl.sara.beehub.view.tree.showTree;
     nl.sara.beehub.view.tree.showTree = function(){
       ok(true, "ShowTree is called.");
     }
@@ -127,11 +158,6 @@
     $(treeSlideTrigger).addClass( 'active' );
     $(treeSlideTrigger).click();
     deepEqual($.cookie( 'beehub-showtree' ), "false", "Show tree cookie should be false.");
-    
-    // Put back functions
-    nl.sara.beehub.view.tree.attachEvents = rememberAttachEvents;
-    nl.sara.beehub.view.tree.closeTree = rememberCloseTree;
-    nl.sara.beehub.view.tree.showTree = rememberShowTree;
   });
    
   /**
@@ -213,17 +239,14 @@
     expect(9);
     
     // Setup environment
-    var rememberSetModal = nl.sara.beehub.view.tree.setModal;
     nl.sara.beehub.view.tree.setModal = function(value){
       deepEqual(value, false, "Setmodel is called with value false.")
     };
     
-    var rememberSetCopyMoveView = nl.sara.beehub.controller.setCopyMoveView;
     nl.sara.beehub.controller.setCopyMoveView = function(value){
       deepEqual(value, false, "CopyMoveView is called with value false.")
     };
     
-    var rememberClearView = nl.sara.beehub.view.tree.clearView;
     nl.sara.beehub.view.tree.clearView = function(){
       ok(true, "ClearView is called.");
     };
@@ -241,11 +264,6 @@
     nl.sara.beehub.view.tree.cancelButton("show");
     deepEqual($(treeCancelButton).is(":hidden"), false, "Cancel button should be shown.");
     $(treeCancelButton).click();
-    
-    // Back to original environment
-    nl.sara.beehub.view.tree.setModal = rememberSetModal;
-    nl.sara.beehub.controller.setCopyMoveView = rememberSetCopyMoveView;
-    nl.sara.beehub.view.tree.clearView = rememberClearView;
   });
   
   /**
@@ -255,13 +273,11 @@
     expect(15);
     
     // Set up test environment
-    var rememberSlideUp = $.fn.slideUp; 
     //Overwrite slideUp
     $.fn.slideUp = function(input){
       deepEqual(input,"slow", "SlideUp is called with value slow")
     };
     
-    var rememberSlideDown = $.fn.slideDown; 
     //Overwrite slideDown
     $.fn.slideDown = function(input){
       deepEqual(input,"slow", "SlideDown is called with value slow")
@@ -284,10 +300,6 @@
     deepEqual($(treeSlideTrigger+" i").hasClass("icon-folder-open"), false, "No class icon-folder-open should be set.");
     deepEqual($(treeSlideTrigger+" i").hasClass("icon-folder-close"), true, "Class icon-folder-close should be set.");
     deepEqual($(treeHeaderClass).is(":hidden"), true, "Header should be hidden");
-   
-    // Back to original environment
-    $.fn.slideUp = rememberSlideUp; 
-    $.fn.slideUp = rememberSlideUp; 
   })
   
   /**
@@ -297,12 +309,10 @@
     expect(3);
     
     // Set up test environment
-    var rememberSetOnActivate = nl.sara.beehub.view.tree.setOnActivate;
     nl.sara.beehub.view.tree.setOnActivate = function(value){
       deepEqual(value, "Browse", "SetOnActivate should be called with value Browse");
     };
     
-    var rememberCloseTree = nl.sara.beehub.view.tree.closeTree;
     nl.sara.beehub.view.tree.closeTree = function(){
       ok(true, "Close tree is called.");
     }
@@ -314,10 +324,6 @@
     // Close tree should not be called
     nl.sara.beehub.view.tree.clearView();
 
-    // Put back original environment
-    $.cookie( 'beehub-showtree', "false" , { path: '/' });
-    nl.sara.beehub.view.tree.setOnActivate = rememberSetOnActivate;
-    nl.sara.beehub.view.tree.closeTree = rememberCloseTree;
   });
   
   /**
@@ -352,12 +358,10 @@
     expect(2);
     
     // Setup environment
-    var rememberremovePath = nl.sara.beehub.view.tree.removePath;
     nl.sara.beehub.view.tree.removePath = function(path){
       deepEqual(path, "/olddir/", "RemovePath should be called with /olddir/.")
     };
     
-    var rememberAddPath = nl.sara.beehub.view.tree.addPath;
     nl.sara.beehub.view.tree.addPath = function(path){
       deepEqual(path, "/newdir/", "AddPath should be called with /newdir/.")
     };
@@ -372,10 +376,6 @@
     resourceNew.type = "collection";
     
     nl.sara.beehub.view.tree.updateResource(resourceOrg, resourceNew);
-
-    // Put back environment
-    nl.sara.beehub.view.tree.removePath = rememberremovePath;
-    nl.sara.beehub.view.tree.addPath = rememberAddPath;
   })
   
   /**
