@@ -47,7 +47,6 @@
   
   var rememberGetTreeNode = nl.sara.beehub.controller.getTreeNode;
   var rememberAttachEvents = nl.sara.beehub.view.tree.attachEvents;
-  var rememberCloseTree = nl.sara.beehub.view.tree.closeTree;
   var rememberShowTree = nl.sara.beehub.view.tree.showTree;
   var rememberSetModal = nl.sara.beehub.view.tree.setModal;
   var rememberSetCopyMoveView = nl.sara.beehub.controller.setCopyMoveView;
@@ -72,7 +71,6 @@
     $.fn.slideDown = rememberSlideDown; 
     $.cookie( 'beehub-showtree', rememberShowTreeCookie , { path: '/' });
     nl.sara.beehub.view.tree.setOnActivate = rememberSetOnActivate;
-    nl.sara.beehub.view.tree.closeTree = rememberCloseTree;
     nl.sara.beehub.view.tree.removePath = rememberremovePath;
     nl.sara.beehub.view.tree.addPath = rememberAddPath;
   };
@@ -83,11 +81,9 @@
    * @param {DOM object}    expander  Expander icon
    * @param {Boolean}       expanded  Expanded value before click
    */
-  var testTreeExpandHandler = function(expander, expanded){
-    expect(1);
-    
+  var testTreeExpandHandler = function(expander, expanded){    
     nl.sara.beehub.controller.getTreeNode = function(url, callback){
-        deepEqual(url, "test", "getTreenode shoulb be called with value.");
+     ok(true, "Gettree node is called with "+url);
     };
     
     var parent = expander.parent();
@@ -125,7 +121,6 @@
         }
       } else {
         // nl.sara.beehub.controller.getTreeNode should be called
-        ok(false, "Not yet implemented.");
       }
     };
   };
@@ -330,25 +325,42 @@
    * Test addPath
    */
   test("nl.sara.beehub.view.tree.addPath", function(){
-//    expect(5);
-//    nl.sara.beehub.view.tree.addPath(directory+'/test1');
-//    
-//    var fooDir = $( 'a[href="' + foo + '/"]', treeNode).parent();
-//    var client_testsDir = $( 'a[href="' + client_tests + '/"]', treeNode).parent();
-//    var directoryDir = $( 'a[href="' + directory + '/"]', treeNode).parent();
-//    
-//    testTreeExpandHandler(fooDir, true);
-//    testTreeExpandHandler(client_testsDir, true);
-//    testTreeExpandHandler(directoryDir, true);
-    ok(false, "Not yet implemented");
+    expect(3);
+    var path = foo+"/";
 
+    var newDir = $( 'a[href="' + encodeURI( path+'test1/' ) + '"]', treeNode );
+    
+    deepEqual(newDir.length, 0, "Path should nout be present.");
+    
+    nl.sara.beehub.view.tree.addPath(path+'test1/');
+    
+    newDir = $( 'a[href="' + encodeURI( path+'test1/' ) + '"]', treeNode );
+    var parent = $( 'a[href="' + encodeURI( path ) + '"]', treeNode ).parent();
+    
+    deepEqual(newDir.length, 1, "Path should not be present.");
+    deepEqual(parent.hasClass('dynatree-expanded'), true, "Class expanded should be set.");
+    
+    // Back to original environment
+    nl.sara.beehub.view.tree.removePath(path+'test1');
   });
   
   /**
    * Test removePath
    */
   test("nl.sara.beehub.view.tree.removePath", function(){
-    ok(false, "Not yet implemented");
+    expect(2);
+    
+    var path = foo+"/";
+
+    nl.sara.beehub.view.tree.addPath(path+'test1/');
+    
+    var newDir = $( 'a[href="' + encodeURI( path+'test1/' ) + '"]', treeNode );
+    deepEqual(newDir.length, 1, "Path should not be present.");
+
+    nl.sara.beehub.view.tree.removePath(path+'test1/');
+    
+    newDir = $( 'a[href="' + encodeURI( path+'test1/' ) + '"]', treeNode );
+    deepEqual(newDir.length, 0, "Path should not be present.");
   })
   
   /**

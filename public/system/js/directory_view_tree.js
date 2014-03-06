@@ -548,8 +548,7 @@
       nl.sara.beehub.view.tree.addPath( decodeURI( resourceNew.path ) );
     }
   };
-  
-  
+   
   /**
    * Change when the directory tree is modal
    * 
