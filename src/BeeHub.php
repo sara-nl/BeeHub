@@ -504,7 +504,6 @@ class BeeHub {
     if ( is_null( $contentType ) ) {
       $finfo = new finfo( FILEINFO_MIME );
       $contentType = $finfo->file( self::localPath( $path ) );
-      $finfo->close();
     }
     
     if ( $contentType === false ) {
