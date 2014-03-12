@@ -449,10 +449,28 @@ class BeeHub {
    * @return  MongoDB  The noSQL database
    */
   public static function getNoSQL() {
-    if ( ! ( self::$mongo instanceof MongoClient ) ) {
-      self::$mongo = new MongoClient();
+    $config = BeeHub::config();
+    if ( ! isset( $config['mongo'] ) || ! isset( $config['mongo']['database'] ) ) {
+      throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR );
     }
-    return self::$mongo->beehub;
+
+    if ( ! ( self::$mongo instanceof MongoClient ) ) {
+      if ( ! empty( $config['mongo']['host'] ) ) {
+        $server = 'mongodb://';
+        if ( ! empty( $config['mongo']['user'] ) && ! empty( $config['mongo']['password'] ) ) {
+          $server .= $config['mongo']['user'] . ':' . $config['mongo']['password'];
+        }
+        $server .= $config['mongo']['host'];
+        if ( ! empty( $config['mongo']['port'] ) ) {
+          $server .= ':' . $config['mongo']['port'];
+        }
+        self::$mongo = new MongoClient( $server );
+      }else{
+        self::$mongo = new MongoClient();
+      }
+    }
+
+    return self::$mongo->selectDB( $config['mongo']['database'] );
   }
   
   

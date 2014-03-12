@@ -30,8 +30,8 @@ abstract class BeeHub_Tests_Db_Test_Case extends \PHPUnit_Framework_TestCase {
 
   public function setUp() {
     $config = \BeeHub::config();
-    if ( empty( $config['mysql']['host'] ) ) {
-      $this->markTestSkipped( 'No mySQL credentials specified; all tests depending on mySQL are skipped' );
+    if ( ! isset( $config['mongo'] ) || empty( $config['mongo']['database'] ) ) {
+      $this->markTestSkipped( 'No mongoDB database specified; all tests depending on mongoDB are skipped' );
       return;
     }
     setUpDatabase();
