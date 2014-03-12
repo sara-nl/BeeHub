@@ -57,7 +57,7 @@ private static function timeout($timeout) {
  * @return  array          An array with all locks (as \DAV_Element_activelock objects)
  */
 public function memberLocks($path) {
-  $resource = BeeHub_Registry::inst()->resource( $path );
+  $resource = DAV::$REGISTRY->resource( $path );
   $result = $resource->get_members_with_prop( DAV::PROP_LOCKDISCOVERY );
   $retval = array();
   foreach($result as $memberPath => $lockdiscovery) {
@@ -65,7 +65,7 @@ public function memberLocks($path) {
     if ( 0 == $l['timeout'] || $l['timeout'] > time() )
       $retval[$l['locktoken']] = new DAV_Element_activelock( $l );
     else {
-      $member_resource = BeeHub_Registry::inst()->resource( $memberPath );
+      $member_resource = DAV::$REGISTRY->resource( $memberPath );
       $member_resource->user_set( DAV::PROP_LOCKDISCOVERY, null );
       $member_resource->storeProperties();
     }
@@ -84,7 +84,7 @@ public function memberLocks($path) {
  * @return  \DAV_Element_activelock|null         The lock on the resource, or null if none is set
  */
 public function getlock($path) {
-  $resource = BeeHub_Registry::inst()->resource( $path );
+  $resource = \DAV::$REGISTRY->resource( $path );
   if ( $value = $resource->user_prop( DAV::PROP_LOCKDISCOVERY ) ) {
     $value = json_decode( $value, true );
     if ( $value['timeout'] && $value['timeout'] < time() ) {
@@ -125,7 +125,7 @@ public function setlock($lockroot, $depth, $owner, $timeout) {
     'owner'     => $owner,
     'timeout'   => $timeout
   ) );
-  $resource = BeeHub_Registry::inst()->resource( $lockroot );
+  $resource = DAV::$REGISTRY->resource( $lockroot );
   $resource->user_set( DAV::PROP_LOCKDISCOVERY, json_encode( $activelock ) );
   $resource->storeProperties();
   return $locktoken;
@@ -142,7 +142,7 @@ public function setlock($lockroot, $depth, $owner, $timeout) {
  */
 public function refresh($path, $locktoken, $timeout) {
   $timeout = self::timeout($timeout);
-  $resource = BeeHub_Registry::inst()->resource( $path );
+  $resource = DAV::$REGISTRY->resource( $path );
   $lock = $resource->user_prop( DAV::PROP_LOCKDISCOVERY );
   if (!$lock) return false;
   $lock = new DAV_Element_activelock( json_decode($lock, true) );
@@ -154,7 +154,7 @@ public function refresh($path, $locktoken, $timeout) {
   if ( $locktoken != $lock->locktoken )
     return false;
   $lock->timeout = $timeout;
-  $lock_root = BeeHub_Registry::inst()->resource( $lock->lockroot );
+  $lock_root = DAV::$REGISTRY->resource( $lock->lockroot );
   $lock_root->user_set( DAV::PROP_LOCKDISCOVERY, json_encode( $lock ) );
   $lock_root->storeProperties();
   return true;
@@ -168,7 +168,7 @@ public function refresh($path, $locktoken, $timeout) {
  * @return  boolean         True on success, false on failure
  */
 public function unlock($path) {
-  $resource = BeeHub_Registry::inst()->resource( $path );
+  $resource = DAV::$REGISTRY->resource( $path );
   $value = $resource->user_prop( DAV::PROP_LOCKDISCOVERY );
   if (!$value) return false;
   $value = json_decode($value, true);

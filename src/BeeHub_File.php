@@ -99,6 +99,7 @@ public function method_COPY( $path ) {
           DAV::PROP_OWNER,
           BeeHub::PROP_SPONSOR,
           DAV::PROP_ACL,
+          DAV::PROP_GETETAG,
           DAV::PROP_LOCKDISCOVERY
           ) ) ) {
       $new_resource->user_set( $prop, $value );
@@ -119,6 +120,7 @@ public function method_COPY( $path ) {
   // And set the new properties
   $new_resource->user_set( DAV::PROP_OWNER, $this->user_prop_current_user_principal() );
   $new_resource->user_set( BeeHub::PROP_SPONSOR, $sponsor );
+  $new_resource->user_set( DAV::PROP_GETETAG, BeeHub::ETag() );
 
   $new_resource->storeProperties();
 }

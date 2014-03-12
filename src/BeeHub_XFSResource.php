@@ -49,7 +49,11 @@ class BeeHub_XFSResource extends BeeHub_Resource {
   protected function init_props() {
     if (is_null($this->stored_props)) {
       $collection = BeeHub::getNoSQL()->files;
-      $document = $collection->findOne( array('path' => DAV::unslashify( $this->path ) ) );
+      $path = DAV::unslashify( $this->path );
+      if ( substr( $path, 0, 1 ) === '/' ) {
+        $path = substr( $path, 1 );
+      }
+      $document = $collection->findOne( array('path' => $path ) );
       $this->stored_props = array();
       
       if ( !is_null( $document ) && !empty( $document['props'] ) ) {
@@ -232,7 +236,11 @@ class BeeHub_XFSResource extends BeeHub_Resource {
     }
     
     $collection = BeeHub::getNoSQL()->files;
-    $document = $collection->findOne( array('path' => DAV::unslashify( $this->path ) ) );
+    $path = DAV::unslashify( $this->path );
+    if ( substr( $path, 0, 1 ) === '/' ) {
+      $path = substr( $path, 1 );
+    }
+    $document = $collection->findOne( array('path' => $path ) );
     
     $urlencodedProps = array();
     foreach ( $this->stored_props as $key => $value ) {

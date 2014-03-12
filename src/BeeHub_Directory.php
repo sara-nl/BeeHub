@@ -107,14 +107,15 @@ public function method_DELETE( $name )
 {
   $path = $this->path . $name;
   
+  $resource = DAV::$REGISTRY->resource( $path );
+  $resource->assert(DAVACL::PRIV_WRITE);
+  
   // Remove the entry from mongoDB too
   $filesCollection = BeeHub::getNoSQL()->selectCollection( 'files' );
   $filesCollection->remove( array( 'path' => $path ) );
 
   // And then from the filesystem
   $localpath = BeeHub::localPath( $path );
-  $resource = DAV::$REGISTRY->resource( $path );
-  $resource->assert(DAVACL::PRIV_WRITE);
   if (is_dir($localpath)) {
     if (!@rmdir($localpath))
       throw new DAV_Status(DAV::HTTP_CONFLICT, 'Unable to DELETE resource: ' . $name);
@@ -164,6 +165,21 @@ public function method_MOVE( $member, $destination ) {
   rename(
     BeeHub::localPath( $this->path . $member ),
     $localDest
+  );
+  
+  // Then move all properties to the new location
+  $filesCollection = BeeHub::getNoSQL()->selectCollection( 'files' );
+  $path = DAV::unslashify( $this->path . $member );
+  if ( substr( $path, 0, 1 ) === '/' ) {
+    $path = substr( $path, 1 );
+  }
+  $newPath = DAV::unslashify( $destination );
+  if ( substr( $newPath, 0, 1 ) === '/' ) {
+    $newPath = substr( $newPath, 1 );
+  }
+  $filesCollection->findAndModify(
+    array( 'path' => $path ),
+    array( '$set' => array( 'path' => $newPath ) )
   );
 
   // We need to make sure that the effective ACL at the destination is the same as at the resource

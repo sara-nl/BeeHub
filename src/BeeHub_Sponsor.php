@@ -54,9 +54,14 @@ class BeeHub_Sponsor extends BeeHub_Principal {
     $members = array();
     if ( $this->is_member() ) {
       $this->init_props();
-      $collection = BeeHub::getNoSQL()->users;
+      $usersCollection = BeeHub::getNoSQL()->users;
       
-      $resultset = $collection->find( array( 'sponsors' => $this->name ), array( 'name' => true, 'displayname' => true ) );
+      $names = array();
+      foreach ( $this->users as $userPath => $membership ) {
+        $names[] = basename( $userPath );
+      }
+
+      $resultset = $usersCollection->find( array( 'name' => array( '$in' => $names ) ), array( 'name' => true, 'displayname' => true ) );
       $members = array();
       foreach ( $resultset as $result ) {
         $members[ $result['name'] ] = Array(
@@ -233,9 +238,6 @@ BeeHub';
       $members[$user_name] = 1;
 
       // Also change the user document
-      if ( ! is_array( $user['sponsors'] ) ) {
-        $user['sponsors'] = array();
-      }
       if ( ! in_array( $this->name, $user['sponsors'] ) ) {
         $user['sponsors'][] = $this->name;
         BeeHub::getNoSQL()->users->save( $user );
@@ -277,9 +279,8 @@ BeeHub';
         'is_admin' => true,
         'is_accepted' => true
       );
-
     } else {
-      throw new DAV_Status( DAV::HTTP_CONFLICT, 'Not all users are member of this group. You can\'t become an administrator of you don\'t have a membership.');
+      throw new DAV_Status( DAV::HTTP_CONFLICT, 'Not all users are member of this group. You can\'t become an administrator of a group you don\'t have a membership.');
     }
   }
   
@@ -353,7 +354,7 @@ BeeHub';
    * Adds member requests or sets them to be an invited member or an administrator
    *
    * @param   mixed    $users  A user, username or an array if users or usernames
-   * @param   flag     $type   What to do with this membership, use one of the class constants USER_ACCEPT, SET_ADMIN or UNSET_ADMIN
+   * @param   flag     $type   What to do with this membership, use one of the class constants DELETE_MEMBER, ADMIN_ACCEPT, USER_ACCEPT, SET_ADMIN or UNSET_ADMIN
    * @return  void
    */
   public function change_memberships($users, $type){
@@ -384,6 +385,9 @@ BeeHub';
       $user = $userCollection->findOne( array( 'name' => $user_name ) );
       if ( is_null( $user ) ) {
         throw new DAV_Status(DAV::HTTP_CONFLICT, "Not all users exist! " . $user_name);
+      }
+      if ( !isset( $user['sponsors'] ) || ! is_array( $user['sponsors'] ) ) {
+        $user['sponsors'] = array();
       }
       
       // Check what we need to do and accept the membership if needed
@@ -541,7 +545,7 @@ BeeHub';
       if ( DAV::$ACLPROVIDER->wheel() ) {
         return true;
       }
-      $user = BeeHub_Auth::inst()->current_user();
+      $user = BeeHub::getAuth()->current_user();
     }elseif ( ! ( $user instanceof BeeHub_User ) ) {
       $user = BeeHub::user( $user );
     }
@@ -553,7 +557,7 @@ BeeHub';
   public function is_member( $user = null ) {
     $this->init_props();
     if ( is_null($user) ) {
-      $user = BeeHub_Auth::inst()->current_user();
+      $user = BeeHub::getAuth()->current_user();
     }elseif ( ! ( $user instanceof BeeHub_User ) ) {
       $user = BeeHub::user( $user );
     }
@@ -565,7 +569,7 @@ BeeHub';
   public function is_requested( $user = null ) {
     $this->init_props();
     if ( is_null($user) ) {
-      $user = BeeHub_Auth::inst()->current_user();
+      $user = BeeHub::getAuth()->current_user();
     }elseif ( ! ( $user instanceof BeeHub_User ) ) {
       $user = BeeHub::user( $user );
     }

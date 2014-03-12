@@ -38,7 +38,7 @@ class BeeHub_GroupTest extends BeeHub_Tests_Db_Test_Case {
     $this->assertFalse( $foo->is_admin() );
     $this->assertSame( array( '/system/users/john' ), $foo->user_prop_group_member_set() );
 
-    $foo->change_memberships( array( 'jane' ), true, true, false, true, true, false );
+    $foo->change_memberships( array( 'jane' ), \BeeHub_Group::USER_ACCEPT );
     $this->assertFalse( $foo->is_invited() );
     $this->assertFalse( $foo->is_requested() );
     $this->assertTrue( $foo->is_member() );
@@ -56,7 +56,7 @@ class BeeHub_GroupTest extends BeeHub_Tests_Db_Test_Case {
     $this->assertFalse( $foo->is_member() );
     $this->assertFalse( $foo->is_admin() );
 
-    $foo->change_memberships( array( 'johny' ), true, false, false, true, false, false );
+    $foo->change_memberships( array( 'johny' ), \BeeHub_Group::ADMIN_ACCEPT );
     $this->assertTrue( $foo->is_invited() );
     $this->assertFalse( $foo->is_requested() );
     $this->assertFalse( $foo->is_member() );
@@ -73,7 +73,9 @@ class BeeHub_GroupTest extends BeeHub_Tests_Db_Test_Case {
     $this->assertFalse( $foo->is_member() );
     $this->assertFalse( $foo->is_admin() );
 
-    $foo->change_memberships( array( 'jane' ), true, true, true, true, true, true );
+    $foo->change_memberships( array( 'jane' ), \BeeHub_Group::USER_ACCEPT );
+    $foo->change_memberships( array( 'jane' ), \BeeHub_Group::ADMIN_ACCEPT );
+    $foo->change_memberships( array( 'jane' ), \BeeHub_Group::SET_ADMIN );
     $this->assertFalse( $foo->is_invited() );
     $this->assertFalse( $foo->is_requested() );
     $this->assertTrue( $foo->is_member() );
@@ -85,13 +87,17 @@ class BeeHub_GroupTest extends BeeHub_Tests_Db_Test_Case {
     $this->setCurrentUser( '/system/users/jane' );
 
     $foo = new \BeeHub_Group( '/system/groups/foo' );
-    $foo->change_memberships( array( 'jane' ), true, true, true, true, true, true );
+    $foo->change_memberships( array( 'jane' ), \BeeHub_Group::USER_ACCEPT );
+    $foo->change_memberships( array( 'jane' ), \BeeHub_Group::ADMIN_ACCEPT );
+    $foo->change_memberships( array( 'jane' ), \BeeHub_Group::SET_ADMIN );
     $this->assertFalse( $foo->is_invited() );
     $this->assertFalse( $foo->is_requested() );
     $this->assertTrue( $foo->is_member() );
     $this->assertTrue( $foo->is_admin() );
 
-    $foo->change_memberships( array( 'jane' ), true, true, false, true, true, false );
+    $foo->change_memberships( array( 'jane' ), \BeeHub_Group::USER_ACCEPT );
+    $foo->change_memberships( array( 'jane' ), \BeeHub_Group::ADMIN_ACCEPT );
+    $foo->change_memberships( array( 'jane' ), \BeeHub_Group::UNSET_ADMIN );
     $this->assertFalse( $foo->is_invited() );
     $this->assertFalse( $foo->is_requested() );
     $this->assertTrue( $foo->is_member() );
@@ -109,7 +115,7 @@ class BeeHub_GroupTest extends BeeHub_Tests_Db_Test_Case {
     $this->assertFalse( $bar->is_admin() );
     $this->assertSame( array( '/system/users/john' ), $bar->user_prop_group_member_set() );
 
-    $bar->change_memberships( array( 'jane' ), true, true, false, true, true, false );
+    $bar->change_memberships( array( 'jane' ), \BeeHub_Group::ADMIN_ACCEPT );
     $this->assertFalse( $bar->is_invited() );
     $this->assertFalse( $bar->is_requested() );
     $this->assertTrue( $bar->is_member() );
@@ -127,7 +133,7 @@ class BeeHub_GroupTest extends BeeHub_Tests_Db_Test_Case {
     $this->assertFalse( $foo->is_member() );
     $this->assertFalse( $foo->is_admin() );
 
-    $foo->change_memberships( array( 'johny' ), false, true, false, false, true, false );
+    $foo->change_memberships( array( 'johny' ), \BeeHub_Group::USER_ACCEPT );
     $this->assertFalse( $foo->is_invited() );
     $this->assertTrue( $foo->is_requested() );
     $this->assertFalse( $foo->is_member() );
@@ -291,14 +297,16 @@ class BeeHub_GroupTest extends BeeHub_Tests_Db_Test_Case {
 
 
   public function testMethod_POST_AddAdmin(){
+    $bar = new \BeeHub_Group( '/system/groups/bar' );
+    $bar->change_memberships( array( 'jane' ), \BeeHub_Group::ADMIN_ACCEPT );
+    
     $_POST['add_admins'] = array('/system/users/jane');
     $headers = array();
 
     $this->setCurrentUser( '/system/users/jane' );
-    $bar = new \BeeHub_Group( '/system/groups/bar' );
     $this->assertFalse( $bar->is_invited() );
-    $this->assertTrue( $bar->is_requested() );
-    $this->assertFalse( $bar->is_member() );
+    $this->assertFalse( $bar->is_requested() );
+    $this->assertTrue( $bar->is_member() );
     $this->assertFalse( $bar->is_admin() );
 
     $this->setCurrentUser( '/system/users/john' );
@@ -317,7 +325,9 @@ class BeeHub_GroupTest extends BeeHub_Tests_Db_Test_Case {
     $headers = array();
     $bar = new \BeeHub_Group( '/system/groups/bar' );
     // No need to test the precondition because the next method is already tested separately
-    $bar->change_memberships( array( 'jane' ), true, true, true, true, true, true );
+    $bar->change_memberships( array( 'jane' ), \BeeHub_Group::USER_ACCEPT );
+    $bar->change_memberships( array( 'jane' ), \BeeHub_Group::ADMIN_ACCEPT );
+    $bar->change_memberships( array( 'jane' ), \BeeHub_Group::SET_ADMIN );
 
     $this->setCurrentUser( '/system/users/john' );
     $bar->method_POST( $headers );
@@ -351,7 +361,8 @@ class BeeHub_GroupTest extends BeeHub_Tests_Db_Test_Case {
     \BeeHub::setEmailer( $emailer );
 
     $foo = new \BeeHub_Group( '/system/groups/foo' );
-    $foo->change_memberships( array( 'jane' ), true, true, false, true, true, false );
+    $foo->change_memberships( array( 'jane' ), \BeeHub_Group::USER_ACCEPT );
+    $foo->change_memberships( array( 'jane' ), \BeeHub_Group::ADMIN_ACCEPT );
     $this->assertSame( array( '/system/users/john', '/system/users/jane' ), $foo->user_prop_group_member_set() );
 
     $this->setCurrentUser( '/system/users/john' );

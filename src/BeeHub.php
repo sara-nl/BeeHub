@@ -291,7 +291,7 @@ class BeeHub {
       $groupRequestsResultSet = $groupsCollection->find( array( 'user_accepted_memberships' => array( '$exists' => true ), 'admins' => $currentUser->name ), array( 'name' => true, 'displayname' => true, 'user_accepted_memberships' => true ) );
       foreach ( $groupRequestsResultSet as $group ) {
         foreach ( $group['user_accepted_memberships'] as $user_name ) {
-          $user = BeeHub_Registry::inst()->resource( BeeHub::USERS_PATH . $user_name );
+          $user = DAV::$REGISTRY->resource( BeeHub::USERS_PATH . $user_name );
           $notifications[] = array(
               'type' => 'group_request',
               'data' => array(
@@ -314,7 +314,7 @@ class BeeHub {
         $sponsorRequestsResultSet = $sponsorsCollection->find( array( 'user_accepted_memberships' => array( '$exists' => true ), 'admins' => $currentUser->name ), array( 'name' => true, 'displayname' => true, 'user_accepted_memberships' => true ) );
         foreach ( $sponsorRequestsResultSet as $sponsor ) {
           foreach ( $sponsor['user_accepted_memberships'] as $user_name ) {
-            $user = BeeHub_Registry::inst()->resource( BeeHub::USERS_PATH . $user_name );
+            $user = DAV::$REGISTRY->resource( BeeHub::USERS_PATH . $user_name );
             $notifications[] = array(
                 'type' => 'sponsor_request',
                 'data' => array(
@@ -438,16 +438,32 @@ class BeeHub {
   
   
   /**
+   * @var  MongoClient  The mongoDB client
+   */
+  private static $mongo = null;
+  
+  
+  /**
    * Return the noSQL database
    * @todo    Move database name to the configuration file
    * @return  MongoDB  The noSQL database
    */
   public static function getNoSQL() {
-    static $client;
-    if ( ! ( $client instanceof MongoClient ) ) {
-      $client = new MongoClient();
+    if ( ! ( self::$mongo instanceof MongoClient ) ) {
+      self::$mongo = new MongoClient();
     }
-    return $client->beehub;
+    return self::$mongo->beehub;
+  }
+  
+  
+  /**
+   * Closes the current mongo connection so a new connection will be made
+   */
+  public static function forceMongoReconnect() {
+    if ( self::$mongo instanceof MongoClient ) {
+      self::$mongo->close();
+    }
+    self::$mongo = null;
   }
 
   

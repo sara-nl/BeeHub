@@ -20,9 +20,9 @@
       "surfconext_description": "Account at the top row of letters on my keyboard",
       "x509": "CN=Jane Doe",
       "verification_code": "somesecretcode",
-      "verification_expiration": "2038-01-19 03:14:07",
+      "verification_expiration": "2147480047",
       "password_reset_code": "someothersecretcode",
-      "password_reset_expiration": "2038-01-19 03:14:07"
+      "password_reset_expiration": "2147480047"
     },
     {
       "name": "johny",
@@ -133,7 +133,7 @@
         "http://beehub%2Enl/ sponsor": "sponsor_a",
         "DAV: acl": "[[\"/system/groups/bar\",false,[\"DAV: read\"],false]]",
         "DAV: getcontenttype": "text/plain; charset=UTF-8",
-        "DAV: getetag": "EA",
+        "DAV: getetag": "\"EA\"",
         "test_namespace test_property": "this is a random dead property"
       }
     },
@@ -144,7 +144,7 @@
         "DAV: owner": "john",
         "http://beehub%2Enl/ sponsor": "sponsor_a",
         "DAV: getcontenttype": "text/plain; charset=UTF-8",
-        "DAV: getetag": "IA"
+        "DAV: getetag": "\"IA\""
       }
     },
     {
@@ -182,7 +182,7 @@
         "http://beehub%2Enl/ sponsor": "sponsor_a",
         "DAV: acl": "[[\"/system/groups/bar\",false,[\"DAV: read\"],false]]",
         "DAV: getcontenttype": "text/plain; charset=UTF-8",
-        "DAV: getetag": "EA",
+        "DAV: getetag": "\"EA\"",
         "test_namespace test_property": "this is a random dead property"
       }
     },
@@ -193,7 +193,7 @@
         "DAV: owner": "john",
         "http://beehub%2Enl/ sponsor": "sponsor_a",
         "DAV: getcontenttype": "text/plain; charset=UTF-8",
-        "DAV: getetag": "IA"
+        "DAV: getetag": "\"IA\""
       }
     },
     {

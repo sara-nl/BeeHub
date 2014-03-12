@@ -36,7 +36,8 @@ class BeeHub_SponsorTest extends BeeHub_Tests_Db_Test_Case {
     $this->assertFalse( $sponsor->is_member() );
     $this->assertFalse( $sponsor->is_admin() );
 
-    $sponsor->change_memberships( array( 'jane' ), true, true, true, true );
+    $sponsor->change_memberships( array( 'jane' ), \BeeHub_Sponsor::ADMIN_ACCEPT );
+    $sponsor->change_memberships( array( 'jane' ), \BeeHub_Sponsor::SET_ADMIN );
     $this->assertFalse( $sponsor->is_requested() );
     $this->assertTrue( $sponsor->is_member() );
     $this->assertTrue( $sponsor->is_admin() );
@@ -47,12 +48,13 @@ class BeeHub_SponsorTest extends BeeHub_Tests_Db_Test_Case {
     $this->setCurrentUser( '/system/users/jane' );
 
     $sponsor = new \BeeHub_Sponsor( '/system/sponsors/sponsor_b' );
-    $sponsor->change_memberships( array( 'jane' ), true, true, true, true );
+    $sponsor->change_memberships( array( 'jane' ), \BeeHub_Sponsor::ADMIN_ACCEPT );
+    $sponsor->change_memberships( array( 'jane' ), \BeeHub_Sponsor::SET_ADMIN );
     $this->assertFalse( $sponsor->is_requested() );
     $this->assertTrue( $sponsor->is_member() );
     $this->assertTrue( $sponsor->is_admin() );
 
-    $sponsor->change_memberships( array( 'jane' ), true, false, true, false );
+    $sponsor->change_memberships( array( 'jane' ), \BeeHub_Sponsor::UNSET_ADMIN );
     $this->assertFalse( $sponsor->is_requested() );
     $this->assertTrue( $sponsor->is_member() );
     $this->assertFalse( $sponsor->is_admin() );
@@ -68,7 +70,7 @@ class BeeHub_SponsorTest extends BeeHub_Tests_Db_Test_Case {
     $this->assertFalse( $sponsor->is_admin() );
     $this->assertSame( array( '/system/users/john' ), $sponsor->user_prop_group_member_set() );
 
-    $sponsor->change_memberships( array( 'jane' ), true, false, true, false );
+    $sponsor->change_memberships( array( 'jane' ), \BeeHub_Sponsor::ADMIN_ACCEPT );
     $this->assertFalse( $sponsor->is_requested() );
     $this->assertTrue( $sponsor->is_member() );
     $this->assertFalse( $sponsor->is_admin() );
@@ -84,7 +86,7 @@ class BeeHub_SponsorTest extends BeeHub_Tests_Db_Test_Case {
     $this->assertFalse( $sponsor->is_member() );
     $this->assertFalse( $sponsor->is_admin() );
 
-    $sponsor->change_memberships( array( 'johny' ), false, false, false, false );
+    $sponsor->change_memberships( array( 'johny' ), \BeeHub_Sponsor::USER_ACCEPT );
     $this->assertTrue( $sponsor->is_requested() );
     $this->assertFalse( $sponsor->is_member() );
     $this->assertFalse( $sponsor->is_admin() );
@@ -108,11 +110,11 @@ class BeeHub_SponsorTest extends BeeHub_Tests_Db_Test_Case {
         )
     ) );
 
-    $foo = $this->getMock( '\BeeHub_Sponsor', array( 'include_view' ), array( '/system/sponsors/sponsor_b' ) );
-    $foo->expects( $this->once() )
-        ->method( 'include_view' )
-        ->with( $this->equalTo( null ), $this->equalTo( $expected ) );
-    $foo->method_GET();
+    $sponsor = $this->getMock( '\BeeHub_Sponsor', array( 'include_view' ), array( '/system/sponsors/sponsor_b' ) );
+    $sponsor->expects( $this->once() )
+            ->method( 'include_view' )
+            ->with( $this->equalTo( null ), $this->equalTo( $expected ) );
+    $sponsor->method_GET();
   }
 
 
@@ -218,13 +220,15 @@ class BeeHub_SponsorTest extends BeeHub_Tests_Db_Test_Case {
 
 
   public function testMethod_POST_AddAdmin(){
+    $sponsor = new \BeeHub_Sponsor( '/system/sponsors/sponsor_b' );
+    $sponsor->change_memberships( array( 'jane' ), \BeeHub_Sponsor::ADMIN_ACCEPT );
+    
     $_POST['add_admins'] = array('/system/users/jane');
     $headers = array();
 
     $this->setCurrentUser( '/system/users/jane' );
-    $sponsor = new \BeeHub_Sponsor( '/system/sponsors/sponsor_b' );
-    $this->assertTrue( $sponsor->is_requested() );
-    $this->assertFalse( $sponsor->is_member() );
+    $this->assertFalse( $sponsor->is_requested() );
+    $this->assertTrue( $sponsor->is_member() );
     $this->assertFalse( $sponsor->is_admin() );
 
     $this->setCurrentUser( '/system/users/john' );
@@ -242,7 +246,8 @@ class BeeHub_SponsorTest extends BeeHub_Tests_Db_Test_Case {
     $headers = array();
     $sponsor = new \BeeHub_Sponsor( '/system/sponsors/sponsor_b' );
     // No need to test the precondition because the next method is already tested separately
-    $sponsor->change_memberships( array( 'jane' ), true, true, true, true );
+    $sponsor->change_memberships( array( 'jane' ), \BeeHub_Sponsor::ADMIN_ACCEPT );
+    $sponsor->change_memberships( array( 'jane' ), \BeeHub_Sponsor::SET_ADMIN );
 
     $this->setCurrentUser( '/system/users/john' );
     $sponsor->method_POST( $headers );
@@ -275,7 +280,7 @@ class BeeHub_SponsorTest extends BeeHub_Tests_Db_Test_Case {
     \BeeHub::setEmailer( $emailer );
 
     $sponsor = new \BeeHub_Sponsor( '/system/sponsors/sponsor_b' );
-    $sponsor->change_memberships( array( 'jane' ), true, false, true, false );
+    $sponsor->change_memberships( array( 'jane' ), \BeeHub_Sponsor::ADMIN_ACCEPT );
     $this->assertSame( array( '/system/users/john', '/system/users/jane' ), $sponsor->user_prop_group_member_set() );
 
     $this->setCurrentUser( '/system/users/john' );

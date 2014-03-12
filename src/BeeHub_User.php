@@ -57,7 +57,7 @@ class BeeHub_User extends BeeHub_Principal {
       if ( is_null( $this->unverified_address ) && isset( $_GET['verification_code'] ) ) {
         unset($_GET['verification_code']);
       }
-      $this->include_view();
+      $this->include_view( null, array( 'unverified_address' => $this->unverified_address ) );
     }else{
       //TODO: Show a (non-editable) profile page
       throw DAV::forbidden();

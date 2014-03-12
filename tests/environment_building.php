@@ -149,7 +149,7 @@ function setUpDatabase() {
     $collection = $db->createCollection( $collectionName );
     $collection->batchInsert( $documents );
   }
-  
+
   \BeeHub_Principal::update_principals_json();
 }
 

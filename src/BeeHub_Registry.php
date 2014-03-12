@@ -122,11 +122,11 @@ class BeeHub_Registry implements DAV_Registry {
    * @param  array  $read   paths to read-lock
    * @return  void
    */
-  public function shallowLock($write, $read) {
+  public function shallowLock( $write, $read = array() ) {
     if ( is_null( $this->lockerId ) ) {
       $this->lockerId = uniqid( gethostname(), true );
     }
-    
+
     // Prepare the lock (sub-)documents
     $lockDocuments = array(
         'write' => array(
@@ -165,13 +165,29 @@ class BeeHub_Registry implements DAV_Registry {
         'new' => true,
         'upsert' => false,
     );
-    $lockTypes = array( 'write', 'read' );
+    $lockTypes = array( 'write' => array(), 'read' => array() );
+    foreach ( $write as $path ) {
+      if ( substr( $path, 0, 1 ) === '/' ) {
+        $path = substr( $path, 1 );
+      }
+      $path = DAV::unslashify( $path );
+      $lockTypes['write'][] = $path;
+    }
+    foreach ( $read as $path ) {
+      if ( substr( $path, 0, 1 ) === '/' ) {
+        $path = substr( $path, 1 );
+      }
+      $path = DAV::unslashify( $path );
+      if ( ! in_array( $path, $this->readLockedPaths ) ) { // Do not set another read lock if we already have a read lock on this resource
+        $lockTypes['read'][] = $path;
+      }
+    }
     $filesCollection = BeeHub::getNoSQL()->selectCollection( 'files' );
-    
+
     // Make sure each path has a document in the database
     $upsertOptions = array( 'upsert' => true );
-    foreach ( $lockTypes as $lockType ) {
-      foreach ( ${$lockType} as $key => $path ) {
+    foreach ( $lockTypes as $lockType => $paths ) {
+      foreach ( $paths as $key => $path ) {
         $pathArray = array( 'path' => $path );
         $filesCollection->findAndModify(
             $pathArray,
@@ -186,9 +202,8 @@ class BeeHub_Registry implements DAV_Registry {
     $microsleeptimer = 10000;
     while ( true ) {
       // Try to set as much locks as possible
-      foreach ( $lockTypes as $lockType ) {
-        $pathsCopy = ${$lockType};
-        foreach ( ${$lockType} as $key => $path ) {
+      foreach ( $lockTypes as $lockType => $paths ) {
+        foreach ( $paths as $key => $path ) {
           $queryDocuments[ $lockType ][ 'path' ] = $path;
           $result = $filesCollection->findAndModify(
               $queryDocuments[ $lockType ],
@@ -202,14 +217,14 @@ class BeeHub_Registry implements DAV_Registry {
             if ( $lockType === 'read' ) {
               $this->readLockedPaths[] = $path;
             }
-            unset( $pathsCopy[ $key ] );
+            unset( $paths[ $key ] );
+            unset( $lockTypes[$lockType][ $key ] );
           }
         }
-        ${$lockType} = $pathsCopy;
       }
 
       // If we still have locks to set, wait before trying again
-      if ( ( count( $write ) > 0 ) || ( count( $read ) > 0 ) ) {
+      if ( ( count( $lockTypes['write'] ) > 0 ) || ( count( $lockTypes['read'] ) > 0 ) ) {
         usleep($microsleeptimer);
         // And increase the wait time each time to some maximum value
         if ($microsleeptimer >= 640000) {
@@ -228,11 +243,6 @@ class BeeHub_Registry implements DAV_Registry {
    * Releases all shallow locks set within this request
    */
   public function shallowUnlock() {
-    // If no lockerId has been generated, there are no locks set, so nothing to unlock
-    if ( is_null( $this->lockerId ) ) {
-      return;
-    }
-    
     // Prepare the database calls
     $filesCollection = BeeHub::getNoSQL()->selectCollection( 'files' );
     $options = array(
@@ -241,17 +251,21 @@ class BeeHub_Registry implements DAV_Registry {
     );
     
     // And loose all locks from this locker with two update calls
-    $filesCollection->update(
-        array( 'shallowWriteLock.lockerId' => $this->lockerId ),
-        array( '$unset' => array( 'shallowWriteLock' => true ) ),
-        $options
-    );
+    if ( ! is_null( $this->lockerId ) ) {
+      $filesCollection->update(
+          array( 'shallowWriteLock.lockerId' => $this->lockerId ),
+          array( '$unset' => array( 'shallowWriteLock' => true ) ),
+          $options
+      );
+      $this->lockerId = null;
+    }
     if ( count( $this->readLockedPaths ) > 0 ) {
       $filesCollection->update(
           array( 'path' => array( '$in' => $this->readLockedPaths ), 'shallowReadLock.counter' => array( '$gt' => 0 ) ),
           array( '$inc' => array( 'shallowReadLock.counter' => -1 ) ),
           $options
       );
+      $this->readLockedPaths = array();
     }
   }
 

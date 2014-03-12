@@ -54,9 +54,14 @@ class BeeHub_Group extends BeeHub_Principal {
     $members = array();
     if ( $this->is_member() ) {
       $this->init_props();
-      $collection = BeeHub::getNoSQL()->users;
-      
-      $resultset = $collection->find( array( 'groups' => $this->name ), array( 'name' => true, 'displayname' => true ) );
+      $usersCollection = BeeHub::getNoSQL()->users;
+
+      $names = array();
+      foreach ( $this->users as $userPath => $membership ) {
+        $names[] = basename( $userPath );
+      }
+
+      $resultset = $usersCollection->find( array( 'name' => array( '$in' => $names ) ), array( 'name' => true, 'displayname' => true ) );
       $members = array();
       foreach ( $resultset as $result ) {
         $members[ $result['name'] ] = Array(
@@ -218,9 +223,6 @@ BeeHub';
       $members[$user_name] = 1;
 
       // Also change the user document
-      if ( ! is_array( $user['groups'] ) ) {
-        $user['groups'] = array();
-      }
       if ( ! in_array( $this->name, $user['groups'] ) ) {
         $user['groups'][] = $this->name;
         BeeHub::getNoSQL()->users->save( $user );
@@ -277,9 +279,6 @@ BeeHub';
       $members[$user_name] = 1;
 
       // Also change the user document
-      if ( ! is_array( $user['groups'] ) ) {
-        $user['groups'] = array();
-      }
       if ( ! in_array( $this->name, $user['groups'] ) ) {
         $user['groups'][] = $this->name;
         BeeHub::getNoSQL()->users->save( $user );
@@ -303,8 +302,8 @@ BeeHub';
       // And finaly, also the properties of this object
       $this->users[ BeeHub::USERS_PATH . rawurlencode( $user_name ) ] = array(
         'is_admin' => false,
-        'is_invited' => false,
-        'is_requested' => true
+        'is_invited' => true,
+        'is_requested' => false
       );
 
     }
@@ -416,7 +415,7 @@ BeeHub';
    * Adds member requests or sets them to be an invited member or an administrator
    *
    * @param   mixed    $users  A user, username or an array if users or usernames
-   * @param   flag     $type   What to do with this membership, use one of the class constants USER_ACCEPT, ADMIN_ACCEPT, SET_ADMIN or UNSET_ADMIN
+   * @param   flag     $type   What to do with this membership, use one of the class constants DELETE_MEMBER, USER_ACCEPT, ADMIN_ACCEPT, SET_ADMIN or UNSET_ADMIN
    * @return  void
    */
   public function change_memberships($users, $type){
@@ -448,6 +447,9 @@ BeeHub';
       $user = $userCollection->findOne( array( 'name' => $user_name ) );
       if ( is_null( $user ) ) {
         throw new DAV_Status(DAV::HTTP_CONFLICT, "Not all users exist! " . $user_name);
+      }
+      if ( !isset( $user['groups'] ) || ! is_array( $user['groups'] ) ) {
+        $user['groups'] = array();
       }
       
       // Check what we need to do and accept the membership if needed
@@ -622,7 +624,7 @@ BeeHub';
       if ( DAV::$ACLPROVIDER->wheel() ) {
         return true;
       }
-      $user = BeeHub_Auth::inst()->current_user();
+      $user = BeeHub::getAuth()->current_user();
     }elseif ( ! ( $user instanceof BeeHub_User ) ) {
       $user = BeeHub::user( $user );
     }
@@ -634,7 +636,7 @@ BeeHub';
   public function is_member( $user = null ) {
     $this->init_props();
     if ( is_null($user) ) {
-      $user = BeeHub_Auth::inst()->current_user();
+      $user = BeeHub::getAuth()->current_user();
     }elseif ( ! ( $user instanceof BeeHub_User ) ) {
       $user = BeeHub::user( $user );
     }
@@ -646,7 +648,7 @@ BeeHub';
   public function is_invited( $user = null ) {
     $this->init_props();
     if ( is_null($user) ) {
-      $user = BeeHub_Auth::inst()->current_user();
+      $user = BeeHub::getAuth()->current_user();
     }elseif ( ! ( $user instanceof BeeHub_User ) ) {
       $user = BeeHub::user( $user );
     }
@@ -658,7 +660,7 @@ BeeHub';
   public function is_requested( $user = null ) {
     $this->init_props();
     if ( is_null($user) ) {
-      $user = BeeHub_Auth::inst()->current_user();
+      $user = BeeHub::getAuth()->current_user();
     }elseif ( ! ( $user instanceof BeeHub_User ) ) {
       $user = BeeHub::user( $user );
     }
