@@ -1,9 +1,9 @@
 #!/usr/bin/php
 <?php
 // Prepare the configuration and database connection
-$CONFIG = parse_ini_file(
-  dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'config.ini', true
-);
+require_once '../src/beehub_bootstrap.php';
+
+$CONFIG = BeeHub::config();
 
 $mysqli = new mysqli(
         $CONFIG['mysql']['host'],
@@ -11,8 +11,7 @@ $mysqli = new mysqli(
         $CONFIG['mysql']['password'],
         $CONFIG['mysql']['database']
       );
-$mongo = new MongoClient();
-$db = $mongo->selectDB( 'beehub' );
+$db = BeeHub::getNoSQL();
 
 // We need to do almost the same for all users, groups and sponsors ('things')
 $name = $displayname = null;

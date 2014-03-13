@@ -74,15 +74,9 @@ CONTINUE=0
 USERNAME='x'
 PASSWORD='x'
 EMAIL='x'
-echo "I'll create the first user for you. Please give me some information:"
+echo "I'll create the administrator user for you. Please give me some information:"
 while [[ "${CONTINUE}" != "y" ]]; do
-  echo "What should the username be? [${USERNAME}] "
-  read USERNAME_2
-  if [[ "${USERNAME_2}" != "" ]]; then
-    USERNAME="${USERNAME_2}"
-  fi
-
-  echo "What should his/her password be? [${PASSWORD}] "
+  echo "What should the password be? [${PASSWORD}] "
   read PASSWORD_2
   if [[ "${PASSWORD_2}" != "" ]]; then
     PASSWORD="${PASSWORD_2}"
@@ -99,7 +93,7 @@ while [[ "${CONTINUE}" != "y" ]]; do
   read CONTINUE
 done
 
-curl --insecure --form-string "email=${EMAIL}" --user "${USERNAME}:${PASSWORD}" "https://${HTTPD_HOST}:${SSL_PORT}/"
+curl --insecure --request POST --user "${EMAIL}:${PASSWORD}" "https://${HTTPD_HOST}:${SSL_PORT}/"
 
 # Set the configuration so it will not allow webserver installation
 mv config.ini config.ini.orig

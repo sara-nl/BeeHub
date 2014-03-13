@@ -27,7 +27,7 @@ if ( ( $argc > 1 ) && ( ( $argv[1] === "-h" ) || ( $argv[1] === "--help" ) ) ) {
 
 $path = dirname( __DIR__ ) . DIRECTORY_SEPARATOR;
 
-// Load config and try to connect to mySQL
+// Load config
 $beehubConfig = parse_ini_file( $path . 'config.ini', true );
 
 # Link to simplesamlphp

@@ -17,7 +17,7 @@ function check_dependency {
 check_dependency php
 check_dependency composer.phar
 check_dependency litmus
-check_dependency mysql
+check_dependency mongo
 
 if [[ $FAILURE -ne 0 ]]; then
   echo "Not all dependencies are installed, please do so" >&2

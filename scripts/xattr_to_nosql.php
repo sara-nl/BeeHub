@@ -1,13 +1,13 @@
 #!/usr/bin/php
 <?php
 
-$CONFIG = parse_ini_file(
-  dirname(dirname(__FILE__)) . DIRECTORY_SEPARATOR . 'config.ini', true
-);
+require_once '../src/beehub_bootstrap.php';
+
+$CONFIG = BeeHub::config();
 
 //Create a mongoDB 
-$db = new MongoClient();
-$collection = $db->beehub->files;
+$db = BeeHub::getNoSQL();
+$collection = $db->files;
 $collection->remove();
 
 /**
@@ -20,8 +20,6 @@ $collection->remove();
  */
 function traverse($iterator) {
   global $collection, $CONFIG;
-  $retval = array();
-  $path = substr($iterator->getPath() . '/', 1);
   foreach($iterator as $fileinfo) {
     $file = $fileinfo->getPathname();
     if ( $fileinfo->isDot() ||
@@ -32,9 +30,9 @@ function traverse($iterator) {
     }
     $attributes = xattr_list($file);
     $stored_props = array();
-    foreach ($attributes as $attribute) {
+    foreach ( $attributes as $attribute ) {
       $decodedKey = rawurldecode( $attribute );
-      $value = xattr_get($file, $attribute);
+      $value = xattr_get( $file, $attribute );
       
       // Transform the value of the owner and sponsor properties (but only if necessary)
       if ( ( ( $decodedKey === 'DAV: owner' ) ||
@@ -52,12 +50,16 @@ function traverse($iterator) {
       );
       $stored_props[ $encodedKey ] = $value;
     }
+    $unslashifiedPath = \DAV::unslashify( substr( $file, strlen( $CONFIG['environment']['datadir'] ) ) );
+    if ( substr( $unslashifiedPath, 0, 1 ) === '/' ) {
+      $unslashifiedPath = substr( $unslashifiedPath, 1 );
+    }
     $document = array(
-        'path' => substr( $file, strlen( $CONFIG['environment']['datadir'] ) ),
+        'path' => $unslashifiedPath,
         'props' => $stored_props );
     $collection->save( $document );
   }
 }
 
 // Traverse over the data directory so we get all files
-traverse(new DirectoryIterator( $CONFIG['environment']['datadir'] ));
+traverse( new DirectoryIterator( $CONFIG['environment']['datadir'] ) );

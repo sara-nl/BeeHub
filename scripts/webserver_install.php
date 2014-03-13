@@ -75,9 +75,23 @@ if ( $notGood ) {
   exit();
 }
 
-// The configuration checks out, let's install stuff
+try {
+  $db = \BeeHub::getNoSQL();
+}catch ( DAV_Status $exception ) {
+  \header( 'HTTP/1.1 500 Internal Server Error' );
+  \ob_end_flush();
+  print( "\nFailed to connect to MongoDB\n" );
+  exit();
+}
 
-// First initialise the datadir
+$collections = $db->listCollections();
+if ( \count( $collections ) > 0 ) {
+  \header( 'HTTP/1.1 500 Internal Server Error' );
+  \ob_end_flush();
+  print( "MongoDB database already contains collections. Cannot initialise the database.\n" );
+  exit();
+}
+
 $config = \BeeHub::config();
 $datadir = new \DirectoryIterator( $config['environment']['datadir'] );
 $hasChildren = false;
@@ -87,90 +101,113 @@ foreach ( $datadir as $child ) {
     break;
   }
 }
-
 if ( $hasChildren ) {
-  print( "The data directory already has content. Skipping initialisation of data directory.\n" );
-}else{
-  print( "Initialising data directory..." );
-  if (
-    \mkdir( $config['environment']['datadir'] . 'home', 0770, true ) &&
-    \mkdir( $config['environment']['datadir'] . 'system', 0770, true ) &&
-    \mkdir( $config['environment']['datadir'] . \BeeHub::GROUPS_PATH, 0770, true ) &&
-    \mkdir( $config['environment']['datadir'] . \BeeHub::SPONSORS_PATH, 0770, true ) &&
-    \mkdir( $config['environment']['datadir'] . \BeeHub::USERS_PATH, 0770, true )
-  ){
-    $prop = rawurlencode( \DAV::PROP_OWNER );
-    $value = $config['namespace']['wheel_path'];
-    \xattr_set( $config['environment']['datadir'], $prop, $value );
-    \xattr_set( $config['environment']['datadir'] . 'home', $prop, $value );
-    \xattr_set( $config['environment']['datadir'] . 'system', $prop, $value );
-    \xattr_set( $config['environment']['datadir'] . \BeeHub::GROUPS_PATH, $prop, $value );
-    \xattr_set( $config['environment']['datadir'] . \BeeHub::SPONSORS_PATH, $prop, $value );
-    \xattr_set( $config['environment']['datadir'] . \BeeHub::USERS_PATH, $prop, $value );
-  }else{
-    \header( 'HTTP/1.1 500 Internal Server Error' );
-    \ob_end_flush();
-    print( "\nUnable to create the system directories\n" );
-    exit();
-  }
-  print( "ok\n" );
-}
-
-// Then import the database structure
-$mysql = \BeeHub_DB::mysqli();
-if ( $mysql->connect_errno ) {
   \header( 'HTTP/1.1 500 Internal Server Error' );
   \ob_end_flush();
-  print( "\nFailed to connect to MySQL: (" . $mysql->connect_errno . ") " . $mysql->connect_error . "\n" );
+  print( "The data directory already has content. Cannot initialise the data directory.\n" );
   exit();
 }
 
-$result = $mysql->query( 'SHOW TABLES' );
-if ( $result->num_rows > 0 ) {
-  print( "MySQL database already contains tables. Skipping initialisation of database.\n" );
-}else{
-  print( "Creating database structure..." );
-  if ( \BeeHub_DB::createDbTables() === false ) {
-    \header( 'HTTP/1.1 500 Internal Server Error' );
-    \ob_end_flush();
-    print( "\nUnable to create database structure\n" );
-    exit();
+// The configuration checks out, let's install stuff
+
+// Import the database structure
+print( "Creating database structure..." );
+
+// Create users collection
+$usersCollection = $db->createCollection( 'users' );
+$usersCollection->insert(
+  array(
+    'name' => \basename( $config['namespace']['wheel_path'] ),
+    'displayname' => 'Administrator',
+    'email' => $_SERVER['PHP_AUTH_USER'],
+    'password' => \crypt( $_SERVER['PHP_AUTH_PW'], '$6$rounds=5000$' . md5(time() . rand(0, 99999)) . '$'),
+    'default_sponsor' => DEFAULT_SPONSOR_NAME
+  )
+);
+
+// Create groups collection
+$db->createCollection( 'groups' );
+
+// Create sponsors collection
+$sponsorsCollection = $db->createCollection( 'sponsors' );
+$sponsorsCollection->insert(
+  array(
+    'name' => DEFAULT_SPONSOR_NAME,
+    'displayname' => DEFAULT_SPONSOR_DISPLAYNAME,
+    'description' => DEFAULT_SPONSOR_DESCRIPTION
+  )
+);
+$sponsor = new \BeeHub_Sponsor( \BeeHub::SPONSORS_PATH . DEFAULT_SPONSOR_NAME );
+$sponsor->change_memberships( array( \basename( $config['namespace']['wheel_path'] ), \BeeHub_Sponsor::ADMIN_ACCEPT ) );
+$sponsor->change_memberships( array( \basename( $config['namespace']['wheel_path'] ), \BeeHub_Sponsor::SET_ADMIN ) );
+
+// Create the beehub_system collection
+$systemCollection = $db->createCollection( 'beehub_system' );
+$systemCollection->insert(
+  array(
+    'name' => 'etag',
+    'counter' => 0
+  )
+);
+
+// Create the files collection
+$filesCollection = $db->createCollection( 'files' );
+
+// Done creating the database structure
+print( "ok\n" );
+
+// First initialise the datadir
+print( "Initialising data directory..." );
+$userdir = 'home' . \DIRECTORY_SEPARATOR . \basename( $config['namespace']['wheel_path'] );
+if (
+  \mkdir( $config['environment']['datadir'] . 'system', 0770, true ) &&
+  \mkdir( $config['environment']['datadir'] . 'home', 0770, true ) &&
+  \mkdir( $config['environment']['datadir'] . $userdir, 0770 ) &&
+  \mkdir( $config['environment']['datadir'] . \BeeHub::GROUPS_PATH, 0770, true ) &&
+  \mkdir( $config['environment']['datadir'] . \BeeHub::SPONSORS_PATH, 0770, true ) &&
+  \mkdir( $config['environment']['datadir'] . \BeeHub::USERS_PATH, 0770, true )
+){
+  $fileDocument = array(
+    'path' => null,
+    'props' => array(
+      \DAV::PROP_OWNER => \basename( $config['namespace']['wheel_path'] )
+    )
+  );
+  $sysDirs = array( 'system', 'home', \BeeHub::GROUPS_PATH, \BeeHub::SPONSORS_PATH, \BeeHub::USERS_PATH );
+  foreach ( $sysDirs as $sysDir ) {
+    $sysDir = \DAV::unslashify( $sysDir );
+    if ( substr( $sysDir, 0, 1) === '/' ) {
+      $sysDir = substr( $sysDir, 1 );
+    }
+    $fileDocument['path'] = $sysDir;
+    $filesCollection->insert( $fileDocument );
   }
-  print( "ok\n" );
 
-  // Then add the administrator user
-  $config = \BeeHub::config();
-  $wheelStatement = $mysql->prepare( 'INSERT INTO `beehub_users` ( `user_name`, `displayname`, `email` ) VALUES ( ?, \'Administrator\', ? );' );
-  $wheel = \basename( $config['namespace']['wheel_path'] );
-  $email = $config['email']['sender_address'];
-  $wheelStatement->bind_param( 'ss', $wheel, $email );
-  $wheelStatement->execute();
-  $wheelStatement->close();
-
-  // And for now; the e-infra sponsor
-  $mysql->real_query( 'INSERT INTO `beehub_sponsors` ( `sponsor_name`, `displayname`, `description` ) VALUES ( \'' . DEFAULT_SPONSOR_NAME . '\', \'' . DEFAULT_SPONSOR_DISPLAYNAME . '\', \'' . DEFAULT_SPONSOR_DESCRIPTION . '\' );' );
-
-  // Add a real user
-  $userStatement = $mysql->prepare( 'INSERT INTO `beehub_users` ( `user_name`, `displayname`, `email`, `password`, `sponsor_name` ) VALUES ( ?, ?, ?, ?, \'' . DEFAULT_SPONSOR_NAME . '\' );' );
-  $username = $_SERVER['PHP_AUTH_USER'];
-  $email = $_POST['email'];
-  $password = \crypt( $_SERVER['PHP_AUTH_PW'], '$6$rounds=5000$' . md5(time() . rand(0, 99999)) . '$');
-  $userStatement->bind_param( 'ssss', $username, $username, $email, $password );
-  $userStatement->execute();
-  $userStatement->close();
-  $sponsor = new \BeeHub_Sponsor( \BeeHub::SPONSORS_PATH . DEFAULT_SPONSOR_NAME );
-  $sponsor->change_memberships( array( $username ), true, true );
-  $userdir = $config['environment']['datadir'] . 'home' . \DIRECTORY_SEPARATOR . $username;
-  \mkdir( $userdir, 0770 );
-  \xattr_set( $userdir, \rawurlencode( \DAV::PROP_OWNER ), \BeeHub::USERS_PATH . \rawurlencode( $username ) );
-  \xattr_set( $userdir, \rawurlencode( \BeeHub::PROP_SPONSOR ), \BeeHub::SPONSORS_PATH . \rawurlencode( DEFAULT_SPONSOR_NAME ) );
+  $fileDocument['path'] = \DAV::unslashify( $userdir );
+  if ( substr( $fileDocument['path'], 0, 1) === '/' ) {
+    $fileDocument['path'] = substr( $fileDocument['path'], 1 );
+  }
+  $encodedKey = str_replace(
+    array( '%'  , '$'  , '.'   ),
+    array( '%25', '%24', '%2E' ),
+    \BeeHub::PROP_SPONSOR
+  );
+  $fileDocument['props'][ $encodedKey ] = DEFAULT_SPONSOR_NAME;
+  $filesCollection->insert( $fileDocument );
+}else{
+  \header( 'HTTP/1.1 500 Internal Server Error' );
+  \ob_end_flush();
+  print( "\nUnable to create the system directories\n" );
+  exit();
 }
+print( "ok\n" );
 
 // Create principals.js with displaynames of all principals
 \BeeHub_Principal::update_principals_json();
 
 // Let 'them' know everything went well
 print( "\nDone configuring webserver\n" );
+print( "Your administrator's username is '" . \basename( $config['namespace']['wheel_path'] ) . "' but remember to only use this user for administration purposes. For regular usage, please create a regular user through the web interface!\n" );
 \ob_end_flush();
 
 /**
