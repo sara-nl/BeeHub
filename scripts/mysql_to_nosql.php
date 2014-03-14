@@ -1,4 +1,4 @@
-#!/usr/bin/php
+#!/usr/bin/env php
 <?php
 // Prepare the configuration and database connection
 require_once '../src/beehub_bootstrap.php';

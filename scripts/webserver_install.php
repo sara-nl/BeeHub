@@ -138,8 +138,8 @@ $sponsorsCollection->insert(
   )
 );
 $sponsor = new \BeeHub_Sponsor( \BeeHub::SPONSORS_PATH . DEFAULT_SPONSOR_NAME );
-$sponsor->change_memberships( array( \basename( $config['namespace']['wheel_path'] ), \BeeHub_Sponsor::ADMIN_ACCEPT ) );
-$sponsor->change_memberships( array( \basename( $config['namespace']['wheel_path'] ), \BeeHub_Sponsor::SET_ADMIN ) );
+$sponsor->change_memberships( array( \basename( $config['namespace']['wheel_path'] ) ), \BeeHub_Sponsor::ADMIN_ACCEPT );
+$sponsor->change_memberships( array( \basename( $config['namespace']['wheel_path'] ) ), \BeeHub_Sponsor::SET_ADMIN );
 
 // Create the beehub_system collection
 $systemCollection = $db->createCollection( 'beehub_system' );
@@ -167,23 +167,27 @@ if (
   \mkdir( $config['environment']['datadir'] . \BeeHub::SPONSORS_PATH, 0770, true ) &&
   \mkdir( $config['environment']['datadir'] . \BeeHub::USERS_PATH, 0770, true )
 ){
-  $fileDocument = array(
-    'path' => null,
-    'props' => array(
-      \DAV::PROP_OWNER => \basename( $config['namespace']['wheel_path'] )
-    )
-  );
   $sysDirs = array( 'system', 'home', \BeeHub::GROUPS_PATH, \BeeHub::SPONSORS_PATH, \BeeHub::USERS_PATH );
   foreach ( $sysDirs as $sysDir ) {
     $sysDir = \DAV::unslashify( $sysDir );
     if ( substr( $sysDir, 0, 1) === '/' ) {
       $sysDir = substr( $sysDir, 1 );
     }
-    $fileDocument['path'] = $sysDir;
+    $fileDocument = array(
+      'path' => $sysDir,
+      'props' => array(
+        \DAV::PROP_OWNER => \basename( $config['namespace']['wheel_path'] )
+      )
+    );
     $filesCollection->insert( $fileDocument );
   }
 
-  $fileDocument['path'] = \DAV::unslashify( $userdir );
+  $fileDocument = array(
+    'path' => \DAV::unslashify( $userdir ),
+    'props' => array(
+      \DAV::PROP_OWNER => \basename( $config['namespace']['wheel_path'] )
+    )
+  );
   if ( substr( $fileDocument['path'], 0, 1) === '/' ) {
     $fileDocument['path'] = substr( $fileDocument['path'], 1 );
   }

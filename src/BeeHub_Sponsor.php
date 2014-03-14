@@ -384,7 +384,7 @@ BeeHub';
       // Check if the user exists
       $user = $userCollection->findOne( array( 'name' => $user_name ) );
       if ( is_null( $user ) ) {
-        throw new DAV_Status(DAV::HTTP_CONFLICT, "Not all users exist! " . $user_name);
+        throw new DAV_Status(DAV::HTTP_CONFLICT, "Not all users exist: " . $user_name);
       }
       if ( !isset( $user['sponsors'] ) || ! is_array( $user['sponsors'] ) ) {
         $user['sponsors'] = array();
