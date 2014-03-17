@@ -341,9 +341,6 @@
     return function(status, callbackpath) {
       // Success
       if (status === 201) {
-        // Reload tree
-        // TODO update tree instead of reloading
-//        nl.sara.beehub.view.tree.reload();
         // Get properties of new directory from server and update view
         getResourcePropsFromServer(callbackpath, function(resource){
           // add resource to view
@@ -619,7 +616,6 @@
         
       // Forbidden
       case 403:
-        console.log("nu");
         // Update summary
         summary.forbidden++;
         // Update dialog info
@@ -1215,7 +1211,6 @@
             response = data.getResponse( resourcePath + '/' );
           }
           var aces = response.getProperty( 'DAV:', 'acl' ).getParsedValue().getAces();
-          
           // Determine if there are non-inherited and non-protected ACE's
           var ownACL = false;
           for ( var counter in aces ) {
@@ -1267,7 +1262,7 @@
    * Change permissions of a row
    * 
    */
-  nl.sara.beehub.controller.changePermissions = function(row, oldVal, callback){
+  nl.sara.beehub.controller.changePermissions = function(row, oldVal){
     var functionSaveAclOk = function(){
       // Do nothing
     };

@@ -76,7 +76,7 @@
       format: function(s, table, cell, cellIndex) { 
         // get data attributes from $(cell).attr('data-something');
         // check specific column using cellIndex
-        return $(cell).attr('name');
+        return $(cell).attr('data-value');
       }, 
       // set type, either numeric or text 
       type: 'text' 
@@ -89,7 +89,7 @@
         0 : { sorter: false },
         1 : { sorter: false },
         4 : { sorter: 'filesize'},
-        5 : { sorter: 'name'},
+        5 : { sorter: 'data-value'},
         8 : { sorter:false }
       },
       dateFormat : "ddmmyyyy", // set the default date format
@@ -198,7 +198,7 @@
     $('.bh-dir-content-checkbox').unbind( 'click' ).click(handle_checkbox_click);
     
     // Open selected handler: this can be a file or a directory
-    $('.bh-dir-content-openselected').unbind('click').click(function(){nl.sara.beehub.controller.goToPage($(this).attr("name"))});
+    $('.bh-dir-content-openselected').unbind('click').click(function(){nl.sara.beehub.controller.goToPage($(this).attr('data-value'))});
 
     // Edit icon
     $('.bh-dir-content-edit').unbind('click').click(handle_edit_menu_click);
@@ -248,22 +248,22 @@
     
     // Name
     if (resource.type==='collection') {
-      row.push('<td class="bh-dir-content-name displayname" name="'+nl.sara.beehub.controller.htmlEscape(resource.displayname)+'"><a href="'+nl.sara.beehub.controller.htmlEscape(resource.path)+'"><b>'+nl.sara.beehub.controller.htmlEscape(resource.displayname)+'/</b></a></td>');
+      row.push('<td class="bh-dir-content-name displayname" data-value="'+nl.sara.beehub.controller.htmlEscape(resource.displayname)+'"><a href="'+nl.sara.beehub.controller.htmlEscape(resource.path)+'"><b>'+nl.sara.beehub.controller.htmlEscape(resource.displayname)+'/</b></a></td>');
     } else {
-      row.push('<td class="bh-dir-content-name displayname" name="'+nl.sara.beehub.controller.htmlEscape(resource.displayname)+'"><a href="'+nl.sara.beehub.controller.htmlEscape(resource.path)+'">'+nl.sara.beehub.controller.htmlEscape(resource.displayname)+'</a></td>');
+      row.push('<td class="bh-dir-content-name displayname" data-value="'+nl.sara.beehub.controller.htmlEscape(resource.displayname)+'"><a href="'+nl.sara.beehub.controller.htmlEscape(resource.path)+'">'+nl.sara.beehub.controller.htmlEscape(resource.displayname)+'</a></td>');
     }
     row.push('<td class="bh-dir-content-rename-td" hidden="true"><input class="bh-dir-content-rename-form" name="'+nl.sara.beehub.controller.htmlEscape(resource.displayname)+'" value="'+nl.sara.beehub.controller.htmlEscape(resource.displayname)+'"></td>');
     
     if (resource.type==='collection') {
       // Size
-      row.push('<td class="contentlength" name="'+nl.sara.beehub.controller.htmlEscape(resource.contentlength)+'"></td>');
+      row.push('<td class="contentlength" data-value="'+nl.sara.beehub.controller.htmlEscape(resource.contentlength)+'"></td>');
       // Type
-      row.push('<td class="type" name="'+nl.sara.beehub.controller.htmlEscape(resource.type)+'"><i name="'+nl.sara.beehub.controller.htmlEscape(resource.path)+'" class="icon-folder-close bh-dir-content-openselected" style="cursor: pointer">></i></td>');
+      row.push('<td class="type" data-value="'+nl.sara.beehub.controller.htmlEscape(resource.type)+'"><i data-value="'+nl.sara.beehub.controller.htmlEscape(resource.path)+'" class="icon-folder-close bh-dir-content-openselected" style="cursor: pointer">></i></td>');
     } else {
       // Size
-      row.push('<td class="contentlength" name="'+nl.sara.beehub.controller.htmlEscape(resource.contentlength)+'">'+nl.sara.beehub.controller.bytesToSize(resource.contentlength, 2)+'</td>');
+      row.push('<td class="contentlength" data-value="'+nl.sara.beehub.controller.htmlEscape(resource.contentlength)+'">'+nl.sara.beehub.controller.bytesToSize(resource.contentlength, 2)+'</td>');
       //Type
-      row.push('<td class="type" name="'+nl.sara.beehub.controller.htmlEscape(resource.type)+'">'+nl.sara.beehub.controller.htmlEscape(resource.type)+'</td>');
+      row.push('<td class="type" data-value="'+nl.sara.beehub.controller.htmlEscape(resource.type)+'">'+nl.sara.beehub.controller.htmlEscape(resource.type)+'</td>');
   
     }
     // Last Modified
@@ -276,10 +276,10 @@
     var minutes = date.getMinutes() < 10 ? '0' + date.getMinutes() : date.getMinutes();
     var dateString = (day+"-"+month+"-"+year+" "+hours+":"+minutes);
     
-    row.push('<td class="lastmodified" name="'+nl.sara.beehub.controller.htmlEscape(resource.lastmodified)+'">'+dateString+'</td>');
+    row.push('<td class="lastmodified" data-value="'+nl.sara.beehub.controller.htmlEscape(resource.lastmodified)+'">'+dateString+'</td>');
     
     // Owner
-    row.push('<td class="owner" name="'+nl.sara.beehub.controller.htmlEscape(resource.owner)+'">'+nl.sara.beehub.controller.htmlEscape(nl.sara.beehub.controller.getDisplayName(resource.owner))+'</td>');
+    row.push('<td class="owner" data-value="'+nl.sara.beehub.controller.htmlEscape(resource.owner)+'">'+nl.sara.beehub.controller.htmlEscape(nl.sara.beehub.controller.getDisplayName(resource.owner))+'</td>');
     
     // ACL on resource row
     row.push('<td class="bh-resource-specific-acl"></td>');
@@ -316,27 +316,27 @@
   nl.sara.beehub.view.content.getUnknownResourceValues = function(resource){
     // Displayname
     if (resource.displayname === undefined) {
-      resource.displayname = $("tr[id='"+resource.path+"']").find('.displayname').attr('name');
+      resource.displayname = $("tr[id='"+resource.path+"']").find('.displayname').attr('data-value');
     }
     
     // Type
     if (resource.type === undefined) {
-      resource.type = $("tr[id='"+resource.path+"']").find('.type').attr('name');
+      resource.type = $("tr[id='"+resource.path+"']").find('.type').attr('data-value');
     }
     
     // Owner
     if (resource.owner === undefined) {
-      resource.owner = $("tr[id='"+resource.path+"']").find('.owner').attr('name');
+      resource.owner = $("tr[id='"+resource.path+"']").find('.owner').attr('data-value');
     }
     
     // Contentlenght
     if (resource.contentlength === undefined) {
-      resource.contentlength = $("tr[id='"+resource.path+"']").find('.contentlength').attr('name');
+      resource.contentlength = $("tr[id='"+resource.path+"']").find('.contentlength').attr('data-value');
     }
     
     // Last modiefied
     if (resource.lastmodified === undefined) {
-      resource.lastmodified = $("tr[id='"+resource.path+"']").find('.lastmodified').attr('name');
+      resource.lastmodified = $("tr[id='"+resource.path+"']").find('.lastmodified').attr('data-value');
     }
     return resource;
   };
