@@ -186,7 +186,7 @@
     };
     
     $.each(rows, function(key, row) {
-      var info = $(row).find(aclComment).attr('name');
+      var info = $(row).find(aclComment).attr('data-value');
       if (info !== 'protected' && info !== 'inherited') {
         rowIndex = $(row).index();
         // Change permissions handler
@@ -252,7 +252,7 @@
     // Principal
     var principal = row.find(aclPrincipal).attr('title');
     var invert = row.find(aclPrincipal).attr('data-invert');
-    var name = row.find(aclPrincipal).attr('name');
+    var name = row.find(aclPrincipal).attr('data-value');
     deepEqual(principal, ace.principal, "Principal title should be "+ace.principal);
     deepEqual(invert, ace.invert, "Data invert should be "+ace.invert);
     deepEqual(name, ace.principal, "Name should be "+ace.principal);
@@ -271,7 +271,7 @@
     deepEqual(presentation, ace.permissions, "Presentation of permissions is ok");
     
     // Comment
-    var comment = row.find(aclComment).attr('name');
+    var comment = row.find(aclComment).attr('data-value');
     var iconDown = row.find(aclDownIcon);
     if (ace.protected){
       deepEqual(comment, "protected", "Info should be protected");
@@ -311,13 +311,13 @@
    */
   var checkSetUpDownButtons = function(rows){
     $.each(rows, function(index,row) {
-      var info = $(row).find('.bh-dir-acl-comment').attr('name');
+      var info = $(row).find('.bh-dir-acl-comment').attr('data-value');
       var upLength = $(row).find('.bh-dir-acl-up').find('.bh-dir-acl-icon-up').length;
       var downLength = $(row).find('.bh-dir-acl-down').find('.bh-dir-acl-icon-down').length;
 
       if (info !== 'protected' && info !== 'inherited') {
-        var prevProtected = $(row).prev().find('.bh-dir-acl-comment').attr('name');
-        var nextInherited = $(row).next().find('.bh-dir-acl-comment').attr('name');
+        var prevProtected = $(row).prev().find('.bh-dir-acl-comment').attr('data-value');
+        var nextInherited = $(row).next().find('.bh-dir-acl-comment').attr('data-value');
         
         // Check up button
         if ( prevProtected === "protected" ) {
@@ -461,7 +461,7 @@
     var createdRow = nl.sara.beehub.view.acl.createRow(ace);
     nl.sara.beehub.view.acl.addRow(createdRow, nl.sara.beehub.view.acl.getIndexLastProtected());
     var table = nl.sara.beehub.view.acl.getAclView().find(aclContents);
-    var row = table.find('tr').find('td').filter("[name='test_principal']").parent();
+    var row = table.find('tr').find('td').filter("[data-value='test_principal']").parent();
     testCreatedRow(row, ace, false, true, true);
     
     // Test createRow with inherited ace
@@ -476,7 +476,7 @@
     var index = nl.sara.beehub.view.acl.getAclView().find(aclContents).find('tr').length;
     nl.sara.beehub.view.acl.addRow(createdRow2, index-1);
     var table2 = nl.sara.beehub.view.acl.getAclView().find(aclContents);
-    var row2 = table2.find('tr').find('td').filter("[name='test2_principal']").parent();
+    var row2 = table2.find('tr').find('td').filter("[data-value='test2_principal']").parent();
     testCreatedRow(row2, ace2, false, false, false);
     
     // Test createRow with protected ace
@@ -491,7 +491,7 @@
     var createdRow3 = nl.sara.beehub.view.acl.createRow(ace3);
     nl.sara.beehub.view.acl.addRow(createdRow3, 0);
     var table3 = nl.sara.beehub.view.acl.getAclView().find(aclContents);
-    var row3 = table3.find('tr').find('td').filter("[name='test3_principal']").parent();
+    var row3 = table3.find('tr').find('td').filter("[data-value='test3_principal']").parent();
     testCreatedRow(row3, ace3, false, false, false);
     
     var ace4 = {
@@ -503,7 +503,7 @@
     var createdRow4 = nl.sara.beehub.view.acl.createRow(ace4);
     nl.sara.beehub.view.acl.addRow(createdRow4, nl.sara.beehub.view.acl.getIndexLastProtected()+1);
     var table4 = nl.sara.beehub.view.acl.getAclView().find(aclContents);
-    var row4 = table4.find('tr').find('td').filter("[name='test4_principal']").parent();
+    var row4 = table4.find('tr').find('td').filter("[data-value='test4_principal']").parent();
     testCreatedRow(row4, ace4, true, true, true);
   });
   
@@ -602,7 +602,7 @@
     // Test total columns
     deepEqual(count, aclColumns, "Total columns should be "+aclColumns);
     // Find body and test name attribute of the body
-    deepEqual(nl.sara.beehub.view.acl.getAclView().find(aclContents).attr('name'), currentDirectory, "Name attribute should be "+currentDirectory);
+    deepEqual(nl.sara.beehub.view.acl.getAclView().find(aclContents).attr('data-value'), currentDirectory, "Name attribute should be "+currentDirectory);
   });
   
   /**
@@ -611,8 +611,8 @@
   test('nl.sara.beehub.view.acl.deleteRowIndex', function(){
     expect(89);
     
-    var name = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclPrincipal).eq(1).attr('name');
-    var result = nl.sara.beehub.view.acl.getAclView().find(aclContents).find('td[name = "'+name+'"]').attr('name');
+    var name = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclPrincipal).eq(1).attr('data-value');
+    var result = nl.sara.beehub.view.acl.getAclView().find(aclContents).find('td[data-value = "'+name+'"]').attr('data-value');
     var length = nl.sara.beehub.view.acl.getAclView().find(aclContents).find('tr').length;
     // Check if row to delete exists
     deepEqual(result, name, "Name should be "+name);
@@ -620,7 +620,7 @@
     // Delete row
     nl.sara.beehub.view.acl.deleteRowIndex(1);
     
-    var result2 = nl.sara.beehub.view.acl.getAclView().find(aclContents).eq(1).find('td[name = "'+name+'"]').attr('name');
+    var result2 = nl.sara.beehub.view.acl.getAclView().find(aclContents).eq(1).find('td[name = "'+name+'"]').attr('data-value');
     var length2 = nl.sara.beehub.view.acl.getAclView().find(aclContents).find('tr').length;
     var newLength = length -1;
     // Test if row is undefined now
@@ -641,13 +641,13 @@
     
     var index = nl.sara.beehub.view.acl.getIndexLastProtected() + 1;
     var row = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclRow).eq(index);
-    var name = row.find(aclPrincipal).attr('name');
+    var name = row.find(aclPrincipal).attr('data-value');
     
     nl.sara.beehub.view.acl.moveDownAclRule(row);
     
     // index +1 should be the same row now
     var rowNew = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclRow).eq(index+1);
-    var nameNew = row.find(aclPrincipal).attr('name');
+    var nameNew = row.find(aclPrincipal).attr('data-value');
     deepEqual(nameNew, name, "Name should be "+name);
     
     var rows = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclRow);
@@ -663,13 +663,13 @@
     
     var index = nl.sara.beehub.view.acl.getIndexLastProtected() + 2;
     var row = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclRow).eq(index);
-    var name = row.find(aclPrincipal).attr('name');
+    var name = row.find(aclPrincipal).attr('data-value');
     
     nl.sara.beehub.view.acl.moveUpAclRule(row);
     
     // index +1 should be the same row now
     var rowNew = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclRow).eq(index-1);
-    var nameNew = row.find(aclPrincipal).attr('name');
+    var nameNew = row.find(aclPrincipal).attr('data-value');
     deepEqual(nameNew, name, "Name should be "+name);
     
     var rows = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclRow);

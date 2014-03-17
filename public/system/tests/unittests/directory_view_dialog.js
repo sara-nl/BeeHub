@@ -74,13 +74,13 @@
     // Test select event
     // Value before select
     deepEqual($(dialog).find(aclTableSearch).val(),"", "Value should be empty string");
-    deepEqual($(dialog).find(aclTableSearch).attr("name"), undefined, "Attribute name should be undefined");
+    deepEqual($(dialog).find(aclTableSearch).attr('name'), undefined, "Attribute name should be undefined");
     deepEqual(nl.sara.beehub.view.acl.getAddAclButton().prop('disabled'), true, "Add button should be disabled");
     // Select
     $(dialog).find( aclTableSearch ).data("ui-autocomplete")._trigger("select", 'autocompleteselect', ui);
     // Test values after select
     deepEqual($(dialog).find(aclTableSearch).val(), ui.item.label, "Value should be "+ui.item.label);
-    deepEqual($(dialog).find(aclTableSearch).attr("name"), ui.item.name, "Attribute name should be "+ui.item.name);
+    deepEqual($(dialog).find(aclTableSearch).attr('name'), ui.item.name, "Attribute name should be "+ui.item.name);
     deepEqual(nl.sara.beehub.view.acl.getAddAclButton().prop('disabled'), false, "Add button should be enabled");
 
     // Change with value
@@ -258,7 +258,7 @@
     nl.sara.beehub.view.dialog.showAcl(html, currentDirectory);
     var aclForm = nl.sara.beehub.view.acl.getFormView();
     
-    aclForm.find(aclTableSearch).attr('name',"test");
+    aclForm.find(aclTableSearch).attr('data-value',"test");
     var ace = nl.sara.beehub.view.dialog.getFormAce();
     deepEqual(ace.permissions, "allow read", "Permissions should be allow read.");
     deepEqual(ace.principal, "test", "Principal should be test.");

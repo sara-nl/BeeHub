@@ -312,8 +312,8 @@ require 'views/header.php';
           <tr id="<?= DAV::xmlescape( DAV::unslashify($member->path) ) ?>">
             <td>
             	<div class="dropdown">
-    						<a class="dropdown-toggle bh-dir-content-menu" data-toggle="dropdown" href="#"><i class="icon-align-justify" style="cursor: pointer"></i></a>
-    						<ul class="dropdown-menu bh-dir-contents-menu" role="menu" aria-labelledby="dLabel">
+         						<a class="dropdown-toggle bh-dir-content-menu" data-toggle="dropdown" href="#"><i class="icon-align-justify" style="cursor: pointer"></i></a>
+         						<ul class="dropdown-menu bh-dir-contents-menu" role="menu" aria-labelledby="<?= DAV::xmlescape( DAV::unslashify($member->path) ) ?>">
                   <?php if ( in_array( DAVACL::PRIV_WRITE, $member->user_prop_current_user_privilege_set() ) && in_array( DAVACL::PRIV_UNBIND, $current_user_privilege_set_collection ) ) : ?>
                     <li><a class="bh-dir-content-edit" href="#">Rename</a></li>
                   <?php endif; ?>
@@ -326,7 +326,7 @@ require 'views/header.php';
               </div>
             </td>
             <!-- Select checkbox -->
-            <td class="bh-dir-small-column"><input type="checkbox" class="bh-dir-content-checkbox" data-value="<?= DAV::xmlescape( DAV::unslashify( $member->path ) ) ?>" value="<?= DAV::xmlescape( $member->user_prop_displayname() ) ?>"></td>   
+            <td class="bh-dir-small-column"><input type="checkbox" class="bh-dir-content-checkbox" name="<?= DAV::xmlescape( DAV::unslashify( $member->path ) ) ?>" value="<?= DAV::xmlescape( $member->user_prop_displayname() ) ?>"></td>   
             <!-- Name -->
             <?php if (substr($member->path, -1) === '/'): ?>
               <td class="bh-dir-content-name displayname" data-value="<?= DAV::xmlescape( $member->user_prop_displayname() ) ?>">
@@ -340,7 +340,7 @@ require 'views/header.php';
             <?php endif; ?>
             <!-- Hidden rename -->
             <td class="bh-dir-content-rename-td" hidden="hidden">
-              <input class="bh-dir-content-rename-form" data-value="<?= DAV::xmlescape( $member->user_prop_displayname() ) ?>" value="<?= DAV::xmlescape( $member->user_prop_displayname() ) ?>" />
+              <input class="bh-dir-content-rename-form" name="<?= DAV::xmlescape( $member->user_prop_displayname() ) ?>" value="<?= DAV::xmlescape( $member->user_prop_displayname() ) ?>" />
             </td>
             <!--             Size -->
             <td class="contentlength" data-value="<?= DAV::xmlescape( $member->user_prop_getcontentlength() ) ?>">
