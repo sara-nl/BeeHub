@@ -316,27 +316,27 @@
   nl.sara.beehub.view.content.getUnknownResourceValues = function(resource){
     // Displayname
     if (resource.displayname === undefined) {
-      resource.displayname = $("tr[id='"+resource.path+"']").find('.displayname').attr('name');
+      resource.displayname = $("tr[id='"+resource.path+"']").find('.displayname').attr('data-displayname');
     }
     
     // Type
     if (resource.type === undefined) {
-      resource.type = $("tr[id='"+resource.path+"']").find('.type').attr('name');
+      resource.type = $("tr[id='"+resource.path+"']").find('.type').attr('data-type');
     }
     
     // Owner
     if (resource.owner === undefined) {
-      resource.owner = $("tr[id='"+resource.path+"']").find('.owner').attr('name');
+      resource.owner = $("tr[id='"+resource.path+"']").find('.owner').attr('data-owner');
     }
     
     // Contentlenght
     if (resource.contentlength === undefined) {
-      resource.contentlength = $("tr[id='"+resource.path+"']").find('.contentlength').attr('name');
+      resource.contentlength = $("tr[id='"+resource.path+"']").find('.contentlength').attr('data-contentlength');
     }
     
     // Last modiefied
     if (resource.lastmodified === undefined) {
-      resource.lastmodified = $("tr[id='"+resource.path+"']").find('.lastmodified').attr('name');
+      resource.lastmodified = $("tr[id='"+resource.path+"']").find('.lastmodified').attr('data-lastmodified');
     }
     return resource;
   };

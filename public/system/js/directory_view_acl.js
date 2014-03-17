@@ -184,7 +184,7 @@
   var setRowHandlers = function(rows){   
     $.each(rows, function (key, row){
       // Permissions
-      var info = $(row).find('.bh-dir-acl-comment').attr('name');
+      var info = $(row).find('.bh-dir-acl-comment').attr('data-value');
       if (info !== 'protected' && info !== 'inherited') {
         var rowObject = $( row );
         rowObject.find('.bh-dir-acl-change-permissions').unbind( 'click' ).click(handle_permissions_click);
@@ -327,7 +327,7 @@
    */
   var setUpDownButtons = function(){
     $.each(nl.sara.beehub.view.acl.getAclView().find('.bh-dir-acl-contents').find('tr'), function(index, row){
-      var info = $(row).find('.bh-dir-acl-comment').attr('name');
+      var info = $(row).find('.bh-dir-acl-comment').attr('data-value');
       if (info !== 'protected' && info !== 'inherited') {
         // Check up button
         if ( index -1 !== nl.sara.beehub.view.acl.getIndexLastProtected() ) {
@@ -383,9 +383,9 @@
     var acl = new nl.sara.webdav.Acl();
     // put each item acl table in the created webdav acl
     $.each(nl.sara.beehub.view.acl.getAclView().find('.bh-dir-acl-contents').find('tr'), function(index, row){
-      var principal = $(row).find('.bh-dir-acl-principal').attr('name');
+      var principal = $(row).find('.bh-dir-acl-principal').attr('data-bh-dir-acl-principal');
       var permissions = $(row).find('.bh-dir-acl-permissions span.presentation').text();
-      var info = $(row).find('.bh-dir-acl-comment').attr('name');
+      var info = $(row).find('.bh-dir-acl-comment').attr('data-bh-dir-acl-comment');
       var invert = $(row).find('.bh-dir-acl-principal').attr('data-invert'); 
 
       if (info !== 'protected' && info !== 'inherited') {
