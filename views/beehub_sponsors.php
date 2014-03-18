@@ -10,6 +10,8 @@
 <ul id="beehub-top-tabs" class="nav nav-tabs">
   <li class="active"><a href="#bh-gs-panel-mygs" data-toggle="tab">My sponsors</a></li>
   <li><a href="#bh-gs-panel-join" data-toggle="tab">Join</a></li>
+<!--  Check admin group -->
+  <li><a href="#bh-gs-panel-create" data-toggle="tab">Create</a></li>
 </ul>
 
 <!-- Tab contents -->
@@ -109,8 +111,39 @@
      ?>
     </div>
   </div>
-	<!--   End join tab
-
+	<!--   End join tab -->
+	
+ <!-- Create tab -->
+ <br/>
+ <div id="bh-gs-panel-create" class="tab-pane fade">
+    <form id="bh-gs-create-sponsor-form" class="form-horizontal" action="<?= BeeHub::SPONSORS_PATH ?>" method="post">
+     <div class="control-group">
+      <label class="control-label" for="bh-gs-sponsor-name">Sponsor name</label>
+      <div class="controls">
+       <input type="text" id="bh-gs-sponsor-name" name="sponsor_name" required>
+      </div>
+     </div>
+     <div class="control-group">
+      <label class="control-label" for="bh-gs-sponsor-display-name">Display name</label>
+      <div class="controls">
+       <input type="text" id="bh-gs-sponsor-display-name" name="displayname" required>
+      </div>
+     </div>
+       <div class="control-group">
+      <label class="control-label" for="bh-gs-sponsor-description">Sponsor description</label>
+      <div class="controls">
+       <textarea class="input-xlarge" id="bh-gs-sponsor-description" rows="5" name="description"></textarea>
+      </div>
+     </div>
+     <div class="control-group">
+      <div class="controls">
+       <button  type="submit" class="btn">Create sponsor</button>
+      </div>
+     </div>
+    </form>
+  </div>
+ <!--  End create tab -->
+ 
 </div>
 <!-- End tab contents -->
 
