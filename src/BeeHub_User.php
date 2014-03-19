@@ -131,7 +131,7 @@ class BeeHub_User extends BeeHub_Principal {
         $this->stored_props[BeeHub::PROP_X509]   = $row[5];
       }
       if (!is_null($row[6])) {
-        $this->stored_props[BeeHub::PROP_SPONSOR]   = $row[6];
+        $this->stored_props[BeeHub::PROP_SPONSOR]   = BeeHub::SPONSORS_PATH . $row[6];
       }
       if (!empty($row[2])) {
         $this->password = $row[2];
@@ -170,6 +170,19 @@ class BeeHub_User extends BeeHub_Principal {
       }
       $statement_sponsors->free_result();
       $this->stored_props[BeeHub::PROP_SPONSOR_MEMBERSHIP] = $sponsors;
+      
+      // If there is no default sponsor set, but the user has sponsors, we have to set one now. In other words, it is impossible to have sponsors but not a default sponsor
+      // We also check if the user is still sponsored by his/her default sponsor
+      if ( count( $this->stored_props[BeeHub::PROP_SPONSOR_MEMBERSHIP] ) > 0 ) {
+        if ( ! isset( $this->stored_props[BeeHub::PROP_SPONSOR] ) || empty( $this->stored_props[BeeHub::PROP_SPONSOR] ) || ( ! in_array( $this->stored_props[BeeHub::PROP_SPONSOR], $this->stored_props[BeeHub::PROP_SPONSOR_MEMBERSHIP] ) ) ) {
+          $this->user_set_sponsor( $this->stored_props[BeeHub::PROP_SPONSOR_MEMBERSHIP][0] );
+          $this->storeProperties();
+        }
+      }elseif ( isset( $this->stored_props[BeeHub::PROP_SPONSOR] ) && ( ! empty( $this->stored_props[BeeHub::PROP_SPONSOR] ) ) ) {
+        // And the reverse; you can't have a default sponsor if you have no sponsors
+        $this->user_set_sponsor( null );
+        $this->storeProperties();
+      }
     }
   }
 
@@ -188,7 +201,7 @@ class BeeHub_User extends BeeHub_Principal {
     $p_surfconext_desc = @$this->stored_props[BeeHub::PROP_SURFCONEXT_DESCRIPTION];
     $p_x509            = @$this->stored_props[BeeHub::PROP_X509];
     // TODO: Check if sponsor exists!
-    $p_sponsor         = @$this->stored_props[BeeHub::PROP_SPONSOR];
+    $p_sponsor         = basename( @$this->stored_props[BeeHub::PROP_SPONSOR] );
 
     $change_email = false;
     if (@$this->stored_props[BeeHub::PROP_EMAIL] !== $this->original_email) {
@@ -369,7 +382,11 @@ BeeHub';
 
 
   public function user_set_sponsor($sponsor) {
-    $this->user_set(BeeHub::PROP_SPONSOR, $sponsor);
+    if ( is_null( $sponsor ) || in_array( $sponsor, $this->current_user_sponsors() ) ) {
+      $this->user_set(BeeHub::PROP_SPONSOR, $sponsor);
+    }else{
+      throw new DAV_Status( DAV::HTTP_CONFLICT, 'You can not make a sponsor your default sponsor if you are not sponsored by it yet' );
+    }
   }
 
 

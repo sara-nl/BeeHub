@@ -255,6 +255,9 @@ BeeHub';
       }elseif ( ! $this->users[ BeeHub::USERS_PATH . $user_name ]['is_accepted'] && ( $key !== false ) ) {
         unset( $this->stored_props[DAV::PROP_GROUP_MEMBER_SET][ $key ] );
       }
+      
+      // Erase the user from the registry cache so it gets freshly loaded
+      DAV::$REGISTRY->forget( BeeHub::USERS_PATH . $user_name );
     }
   }
 

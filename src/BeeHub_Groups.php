@@ -43,7 +43,7 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
     $displayname = $_POST['displayname'];
     $description = $_POST['description'];
     $group_name = $_POST['group_name'];
-    $user_sponsor = BeeHub::getAuth()->current_user()->user_prop( BeeHub::PROP_SPONSOR );
+    $user_sponsor = basename( BeeHub::getAuth()->current_user()->user_prop( BeeHub::PROP_SPONSOR ) );
     // If you don't have a (default) sponsor, you're not allowed to add a group
     if (empty($user_sponsor)) {
       throw DAV::forbidden("Only users with a sponsor are allowed to create groups");
