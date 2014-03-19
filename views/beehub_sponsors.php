@@ -10,8 +10,9 @@
 <ul id="beehub-top-tabs" class="nav nav-tabs">
   <li class="active"><a href="#bh-gs-panel-mygs" data-toggle="tab">My sponsors</a></li>
   <li><a href="#bh-gs-panel-join" data-toggle="tab">Join</a></li>
-<!--  Check admin group -->
-  <li><a href="#bh-gs-panel-create" data-toggle="tab">Create</a></li>
+  <?php if ( DAV::$ACLPROVIDER->wheel() ): ?>
+    <li><a href="#bh-gs-panel-create" data-toggle="tab">Create</a></li>
+  <?php endif; ?>
 </ul>
 
 <!-- Tab contents -->
