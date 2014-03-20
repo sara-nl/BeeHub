@@ -118,23 +118,23 @@
 	<!-- Create tab -->
 	<br/>
 	<div id="bh-gs-panel-create" class="tab-pane fade">
-    <form id="bh-gs-create-group-form" class="form-horizontal" action="<?= BeeHub::GROUPS_PATH ?>" method="post">
+    <form id="bh-gs-create-form" class="form-horizontal" action="<?= BeeHub::GROUPS_PATH ?>" method="post">
 	    <div class="control-group">
-		    <label class="control-label" for="bh-gs-group-name">Group name</label>
+		    <label class="control-label" for="bh-gs-name">Group name</label>
 		    <div class="controls">
-		    	<input type="text" id="bh-gs-group-name" name="group_name" required>
+		    	<input type="text" id="bh-gs-name" name="group_name" required>
 		    </div>
 	    </div>
 	    <div class="control-group">
-		    <label class="control-label" for="bh-gs-group-display-name">Display name</label>
+		    <label class="control-label" for="bh-gs-display-name">Display name</label>
 		    <div class="controls">
-		    	<input type="text" id="bh-gs-group-display-name" name="displayname" required>
+		    	<input type="text" id="bh-gs-display-name" name="displayname" required>
 		    </div>
 	    </div>
 	      <div class="control-group">
-		    <label class="control-label" for="bh-gs-group-description">Group description</label>
+		    <label class="control-label" for="bh-gs-description">Group description</label>
 		    <div class="controls">
-		    	<textarea class="input-xlarge" id="bh-gs-group-description" rows="5" name="description"></textarea>
+		    	<textarea class="input-xlarge" id="bh-gs-description" rows="5" name="description"></textarea>
 		    </div>
 	    </div>
 	    <div class="control-group">
