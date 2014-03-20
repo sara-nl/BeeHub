@@ -398,7 +398,6 @@ BeeHub';
    * @return  boolean  True if the currently logged in user is an administrator of this sponsor, false otherwise
    */
   public function is_admin() {
-    if ( DAV::$ACLPROVIDER->wheel() ) return true;
     $this->init_props();
     return ( $current_user = BeeHub::getAuth()->current_user() ) &&
            ( $tmp = @$this->users[$current_user->path] ) &&

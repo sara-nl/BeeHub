@@ -1,14 +1,16 @@
 TRUNCATE TABLE `beehub_groups`;
 INSERT INTO `beehub_groups` (`group_name`, `displayname`, `description`)
      VALUES ('foo', 'Foo', 'Group of all Foo employees'),
-            ('bar', 'Bar', 'Group of all Bar members' );
+            ('bar', 'Bar', 'Group of all Bar members' ),
+            ('admin', 'System administrators', 'Group of all system administrators' );
 
 TRUNCATE TABLE `beehub_group_members`;
 INSERT INTO `beehub_group_members` (`group_name`, `user_name`, `is_admin`, `is_invited`, `is_requested`)
      VALUES ('foo', 'john', 1, 1, 1),
             ('foo', 'jane', 0, 1, 0),
             ('bar', 'john', 1, 1, 1),
-            ('bar', 'jane', 0, 0, 1);
+            ('bar', 'jane', 0, 0, 1),
+            ('admin', 'john', 1, 1, 1);
 
 TRUNCATE TABLE `beehub_sponsors`;
 INSERT INTO `beehub_sponsors` (`sponsor_name`, `displayname`, `description`)

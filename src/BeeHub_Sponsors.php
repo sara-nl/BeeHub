@@ -71,7 +71,7 @@ class BeeHub_Sponsors extends BeeHub_Principal_Collection {
     
     // Only administrators can add a sponsor
     if ( ! DAV::$ACLPROVIDER->wheel() ) {
-      throw DAV::forbidden("Only administrators are allowed to create sponsors");
+      throw DAV::forbidden( 'Only administrators are allowed to create sponsors' );
     }
     // Sponsor name must be one of the following characters a-zA-Z0-9_-., starting with an alphanumeric character and must be between 1 and 255 characters long
     if ( empty($displayname) ||

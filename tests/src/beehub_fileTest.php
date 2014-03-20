@@ -141,9 +141,10 @@ class BeeHub_FileTest extends BeeHub_Tests_Db_Test_Case {
     $this->setCurrentUser( '/system/users/john' );
     $this->obj->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_WRITE ), true ) ) );
     $this->setCurrentUser( '/system/users/jane' );
+    $file = new \BeeHub_File( '/foo/file.txt' );
 
     $this->setExpectedException( '\DAV_Status', null, \DAV::HTTP_FORBIDDEN );
-    $this->obj->method_PUT( self::createInputStream() );
+    $file->method_PUT( self::createInputStream() );
   }
 
 
@@ -195,9 +196,10 @@ class BeeHub_FileTest extends BeeHub_Tests_Db_Test_Case {
     $this->setCurrentUser( '/system/users/john' );
     $this->obj->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_WRITE ), true ) ) );
     $this->setCurrentUser( '/system/users/jane' );
+    $file = new \BeeHub_File( '/foo/file.txt' );
 
     $this->setExpectedException( '\DAV_Status', null, \DAV::HTTP_FORBIDDEN );
-    $this->obj->method_PUT_range( self::createInputStream(), 26, \strlen( self::STREAM_CONTENT ), null );
+    $file->method_PUT_range( self::createInputStream(), 26, \strlen( self::STREAM_CONTENT ), null );
   }
 
 

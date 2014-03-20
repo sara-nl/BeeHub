@@ -228,7 +228,7 @@ class BeeHub_UserTest extends BeeHub_Tests_Db_Test_Case {
 
 
   public function testUser_prop_group_membership() {
-    $expected = array( '/system/groups/foo', '/system/groups/bar' );
+    $expected = array( '/system/groups/foo', '/system/groups/bar', '/system/groups/admin' );
     $user = new \BeeHub_User( '/system/users/john' );
     $this->assertSame( $expected, $user->user_prop_group_membership() );
   }

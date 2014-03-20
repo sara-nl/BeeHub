@@ -391,8 +391,7 @@ BeeHub';
 
 
   public function is_admin() {
-    return DAV::$ACLPROVIDER->wheel() ||
-      ( $this->path === $this->user_prop_current_user_principal() );
+    return ( $this->path === $this->user_prop_current_user_principal() );
   }
 
 
