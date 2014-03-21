@@ -18,8 +18,10 @@ require 'views/header.php';
 <!-- Tabs-->
 <ul id="beehub-top-tabs" class="nav nav-tabs">
   <li class="active"><a href="#bh-gs-panel-members" data-toggle="tab">Members</a></li>
-  <li><a href="#bh-gs-panel-edit" data-toggle="tab">Edit</a></li>
-  <li><a href="#bh-gs-panel-usage" data-toggle="tab">Usage</a></li>
+  <?php if ( $this->is_admin() ) : ?>
+   <li><a href="#bh-gs-panel-edit" data-toggle="tab">Edit</a></li>
+   <li><a href="#bh-gs-panel-usage" data-toggle="tab">Usage</a></li>
+  <?php endif; ?>
 </ul>
 
 <!-- Tab contents -->
@@ -95,27 +97,6 @@ require 'views/header.php';
  
  </div>
  <!-- End tab contents -->
-
-
-<!--<div class="row-fluid" id="bh-gs-display">
-    <dl class="dl-horizontal">
-      <dt class="bh-gs-display-gs" >Name</dt>
-      <dd><?= DAV::xmlescape( $this->name) ?></dd>
-      <dt class="bh-gs-display-gs" >Display name</dt>
-      <dd id="bh-gs-display-name-value"><?= DAV::xmlescape( $this->user_prop( DAV::PROP_DISPLAYNAME ) ) ?></dd>
-      <dt class="bh-gs-display-gs">Description</dt>
-      <dd id="bh-gs-description-value" style="white-space: pre-wrap;"><?= DAV::xmlescape( $this->user_prop(BeeHub::PROP_DESCRIPTION) ) ?></dd>
-      <?php if ( $this->is_admin() ) : ?>
-        <br/>
-        <dt class="bh-gs-display-gs"></dt>
-        <dd class="btn" id="bh-gs-edit-button">Edit sponsor</dd>
-      <?php endif; ?>
-    </dl>
-</div>-->
-
-<!-- Dialog, for dialog view -->
-<div id="bh-dir-dialog" hidden="hidden"></div>
-
 
 <?php
 $footer='<script type="text/javascript" src="/system/js/group-sponsor.js"></script>';
