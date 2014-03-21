@@ -18,9 +18,6 @@
               <?php if (BeeHub_Auth::inst()->is_authenticated()) : ?>
                 <li id="navbar-li-groups"><a href="<?= DAV::xmlescape(BeeHub::GROUPS_PATH) ?>">Groups</a></li>
 								<li id="navbar-li-sponsors"><a href="<?= DAV::xmlescape(BeeHub::SPONSORS_PATH) ?>">Sponsors</a></li>
-								<!-- Test of sponsor -->
-        <li id="navbar-li-sponsorusage"><a href="https://beehub-devel.grid.sara.nl/system/sponsorusage">Usage</a></li>
-
               <?php endif; ?>
               <li id="navbar-li-docs"><a href="https://www.surfsara.nl/systems/beehub/usage">Docs</a></li>
             </ul>
