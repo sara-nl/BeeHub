@@ -48,21 +48,6 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
   abstract protected function init_props();
 
 
-
-  /**
-   * Checks whether the current user has certain privileges.
-   *
-   * @param   array       $privileges  The privileges needed
-   * @return  void                     This function only returns if the current user has the privileges
-   * @throws  DAV_Status               FORBIDDEN  When the user doesn't have the privileges
-   */
-  public function assert($privileges) {
-    if ( DAV::$ACLPROVIDER->wheel() )
-      return;
-    return parent::assert($privileges);
-  }
-
-
   /**
    * Sets a (webDAV) property
    *

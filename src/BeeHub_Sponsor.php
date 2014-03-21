@@ -255,6 +255,9 @@ BeeHub';
       }elseif ( ! $this->users[ BeeHub::USERS_PATH . $user_name ]['is_accepted'] && ( $key !== false ) ) {
         unset( $this->stored_props[DAV::PROP_GROUP_MEMBER_SET][ $key ] );
       }
+      
+      // Erase the user from the registry cache so it gets freshly loaded
+      DAV::$REGISTRY->forget( BeeHub::USERS_PATH . $user_name );
     }
   }
 
@@ -395,7 +398,6 @@ BeeHub';
    * @return  boolean  True if the currently logged in user is an administrator of this sponsor, false otherwise
    */
   public function is_admin() {
-    if ( DAV::$ACLPROVIDER->wheel() ) return true;
     $this->init_props();
     return ( $current_user = BeeHub::getAuth()->current_user() ) &&
            ( $tmp = @$this->users[$current_user->path] ) &&
