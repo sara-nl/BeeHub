@@ -14,7 +14,7 @@ $header = '<style type="text/css">
 require 'views/header.php';
 ?>
 
-<h4><?= DAV::xmlescape( $this->user_prop( DAV::PROP_DISPLAYNAME ) ) ?> (<?= DAV::xmlescape(basename($this->path)) ?>)</h4><br>
+<h4 id="bh-gs-header"><?= DAV::xmlescape( $this->user_prop( DAV::PROP_DISPLAYNAME ) ) ?> (<?= DAV::xmlescape(basename($this->path)) ?>)</h4><br>
 <!-- Tabs-->
 <ul id="beehub-top-tabs" class="nav nav-tabs">
   <li class="active"><a href="#bh-gs-panel-members" data-toggle="tab">Members</a></li>
@@ -67,19 +67,18 @@ require 'views/header.php';
      <div class="control-group">
        <label class="control-label bh-gs-display-gs" for="bh-gs-display-name">Display name</label>
        <div class="controls">
-         <input type="text" id="bh-gs-display-name" name="displayname" value="<?= DAV::xmlescape( $this->user_prop_displayname() ) ?>" required />
+         <input type="text" id="bh-gs-display-name" name="displayname" value="<?= DAV::xmlescape( $this->user_prop_displayname() ) ?>" required data-org-name="<?= DAV::xmlescape( $this->user_prop_displayname() ) ?>"/>
        </div>
      </div>
      <div class="control-group">
        <label class="control-label bh-gs-display-gs" for="bh-gs-sponsor-description">Group description</label>
        <div class="controls">
-         <textarea class="input-xlarge" id="bh-gs-sponsor-description" rows="5" name="description"><?= DAV::xmlescape( $this->user_prop(BeeHub::PROP_DESCRIPTION) ) ?></textarea>
+         <textarea class="input-xlarge" id="bh-gs-sponsor-description" rows="5" name="description" data-org-name="<?= DAV::xmlescape( $this->user_prop(BeeHub::PROP_DESCRIPTION) ) ?>"><?= DAV::xmlescape( $this->user_prop(BeeHub::PROP_DESCRIPTION) ) ?></textarea>
        </div>
      </div>
      <div class="control-group">
        <div class="controls">
          <button type="submit" class="btn btn-primary">Save</button>
-         <button id="bh-gs-cancel-button" type="button" class="btn btn">Cancel</button>
        </div>
      </div>
    </form>
@@ -114,8 +113,8 @@ require 'views/header.php';
     </dl>
 </div>-->
 
-
-
+<!-- Dialog, for dialog view -->
+<div id="bh-dir-dialog" hidden="hidden"></div>
 
 
 <?php
