@@ -13,7 +13,6 @@ $header = '<style type="text/css">
 
 require 'views/header.php';
 ?>
-
 <h4 id="bh-gs-header"><?= DAV::xmlescape( $this->user_prop( DAV::PROP_DISPLAYNAME ) ) ?> (<?= DAV::xmlescape(basename($this->path)) ?>)</h4><br>
 <!-- Tabs-->
 <ul id="beehub-top-tabs" class="nav nav-tabs">
