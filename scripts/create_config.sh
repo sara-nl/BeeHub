@@ -32,7 +32,7 @@ cd "$( dirname "${BASH_SOURCE[0]}" )/../"
 CONTINUE=0
 DATADIR=""
 SIMPLESAML=""
-WHEEL="admin"
+ADMIN_GROUP="admin"
 MYSQL_HOST="localhost"
 MYSQL_USERNAME=""
 MYSQL_PASSWORD=""
@@ -77,10 +77,10 @@ while [[ "${CONTINUE}" != "y" ]]; do
     fi
   done
 
-  echo "What username should the administrator have? [${WHEEL}] "
-  read WHEEL_2
-  if [[ "${WHEEL_2}" != "" ]]; then
-    WHEEL="${WHEEL_2}"
+  echo "What group should be the administrator group? [${ADMIN_GROUP}] "
+  read ADMIN_GROUP_2
+  if [[ "${ADMIN_GROUP_2}" != "" ]]; then
+    ADMIN_GROUP="${ADMIN_GROUP_2}"
   fi
 
   while [[ 1 -eq 1 ]]; do
@@ -150,7 +150,7 @@ datadir       = "${DATADIR}"
 simplesamlphp = "${SIMPLESAML}"
 
 [namespace]
-wheel_path    = "/system/users/${WHEEL}"
+admin_group   = "/system/groups/${ADMIN_GROUP}"
 
 [mysql]
 host     = "${MYSQL_HOST}"
