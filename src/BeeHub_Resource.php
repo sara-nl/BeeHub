@@ -146,11 +146,12 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
    * @return  array  A list of ACEs
    */
   public function user_prop_acl() {
-    $protected = array(
-      new DAVACL_Element_ace(
+    $protected = array();
+    if ( ! is_null( $this->user_prop_owner() ) ) {
+      $protected[0] = new DAVACL_Element_ace(
         'DAV: owner', false, array('DAV: all'), false, true, null
-      ),
-    );
+      );
+    }
     if ( ('/' === $this->path) ||
          ('/home/' === $this->path) ){
       $protected[] = new DAVACL_Element_ace(
@@ -181,7 +182,7 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
    */
   public function user_prop_owner() {
     $retval = $this->user_prop(DAV::PROP_OWNER);
-    return $retval ? $retval : BeeHub::$CONFIG['namespace']['wheel_path'];
+    return $retval ? $retval : null;
   }
 
 

@@ -70,7 +70,7 @@ abstract class BeeHub_Principal extends BeeHub_Resource implements DAVACL_Princi
   }
 
   public function user_prop_owner() {
-    return BeeHub::$CONFIG['namespace']['wheel_path'];
+    return null;
   }
 
   public function user_prop_group_membership() {

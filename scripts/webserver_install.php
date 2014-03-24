@@ -94,22 +94,13 @@ if ( $hasChildren ) {
   print( "The data directory already has content. Skipping initialisation of data directory.\n" );
 }else{
   print( "Initialising data directory..." );
-  if (
+  if ( ! (
     \mkdir( $config['environment']['datadir'] . 'home', 0770, true ) &&
     \mkdir( $config['environment']['datadir'] . 'system', 0770, true ) &&
     \mkdir( $config['environment']['datadir'] . \BeeHub::GROUPS_PATH, 0770, true ) &&
     \mkdir( $config['environment']['datadir'] . \BeeHub::SPONSORS_PATH, 0770, true ) &&
     \mkdir( $config['environment']['datadir'] . \BeeHub::USERS_PATH, 0770, true )
-  ){
-    $prop = rawurlencode( \DAV::PROP_OWNER );
-    $value = $config['namespace']['wheel_path'];
-    \xattr_set( $config['environment']['datadir'], $prop, $value );
-    \xattr_set( $config['environment']['datadir'] . 'home', $prop, $value );
-    \xattr_set( $config['environment']['datadir'] . 'system', $prop, $value );
-    \xattr_set( $config['environment']['datadir'] . \BeeHub::GROUPS_PATH, $prop, $value );
-    \xattr_set( $config['environment']['datadir'] . \BeeHub::SPONSORS_PATH, $prop, $value );
-    \xattr_set( $config['environment']['datadir'] . \BeeHub::USERS_PATH, $prop, $value );
-  }else{
+  ) ) {
     \header( 'HTTP/1.1 500 Internal Server Error' );
     \ob_end_flush();
     print( "\nUnable to create the system directories\n" );
