@@ -184,7 +184,7 @@
   var setRowHandlers = function(rows){   
     $.each(rows, function (key, row){
       // Permissions
-      var info = $(row).find('.bh-dir-acl-comment').attr('name');
+      var info = $(row).find('.bh-dir-acl-comment').attr('data-value');
       if (info !== 'protected' && info !== 'inherited') {
         var rowObject = $( row );
         rowObject.find('.bh-dir-acl-change-permissions').unbind( 'click' ).click(handle_permissions_click);
@@ -259,7 +259,7 @@
     if (ace.principal.indexOf(nl.sara.beehub.users_path) !== -1) {
       icon = '<i class="icon-user"></i>';
     }
-    row.push('<td class="bh-dir-acl-principal" name="' + nl.sara.beehub.controller.htmlEscape( ace.principal ) + '" data-invert="' + nl.sara.beehub.controller.htmlEscape( ace['invert'] ) + '" data-toggle="tooltip" title="' + nl.sara.beehub.controller.htmlEscape( ace.principal ) + '" ></i><b>'+show+'</b> ('+icon+')</td>');
+    row.push('<td class="bh-dir-acl-principal" data-value="' + nl.sara.beehub.controller.htmlEscape( ace.principal ) + '" data-invert="' + nl.sara.beehub.controller.htmlEscape( ace['invert'] ) + '" data-toggle="tooltip" title="' + nl.sara.beehub.controller.htmlEscape( ace.principal ) + '" ></i><b>'+show+'</b> ('+icon+')</td>');
     
     // Permissions
     var aceClass= '';
@@ -306,7 +306,7 @@
     }
 
     // Comment, not changable by user
-    row.push('</td><td class="bh-dir-acl-comment '+aceClass+'" name="'+info+'" >'+message+'</td>');
+    row.push('</td><td class="bh-dir-acl-comment '+aceClass+'" data-value="'+info+'" >'+message+'</td>');
     // Up
     row.push('<td class="bh-dir-acl-up"></td>');
     // Down 
@@ -327,7 +327,7 @@
    */
   var setUpDownButtons = function(){
     $.each(nl.sara.beehub.view.acl.getAclView().find('.bh-dir-acl-contents').find('tr'), function(index, row){
-      var info = $(row).find('.bh-dir-acl-comment').attr('name');
+      var info = $(row).find('.bh-dir-acl-comment').attr('data-value');
       if (info !== 'protected' && info !== 'inherited') {
         // Check up button
         if ( index -1 !== nl.sara.beehub.view.acl.getIndexLastProtected() ) {
@@ -383,9 +383,9 @@
     var acl = new nl.sara.webdav.Acl();
     // put each item acl table in the created webdav acl
     $.each(nl.sara.beehub.view.acl.getAclView().find('.bh-dir-acl-contents').find('tr'), function(index, row){
-      var principal = $(row).find('.bh-dir-acl-principal').attr('name');
+      var principal = $(row).find('.bh-dir-acl-principal').attr('data-value');
       var permissions = $(row).find('.bh-dir-acl-permissions span.presentation').text();
-      var info = $(row).find('.bh-dir-acl-comment').attr('name');
+      var info = $(row).find('.bh-dir-acl-comment').attr('data-value');
       var invert = $(row).find('.bh-dir-acl-principal').attr('data-invert'); 
 
       if (info !== 'protected' && info !== 'inherited') {
@@ -555,7 +555,7 @@
             <th class="bh-dir-small-column"></th>\
           </tr>\
         </thead>\
-        <tbody class="bh-dir-acl-contents" name="'+resource+'">\
+        <tbody class="bh-dir-acl-contents" data-value="'+resource+'">\
       </tbody></table>';
     html += '</div>';
     return html;

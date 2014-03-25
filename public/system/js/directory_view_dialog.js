@@ -162,7 +162,7 @@
       break;
     // User or group
     case "user_or_group":
-      principal=aclForm.find(".bh-dir-acl-table-search").attr('name');
+      principal=aclForm.find(".bh-dir-acl-table-search").attr('data-value');
       break;
     default:
       // This should never happen

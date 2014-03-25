@@ -185,10 +185,8 @@ public function method_PUT($stream) {
   }
   fclose($resource);
   $contenttype = $this->user_prop_getcontenttype();
-  if (!$contenttype || 'application/x-empty' === $contenttype) {
-    $finfo = new finfo(FILEINFO_MIME);
-    // TODO: Shouldn't we call user_set_getcontenttype() here?
-    try { $this->set_getcontenttype( $finfo->file( $this->localPath ) ); }
+  if ( ! $contenttype ) {
+    try { $this->set_getcontenttype( BeeHub::determineContentType( $this->path ) ); }
     catch (DAV_Status $e) {}
   }
   $this->user_set( DAV::PROP_GETETAG, BeeHub::ETag() );
