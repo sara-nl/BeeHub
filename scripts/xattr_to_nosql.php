@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 
-require_once '../src/beehub_bootstrap.php';
+require_once( dirname( __DIR__ ) . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'beehub_bootstrap.php' );
 
 $CONFIG = BeeHub::config();
 
@@ -30,6 +30,14 @@ function traverse($iterator) {
     }
     $attributes = xattr_list($file);
     $stored_props = array();
+    if ( ! $fileinfo->isDir() ) {
+      $encodedKey = str_replace(
+        array( '%'  , '$'  , '.'   ),
+        array( '%25', '%24', '%2E' ),
+        DAV::PROP_GETCONTENTLENGTH
+      );
+      $stored_props[ $encodedKey ] = $fileinfo->getSize();
+    }
     foreach ( $attributes as $attribute ) {
       $decodedKey = rawurldecode( $attribute );
       $value = xattr_get( $file, $attribute );

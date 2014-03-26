@@ -53,6 +53,7 @@ class BeeHub_XFSResource extends BeeHub_Resource {
       if ( substr( $path, 0, 1 ) === '/' ) {
         $path = substr( $path, 1 );
       }
+      $path = urldecode( $path );
       $document = $collection->findOne( array('path' => $path ) );
       $this->stored_props = array();
       
@@ -240,6 +241,7 @@ class BeeHub_XFSResource extends BeeHub_Resource {
     if ( substr( $path, 0, 1 ) === '/' ) {
       $path = substr( $path, 1 );
     }
+    $path = urldecode( $path );
     $document = $collection->findOne( array('path' => $path ) );
     
     $urlencodedProps = array();
