@@ -116,8 +116,9 @@ class BeeHub_MongoResourceTest extends BeeHub_Tests_Db_Test_Case {
     $this->assertEquals( $acl, $this->obj->user_prop_acl_internal() );
 
     $this->setCurrentUser( '/system/users/jane' );
+    $file = new \BeeHub_MongoResource( '/foo/file.txt' );
     $this->setExpectedException( 'DAV_Status', null, \DAV::HTTP_FORBIDDEN );
-    $this->obj->user_set_acl( $acl );
+    $file->user_set_acl( $acl );
   }
 
 
@@ -171,8 +172,9 @@ class BeeHub_MongoResourceTest extends BeeHub_Tests_Db_Test_Case {
     $jane->storeProperties();
 
     $this->setCurrentUser( '/system/users/jane' );
+    $file = new \BeeHub_MongoResource( '/foo/file.txt' );
     $this->setExpectedException( 'DAV_Status', null, \DAV::HTTP_FORBIDDEN );
-    $this->obj->method_PROPPATCH( \DAV::PROP_OWNER, '<D:href>/system/users/jane</D:href>' );
+    $file->method_PROPPATCH( \DAV::PROP_OWNER, '<D:href>/system/users/jane</D:href>' );
   }
 
 
@@ -187,10 +189,13 @@ class BeeHub_MongoResourceTest extends BeeHub_Tests_Db_Test_Case {
     $jane = new \BeeHub_User( '/system/users/jane' );
     $jane->user_set_sponsor( '/system/sponsors/sponsor_a' );
     $jane->storeProperties();
+    \DAV::$REGISTRY->forget( '/foo/file.txt' );
+    \DAV::$REGISTRY->forget( '/foo' );
 
     $this->setCurrentUser( '/system/users/jane' );
+    $file = new \BeeHub_MongoResource( '/foo/file.txt' );
     $this->setExpectedException( 'DAV_Status', null, \DAV::HTTP_FORBIDDEN );
-    $this->obj->method_PROPPATCH( \DAV::PROP_OWNER, '<D:href>/system/users/jane</D:href>' );
+    $file->method_PROPPATCH( \DAV::PROP_OWNER, '<D:href>/system/users/jane</D:href>' );
   }
 
 

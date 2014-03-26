@@ -80,6 +80,7 @@ private function internal_create_member( $name, $collection = false ) {
 
 
 public function method_COPY( $path ) {
+  $this->init_props();
   $parent = DAV::$REGISTRY->resource( dirname( $path ) );
   if (!$parent)
     throw new DAV_Status(DAV::HTTP_CONFLICT, 'Unable to COPY to unexisting collection');

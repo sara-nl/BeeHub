@@ -57,6 +57,60 @@ class BeeHub_Sponsors extends BeeHub_Principal_Collection {
   }
 
 
+  /**
+   * Through a POST request you can create new sponsors
+   * 
+   * @param   array  $headers  The HTTP headers
+   * @throws  DAV_Status
+   * @see DAV_Resource::method_POST()
+   */
+  public function method_POST( &$headers ) {
+    $displayname = $_POST['displayname'];
+    $description = $_POST['description'];
+    $sponsor_name = $_POST['sponsor_name'];
+    
+    // Only administrators can add a sponsor
+    if ( ! DAV::$ACLPROVIDER->wheel() ) {
+      throw DAV::forbidden( 'Only administrators are allowed to create sponsors' );
+    }
+    // Sponsor name must be one of the following characters a-zA-Z0-9_-., starting with an alphanumeric character and must be between 1 and 255 characters long
+    if ( empty($displayname) ||
+         !preg_match( '/^[a-zA-Z0-9]{1}[a-zA-Z0-9_\-\.]{0,254}$/D', $sponsor_name ) ) {
+      throw new DAV_Status( DAV::HTTP_BAD_REQUEST, 'Sponsor name has the wrong format. The name can be a maximum of 255 characters long and should start with an alphanumeric character, followed by alphanumeric characters or one of the following: _-.' );
+    }
+
+    // Check if the group name doesn't exist
+    $collection = BeeHub::getNoSQL()->sponsors;
+    $result = $collection->findOne( array( 'name' => $sponsor_name ), array( 'name' => true) );
+    if ( !is_null( $result ) ) { // Duplicate key: bad request!
+      throw new DAV_Status(DAV::HTTP_CONFLICT, "Sponsor name already exists, please choose a different sponsor name!");
+    }
+    
+    // Store in the database
+    $collection->insert( array( 'name' => $sponsor_name ) );
+
+    // Fetch the sponsor and store extra properties
+    $sponsor = DAV::$REGISTRY->resource( BeeHub::SPONSORS_PATH . $sponsor_name );
+    $sponsor->user_set( DAV::PROP_DISPLAYNAME, $displayname );
+    if ( ! empty( $description ) ) {
+      $sponsor->user_set( BeeHub::PROP_DESCRIPTION, $description );
+    }
+    $sponsor->storeProperties();
+
+    // Add the current user as admin of the sponsor
+    $sponsor->change_memberships(
+      array( basename( $this->user_prop_current_user_principal() ) ),
+      true, true
+    );
+
+    // Sponsor created, redirect to the sponsor page
+    DAV::redirect(
+      DAV::HTTP_SEE_OTHER,
+      BeeHub::SPONSORS_PATH . rawurlencode( $sponsor->name )
+    );
+  }
+
+
   protected function init_members() {
     $collection = BeeHub::getNoSQL()->sponsors;
     $this->members = $collection->find()->sort( array( 'displayname' => 1 ) );

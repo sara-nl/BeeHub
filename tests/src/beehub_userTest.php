@@ -54,6 +54,34 @@ class BeeHub_UserTest extends BeeHub_Tests_Db_Test_Case {
   }
 
 
+  public function testUser_set_sponsorWithoutSponsors() {
+    $user = new \BeeHub_User( '/system/users/jane' );
+    
+    $this->setExpectedException( '\DAV_Status', null, \DAV::HTTP_CONFLICT );
+    $user->user_set_sponsor( \BeeHub::SPONSORS_PATH . 'sponsor_a' );
+  }
+
+
+  public function testUser_get_sponsorWithOneSponsor() {
+    $user = new \BeeHub_User( '/system/users/jane' );
+
+    // There can not be a default sponsor; Jane does not have any sponsors at all
+    $this->assertNull( $user->user_prop_sponsor() );
+
+    // Give Jane a sponsor, and this should automatically be her default sponsor
+    $this->setCurrentUser( '/system/users/john' );
+    $sponsor = new \BeeHub_Sponsor( '/system/sponsors/sponsor_a' );
+    $sponsor->change_memberships( array( 'jane' ), \BeeHub_Sponsor::ADMIN_ACCEPT );
+    $userWithSponsor = \DAV::$REGISTRY->resource( '/system/users/jane' );
+    $this->assertSame( '/system/sponsors/sponsor_a', $userWithSponsor->user_prop_sponsor() );
+
+    // Remove the only sponsor Jane has and she should have no default sponsor either
+    $sponsor->change_memberships( array( 'jane' ), \BeeHub_Sponsor::DELETE_MEMBER );
+    $userWithoutSponsor = \DAV::$REGISTRY->resource( '/system/users/jane' );
+    $this->assertNull( $userWithoutSponsor->user_prop_sponsor() );
+  }
+
+
   public function testIs_admin() {
     $this->setCurrentUser( '/system/users/jane' );
 
@@ -200,7 +228,7 @@ class BeeHub_UserTest extends BeeHub_Tests_Db_Test_Case {
 
 
   public function testUser_prop_group_membership() {
-    $expected = array( '/system/groups/foo', '/system/groups/bar' );
+    $expected = array( '/system/groups/foo', '/system/groups/bar', '/system/groups/admin' );
     $user = new \BeeHub_User( '/system/users/john' );
     $this->assertSame( $expected, $user->user_prop_group_membership() );
   }

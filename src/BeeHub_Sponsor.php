@@ -542,9 +542,6 @@ BeeHub';
   public function is_admin( $user = null ) {
     $this->init_props();
     if ( is_null($user) ) {
-      if ( DAV::$ACLPROVIDER->wheel() ) {
-        return true;
-      }
       $user = BeeHub::getAuth()->current_user();
     }elseif ( ! ( $user instanceof BeeHub_User ) ) {
       $user = BeeHub::user( $user );

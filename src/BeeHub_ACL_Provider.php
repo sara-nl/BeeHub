@@ -2,7 +2,7 @@
 /**
  * Contains the BeeHub_ACL_Provider class
  *
- * Copyright ©2007-2013 SURFsara b.v., Amsterdam, The Netherlands
+ * Copyright ©2007-2014 SURFsara b.v., Amsterdam, The Netherlands
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -53,7 +53,8 @@ public function user_prop_current_user_principal() {
  * @return boolean is the current user an administrator?
  */
 public function wheel() {
-  return BeeHub::$CONFIG['namespace']['wheel_path'] === $this->user_prop_current_user_principal();
+  $user = BeeHub::getAuth()->current_user();
+  return ! is_null( $user ) && in_array( BeeHub::$CONFIG['namespace']['admin_group'], $user->user_prop_group_membership() );
 }
 
 

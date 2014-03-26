@@ -50,6 +50,11 @@ nl.sara.beehub.view.init = function() {
     nl.sara.beehub.view.tree.closeTree();
     nl.sara.beehub.view.showFixedButtons('acl');
   });
+  // Usage tab
+  $('a[href="#bh-dir-panel-usage"]').unbind('click').click(function(e){
+    nl.sara.beehub.view.tree.closeTree();
+    nl.sara.beehub.view.showFixedButtons('usage');
+  });
 };
 
 /*
@@ -114,20 +119,30 @@ nl.sara.beehub.view.hideMasks = function(){
  * 
  */
 nl.sara.beehub.view.showFixedButtons = function(action){
+  nl.sara.beehub.view.hideAllFixedButtons();
   switch(action)
   {
     case 'acl':
-      nl.sara.beehub.view.content.allFixedButtons('hide');
       nl.sara.beehub.view.acl.allFixedButtons('show');
       break;
     case 'content':
-      nl.sara.beehub.view.acl.allFixedButtons('hide');
       nl.sara.beehub.view.content.allFixedButtons('show');
+      break;
+    case 'usage':
       break;
     default:
       // This should never happen
   };
 };
+
+/*
+ * Hide all fixed buttons
+ * 
+ */
+nl.sara.beehub.view.hideAllFixedButtons = function(){
+  nl.sara.beehub.view.content.allFixedButtons('hide');
+  nl.sara.beehub.view.acl.allFixedButtons('hide');
+}
 
 /*
  * Add resource to all views

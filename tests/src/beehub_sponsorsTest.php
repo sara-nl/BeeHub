@@ -26,7 +26,7 @@ namespace BeeHub\tests;
  * @package     BeeHub
  * @subpackage  tests
  */
-class BeeHub_SponsorsTest extends \PHPUnit_Framework_TestCase {
+class BeeHub_SponsorsTest extends BeeHub_Tests_Db_Test_Case {
 
   /**
    * @var  \BeeHub_Sponsors  The unit under test
@@ -38,6 +38,75 @@ class BeeHub_SponsorsTest extends \PHPUnit_Framework_TestCase {
     parent::setUp();
     setUp();
     $this->obj = new \BeeHub_Sponsors( '/system/sponsors/' );
+  }
+
+
+  public function testMethod_POST_withoutSponsor() {
+    $this->setCurrentUser( '/system/users/jane' );
+
+    $_POST['displayname'] = 'Some test sponsor of Jane';
+    $_POST['description'] = "This is the description of Jane's test sponsor";
+    $_POST['sponsor_name'] = 'janesponsor';
+    $headers = array();
+
+    $this->setExpectedException( '\DAV_Status', null, \DAV::HTTP_FORBIDDEN );
+    $this->obj->method_POST( $headers );
+  }
+
+
+  public function testMethod_POST_illegalSponsorName() {
+    $this->setCurrentUser( '/system/users/john' );
+
+    $_POST['displayname'] = 'Some test sponsor of John';
+    $_POST['description'] = "This is the description of John's test sponsor";
+    $_POST['sponsor_name'] = '.johnsponsor with illegal characters like space and !@#$%*()';
+    $headers = array();
+
+    $this->setExpectedException( '\DAV_Status', null, \DAV::HTTP_BAD_REQUEST );
+    $this->obj->method_POST( $headers );
+  }
+
+
+  public function testMethod_POST_emptyDisplayname() {
+    $this->setCurrentUser( '/system/users/john' );
+
+    $_POST['displayname'] = '';
+    $_POST['description'] = "This is the description of John's test sponsor";
+    $_POST['sponsor_name'] = 'johnsponsor';
+    $headers = array();
+
+    $this->setExpectedException( '\DAV_Status', null, \DAV::HTTP_BAD_REQUEST );
+    $this->obj->method_POST( $headers );
+  }
+
+
+  public function testMethod_POST_existingName() {
+    $this->setCurrentUser( '/system/users/john' );
+
+    $_POST['displayname'] = 'Some test sponsor of John';
+    $_POST['description'] = "This is the description of John's test sponsor";
+    $_POST['sponsor_name'] = 'sponsor_a';
+    $headers = array();
+
+    $this->setExpectedException( '\DAV_Status', null, \DAV::HTTP_CONFLICT );
+    $this->obj->method_POST( $headers );
+  }
+
+
+  public function testMethod_POST() {
+    $this->setCurrentUser( '/system/users/john' );
+
+    $_POST['displayname'] = 'Some test sponsor of John';
+    $_POST['description'] = "This is the description of John's test sponsor";
+    $_POST['sponsor_name'] = 'johnsponsor';
+    $headers = array();
+
+    $this->expectOutputRegex( '/https 303 See Other/' );
+    $this->obj->method_POST( $headers );
+
+    $sponsor = new \BeeHub_Sponsor( '/system/sponsors/johnsponsor' );
+    $this->assertSame( $_POST['displayname'], $sponsor->user_prop( \DAV::PROP_DISPLAYNAME ) );
+    $this->assertSame( $_POST['description'], $sponsor->user_prop( \BeeHub::PROP_DESCRIPTION ) );
   }
 
 

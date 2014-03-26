@@ -7,7 +7,7 @@
       "email": "john.doe@mailservice.com",
       "password": "$6$rounds=5000$126b519331f5189c$cvGKahLo6.q/TSTeLMxGC8qpwHC6QIA37NCdn6xKpBJVCU3vBzwJkK3HS7.d4RwJcCG.oXMHBiv06oMnZCwjM0",
       "default_sponsor": "sponsor_a",
-      "groups": [ "foo", "bar" ],
+      "groups": [ "foo", "bar", "admin" ],
       "sponsors": [ "sponsor_a", "sponsor_b" ]
     },
     {
@@ -47,6 +47,12 @@
       "description": "Group of all Bar members",
       "admins": [ "john" ],
       "user_accepted_memberships": [ "jane" ]
+    },
+    {
+      "name": "admin",
+      "displayname": "System administrators",
+      "description": "Group of all system administrators",
+      "admins": [ "john" ]
     }
   ],
   "sponsors":

@@ -141,32 +141,42 @@ $(function (){
       location.pathname,
       function(status, data) {
         if (status === 207) {
-            $('#bh-gs-display-name-value').text($('input[name="displayname"]').val());
-            $('#bh-gs-description-value').text($('textarea[name="description"]').val());
-            $('#bh-gs-display').removeClass('hide');
-            $('#bh-gs-edit').addClass('hide');
+          var newDisplayname = $('input[name="displayname"]').val();
+          var newDescription = $('textarea[name="description"]').val();
+          $('#bh-gs-display-name-value').text(newDisplayname);
+          $('#bh-gs-description-value').text(newDescription);
+          var orgValue= $('#bh-gs-display-name').attr("data-org-name");
+          var newHeader = $('#bh-gs-header').html().replace(orgValue,newDisplayname);
+          $('#bh-gs-header').html(newHeader);
+          $('#bh-gs-display-name').attr("data-org-name", newDisplayname);
+          $('#bh-gs-sponsor-description').attr("data-org-name", newDescription);
+          alert("The "+group_or_sponsor+" is changed.")
         } else {
-          alert( "Something went wrong. The '+group_or_sponsor+' is not changed." );
+          alert( "Something went wrong. The "+group_or_sponsor+" is not changed." );
+          $('input[name="displayname"]').val($('#bh-gs-display-name').attr("data-org-name")); 
+          $('textarea[name="description"]').val($('#bh-gs-sponsor-description').attr("data-org-name"));
         }
       }, setProps);
 
     return false;
   });
-	
-  $('#bh-gs-cancel-button').click(
-	function() {
-	  $('input[name="displayname"]').val($('#bh-gs-display-name-value').text());
-	  $('textarea[name="description"]').val($('#bh-gs-description-value').text());
-	  $('#bh-gs-display').removeClass('hide');
-      $('#bh-gs-edit').addClass('hide');
-  }); // End of button click event listener
-  
-  $('#bh-gs-edit-button').click(
-    function() {
-      $('#bh-gs-display').addClass('hide');
-      $('#bh-gs-edit').removeClass('hide');
-    }
-  );
+
+// });
+// Not used in new layout
+//  $('#bh-gs-cancel-button').click(
+//	function() {
+//	  $('input[name="displayname"]').val($('#bh-gs-display-name-value').text());
+//	  $('textarea[name="description"]').val($('#bh-gs-description-value').text());
+//	  $('#bh-gs-display').removeClass('hide');
+//      $('#bh-gs-edit').addClass('hide');
+//  }); // End of button click event listener
+//  
+//  $('#bh-gs-edit-button').click(
+//    function() {
+//      $('#bh-gs-display').addClass('hide');
+//      $('#bh-gs-edit').removeClass('hide'); 
+//    }
+//  );
 	
   var handleDemote = function(event){
 	var button = $(event.target);

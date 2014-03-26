@@ -26,7 +26,7 @@ namespace BeeHub\tests;
  * @package     BeeHub
  * @subpackage  tests
  */
-class BeeHub_ACL_ProviderTest extends \PHPUnit_Framework_TestCase {
+class BeeHub_ACL_ProviderTest extends BeeHub_Tests_Db_Test_Case {
 
   public function setUp() {
     setUp();
@@ -65,29 +65,21 @@ class BeeHub_ACL_ProviderTest extends \PHPUnit_Framework_TestCase {
 
 
   public function testWheel() {
-    $config = \BeeHub::config();
-    $authJohn = $this->getMock( '\BeeHub\tests\BeeHub_Auth', array( 'is_authenticated', 'current_user' ), array( new \SimpleSAML_Auth_Simple( 'BeeHub' ) ) );
-    $authJohn->expects( $this->any() )
-             ->method( 'is_authenticated' )
-             ->will( $this->returnValue( true ) );
-    $authJohn->expects( $this->any() )
-             ->method( 'current_user' )
-             ->will( $this->returnValue( new \DAV_Resource( $config['namespace']['wheel_path'] ) ) );
-    \BeeHub::setAuth( $authJohn );
-
     $obj = new \BeeHub_ACL_Provider();
-    $this->assertTrue( $obj->wheel(), 'BeeHub_ACL_Provider::wheel() should return true, because we set the \'wheel_path\' to be logged in' );
 
-    $authJane = $this->getMock( '\BeeHub\tests\BeeHub_Auth', array( 'is_authenticated', 'current_user' ), array( new \SimpleSAML_Auth_Simple( 'BeeHub' ) ) );
-    $authJane->expects( $this->any() )
-             ->method( 'is_authenticated' )
-             ->will( $this->returnValue( true ) );
-    $authJane->expects( $this->any() )
-             ->method( 'current_user' )
-             ->will( $this->returnValue( new \BeeHub_User( '/system/users/jane' ) ) );
-    \BeeHub::setAuth( $authJane );
+    $this->setCurrentUser( '/system/users/john' );
+    $this->assertTrue( $obj->wheel(), 'BeeHub_ACL_Provider::wheel() should return true, because John is a member of the admin group' );
 
-    $this->assertFalse( $obj->wheel(), 'BeeHub_ACL_Provider::wheel() should return false, because Jane is not the administrator' );
+    $config = \BeeHub::config();
+    $adminGroup = new \BeeHub_Group( $config['namespace']['admin_group'] );
+    $adminGroup->change_memberships( array( 'jane' ), \BeeHub_Group::USER_ACCEPT );
+    $adminGroup->change_memberships( array( 'jane' ), \BeeHub_Group::ADMIN_ACCEPT );
+
+    $this->setCurrentUser( '/system/users/jane' );
+    $this->assertTrue( $obj->wheel(), 'BeeHub_ACL_Provider::wheel() should return true, because Jane is also a member of the admin group' );
+
+    $this->setCurrentUser( '/system/users/johny' );
+    $this->assertFalse( $obj->wheel(), 'BeeHub_ACL_Provider::wheel() should return true, because Johny is not a member of the admin group' );
   }
 
 

@@ -48,9 +48,11 @@ class BeeHub_DirectoryTest extends BeeHub_Tests_Db_Test_Case {
     $jane->user_set_sponsor( '/system/sponsors/sponsor_a' );
     $jane->storeProperties();
     
-    $this->obj = new \BeeHub_Directory( '/foo/directory/' );
+    $directory = new \BeeHub_Directory( '/foo/directory/' );
     $this->setCurrentUser( '/system/users/john' );
-    $this->obj->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_WRITE ), false ) ) );
+    $directory->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_WRITE ), false ) ) );
+    // I need to reload the directory to avoid cache polution
+    $this->obj = new \BeeHub_Directory( '/foo/directory/' );
   }
 
 
@@ -59,8 +61,9 @@ class BeeHub_DirectoryTest extends BeeHub_Tests_Db_Test_Case {
     $this->obj->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_WRITE ), true ) ) );
 
     $this->setCurrentUser( '/system/users/jane' );
+    $reloadedDir = new \BeeHub_Directory( '/foo/directory/' );
     $this->setExpectedException( 'DAV_Status', null, \DAV::HTTP_FORBIDDEN );
-    $this->obj->create_member( 'nextfile.txt' );
+    $reloadedDir->create_member( 'nextfile.txt' );
   }
 
 
@@ -252,8 +255,9 @@ class BeeHub_DirectoryTest extends BeeHub_Tests_Db_Test_Case {
     $this->obj->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_WRITE ), true ) ) );
 
     $this->setCurrentUser( '/system/users/jane' );
+    $dir = new \BeeHub_Directory( '/foo/directory/' );
     $this->setExpectedException( 'DAV_Status', null, \DAV::HTTP_FORBIDDEN );
-    $this->obj->method_MKCOL( 'subdirectory' );
+    $dir->method_MKCOL( 'subdirectory' );
   }
 
 
@@ -313,8 +317,8 @@ class BeeHub_DirectoryTest extends BeeHub_Tests_Db_Test_Case {
     $this->obj->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_WRITE ), true ) ) );
     $bar = new \BeeHub_Directory( '/bar' );
     $bar->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
-    $foo = new \BeeHub_Directory( '/foo' );
     $this->setCurrentUser( '/system/users/jane' );
+    $foo = new \BeeHub_Directory( '/foo' );
 
     $this->setExpectedException( '\DAV_Status', null, \DAV::HTTP_FORBIDDEN );
     $foo->method_MOVE( 'directory', '/bar/directory' );
@@ -336,12 +340,15 @@ class BeeHub_DirectoryTest extends BeeHub_Tests_Db_Test_Case {
     $foo = new \BeeHub_Directory( '/foo' );
     $foo->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
     $this->setCurrentUser( '/system/users/jane' );
+    \DAV::$REGISTRY->forget( '/foo' );
+    $fooReloaded = new \BeeHub_Directory( '/foo' );
 
     $propExpected = $this->obj->user_prop( 'test_namespace test_property' );
     $ownerExpected = $this->obj->user_prop_owner();
     $sponsorExpected = $this->obj->user_prop_sponsor();
     $aclExpected = $this->obj->user_prop_acl();
-    $foo->method_MOVE( 'directory', '/foo/renamed_directory' );
+
+    $fooReloaded->method_MOVE( 'directory', '/foo/renamed_directory' );
     $renamedResource = \DAV::$REGISTRY->resource( '/foo/renamed_directory' );
     $this->assertSame( $propExpected, $renamedResource->user_prop( 'test_namespace test_property' ) );
     $this->assertSame( $ownerExpected, $renamedResource->user_prop_owner() );
