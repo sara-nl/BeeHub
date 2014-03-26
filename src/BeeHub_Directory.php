@@ -23,7 +23,7 @@
  * Interface to a folder.
  * @package BeeHub
  */
-class BeeHub_Directory extends BeeHub_XFSResource implements DAV_Collection {
+class BeeHub_Directory extends BeeHub_MongoResource implements DAV_Collection {
 
 
 /**

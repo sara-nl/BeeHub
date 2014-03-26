@@ -1,6 +1,6 @@
 <?php
 /**
- * Contains tests for the class BeeHub_XFSResource
+ * Contains tests for the class BeeHub_MongoResource
  *
  * Copyright ©2007-2014 SURFsara b.v., Amsterdam, The Netherlands
  *
@@ -22,14 +22,14 @@ declare( encoding = 'UTF-8' );
 namespace BeeHub\tests;
 
 /**
- * Tests for the class BeeHub_XFSResource
+ * Tests for the class BeeHub_MongoResource
  * @package     BeeHub
  * @subpackage  tests
  */
-class BeeHub_XFSResourceTest extends BeeHub_Tests_Db_Test_Case {
+class BeeHub_MongoResourceTest extends BeeHub_Tests_Db_Test_Case {
 
   /**
-   * @var  \BeeHub_XFSResource  The unit under test
+   * @var  \BeeHub_MongoResource  The unit under test
    */
   private $obj;
 
@@ -41,7 +41,7 @@ class BeeHub_XFSResourceTest extends BeeHub_Tests_Db_Test_Case {
       return;
     }
 
-    $this->obj = new \BeeHub_XFSResource( '/foo/file.txt' );
+    $this->obj = new \BeeHub_MongoResource( '/foo/file.txt' );
   }
 
 
@@ -55,16 +55,16 @@ class BeeHub_XFSResourceTest extends BeeHub_Tests_Db_Test_Case {
     $this->obj->method_PROPPATCH( $property, $value );
     $this->obj->storeProperties();
 
-    // Now, if I create a new instance of \BeeHub_XFSResource for the same file, it should have the property set
-    $fileReloaded = new \BeeHub_XFSResource( '/foo/file.txt' );
+    // Now, if I create a new instance of \BeeHub_MongoResource for the same file, it should have the property set
+    $fileReloaded = new \BeeHub_MongoResource( '/foo/file.txt' );
     $this->assertSame( $value, $fileReloaded->user_prop( $property ) );
 
     // Delete the property
     $fileReloaded->method_PROPPATCH( $property );
     $fileReloaded->storeProperties();
 
-    // Now, if I create yet another instance of \BeeHub_XFSResource for the same file, it should not have the property set
-    $fileAgainReloaded = new \BeeHub_XFSResource( '/foo/file.txt' );
+    // Now, if I create yet another instance of \BeeHub_MongoResource for the same file, it should not have the property set
+    $fileAgainReloaded = new \BeeHub_MongoResource( '/foo/file.txt' );
     $this->assertNull( $fileAgainReloaded->user_prop( $property ) );
   }
 
@@ -93,7 +93,7 @@ class BeeHub_XFSResourceTest extends BeeHub_Tests_Db_Test_Case {
     // resource. This last case is actually not an error in
     // user_prop_getlastmodified, but a problem nevertheless
     touch( \BeeHub::localPath( '/foo/file.txt' ) );
-    $file = new \BeeHub_XFSResource( '/foo/file.txt' );
+    $file = new \BeeHub_MongoResource( '/foo/file.txt' );
     $this->assertLessThan( 1, $file->user_prop_getlastmodified() - time() );
   }
 
@@ -334,6 +334,6 @@ class BeeHub_XFSResourceTest extends BeeHub_Tests_Db_Test_Case {
     $this->assertSame( '/system/sponsors/sponsor_b', $this->obj->user_prop_sponsor() );
   }
 
-} // class BeeHub_XFSResourceTest
+} // class BeeHub_MongoResourceTest
 
 // End of file

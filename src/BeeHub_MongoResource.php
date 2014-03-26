@@ -24,7 +24,7 @@
  * Some class.
  * @package BeeHub
  */
-class BeeHub_XFSResource extends BeeHub_Resource {
+class BeeHub_MongoResource extends BeeHub_Resource {
 
 
   /**
@@ -303,4 +303,4 @@ class BeeHub_XFSResource extends BeeHub_Resource {
   }
 
 
-} // class BeeHub_XFSResource
+} // class BeeHub_MongoResource

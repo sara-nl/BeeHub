@@ -23,7 +23,7 @@
  * BeeHub user
  *
  * There are a few properties defined which are stored in the database instead
- * of as xfs attribute. These properties are credentials and user contact info:
+ * of as file attribute. These properties are credentials and user contact info:
  * BeeHub::PROP_NAME
  * BeeHub::PROP_EMAIL
  * BeeHub::PROP_X509

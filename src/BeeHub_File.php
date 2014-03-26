@@ -24,7 +24,7 @@
  * @package BeeHub
  *
  */
-class BeeHub_File extends BeeHub_XFSResource {
+class BeeHub_File extends BeeHub_MongoResource {
 
 public function __construct ($path) {
   parent::__construct($path);
