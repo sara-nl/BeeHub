@@ -90,7 +90,6 @@ require 'views/header.php';
  <!-- Usage tab -->
  <br/>
  <div id="bh-gs-panel-usage" class="tab-pane">
- test
  
  </div>
  <!--  End usage tab -->
@@ -99,5 +98,8 @@ require 'views/header.php';
  <!-- End tab contents -->
 
 <?php
-$footer='<script type="text/javascript" src="/system/js/group-sponsor.js"></script>';
+$footer='<script type="text/javascript" src="/system/js/group-sponsor.js"></script>
+         <script type="text/javascript" src="/system/js/plugins/d3.min.js"></script>
+         <script type="text/javascript" src="/system/js/sponsor_view_usage.js"></script>
+';
 require 'views/footer.php';
