@@ -52,6 +52,7 @@
   var rememberContentDeleteResource =    nl.sara.beehub.view.content.deleteResource;
   var rememberTreeRemovePath =           nl.sara.beehub.view.tree.removePath;
   var rememberSetCustomAclOnResource =   nl.sara.beehub.view.content.setCustomAclOnResource;
+  var rememberHideAllFixedButtons =      nl.sara.beehub.view.hideAllFixedButtons;
 
   /**
    * Back to original test environment
@@ -77,6 +78,7 @@
     nl.sara.beehub.view.content.deleteResource =            rememberContentDeleteResource;
     nl.sara.beehub.view.tree.removePath =                   rememberTreeRemovePath;
     nl.sara.beehub.view.content.setCustomAclOnResource =    rememberSetCustomAclOnResource;
+    nl.sara.beehub.view.hideAllFixedButtons =               rememberHideAllFixedButtons;
   }
   
   /**
@@ -216,10 +218,32 @@
        }
     };
     
+    nl.sara.beehub.view.hideAllFixedButtons = function(){
+      ok(true, "hideAllFicedButtons is called.");
+    }
+    
     var view = "acl";
     nl.sara.beehub.view.showFixedButtons("acl");
     view = "content";
     nl.sara.beehub.view.showFixedButtons("content");
+  });
+  
+  /**
+   * Test hideAllFixedButtons
+   */
+  test("nl.sara.beehub.view.hideAllFixedButtons", function(){
+    expect(2);
+    
+    // Setup environment
+    nl.sara.beehub.view.content.allFixedButtons = function(value){
+     deepEqual(value, "hide", "AllFixedButtons should be called with value hide.");
+    };
+    
+    nl.sara.beehub.view.acl.allFixedButtons = function(value){
+     deepEqual(value, "hide", "AllFixedButtons should be called with value hide.");
+    };
+   
+    nl.sara.beehub.view.hideAllFixedButtons(); 
   });
   
   /**
