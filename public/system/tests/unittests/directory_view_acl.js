@@ -609,7 +609,7 @@
    * Test deleteRowIndex
    */
   test('nl.sara.beehub.view.acl.deleteRowIndex', function(){
-    expect(89);
+    expect(91);
     
     var name = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclPrincipal).eq(1).attr('data-value');
     var result = nl.sara.beehub.view.acl.getAclView().find(aclContents).find('td[data-value = "'+name+'"]').attr('data-value');
@@ -637,7 +637,7 @@
    * Test moveDownAclRule
    */
   test('nl.sara.beehub.view.acl.moveDownAclRule' , function() {
-    expect(109);
+    expect(111);
     
     var index = nl.sara.beehub.view.acl.getIndexLastProtected() + 1;
     var row = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclRow).eq(index);
@@ -659,7 +659,7 @@
    * Test moveUpAclRule
    */
   test('nl.sara.beehub.view.acl.moveUpAclRule' , function() {
-    expect(109);
+    expect(111);
     
     var index = nl.sara.beehub.view.acl.getIndexLastProtected() + 2;
     var row = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclRow).eq(index);
