@@ -160,6 +160,64 @@ $(function (){
 
     return false;
   });
+ 
+//Change tab listeners
+ // Usage tab sponsors
+ $('a[href="#bh-gs-panel-usage"]').unbind('click').click(function(e){
+   $("#bh-gs-panel-usage").html("");
+       var width = 960,
+       height = 500,
+       radius = Math.min(width, height) / 2;
+    
+    var color = d3.scale.ordinal()
+       .range(["#98abc5", "#8a89a6", "#7b6888", "#6b486b", "#a05d56", "#d0743c", "#ff8c00"]);
+    
+    var arc = d3.svg.arc()
+       .outerRadius(radius - 10)
+       .innerRadius(0);
+    
+    var pie = d3.layout.pie()
+       .sort(null)
+       .value(function(d) { return d.used; });
+    
+    var svg = d3.select("#bh-gs-panel-usage").append("svg")
+       .attr("width", width)
+       .attr("height", height)
+     .append("g")
+       .attr("transform", "translate(" + width / 2 + "," + height / 2 + ")");
+    
+//    d3.csv("/system/data.csv", function(error, data) {
+//    
+//     data.forEach(function(d) {
+//       d.used = +d.used;
+//       console.log(d.used);
+//     });
+     
+    var data;
+    
+     d3.json("/system/data.json", function(error, data) {
+       data.forEach(function(d) {
+         d.usage = +d.usage;
+         console.log(d);
+     });
+    
+     var g = svg.selectAll(".arc")
+         .data(pie(data))
+       .enter().append("g")
+         .attr("class", "arc");
+    
+     g.append("path")
+         .attr("d", arc)
+         .style("fill", function(d) { return color(d.data.user); });
+    
+     g.append("text")
+         .attr("transform", function(d) { return "translate(" + arc.centroid(d) + ")"; })
+         .attr("dy", ".35em")
+         .style("text-anchor", "middle")
+         .text(function(d) { return d.data.user; });
+    
+    });
+ });
 
 // });
 // Not used in new layout

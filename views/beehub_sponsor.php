@@ -100,6 +100,5 @@ require 'views/header.php';
 <?php
 $footer='<script type="text/javascript" src="/system/js/group-sponsor.js"></script>
          <script type="text/javascript" src="/system/js/plugins/d3.min.js"></script>
-         <script type="text/javascript" src="/system/js/sponsor_view_usage.js"></script>
 ';
 require 'views/footer.php';

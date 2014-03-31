@@ -54,6 +54,7 @@ nl.sara.beehub.view.init = function() {
   $('a[href="#bh-dir-panel-usage"]').unbind('click').click(function(e){
     nl.sara.beehub.view.tree.closeTree();
     nl.sara.beehub.view.showFixedButtons('usage');
+    nl.sara.beehub.view.user_usage.createView();
   });
 };
 

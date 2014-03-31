@@ -51,6 +51,12 @@ class BeeHub_Sponsor extends BeeHub_Principal {
    * @see DAV_Resource::method_GET()
    */
   public function method_GET() {
+    if ( isset( $_GET['usage'] ) && $this->is_admin() ) {
+      // If the usage is requested, this is gathered by a seperate method
+      return $this->method_GET_usage();
+    }
+    
+    // Else prepare the sponsor administration page
     $members = array();
     if ( $this->is_member() ) {
       $this->init_props();
@@ -73,6 +79,44 @@ class BeeHub_Sponsor extends BeeHub_Principal {
       }
     }
     $this->include_view( null, array( 'members' => $members ) );
+  }
+  
+  
+  /**
+   * Gathers the usage statistics for this sponsors and return it to the client
+   * in json format
+   * 
+   * @return  string  Usage statistics JSON encoded
+   */
+  private function method_GET_usage() {
+    $collection = BeeHub::getNoSQL()->files;
+    $stats = $collection->group(
+      array( 'props.DAV: owner' => 1 ),
+      array( 'usage' => 0 ),
+      'function( file, stats ) {
+         if ( file.props !== undefined && file.props["DAV: getcontentlength"] !== undefined )
+           stats.usage += file.props["DAV: getcontentlength"];
+      }',
+      array(
+        'condition' => array(
+          "props.http://beehub%2Enl/ sponsor" => "e-infra"
+        )
+      )
+    );
+    
+    if ( ! $stats['ok'] ) {
+      throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR, 'Unable to retrieve usage statistics due to an unknown error' );
+    }
+
+    return json_encode(
+      array(
+        array(
+          "sponsor" => $this->path,
+          "time" => date( 'c' ),
+          "usage" => $stats['retval'],
+        )
+      )
+    );
   }
 
 

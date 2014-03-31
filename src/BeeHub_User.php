@@ -51,6 +51,12 @@ class BeeHub_User extends BeeHub_Principal {
    * @see DAV_Resource::method_GET()
    */
   public function method_GET() {
+    if ( isset( $_GET['usage'] ) && $this->is_admin() ) {
+      // If the usage is requested, this is gathered by a seperate method
+      return $this->method_GET_usage();
+    }
+    
+    // Else prepare the profile page
     $this->init_props();
     
     if ($this->is_admin()) {
@@ -62,6 +68,60 @@ class BeeHub_User extends BeeHub_Principal {
       //TODO: Show a (non-editable) profile page
       throw DAV::forbidden();
     }
+  }
+  
+  
+  /**
+   * Gathers the usage statistics for this sponsors and return it to the client
+   * in json format
+   * 
+   * @return  string  Usage statistics JSON encoded
+   */
+  private function method_GET_usage() {
+    $db = BeeHub::getNoSQL();
+    
+    $stats = $db->command(
+      array(
+        'mapReduce' => 'files',
+        'map' => '
+          function() {
+            if ( this.props === undefined || this.props[ "DAV: getcontentlength" ] === undefined || this.props[ "DAV: getcontentlength" ] < 1 ) {
+              return;
+            }
+            var path = "/" + this.path;
+            var parent = path.substr( 0, path.lastIndexOf( "/" ) );
+            emit( parent, this.props["DAV: getcontentlength"] );
+          }
+        ',
+//          function() {
+//            if ( this.props === undefined || this.props[ "DAV: getcontentlength" ] === undefined || this.props[ "DAV: getcontentlength" ] < 1 ) {
+//              return;
+//            }
+//            var pathParts = this.path.split("/");
+//            pathParts.pop();
+//            pathParts.unshift( "" );
+//            var path = "";
+//            for ( var key in pathParts ) {
+//              path +=  pathParts[key] + "/";
+//              emit( path, this.props["DAV: getcontentlength"] );
+//            }
+//          }
+//        ',
+        'reduce' => '
+          function( id, values ) {
+            return Array.sum( values );
+          }
+        ',
+        'out' => array( 'inline' => 1 ),
+        'query' => array( 'props.DAV: owner' => $this->name )
+      )
+    );
+    
+    if ( ! $stats['ok'] ) {
+      throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR, 'Unable to retrieve usage statistics due to an unknown error' );
+    }
+    
+    return json_encode( $stats['results'] );
   }
 
 

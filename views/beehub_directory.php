@@ -630,7 +630,7 @@ $footer = '
   <script type="text/javascript" src="/system/js/directory_view_dialog.js"></script>
   <script type="text/javascript" src="/system/js/directory_view_acl.js"></script>
   <script type="text/javascript" src="/system/js/directory_resource.js"></script>
-  <script type="text/javascript" src="/system/js/directory_view_usage.js"></script>
+  <script type="text/javascript" src="/system/js/directory_view_user_usage.js"></script>
 ';
 
 // If the directory ($this) is not writable nor any of the files in it, then you

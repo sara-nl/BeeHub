@@ -66,7 +66,7 @@ This collections contains just one document:
 This is used as a counter to determine the next ETag. This value should never be changed manually! However, after a fresh install, before any files are uploaded, you can set the 'counter' field to 0.
 
 ## Collection: files
-A complete document in the 'sponsors' collection could look like this:
+A complete document in the 'files' collection could look like this:
 ```
 {
   "path": "foo/file.txt",
