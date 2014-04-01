@@ -151,7 +151,6 @@
     deepEqual(row.find(renameField).is(':hidden'), true, 'Name field should be hidden');
     deepEqual(row.find(renameColumn).is(':hidden'), false, 'Input field should be shown');
     deepEqual(row.find(renameColumn).find(':input').val(), displayname,'Input field value should be testfolder');
-    deepEqual(row.find(renameColumn).find(':input').is(':focus'), true, 'Mouse should be focused in input field');
   
     row.find(renameColumn).find(':input').val("newFolderName");
     
@@ -286,7 +285,7 @@
    * Test edit icon
    */
   test( 'nl.sara.beehub.view.content.init: Edit menu', function() {
-    expect( 20 );
+    expect( 18 );
     checkEditMenu(directory1, directory1Displayname);
     checkEditMenu(file1, file1Displayname);
   });
@@ -363,7 +362,7 @@
    * Test add resource
    */
   test('nl.sara.beehub.view.content.addResource', function(){
-    expect( 39 );
+    expect( 38 );
     
     var resource = new nl.sara.beehub.ClientResource( location.pathname+"newfolder");
     resource.displayname = "newfolder";
@@ -431,7 +430,7 @@
    * Test delete resource
    */
   test('nl.sara.beehub.view.content.updateResource', function(){
-    expect( 46 );
+    expect( 45 );
     
     var testresource1 = new nl.sara.beehub.ClientResource(file1);
     testresource1 = nl.sara.beehub.view.content.getUnknownResourceValues(testresource1);
