@@ -1,5 +1,6 @@
 <?php
-$footer = '<script type="text/javascript" src="/system/js/user.js"></script>';
+$footer = '<script type="text/javascript" src="/system/js/user.js"></script>
+  <script type="text/javascript" src="/system/js/plugins/d3.min.js"></script>';
 $header = '
 <style type="text/css">
 	.control-label-left {
@@ -27,6 +28,7 @@ require 'views/header.php';
   <?php if ( !is_null( $this->unverified_address ) ) : ?>
     <li <?= isset($_GET['verification_code']) ? 'class="active"' : '' ?>><a href="#panel-verify" data-toggle="tab">Verify e-mail address</a></li>
   <?php endif; ?>
+  <li><a href="#bh-profile-panel-usage" data-toggle="tab">Usage</a></li>
 </ul>
 
 <!-- Tab contents -->
@@ -145,6 +147,13 @@ require 'views/header.php';
 	</div>
 </div>
 
+<!-- Usage tab -->
+<div id="bh-profile-panel-usage" class="tab-pane fade">
+ <div style="height:25px"><h4 id="bh-profile-usage-header"></h4></div>
+ <div id="bh-profile-usage-graph"></div>
+</div>
+
+<!-- End Usage tab -->
 <?php if ( !is_null( $this->unverified_address ) ) : ?>
   <div id="panel-verify" class="tab-pane fade <?= isset($_GET['verification_code']) ? 'in active' : '' ?>">
     <form id="verify_email" class="form-horizontal" method="post">

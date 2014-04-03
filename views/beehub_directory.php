@@ -84,7 +84,6 @@ require 'views/header.php';
     <li class="active"><a href="#bh-dir-panel-contents" data-toggle="tab">Contents</a>
     </li>
     <li><a href="#bh-dir-panel-acl" data-toggle="tab">Share</a></li>
-    <li><a href="#bh-dir-panel-usage" data-toggle="tab">Usage</a></li>
   </ul>
 </div>
 <!-- End class fixed tabs -->
@@ -592,17 +591,6 @@ require 'views/header.php';
 	  </div>
   </div>
   <!-- End Acl tab -->
-  
-  <!-- Usage tab -->
-  <div id="bh-dir-panel-usage" class="tab-pane fade">
-   <div id="bh-dir-acl-directory-usage">
-   <form>
-   <label><input type="radio" name="mode" value="size"> Size</label>
-   <label><input type="radio" name="mode" value="count" checked> Count</label>
- </form>
-   </div>
-  </div>
-  <!-- End Acl tab -->
 
 </div>
 <!-- End tab div -->
@@ -618,7 +606,6 @@ require 'views/header.php';
 
 <?php
 $footer = '
-  <script type="text/javascript" src="/system/js/plugins/d3.min.js"></script>
   <script type="text/javascript" src="/system/js/plugins/jquery.cookie.js"></script>
   <script type="text/javascript" src="/system/js/plugins/tablesorter/js/jquery.tablesorter.js"></script>
   <script type="text/javascript" src="/system/js/plugins/tablesorter/js/jquery.tablesorter.widgets.js"></script>
@@ -630,7 +617,6 @@ $footer = '
   <script type="text/javascript" src="/system/js/directory_view_dialog.js"></script>
   <script type="text/javascript" src="/system/js/directory_view_acl.js"></script>
   <script type="text/javascript" src="/system/js/directory_resource.js"></script>
-  <script type="text/javascript" src="/system/js/directory_view_user_usage.js"></script>
 ';
 
 // If the directory ($this) is not writable nor any of the files in it, then you

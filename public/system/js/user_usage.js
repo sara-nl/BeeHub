@@ -26,13 +26,21 @@
  * 
  */
 (function() {
+  // Usage tab
+  $('a[href="#bh-dir-panel-usage"]').unbind('click').click(function(e){
+    nl.sara.beehub.view.tree.closeTree();
+    nl.sara.beehub.view.showFixedButtons('usage');
+    nl.sara.beehub.view.user_usage.createView();
+  });
+  
   nl.sara.beehub.view.user_usage.createView = function(){
+   $("#bh-dir-acl-directory-usage").html("");
    var width = 960,
    height = 700,
    radius = Math.min(width, height) / 2,
    color = d3.scale.category20c();
  
- var svg = d3.select("body").append("svg")
+ var svg = d3.select("#bh-dir-acl-directory-usage").append("svg")
    .attr("width", width)
    .attr("height", height)
  .append("g")

@@ -168,4 +168,158 @@ $(function (){
 		    	};
 		    }, $("#verify_email").serialize());
 	});
+	
+ // Usage tab
+ $('a[href="#bh-profile-panel-usage"]').unbind('click').click(function(e){
+   createView();
+ });
+ 
+ var createView = function(){
+   $("#bh-profile-usage-graph").html("");
+   
+   var width = 760,
+   height = 500,
+   radius = Math.min(width, height) / 2,
+   color = d3.scale.category20c();
+   
+   var svg = d3.select("#bh-profile-usage-graph")
+               .append("svg")
+               .attr("width", width)
+               .attr("height", height)
+               .append("g")
+               .attr("transform", "translate(" + width / 2 + "," + height * .52 + ")");
+ 
+   var partition = d3.layout.partition()
+                     .sort(null)
+                     .size([2 * Math.PI, radius * radius])
+                     .value(function(d) { return d.size; });
+ 
+   var arc = d3.svg.arc()
+               .startAngle(function(d) { return d.x; })
+               .endAngle(function(d) { return d.x + d.dx; })
+               .innerRadius(function(d) { return Math.sqrt(d.y); })
+               .outerRadius(function(d) { return Math.sqrt(d.y + d.dy); });
+ 
+   d3.json(location.href+"?usage", function(error, response) {
+//   d3.json("/system/flare.json", function(error, root) {
+     var root = rewriteUsageResponse(response[0].usage);
+//     var root = rewriteUsageResponse(response);
+     var path = svg.datum(root)
+                   .selectAll("path")
+                   .data(partition.nodes)
+                   .enter()
+                   .append("path")
+                   .attr("display", function(d) { return d.depth ? null : "none"; }) // hide inner ring
+                   .attr("d", arc)
+                   .style("stroke", "#fff")
+                   .style("fill", function(d) { return color((d.children ? d : d.parent).name); })
+                   .style("fill-rule", "evenodd")
+                   .on("mouseover", mouseover)
+                   .on("mouseout", mouseout)
+                   .each(stash);
+   
+//     d3.selectAll("input").on("change", function change() {
+//       var value = this.value === "count" ? function() { return 1; } : function(d) { return d.size; };
+//       path.data(partition.value(value).nodes).transition().duration(1500).attrTween("d", arcTween);
+//     });
+   });
+ 
+  //Stash the old values for transition.
+  function stash(d) {
+    d.x0 = d.x;
+    d.dx0 = d.dx;
+  }
+ 
+  //Interpolate the arcs in data space.
+  function arcTween(a) {
+    var i = d3.interpolate({x: a.x0, dx: a.dx0}, a);
+    return function(t) {
+     var b = i(t);
+     a.x0 = b.x;
+     a.dx0 = b.dx;
+     return arc(b);
+    };
+    }
+  
+  var tooltip;
+  var mouseover = function(d){
+    tooltip = d3.select("#bh-profile-usage-header")
+    .append("div")
+    .style("position", "absolute")
+    .style("z-index", "10")
+    .style("visibility", "hidden")
+    .text(d.path+" ("+d.size+")");
+    return tooltip.style("visibility", "visible");
+  };
+  
+  var mouseout = function(d){
+    return tooltip.style("visibility", "hidden");
+  }
+ 
+  d3.select(self.frameElement).style("height", height + "px");
+ }
+ 
+
+ 
+ var rewriteUsageResponse = function(data){
+  var returnValue = {
+      name: "root",
+      children: []
+  };
+  
+  $.each(data, function(i, value){
+    var children = returnValue.children;
+    
+    var dirs = value["_id"].split("/");
+    
+    for (var i=1; i < dirs.length; i++) {
+      // als laatste dan toevoegen en value toevoegen
+      if (i === (dirs.length -1)){
+        var add = {
+            "name": dirs[i],
+            "size": value["value"],
+            "children": [],
+            "path": value["_id"]
+        };
+        children.push(add);
+      } else {
+        // als niet laatste
+        var exist = false;
+        var child = 0;
+        for (var j=0 ; j < children.length; j++){
+          
+          // check of match dan exist = true
+          if (children[j].name === dirs[i]){
+            exist = true;
+            child = j;
+          }
+        };
+        // bestaat hij bij de children 
+        if (exist) {
+          children = children[child].children;
+          // pas children aan
+          // volgende
+        } else {
+          // bestaat hij niet bij de children
+          // maak nieuwe aan
+          var add = {
+              "name": dirs[i],
+              "children": [],
+              "size": 0,
+              // TODO hele path
+              "path": dirs[i]
+          };
+          children.push(add);
+          // pas children aan
+          children = add.children;
+
+          // volgende
+        } 
+      }
+    }
+  })
+  
+  console.log(returnValue);
+  return returnValue;
+ }
 });
