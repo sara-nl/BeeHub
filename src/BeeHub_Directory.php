@@ -113,7 +113,12 @@ public function method_DELETE( $name )
   
   // Remove the entry from mongoDB too
   $filesCollection = BeeHub::getNoSQL()->selectCollection( 'files' );
-  $filesCollection->remove( array( 'path' => $path ) );
+  if ( substr( $path, 0, 1 ) === '/' ) {
+    $unslashifiedPath = DAV::unslashify( substr( $path, 1 ) );
+  }else{
+    $unslashifiedPath = DAV::unslashify( $path );
+  }
+  $filesCollection->remove( array( 'path' => $unslashifiedPath ) );
 
   // And then from the filesystem
   $localpath = BeeHub::localPath( $path );

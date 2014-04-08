@@ -83,30 +83,32 @@ class BeeHub_User extends BeeHub_Principal {
     $stats = $db->command(
       array(
         'mapReduce' => 'files',
-        'map' => '
-          function() {
-            if ( this.props === undefined || this.props[ "DAV: getcontentlength" ] === undefined || this.props[ "DAV: getcontentlength" ] < 1 ) {
-              return;
-            }
-            var path = "/" + this.path;
-            var parent = path.substr( 0, path.lastIndexOf( "/" ) );
-            emit( parent, this.props["DAV: getcontentlength"] );
-          }
-        ',
+        'map' => 
+//        '
 //          function() {
 //            if ( this.props === undefined || this.props[ "DAV: getcontentlength" ] === undefined || this.props[ "DAV: getcontentlength" ] < 1 ) {
 //              return;
 //            }
-//            var pathParts = this.path.split("/");
-//            pathParts.pop();
-//            pathParts.unshift( "" );
-//            var path = "";
-//            for ( var key in pathParts ) {
-//              path +=  pathParts[key] + "/";
-//              emit( path, this.props["DAV: getcontentlength"] );
-//            }
+//            var path = "/" + this.path;
+//            var parent = path.substr( 0, path.lastIndexOf( "/" ) );
+//            emit( parent, this.props["DAV: getcontentlength"] );
 //          }
 //        ',
+        '
+          function() {
+            if ( this.props === undefined || this.props[ "DAV: getcontentlength" ] === undefined || this.props[ "DAV: getcontentlength" ] < 1 ) {
+              return;
+            }
+            var pathParts = this.path.split("/");
+            pathParts.pop();
+            pathParts.unshift( "" );
+            var path = "";
+            for ( var key in pathParts ) {
+              path +=  pathParts[key] + "/";
+              emit( path, this.props["DAV: getcontentlength"] );
+            }
+          }
+        ',
         'reduce' => '
           function( id, values ) {
             return Array.sum( values );
@@ -121,7 +123,15 @@ class BeeHub_User extends BeeHub_Principal {
       throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR, 'Unable to retrieve usage statistics due to an unknown error' );
     }
     
-    return json_encode( $stats['results'] );
+    return json_encode(
+      array(
+        array(
+          'user' => $this->path,
+          'time' => date( 'c' ),
+          'usage' => $stats['results']
+        )
+      )
+    );
   }
 
 

@@ -149,6 +149,10 @@ require 'views/header.php';
 
 <!-- Usage tab -->
 <div id="bh-profile-panel-usage" class="tab-pane fade">
+<form>
+<label><input type="radio" name="mode" value="size"> Size</label>
+<label><input type="radio" name="mode" value="count" checked> Count</label>
+</form>
  <div style="height:25px"><h4 id="bh-profile-usage-header"></h4></div>
  <div id="bh-profile-usage-graph"></div>
 </div>
