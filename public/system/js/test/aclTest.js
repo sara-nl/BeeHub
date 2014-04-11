@@ -232,13 +232,29 @@ nl.sara.testutil.queueTest( 'Test DAV:principal-collection-set and DAV:owner val
     }
 
     var response = multistatus.getResponse( basePath() + 'testDir/file.txt' );
-    var receivedOwnerProp = response.getProperty( 'DAV:', 'owner' );
-    var receivedPrincColSetProp = response.getProperty( 'DAV:', 'principal-collection-set' );
+    var receivedOwnerProp = response.getProperty( 'DAV:', 'owner' ).getParsedValue();
+    var receivedPrincColSetProp = response.getProperty( 'DAV:', 'principal-collection-set' ).getParsedValue();
 
-    // TODO, actually check these values
-    alert( receivedOwnerProp.getParsedValue() );
-    alert( receivedPrincColSetProp.getParsedValue() );
-    console.log( receivedPrincColSetProp );
+    // And check the response values
+    if ( receivedOwnerProp !== '/system/users/niek' ) {
+      nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'Wrong owner set' );
+      return;
+    }
+    if ( receivedPrincColSetProp.length !== 3 ) {
+      nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'Expected 3 principal collections, received ' + receivedPrincColSetProp.length );
+      return;
+    }
+    for ( var key = 0; key < receivedPrincColSetProp.length; key++ ) {
+      switch ( receivedPrincColSetProp[ key ] ) {
+        case '/system/users/':
+        case '/system/groups/':
+        case '/system/sponsors/':
+          break;
+        default:
+          nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'Unexpected principal collection returned: ' + receivedPrincColSetProp[ key ] );
+        return;
+      }
+    }
 
     nl.sara.testutil.finishTest( testId, nl.sara.testutil.SUCCESS );
   }, 0, [ ownerProp, princColSetProp ] );
