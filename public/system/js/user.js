@@ -171,176 +171,278 @@ $(function (){
 	
  // Usage tab
  $('a[href="#bh-profile-panel-usage"]').unbind('click').click(function(e){
-   createView();
+   createView(); 
  });
  
- var createView = function(){
-   $("#bh-profile-usage-graph").html("");
-   
-//   var width = 760,
-//   height = 500,
-//   radius = Math.min(width, height) / 2,
-//   color = d3.scale.category20c();
-//   
-//   var svg = d3.select("#bh-profile-usage-graph")
-//               .append("svg")
-//               .attr("width", width)
-//               .attr("height", height)
-//               .append("g")
-//               .attr("transform", "translate(" + width / 2 + "," + height * .52 + ")");
-// 
-//   var partition = d3.layout.partition()
-//                     .sort(null)
-//                     .size([2 * Math.PI, radius * radius])
-//                     .value(function(d) { return d.size; });
-// 
-//   var arc = d3.svg.arc()
-//               .startAngle(function(d) { return d.x; })
-//               .endAngle(function(d) { return d.x + d.dx; })
-//               .innerRadius(function(d) { return Math.sqrt(d.y); })
-//               .outerRadius(function(d) { return Math.sqrt(d.y + d.dy); });
-// 
-//   d3.json(location.href+"?usage", function(error, response) {
-////   d3.json("/system/flare.json", function(error, root) {
-//     var root = rewriteUsageResponse(response[0].usage);
-////     var root = rewriteUsageResponse(response);
-//     var path = svg.datum(root)
-//                   .selectAll("path")
-//                   .data(partition.nodes)
-//                   .enter()
-//                   .append("path")
-//                   .attr("display", function(d) { return d.depth ? null : "none"; }) // hide inner ring
-//                   .attr("d", arc)
-//                   .style("stroke", "#fff")
-//                   .style("fill", function(d) { return color((d.children ? d : d.parent).name); })
-//                   .style("fill-rule", "evenodd")
-//                   .on("click", mouseover) 
-//                   .each(stash);
-//   
-////     d3.selectAll("input").on("change", function change() {
-////       var value = this.value === "count" ? function() { return 1; } : function(d) { return d.size; };
-////       path.data(partition.value(value).nodes).transition().duration(1500).attrTween("d", arcTween);
-////     });
-//   });
-// 
+ var totalSize;
+
+// var createView = function(){
+//  $("#bh-profile-usage-graph").html("");
+//  totalSize = 0;
+//  
+//  var width = 640,
+//  height = 450,
+//  radius = Math.min(width, height) / 2,
+//  color = d3.scale.category20c();
+//
+//  var svg = d3.select("#bh-profile-usage-graph").append("svg")
+//    .attr("width", width)
+//    .attr("height", height)
+//    .append("g")
+//    .attr("transform", "translate(" + width / 2 + "," + height * .52 + ")");
+//
+//  var partition = d3.layout.partition()
+//    .sort(null)
+//    .size([2 * Math.PI, radius * radius])
+//    .value(function(d) { return d.size; });
+//
+//  var arc = d3.svg.arc()
+//    .startAngle(function(d) { return d.x; })
+//    .endAngle(function(d) { return d.x + d.dx; })
+//    .innerRadius(function(d) { return Math.sqrt(d.y); })
+//    .outerRadius(function(d) { return Math.sqrt(d.y + d.dy); });
+//
+//  d3.json(location.href+"?usage", function(error, response) {
+//    var root = rewriteUsageResponse(response[0].usage);
+//    var path = svg.datum(root).selectAll("path")
+//      .data(partition.nodes)
+//      .enter().append("path")
+//      .attr("display", function(d) { return d.depth ? null : "none"; }) // hide inner ring
+//      .attr("d", arc)
+//      .style("stroke", "#fff")
+//      .style("fill", function(d) {return determineColor(d);})
+//      .style("fill-rule", "evenodd")
+//      .on("click", click) 
+//      .each(stash);
+//  });
+//  
+//
 //  //Stash the old values for transition.
 //  function stash(d) {
 //    d.x0 = d.x;
 //    d.dx0 = d.dx;
 //  }
-// 
+//
 //  //Interpolate the arcs in data space.
 //  function arcTween(a) {
 //    var i = d3.interpolate({x: a.x0, dx: a.dx0}, a);
 //    return function(t) {
-//     var b = i(t);
-//     a.x0 = b.x;
-//     a.dx0 = b.dx;
-//     return arc(b);
+//      var b = i(t);
+//      a.x0 = b.x;
+//      a.dx0 = b.dx;
+//      return arc(b);
 //    };
-//    }
-//  
+//  }
 //  var tooltip;
-//  var mouseover = function(d){
+//  var click = function(d){
 //    $("#bh-profile-usage-header").html("");
+//    var info = "";
+//    if (d.name !== "empty"){
+//      info = d.path+" ("+bytesToSize(d.size,0)+")";
+//    }
 //    tooltip = d3.select("#bh-profile-usage-header")
 //    .append("div")
 //    .style("position", "absolute")
 //    .style("z-index", "10")
 //    .style("visibility", "hidden")
-//    .text(d.path+" ("+d.size+")");
+//    .text(info);
 //    return tooltip.style("visibility", "visible");
 //  };
 //  
-////  var mouseout = function(d){
-////    return tooltip.style("visibility", "hidden");
-////  }
-// 
+//  var bytesToSize = function(bytes, precision)
+//  {  
+//      var kilobyte = 1024;
+//      var megabyte = kilobyte * 1024;
+//      var gigabyte = megabyte * 1024;
+//      var terabyte = gigabyte * 1024;
+//     
+//      if ((bytes >= 0) && (bytes < kilobyte)) {
+//          return bytes + ' B';
+//   
+//      } else if ((bytes >= kilobyte) && (bytes < megabyte)) {
+//          return (bytes / kilobyte).toFixed(precision) + ' KB';
+//   
+//      } else if ((bytes >= megabyte) && (bytes < gigabyte)) {
+//          return (bytes / megabyte).toFixed(precision) + ' MB';
+//   
+//      } else if ((bytes >= gigabyte) && (bytes < terabyte)) {
+//          return (bytes / gigabyte).toFixed(precision) + ' GB';
+//   
+//      } else if (bytes >= terabyte) {
+//          return (bytes / terabyte).toFixed(precision) + ' TB';
+//   
+//      } else {
+//          return bytes + ' B';
+//      }
+//  };
+//  
+//  var determineColor = function(d){
+//   var percentage = (100 * d.value / totalSize).toPrecision(3);
+//   console.log(percentage);
+//   if (d.name === "empty"){
+//     return "#FFFFFF";
+//   } else {
+//     return color((d.children ? d : d.parent).name); 
+//   }
+//   
+////   if (percentage > 95){
+////     return "red"
+////   };
+////   if (percentage > 90){
+////     return "blue"
+////   };
+////   if (percentage > 80){
+////     return "008741"
+////   };
+////   if (percentage > 70){
+////     return "459c64"
+////   };
+////   if (percentage > 50){
+////     return "9fc5a4"
+////   };
+////   if (percentage > 25){
+////     return "b9d3ba"
+////   } else {
+////     return "e8f1e9";
+////   };
+////   else {
+////     return color((d.children ? d : d.parent).name); 
+////   }
+//  }
+//
 //  d3.select(self.frameElement).style("height", height + "px");
-  
-  
-  
-  var width = 960,
-  height = 700,
-  radius = Math.min(width, height) / 2,
-  color = d3.scale.category20c();
-
-var svg = d3.select("#bh-profile-usage-graph").append("svg")
-  .attr("width", width)
-  .attr("height", height)
-.append("g")
-  .attr("transform", "translate(" + width / 2 + "," + height * .52 + ")");
-
-var partition = d3.layout.partition()
-  .sort(null)
-  .size([2 * Math.PI, radius * radius])
-  .value(function(d) { return 1; });
-
-var arc = d3.svg.arc()
-  .startAngle(function(d) { return d.x; })
-  .endAngle(function(d) { return d.x + d.dx; })
-  .innerRadius(function(d) { return Math.sqrt(d.y); })
-  .outerRadius(function(d) { return Math.sqrt(d.y + d.dy); });
-
-//d3.json("flare.json", function(error, root) {
-d3.json(location.href+"?usage", function(error, response) {
-////d3.json("/system/flare.json", function(error, root) {
-var root = rewriteUsageResponse(response[0].usage);
-////var root = rewriteUsageResponse(response);
-var path = svg.datum(root).selectAll("path")
-    .data(partition.nodes)
-  .enter().append("path")
-    .attr("display", function(d) { return d.depth ? null : "none"; }) // hide inner ring
-    .attr("d", arc)
-    .style("stroke", "#fff")
-    .style("fill", function(d) { return color((d.children ? d : d.parent).name); })
-    .style("fill-rule", "evenodd")
-    .on("click", mouseover) 
-    .each(stash);
-
-d3.selectAll("input").on("change", function change() {
-  var value = this.value === "count"
-      ? function() { return 1; }
-      : function(d) { return d.size; };
-
-  path
-      .data(partition.value(value).nodes)
-    .transition()
-      .duration(1500)
-      .attrTween("d", arcTween);
-});
-});
-
-//Stash the old values for transition.
-function stash(d) {
-d.x0 = d.x;
-d.dx0 = d.dx;
-}
-
-//Interpolate the arcs in data space.
-function arcTween(a) {
-var i = d3.interpolate({x: a.x0, dx: a.dx0}, a);
-return function(t) {
-  var b = i(t);
-  a.x0 = b.x;
-  a.dx0 = b.dx;
-  return arc(b);
-};
-}
-var tooltip;
-var mouseover = function(d){
-$("#bh-profile-usage-header").html("");
-tooltip = d3.select("#bh-profile-usage-header")
-.append("div")
-.style("position", "absolute")
-.style("z-index", "10")
-.style("visibility", "hidden")
-.text(d.path+" ("+d.size+")");
-return tooltip.style("visibility", "visible");
-};
-d3.select(self.frameElement).style("height", height + "px");
- }
+// }
  
+  var createView = function(){
+    $("#bh-profile-usage-graph").html("");
+    totalSize = 0;
+    
+    var width = 640,
+    height = 420,
+    radius = Math.min(width, height) / 2;
+
+    var x = d3.scale.linear()
+        .range([0, 2 * Math.PI]);
+    
+    var y = d3.scale.sqrt()
+        .range([0, radius]);
+    
+    var color = d3.scale.category20c();
+    
+    var svg = d3.select("#bh-profile-usage-graph").append("svg")
+        .attr("width", width)
+        .attr("height", height)
+      .append("g")
+        .attr("transform", "translate(" + width / 2 + "," + (height / 2 + 10) + ")");
+    
+    var partition = d3.layout.partition()
+        .value(function(d) { return d.size; });
+        
+    var arc = d3.svg.arc()
+        .startAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x))); })
+        .endAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x + d.dx))); })
+        .innerRadius(function(d) { return Math.max(0, y(d.y)); })
+        .outerRadius(function(d) { return Math.max(0, y(d.y + d.dy)); });
+    
+    d3.json(location.href+"?usage", function(error, response) {
+      var root = rewriteUsageResponse(response[0].usage);
+      $("#bh-profile-usage-header").html(root.path+"<br>"+bytesToSize(root.size)+", "+(100 * root.size / totalSize).toPrecision(3)+" % of total usage");
+      var path = svg.selectAll("path")
+          .data(partition.nodes(root))
+          .enter().append("path")
+          .attr("d", arc)
+          .style("stroke", "#fff")
+          .style("fill", function(d) { return determineColor(d); })
+////          .on("mouseover", mouseover)
+////          .on("mouseout", mouseout)
+//          .on("click", click);
+    
+          path.append("text")
+      .attr("transform", function(d) { return "rotate(" + (d.x + d.dx / 2 - Math.PI / 2) / Math.PI * 180 + ")"; })
+      .attr("x", function(d) { return d.y; })
+      .attr("dx", "6") // margin
+      .attr("dy", ".35em") // vertical-align
+      .attr("display", function(d) { return d.depth ? null : "none"; }) // hide inner
+      .text(function(d) { return d.name; });
+//      path.append("text")
+//        .attr("x", function(d) { return d.dx / 2; })
+//        .attr("y", function(d) { return d.dy / 2; })
+//        .attr("dy", ".35em")
+//        .attr("text-anchor", "middle")
+//        .text(function(d) { return d.name; })
+//        .style("color", "red");
+      
+      function click(d) {
+        if (d.name !== "empty") {
+         $("#bh-profile-usage-header").html(d.path+"<br>"+bytesToSize(d.size)+", "+(100 * d.size / totalSize).toPrecision(3)+" % of total usage");
+         path.transition()
+           .duration(750)
+           .attrTween("d", arcTween(d));
+        }
+      }
+      function mouseover(d) {
+        console.log(d.name);
+        path.text(function(d) { return d.name; });
+        console.log(path.text());
+      };
+      
+      function mouseout(d) {
+//        d.text.style('display', 'none');
+      };
+    });
+    
+    d3.select(self.frameElement).style("height", height + "px");
+    
+    // Interpolate the scales!
+    function arcTween(d) {
+      var xd = d3.interpolate(x.domain(), [d.x, d.x + d.dx]),
+          yd = d3.interpolate(y.domain(), [d.y, 1]),
+          yr = d3.interpolate(y.range(), [d.y ? 20 : 0, radius]);
+      return function(d, i) {
+        return i
+            ? function(t) { return arc(d); }
+            : function(t) { x.domain(xd(t)); y.domain(yd(t)).range(yr(t)); return arc(d); };
+      };
+    }
+    
+    var determineColor = function(d){
+     var percentage = (100 * d.value / totalSize).toPrecision(3);
+      if (d.name === "empty"){
+        return "#FFFFFF";
+      } else {
+        return color((d.children ? d : d.parent).name); 
+      }
+    }
+    
+  }
+
+
+var bytesToSize = function(bytes, precision)
+{  
+    var kilobyte = 1024;
+    var megabyte = kilobyte * 1024;
+    var gigabyte = megabyte * 1024;
+    var terabyte = gigabyte * 1024;
+   
+    if ((bytes >= 0) && (bytes < kilobyte)) {
+        return bytes + ' B';
+ 
+    } else if ((bytes >= kilobyte) && (bytes < megabyte)) {
+        return (bytes / kilobyte).toFixed(precision) + ' KB';
+ 
+    } else if ((bytes >= megabyte) && (bytes < gigabyte)) {
+        return (bytes / megabyte).toFixed(precision) + ' MB';
+ 
+    } else if ((bytes >= gigabyte) && (bytes < terabyte)) {
+        return (bytes / gigabyte).toFixed(precision) + ' GB';
+ 
+    } else if (bytes >= terabyte) {
+        return (bytes / terabyte).toFixed(precision) + ' TB';
+ 
+    } else {
+        return bytes + ' B';
+    }
+};
 
  var checkExist = function(children, name){
    var exist = false;
@@ -370,6 +472,8 @@ d3.select(self.frameElement).style("height", height + "px");
   $.each(data, function(i, value){
     if (value["_id"] === "/"){
       returnValue.size = value["value"];
+      returnValue.path = "BeeHub root";
+      totalSize = value["value"];
       return;
     };
    var children = returnValue.children;  
@@ -415,62 +519,29 @@ d3.select(self.frameElement).style("height", height + "px");
     }
   });
   
-
-    
-    
-    
-//    var children = returnValue.children;
-//    
-//    var dirs = value["_id"].split("/");
-//    
-//    for (var i=1; i < dirs.length; i++) {
-//      // als laatste dan toevoegen en value toevoegen
-//      if (i === (dirs.length -1)){
-//        var add = {
-//            "name": dirs[i],
-//            "size": value["value"],
-//            "children": [],
-//            "path": value["_id"]
-//        };
-//        children.push(add);
-//      } else {
-//        // als niet laatste
-//        var exist = false;
-//        var child = 0;
-//        for (var j=0 ; j < children.length; j++){
-//          
-//          // check of match dan exist = true
-//          if (children[j].name === dirs[i]){
-//            exist = true;
-//            child = j;
-//          }
-//        };
-//        // bestaat hij bij de children 
-//        if (exist) {
-//          children = children[child].children;
-//          // pas children aan
-//          // volgende
-//        } else {
-//          // bestaat hij niet bij de children
-//          // maak nieuwe aan
-//          var add = {
-//              "name": dirs[i],
-//              "children": [],
-//              "size": 0,
-//              // TODO hele path
-//              "path": dirs[i]
-//          };
-//          children.push(add);
-//          // pas children aan
-//          children = add.children;
-//
-//          // volgende
-//        } 
-//      }
-//    }
-//  })
-//  
-//  console.log(returnValue);
+  calculateSizes(returnValue);
   return returnValue;
  }
+ 
+ var calculateSizes = function(returnValue) {
+   var size = 0;
+   for (var key in returnValue.children) {
+     size = size + returnValue.children[key].size;
+     if (returnValue.children[key].children.length > 0){
+       calculateSizes(returnValue.children[key]);
+     }
+   }
+   
+   if ((returnValue.size - size) > 0) {
+    var add = {
+        "name": "empty",
+        "children": [],
+        "size": returnValue.size - size,
+        // TODO hele path
+        "path": "empty"
+       };
+    returnValue.children.push(add);
+   }
+//   returnValue.size = returnValue.size - size;
+ };
 });
