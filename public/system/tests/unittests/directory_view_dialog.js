@@ -80,7 +80,7 @@
     $(dialog).find( aclTableSearch ).data("ui-autocomplete")._trigger("select", 'autocompleteselect', ui);
     // Test values after select
     deepEqual($(dialog).find(aclTableSearch).val(), ui.item.label, "Value should be "+ui.item.label);
-    deepEqual($(dialog).find(aclTableSearch).attr('name'), ui.item.name, "Attribute name should be "+ui.item.name);
+    deepEqual($(dialog).find(aclTableSearch).attr('data-value'), ui.item.name, "Attribute name should be "+ui.item.name);
     deepEqual(nl.sara.beehub.view.acl.getAddAclButton().prop('disabled'), false, "Add button should be enabled");
 
     // Change with value

@@ -407,7 +407,7 @@
       source:searchList,
       select: function( event, ui ) {
         formView.find(".bh-dir-acl-table-search").val(ui.item.label);
-        formView.find(".bh-dir-acl-table-search").attr('name' ,ui.item.name);
+        formView.find(".bh-dir-acl-table-search").attr('data-value' ,ui.item.name);
         // jquery and bootstrap buttons act different
         if (nl.sara.beehub.view.acl.getView() === "directory") {
           nl.sara.beehub.view.acl.getAddAclButton().button('enable');
