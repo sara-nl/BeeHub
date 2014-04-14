@@ -118,10 +118,13 @@ class BeeHub_ResourceTest extends \PHPUnit_Framework_TestCase {
 
   public function testUser_prop_acl() {
     $_SERVER['REQUEST_URI'] = '/some/path';
-    $resource = $this->getMock( '\BeeHub_Resource', array( 'init_props', 'user_prop_acl_internal', 'collection' ), array( $_SERVER['REQUEST_URI'] ) );
+    $resource = $this->getMock( '\BeeHub_Resource', array( 'init_props', 'user_prop_acl_internal', 'collection', 'user_prop_owner' ), array( $_SERVER['REQUEST_URI'] ) );
     $resource->expects( $this->once() )
              ->method( 'user_prop_acl_internal' )
              ->will( $this->returnValue( array( new \DAVACL_Element_ace( '/system/users/john', false, \DAVACL::PRIV_READ, false ) ) ) );
+    $resource->expects( $this->any() )
+             ->method( 'user_prop_owner' )
+             ->will( $this->returnValue( '/system/users/john' ) );
     $parent = $this->getMock( '\BeeHub_Resource', array( 'init_props', 'user_prop_acl_internal', 'user_prop_acl' ), array( dirname( $_SERVER['REQUEST_URI'] ) ) );
     $parent->expects( $this->once() )
            ->method( 'user_prop_acl' )
@@ -155,7 +158,7 @@ class BeeHub_ResourceTest extends \PHPUnit_Framework_TestCase {
 
     $ownerlessResource = $this->getMock( '\BeeHub_Resource', array( 'init_props', 'user_prop_acl_internal' ), array( $_SERVER['REQUEST_URI'] ) );
     $config = \BeeHub::config();
-    $this->assertSame( $config['namespace']['wheel_path'], $ownerlessResource->user_prop_owner(), 'All resources have owners. If none is specified, then it defaults to wheel' );
+    $this->assertNull( $ownerlessResource->user_prop_owner(), 'All resources have owners. If none is specified, then it defaults to null' );
   }
 
 

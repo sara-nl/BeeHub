@@ -224,6 +224,7 @@
    */
   nl.sara.beehub.view.acl.createRow = function(ace){
     var invert =  (ace['invert'] ? 'Everybody except ' : '');
+    var invertVal = (ace['invert'] ? "1" : '');
     var row = [];
     var info = ((ace['protected'] || ace['inherited'] ) ? 'info' : '' );
     row.push('<tr class="bh-dir-acl-row '+info+'">');
@@ -259,7 +260,7 @@
     if (ace.principal.indexOf(nl.sara.beehub.users_path) !== -1) {
       icon = '<i class="icon-user"></i>';
     }
-    row.push('<td class="bh-dir-acl-principal" data-value="' + nl.sara.beehub.controller.htmlEscape( ace.principal ) + '" data-invert="' + nl.sara.beehub.controller.htmlEscape( ace['invert'] ) + '" data-toggle="tooltip" title="' + nl.sara.beehub.controller.htmlEscape( ace.principal ) + '" ></i><b>'+show+'</b> ('+icon+')</td>');
+    row.push('<td class="bh-dir-acl-principal" data-value="' + nl.sara.beehub.controller.htmlEscape( ace.principal ) + '" data-invert="' + nl.sara.beehub.controller.htmlEscape(invertVal) + '" data-toggle="tooltip" title="' + nl.sara.beehub.controller.htmlEscape( ace.principal ) + '" ></i><b>'+show+'</b> ('+icon+')</td>');
     
     // Permissions
     var aceClass= '';

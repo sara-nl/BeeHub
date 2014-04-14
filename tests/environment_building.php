@@ -161,7 +161,6 @@ function loadTestConfig() {
     die( 1 );
   }
   \BeeHub::loadConfig( $configFile );
-  \BeeHub::changeConfigField( 'namespace', 'wheel_path', '/system/users/john' );
   \BeeHub::changeConfigField( 'namespace', 'admin_group', '/system/groups/admin' );
 }
 

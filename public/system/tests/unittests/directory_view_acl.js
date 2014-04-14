@@ -55,7 +55,8 @@
   var currentDirectory =      "/foo/client_tests/";
   var addButton =             '.bh-dir-acl-add';
   var directoryView =         '#bh-dir-acl-directory-acl';
-  var addAclButton=           '#bh-dir-acl-directory-button';
+  var addAclButton=           '#bh-dir-acl-resource-button';
+  var addAclDirButton=        '#bh-dir-acl-addrule-button';
   var aclFormView=            '#bh-dir-acl-directory-form';
   var indexLastProtected=     0;
   var aclColumns =            7;
@@ -193,10 +194,7 @@
         aclPermissionsFieldShow = true;
         aclPermissionsSelectShow = false;
         $(row).find(aclChangePermissions).click();
-       
-        // check focus
-        deepEqual($(row).find(aclPermissions).is(':focus'), true, 'Mouse should be focused in select field');
-        
+               
         // Check change handler
         permissionsOld = $(row).find(aclPermissionsField).html();
         aclPermissionsFieldShow = false;
@@ -384,7 +382,7 @@
    * Test if row handlers are set
    */
   test( 'nl.sara.beehub.view.acl.init: Set view row handlers', function() {
-    expect( 94 ); 
+    expect( 89 ); 
     var rows = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclRow);
     checkSetRowHandlers(rows);
   });
@@ -420,6 +418,8 @@
    */
   test( 'nl.sara.beehub.view.acl.getAddAclButton', function() {
     expect( 1 ); 
+    nl.sara.beehub.view.acl.setView("resource");
+    $('#qunit-fixture').append('<button style="display: inline-block;" data-toggle="tooltip" title="Add rule" id="bh-dir-acl-resource-button" class="btn btn-small" disabled="">       <i class="icon-plus"></i> Add rule      </button>');
     deepEqual(nl.sara.beehub.view.acl.getAddAclButton().attr("id"), addAclButton.replace("#",""), "Add acl button id should be "+addAclButton.replace("#","") );
   });
   
@@ -439,7 +439,7 @@
     expect( 2 ); 
     nl.sara.beehub.view.acl.allFixedButtons('hide');
     // Test if button is hidden
-    deepEqual($(addAclButton).is(':hidden'), true, 'Add acl button should be hidden');
+    deepEqual($(addAclDirButton).is(':hidden'), true, 'Add acl button should be hidden');
     nl.sara.beehub.view.acl.allFixedButtons('show');
     // Test if button is shown
     deepEqual($(addAclButton).is(':hidden'), false, 'Add acl button should be shown');
@@ -609,7 +609,7 @@
    * Test deleteRowIndex
    */
   test('nl.sara.beehub.view.acl.deleteRowIndex', function(){
-    expect(89);
+    expect(87);
     
     var name = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclPrincipal).eq(1).attr('data-value');
     var result = nl.sara.beehub.view.acl.getAclView().find(aclContents).find('td[data-value = "'+name+'"]').attr('data-value');
@@ -637,7 +637,7 @@
    * Test moveDownAclRule
    */
   test('nl.sara.beehub.view.acl.moveDownAclRule' , function() {
-    expect(109);
+    expect(106);
     
     var index = nl.sara.beehub.view.acl.getIndexLastProtected() + 1;
     var row = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclRow).eq(index);
@@ -659,7 +659,7 @@
    * Test moveUpAclRule
    */
   test('nl.sara.beehub.view.acl.moveUpAclRule' , function() {
-    expect(109);
+    expect(106);
     
     var index = nl.sara.beehub.view.acl.getIndexLastProtected() + 2;
     var row = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclRow).eq(index);

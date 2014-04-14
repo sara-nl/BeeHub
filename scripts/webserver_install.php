@@ -20,6 +20,8 @@ namespace nl\surfsara\beehub\install;
 \define( 'nl\surfsara\beehub\install\DEFAULT_SPONSOR_NAME', 'e-infra' );
 \define( 'nl\surfsara\beehub\install\DEFAULT_SPONSOR_DISPLAYNAME', 'e-Infra' );
 \define( 'nl\surfsara\beehub\install\DEFAULT_SPONSOR_DESCRIPTION', 'e-Infra supports the development and hosting of BeeHub. For now, all BeeHub users are sponsored by e-Infra' );
+\define( 'nl\surfsara\beehub\install\ADMIN_GROUP_DISPLAYNAME', 'Administrators' );
+\define( 'nl\surfsara\beehub\install\ADMIN_GROUP_DESCRIPTION', 'Administrators can manage BeeHub' );
 
 if ( $_SERVER['REQUEST_METHOD'] !== 'POST' ) {
   exit();
@@ -48,6 +50,7 @@ if ( \file_put_contents( \dirname( __DIR__ ) . \DIRECTORY_SEPARATOR . 'public' .
   print( "ok\n" );
 }
 
+$config = \BeeHub::config();
 print( "The configured data directory should be writable by the webserver..." );
 if ( empty( $config['environment']['datadir'] ) ) {
   $tempfile = false;
@@ -92,7 +95,6 @@ if ( \count( $collections ) > 0 ) {
   exit();
 }
 
-$config = \BeeHub::config();
 $datadir = new \DirectoryIterator( $config['environment']['datadir'] );
 $hasChildren = false;
 foreach ( $datadir as $child ) {
@@ -114,12 +116,15 @@ if ( $hasChildren ) {
 print( "Creating database structure..." );
 
 // Create users collection
+// TODO: Check input!
+$username = $_SERVER['PHP_AUTH_USER'];
+$userEmail = $_POST['email'];
 $usersCollection = $db->createCollection( 'users' );
 $usersCollection->insert(
   array(
-    'name' => \basename( $config['namespace']['wheel_path'] ),
+    'name' => $username,
     'displayname' => 'Administrator',
-    'email' => $_SERVER['PHP_AUTH_USER'],
+    'email' => $userEmail,
     'password' => \crypt( $_SERVER['PHP_AUTH_PW'], '$6$rounds=5000$' . md5(time() . rand(0, 99999)) . '$'),
     'default_sponsor' => DEFAULT_SPONSOR_NAME
   )
@@ -127,6 +132,17 @@ $usersCollection->insert(
 
 // Create groups collection
 $db->createCollection( 'groups' );
+$groupsCollection->insert(
+  array(
+    'name' => \basename( $config['namespace']['admin_group'] ),
+    'displayname' => DEFAULT_GROUP_DISPLAYNAME,
+    'description' => DEFAULT_GROUP_DESCRIPTION
+  )
+);
+$group = new \BeeHub_Group( $config['namespace']['admin_group'] );
+$group->change_memberships( array( $username ), \BeeHub_Group::USER_ACCEPT );
+$group->change_memberships( array( $username ), \BeeHub_Group::ADMIN_ACCEPT );
+$group->change_memberships( array( $username ), \BeeHub_Group::SET_ADMIN );
 
 // Create sponsors collection
 $sponsorsCollection = $db->createCollection( 'sponsors' );
@@ -138,8 +154,8 @@ $sponsorsCollection->insert(
   )
 );
 $sponsor = new \BeeHub_Sponsor( \BeeHub::SPONSORS_PATH . DEFAULT_SPONSOR_NAME );
-$sponsor->change_memberships( array( \basename( $config['namespace']['wheel_path'] ) ), \BeeHub_Sponsor::ADMIN_ACCEPT );
-$sponsor->change_memberships( array( \basename( $config['namespace']['wheel_path'] ) ), \BeeHub_Sponsor::SET_ADMIN );
+$sponsor->change_memberships( array( $username ), \BeeHub_Sponsor::ADMIN_ACCEPT );
+$sponsor->change_memberships( array( $username ), \BeeHub_Sponsor::SET_ADMIN );
 
 // Create the beehub_system collection
 $systemCollection = $db->createCollection( 'beehub_system' );
@@ -158,7 +174,7 @@ print( "ok\n" );
 
 // First initialise the datadir
 print( "Initialising data directory..." );
-$userdir = 'home' . \DIRECTORY_SEPARATOR . \basename( $config['namespace']['wheel_path'] );
+$userdir = 'home' . \DIRECTORY_SEPARATOR . $username;
 if (
   \mkdir( $config['environment']['datadir'] . 'system', 0770, true ) &&
   \mkdir( $config['environment']['datadir'] . 'home', 0770, true ) &&
@@ -175,9 +191,7 @@ if (
     }
     $fileDocument = array(
       'path' => $sysDir,
-      'props' => array(
-        \DAV::PROP_OWNER => \basename( $config['namespace']['wheel_path'] )
-      )
+      'props' => array()
     );
     $filesCollection->insert( $fileDocument );
   }
@@ -185,7 +199,7 @@ if (
   $fileDocument = array(
     'path' => \DAV::unslashify( $userdir ),
     'props' => array(
-      \DAV::PROP_OWNER => \basename( $config['namespace']['wheel_path'] )
+      \DAV::PROP_OWNER => $username
     )
   );
   if ( substr( $fileDocument['path'], 0, 1) === '/' ) {
@@ -203,6 +217,13 @@ if (
   \ob_end_flush();
   print( "\nUnable to create the system directories\n" );
   exit();
+
+  // And for now; the e-infra sponsor
+  $mysql->real_query( 'INSERT INTO `beehub_sponsors` ( `sponsor_name`, `displayname`, `description` ) VALUES ( \'' . DEFAULT_SPONSOR_NAME . '\', \'' . DEFAULT_SPONSOR_DISPLAYNAME . '\', \'' . DEFAULT_SPONSOR_DESCRIPTION . '\' );' );
+
+  // Add the administrator group
+  $config = \BeeHub::config();
+  $mysql->real_query( 'INSERT INTO `beehub_groups` ( `group_name`, `displayname`, `description` ) VALUES ( \'' . \basename( $config['namespace']['admin_group'] ) . '\', \'' . ADMIN_GROUP_DISPLAYNAME . '\', \'' . ADMIN_GROUP_DESCRIPTION . '\' );' );
 }
 print( "ok\n" );
 
@@ -211,7 +232,6 @@ print( "ok\n" );
 
 // Let 'them' know everything went well
 print( "\nDone configuring webserver\n" );
-print( "Your administrator's username is '" . \basename( $config['namespace']['wheel_path'] ) . "' but remember to only use this user for administration purposes. For regular usage, please create a regular user through the web interface!\n" );
 \ob_end_flush();
 
 /**

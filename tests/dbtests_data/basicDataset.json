@@ -90,14 +90,12 @@
       "path": "",
       "props" :
       {
-        "DAV: owner": "john"
       }
     },
     {
       "path": "home",
       "props" :
       {
-        "DAV: owner": "john"
       }
     },
     {
@@ -126,7 +124,6 @@
       "path": "foo",
       "props" :
       {
-        "DAV: owner": "john",
         "http://beehub%2Enl/ sponsor": "sponsor_a",
         "DAV: acl": "[[\"/system/groups/foo\",false,[\"DAV: read\", \"DAV: write\"],false]]"
       }
@@ -228,7 +225,6 @@
       "path": "bar",
       "props" :
       {
-        "DAV: owner": "john",
         "http://beehub%2Enl/ sponsor": "sponsor_b",
         "DAV: acl": "[[\"/system/groups/bar\",false,[\"DAV: read\", \"DAV: write\"],false]]"
       }
@@ -237,28 +233,24 @@
       "path": "system",
       "props" :
       {
-        "DAV: owner": "john"
       }
     },
     {
       "path": "system/groups",
       "props" :
       {
-        "DAV: owner": "john"
       }
     },
     {
       "path": "system/sponsors",
       "props" :
       {
-        "DAV: owner": "john"
       }
     },
     {
       "path": "system/users",
       "props" :
       {
-        "DAV: owner": "john"
       }
     }
   ]

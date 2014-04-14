@@ -114,7 +114,7 @@ class BeeHub_GroupsTest extends BeeHub_Tests_Db_Test_Case {
     $groupFolder = \DAV::$REGISTRY->resource( '/' . $_POST['group_name'] );
     $beehubConfig = \BeeHub::config();
     $expectedAcl = array( new \DAVACL_Element_ace( $group->path, false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false, false ) );
-    $this->assertSame( $beehubConfig['namespace']['wheel_path'], $groupFolder->user_prop( \DAV::PROP_OWNER ) );
+    $this->assertNull( $groupFolder->user_prop( \DAV::PROP_OWNER ) );
     $this->assertEquals( $expectedAcl, $groupFolder->user_prop_acl_internal() );
     $this->assertSame( '/system/sponsors/sponsor_a', $groupFolder->user_prop( \BeeHub::PROP_SPONSOR ) );
   }

@@ -89,7 +89,6 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
       throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
     }
     $groupdir_resource = DAV::$REGISTRY->resource( '/' . $group_name );
-    $groupdir_resource->user_set( DAV::PROP_OWNER, BeeHub::$CONFIG['namespace']['wheel_path'] );
     $groupdir_resource->user_set( BeeHub::PROP_SPONSOR, $user_sponsor );
     $groupdir_resource->user_set( DAV::PROP_ACL, '[["' . BeeHub::GROUPS_PATH . rawurlencode($group->name) . '",false,["DAV: read", "DAV: write"],false]]' );
     $groupdir_resource->storeProperties();
