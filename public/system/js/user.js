@@ -333,11 +333,12 @@ $(function (){
         .attr("width", width)
         .attr("height", height)
       .append("g")
-        .attr("transform", "translate(" + width / 2 + "," + (height / 2 + 10) + ")");
+        .attr("transform", "translate(" + width / 2 + "," + (height / 2 + 10) + ")")
+        .text("test")
     
     var partition = d3.layout.partition()
         .value(function(d) { return d.size; });
-        
+    
     var arc = d3.svg.arc()
         .startAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x))); })
         .endAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x + d.dx))); })
@@ -347,31 +348,36 @@ $(function (){
     d3.json(location.href+"?usage", function(error, response) {
       var root = rewriteUsageResponse(response[0].usage);
       $("#bh-profile-usage-header").html(root.path+"<br>"+bytesToSize(root.size)+", "+(100 * root.size / totalSize).toPrecision(3)+" % of total usage");
+      
+      var div = d3.select("#bh-profile-usage-graph").append("div")   
+      .attr("class", "tooltip")               
+      .style("opacity", 0);
+      
       var path = svg.selectAll("path")
           .data(partition.nodes(root))
           .enter().append("path")
           .attr("d", arc)
           .style("stroke", "#fff")
           .style("fill", function(d) { return determineColor(d); })
-////          .on("mouseover", mouseover)
-////          .on("mouseout", mouseout)
-//          .on("click", click);
-    
-          path.append("text")
-      .attr("transform", function(d) { return "rotate(" + (d.x + d.dx / 2 - Math.PI / 2) / Math.PI * 180 + ")"; })
-      .attr("x", function(d) { return d.y; })
-      .attr("dx", "6") // margin
-      .attr("dy", ".35em") // vertical-align
-      .attr("display", function(d) { return d.depth ? null : "none"; }) // hide inner
-      .text(function(d) { return d.name; });
-//      path.append("text")
-//        .attr("x", function(d) { return d.dx / 2; })
-//        .attr("y", function(d) { return d.dy / 2; })
-//        .attr("dy", ".35em")
-//        .attr("text-anchor", "middle")
-//        .text(function(d) { return d.name; })
-//        .style("color", "red");
-      
+          .on("click", click)
+          .on("mouseover", function(d) {  
+            if (d.name !== "empty") {
+             div.transition()        
+                 .duration(200)      
+                 .style("opacity", .9);      
+             div .html("<b>"+d.path+"</b><br>"+(100 * d.size / totalSize).toPrecision(3)+" % of total usage ("+bytesToSize(d.size)+")")  
+                 .style("left", (d3.event.pageX+5) + "px")     
+                 .style("top", (d3.event.pageY - 28) + "px");   
+            };
+         })   
+        .on("mouseout", function(d) {  
+          if (d.name !== "empty") {
+            div.transition()        
+                .duration(500)      
+                .style("opacity", 0);   
+          }
+        });
+
       function click(d) {
         if (d.name !== "empty") {
          $("#bh-profile-usage-header").html(d.path+"<br>"+bytesToSize(d.size)+", "+(100 * d.size / totalSize).toPrecision(3)+" % of total usage");
@@ -380,15 +386,6 @@ $(function (){
            .attrTween("d", arcTween(d));
         }
       }
-      function mouseover(d) {
-        console.log(d.name);
-        path.text(function(d) { return d.name; });
-        console.log(path.text());
-      };
-      
-      function mouseout(d) {
-//        d.text.style('display', 'none');
-      };
     });
     
     d3.select(self.frameElement).style("height", height + "px");

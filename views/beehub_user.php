@@ -3,6 +3,18 @@ $footer = '<script type="text/javascript" src="/system/js/user.js"></script>
   <script type="text/javascript" src="/system/js/plugins/d3.min.js"></script>';
 $header = '
 <style type="text/css">
+div.tooltip {   
+  position: absolute;           
+  text-align: left;           
+//  width: 60px;                  
+//  height: 28px;                 
+  padding: 2px;             
+  font: 12px sans-serif;        
+  background: #E8F1E9;   
+  border: 0px;      
+  border-radius: 5px;           
+  pointer-events: none;         
+}
 	.control-label-left {
     	text-align: left !important;
 // 			color: #008741 !important;
