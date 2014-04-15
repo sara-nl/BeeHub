@@ -171,276 +171,169 @@ $(function (){
 	
  // Usage tab
  $('a[href="#bh-profile-panel-usage"]').unbind('click').click(function(e){
-   createView(); 
+   createUsageView(); 
  });
- 
- var totalSize;
-
-// var createView = function(){
-//  $("#bh-profile-usage-graph").html("");
-//  totalSize = 0;
-//  
-//  var width = 640,
-//  height = 450,
-//  radius = Math.min(width, height) / 2,
-//  color = d3.scale.category20c();
-//
-//  var svg = d3.select("#bh-profile-usage-graph").append("svg")
-//    .attr("width", width)
-//    .attr("height", height)
-//    .append("g")
-//    .attr("transform", "translate(" + width / 2 + "," + height * .52 + ")");
-//
-//  var partition = d3.layout.partition()
-//    .sort(null)
-//    .size([2 * Math.PI, radius * radius])
-//    .value(function(d) { return d.size; });
-//
-//  var arc = d3.svg.arc()
-//    .startAngle(function(d) { return d.x; })
-//    .endAngle(function(d) { return d.x + d.dx; })
-//    .innerRadius(function(d) { return Math.sqrt(d.y); })
-//    .outerRadius(function(d) { return Math.sqrt(d.y + d.dy); });
-//
-//  d3.json(location.href+"?usage", function(error, response) {
-//    var root = rewriteUsageResponse(response[0].usage);
-//    var path = svg.datum(root).selectAll("path")
-//      .data(partition.nodes)
-//      .enter().append("path")
-//      .attr("display", function(d) { return d.depth ? null : "none"; }) // hide inner ring
-//      .attr("d", arc)
-//      .style("stroke", "#fff")
-//      .style("fill", function(d) {return determineColor(d);})
-//      .style("fill-rule", "evenodd")
-//      .on("click", click) 
-//      .each(stash);
-//  });
-//  
-//
-//  //Stash the old values for transition.
-//  function stash(d) {
-//    d.x0 = d.x;
-//    d.dx0 = d.dx;
-//  }
-//
-//  //Interpolate the arcs in data space.
-//  function arcTween(a) {
-//    var i = d3.interpolate({x: a.x0, dx: a.dx0}, a);
-//    return function(t) {
-//      var b = i(t);
-//      a.x0 = b.x;
-//      a.dx0 = b.dx;
-//      return arc(b);
-//    };
-//  }
-//  var tooltip;
-//  var click = function(d){
-//    $("#bh-profile-usage-header").html("");
-//    var info = "";
-//    if (d.name !== "empty"){
-//      info = d.path+" ("+bytesToSize(d.size,0)+")";
-//    }
-//    tooltip = d3.select("#bh-profile-usage-header")
-//    .append("div")
-//    .style("position", "absolute")
-//    .style("z-index", "10")
-//    .style("visibility", "hidden")
-//    .text(info);
-//    return tooltip.style("visibility", "visible");
-//  };
-//  
-//  var bytesToSize = function(bytes, precision)
-//  {  
-//      var kilobyte = 1024;
-//      var megabyte = kilobyte * 1024;
-//      var gigabyte = megabyte * 1024;
-//      var terabyte = gigabyte * 1024;
-//     
-//      if ((bytes >= 0) && (bytes < kilobyte)) {
-//          return bytes + ' B';
-//   
-//      } else if ((bytes >= kilobyte) && (bytes < megabyte)) {
-//          return (bytes / kilobyte).toFixed(precision) + ' KB';
-//   
-//      } else if ((bytes >= megabyte) && (bytes < gigabyte)) {
-//          return (bytes / megabyte).toFixed(precision) + ' MB';
-//   
-//      } else if ((bytes >= gigabyte) && (bytes < terabyte)) {
-//          return (bytes / gigabyte).toFixed(precision) + ' GB';
-//   
-//      } else if (bytes >= terabyte) {
-//          return (bytes / terabyte).toFixed(precision) + ' TB';
-//   
-//      } else {
-//          return bytes + ' B';
-//      }
-//  };
-//  
-//  var determineColor = function(d){
-//   var percentage = (100 * d.value / totalSize).toPrecision(3);
-//   console.log(percentage);
-//   if (d.name === "empty"){
-//     return "#FFFFFF";
-//   } else {
-//     return color((d.children ? d : d.parent).name); 
-//   }
-//   
-////   if (percentage > 95){
-////     return "red"
-////   };
-////   if (percentage > 90){
-////     return "blue"
-////   };
-////   if (percentage > 80){
-////     return "008741"
-////   };
-////   if (percentage > 70){
-////     return "459c64"
-////   };
-////   if (percentage > 50){
-////     return "9fc5a4"
-////   };
-////   if (percentage > 25){
-////     return "b9d3ba"
-////   } else {
-////     return "e8f1e9";
-////   };
-////   else {
-////     return color((d.children ? d : d.parent).name); 
-////   }
-//  }
-//
-//  d3.select(self.frameElement).style("height", height + "px");
-// }
- 
-  var createView = function(){
-    $("#bh-profile-usage-graph").html("");
-    totalSize = 0;
-    
-    var width = 640,
-    height = 420,
-    radius = Math.min(width, height) / 2;
-
-    var x = d3.scale.linear()
-        .range([0, 2 * Math.PI]);
-    
-    var y = d3.scale.sqrt()
-        .range([0, radius]);
-    
-    var color = d3.scale.category20c();
-    
-    var svg = d3.select("#bh-profile-usage-graph").append("svg")
-        .attr("width", width)
-        .attr("height", height)
-      .append("g")
-        .attr("transform", "translate(" + width / 2 + "," + (height / 2 + 10) + ")")
-        .text("test")
-    
-    var partition = d3.layout.partition()
-        .value(function(d) { return d.size; });
-    
-    var arc = d3.svg.arc()
-        .startAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x))); })
-        .endAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x + d.dx))); })
-        .innerRadius(function(d) { return Math.max(0, y(d.y)); })
-        .outerRadius(function(d) { return Math.max(0, y(d.y + d.dy)); });
-    
-    d3.json(location.href+"?usage", function(error, response) {
-      var root = rewriteUsageResponse(response[0].usage);
-      $("#bh-profile-usage-header").html(root.path+"<br>"+bytesToSize(root.size)+", "+(100 * root.size / totalSize).toPrecision(3)+" % of total usage");
-      
-      var div = d3.select("#bh-profile-usage-graph").append("div")   
-      .attr("class", "tooltip")               
-      .style("opacity", 0);
-      
-      var path = svg.selectAll("path")
-          .data(partition.nodes(root))
-          .enter().append("path")
-          .attr("d", arc)
-          .style("stroke", "#fff")
-          .style("fill", function(d) { return determineColor(d); })
-          .on("click", click)
-          .on("mouseover", function(d) {  
-            if (d.name !== "empty") {
-             div.transition()        
-                 .duration(200)      
-                 .style("opacity", .9);      
-             div .html("<b>"+d.path+"</b><br>"+(100 * d.size / totalSize).toPrecision(3)+" % of total usage ("+bytesToSize(d.size)+")")  
-                 .style("left", (d3.event.pageX+5) + "px")     
-                 .style("top", (d3.event.pageY - 28) + "px");   
-            };
-         })   
-        .on("mouseout", function(d) {  
-          if (d.name !== "empty") {
-            div.transition()        
-                .duration(500)      
-                .style("opacity", 0);   
-          }
-        });
-
-      function click(d) {
-        if (d.name !== "empty") {
-         $("#bh-profile-usage-header").html(d.path+"<br>"+bytesToSize(d.size)+", "+(100 * d.size / totalSize).toPrecision(3)+" % of total usage");
-         path.transition()
-           .duration(750)
-           .attrTween("d", arcTween(d));
-        }
-      }
-    });
-    
-    d3.select(self.frameElement).style("height", height + "px");
-    
-    // Interpolate the scales!
-    function arcTween(d) {
-      var xd = d3.interpolate(x.domain(), [d.x, d.x + d.dx]),
-          yd = d3.interpolate(y.domain(), [d.y, 1]),
-          yr = d3.interpolate(y.range(), [d.y ? 20 : 0, radius]);
-      return function(d, i) {
-        return i
-            ? function(t) { return arc(d); }
-            : function(t) { x.domain(xd(t)); y.domain(yd(t)).range(yr(t)); return arc(d); };
-      };
-    }
-    
-    var determineColor = function(d){
-     var percentage = (100 * d.value / totalSize).toPrecision(3);
-      if (d.name === "empty"){
-        return "#FFFFFF";
-      } else {
-        return color((d.children ? d : d.parent).name); 
-      }
-    }
-    
-  }
-
-
-var bytesToSize = function(bytes, precision)
-{  
-    var kilobyte = 1024;
-    var megabyte = kilobyte * 1024;
-    var gigabyte = megabyte * 1024;
-    var terabyte = gigabyte * 1024;
+  
+ /**
+  * Create sunburst accounting graphic with 3d.js
+  * 
+  */
+ var createUsageView = function(){
+   // Clear previous graphics
+   $("#bh-profile-usage-graph").html("");
    
-    if ((bytes >= 0) && (bytes < kilobyte)) {
-        return bytes + ' B';
- 
-    } else if ((bytes >= kilobyte) && (bytes < megabyte)) {
-        return (bytes / kilobyte).toFixed(precision) + ' KB';
- 
-    } else if ((bytes >= megabyte) && (bytes < gigabyte)) {
-        return (bytes / megabyte).toFixed(precision) + ' MB';
- 
-    } else if ((bytes >= gigabyte) && (bytes < terabyte)) {
-        return (bytes / gigabyte).toFixed(precision) + ' GB';
- 
-    } else if (bytes >= terabyte) {
-        return (bytes / terabyte).toFixed(precision) + ' TB';
- 
-    } else {
-        return bytes + ' B';
-    }
-};
+   var totalSize = 0;
+   
+   var width = 640,
+   height = 420,
+   radius = Math.min(width, height) / 2;
 
+   var x = d3.scale.linear()
+       .range([0, 2 * Math.PI]);
+   
+   var y = d3.scale.sqrt()
+       .range([0, radius]);
+   
+   var color = d3.scale.category20c();
+   
+   var svg = d3.select("#bh-profile-usage-graph").append("svg")
+       .attr("width", width)
+       .attr("height", height)
+       .append("g")
+       .attr("transform", "translate(" + width / 2 + "," + (height / 2 + 10) + ")")
+   
+   var partition = d3.layout.partition()
+       .value(function(d) { return d.size; });
+   
+   var arc = d3.svg.arc()
+       .startAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x))); })
+       .endAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x + d.dx))); })
+       .innerRadius(function(d) { return Math.max(0, y(d.y)); })
+       .outerRadius(function(d) { return Math.max(0, y(d.y + d.dy)); });
+   
+   // Tooltip div
+   var div = d3.select("#bh-profile-usage-graph").append("div")   
+   .attr("class", "bh-user-usage-tooltip")               
+   .style("opacity", 0);
+   
+   // Read data from server
+   d3.json(location.href+"?usage", function(error, response) {
+     // Get data from response
+     var root = rewriteUsageResponse(response[0].usage);
+     
+     // Remember totalSize of the root
+     totalSize = root.size;
+     
+     // Update header
+     $("#bh-profile-usage-header").html(root.path+"<br>"+bytesToSize(root.size,1)+", "+(100 * root.size / totalSize).toPrecision(3)+" % of total usage");
+     
+     var path = svg.selectAll("path")
+      .data(partition.nodes(root))
+      .enter().append("path")
+      .attr("d", arc)
+      .style("stroke", "#fff")
+      .style("fill", function(d) { return determineColor(d); })
+      .on("click", click)
+      .on("mouseover", mouseover)   
+      .on("mouseout", mouseout);
+
+     // Click handler, when value not empty update header and zoom sunburst graphic
+     function click(d) {
+       if (d.name !== "empty") {
+        $("#bh-profile-usage-header").html(d.path+"<br>"+bytesToSize(d.size,1)+", "+(100 * d.size / totalSize).toPrecision(3)+" % of total usage");
+        path.transition()
+          .duration(750)
+          .attrTween("d", arcTween(d));
+       }
+     }
+     
+     // Mouseover handler, when value not empty show tooltip
+     function mouseover(d) {
+       if (d.name !== "empty") {
+        div.transition()        
+            .duration(200)      
+            .style("opacity", .9);      
+        div .html("<b>"+d.path+"</b><br>"+(100 * d.size / totalSize).toPrecision(3)+" % of total usage ("+bytesToSize(d.size,1)+")")  
+            .style("left", (d3.event.pageX+5) + "px")     
+            .style("top", (d3.event.pageY - 28) + "px");   
+       };
+     }
+     
+     // Mouseout handler, when value not empty hide tooltip
+     function mouseout(d) {  
+       if (d.name !== "empty") {
+         div.transition()        
+             .duration(500)      
+             .style("opacity", 0);   
+       }
+     }
+   });
+   
+   d3.select(self.frameElement).style("height", height + "px");
+   
+   // Interpolate the scales!
+   function arcTween(d) {
+     var xd = d3.interpolate(x.domain(), [d.x, d.x + d.dx]),
+         yd = d3.interpolate(y.domain(), [d.y, 1]),
+         yr = d3.interpolate(y.range(), [d.y ? 20 : 0, radius]);
+     return function(d, i) {
+       return i
+           ? function(t) { return arc(d); }
+           : function(t) { x.domain(xd(t)); y.domain(yd(t)).range(yr(t)); return arc(d); };
+     };
+   }
+   
+   // Color of graphic part
+   function determineColor(d){
+    var percentage = (100 * d.value / totalSize).toPrecision(3);
+     if (d.name === "empty"){
+       return "#FFFFFF";
+     } else {
+       return color((d.children ? d : d.parent).name); 
+     }
+   } 
+ }
+
+ /**
+  * Calculate size from bytes to readable size
+  * 
+  * @param {Integer} bytes      Bytes to calculate
+  * @param {Integer} precision  Precision
+  * 
+  */
+ var bytesToSize = function(bytes, precision)
+ {  
+     var kilobyte = 1024;
+     var megabyte = kilobyte * 1024;
+     var gigabyte = megabyte * 1024;
+     var terabyte = gigabyte * 1024;
+    
+     if ((bytes >= 0) && (bytes < kilobyte)) {
+         return bytes + ' B';
+  
+     } else if ((bytes >= kilobyte) && (bytes < megabyte)) {
+         return (bytes / kilobyte).toFixed(precision) + ' KB';
+  
+     } else if ((bytes >= megabyte) && (bytes < gigabyte)) {
+         return (bytes / megabyte).toFixed(precision) + ' MB';
+  
+     } else if ((bytes >= gigabyte) && (bytes < terabyte)) {
+         return (bytes / gigabyte).toFixed(precision) + ' GB';
+  
+     } else if (bytes >= terabyte) {
+         return (bytes / terabyte).toFixed(precision) + ' TB';
+  
+     } else {
+         return bytes + ' B';
+     }
+ };
+
+ /**
+  * Check if name object exists in object
+  * 
+  * @param {Object} children Child object to check in
+  * @param {String} name     String to check
+  */
  var checkExist = function(children, name){
    var exist = false;
    var child = 0;
@@ -460,6 +353,12 @@ var bytesToSize = function(bytes, precision)
   }
  } 
  
+ /**
+  * Put json response of accounting data request in object for 3d.js
+  * 
+  * @param {Json} data Json object to rewrite
+  * 
+  */
  var rewriteUsageResponse = function(data){
   var returnValue = {
       "name" : "root",
@@ -470,7 +369,6 @@ var bytesToSize = function(bytes, precision)
     if (value["_id"] === "/"){
       returnValue.size = value["value"];
       returnValue.path = "BeeHub root";
-      totalSize = value["value"];
       return;
     };
    var children = returnValue.children;  
@@ -505,7 +403,6 @@ var bytesToSize = function(bytes, precision)
            "name": dirs[i],
            "children": [],
            "size": 0,
-           // TODO hele path
            "path": value["_id"]
           };
           children.push(add);
@@ -515,11 +412,20 @@ var bytesToSize = function(bytes, precision)
       }
     }
   });
-  
+ 
   calculateSizes(returnValue);
   return returnValue;
  }
  
+ /**
+  * Calculates the sizes of child object and create an empty child for not used space. 
+  * 
+  * Sunburst graphic of 3d.js fills the whole child. This function add free 
+  * space child object in the childs so that free space can be colored white.
+  * 
+  * @param {Object} returnValue Object with 3d.js input
+  * 
+  */
  var calculateSizes = function(returnValue) {
    var size = 0;
    for (var key in returnValue.children) {
@@ -534,11 +440,9 @@ var bytesToSize = function(bytes, precision)
         "name": "empty",
         "children": [],
         "size": returnValue.size - size,
-        // TODO hele path
         "path": "empty"
        };
     returnValue.children.push(add);
    }
-//   returnValue.size = returnValue.size - size;
  };
 });
