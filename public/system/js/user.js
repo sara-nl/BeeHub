@@ -213,8 +213,8 @@ $(function (){
    
    // Tooltip div
    var div = d3.select("#bh-profile-usage-graph").append("div")   
-   .attr("class", "bh-user-usage-tooltip")               
-   .style("opacity", 0);
+    .attr("class", "bh-user-usage-tooltip")               
+    .style("opacity", 0);
    
    // Read data from server
    d3.json(location.href+"?usage", function(error, response) {

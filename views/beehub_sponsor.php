@@ -8,7 +8,18 @@
  */
 
 $header = '<style type="text/css">
+  /* style the axis elements */
+  .axis path,
+  .axis line {
+    fill: none;
+    stroke : black;
+    shape-rendering: crispEdges;
+  }
 
+  .axis text {
+    font-family: sans-serif;
+    font-size: 11px;
+  }
 </style>';
 
 require 'views/header.php';
@@ -90,7 +101,9 @@ require 'views/header.php';
  <!-- Usage tab -->
  <br/>
  <div id="bh-gs-panel-usage" class="tab-pane">
- 
+  <div id="bh-gs-usage-div">
+    <button id="bh-gs-sort">Sort Data</button>
+  </div>
  </div>
  <!--  End usage tab -->
  
