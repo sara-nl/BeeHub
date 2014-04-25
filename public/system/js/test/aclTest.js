@@ -977,8 +977,8 @@ nl.sara.testutil.queueTest( 'File should inherit ACL from directory', function( 
 
       // Test the inherited-acl-set
       var inheritedAclHrefs = response.getProperty( 'DAV:', 'inherited-acl-set' ).getParsedValue();
-      if ( ( inheritedAclHrefs === null ) || ( inheritedAclHrefs.length !== 1 ) || ( inheritedAclHrefs[0] !== basePath() + 'testDir' ) ) {
-        nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'The file should (only) inherit from its direct parent directory. Returned value: ' + JSON.stringify( inheritedAclHrefs ) );
+      if ( ( inheritedAclHrefs === null ) || ( inheritedAclHrefs.length !== 1 ) || ( inheritedAclHrefs[0] !== basePath() + 'testDir/' ) ) {
+        nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'The file should (only) inherit from its direct parent directory (' + basePath() + 'testDir/' + '). Returned value: ' + JSON.stringify( inheritedAclHrefs ) );
         return;
       }
 

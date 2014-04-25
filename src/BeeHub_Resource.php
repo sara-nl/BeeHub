@@ -222,15 +222,13 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
         'DAV: all', false, array('DAV: unbind'), false, true, null
       );
     }
-    $parent = $this->collection();
-    $inherited = $parent ? $parent->user_prop_acl() : array();
-    while ( count($inherited) && $inherited[0]->protected )
-      array_shift($inherited);
-    foreach( $inherited as &$ace )
-      if ( ! $ace->inherited )
-        $ace->inherited = $parent->path;
+
+    $inherited = $this->getInheritedAces();
+
     return array_merge(
-      $protected, $this->user_prop_acl_internal(), $inherited
+      $protected,
+      $this->user_prop_acl_internal(),
+      $inherited
     );
   }
 
@@ -313,6 +311,42 @@ public function set_acl( $aces ) {
    */
   public function user_prop_getcontenttype() {
     return BeeHub::best_xhtml_type() . '; charset="utf-8"';
+  }
+
+
+  /**
+   * Returns the DAV: inherited-acl-set property as an array of URIs
+   *
+   * @return array an array of URIs
+   * @see DAVACL_Resource::user_prop_inherited_acl_set()
+   */
+  public function user_prop_inherited_acl_set() {
+    $inherited = $this->getInheritedAces();
+    $urls = array();
+    foreach( $inherited as $ace ) {
+      $urls[] = $ace->inherited;
+    }
+    return array_unique( $urls );
+  }
+
+
+  /**
+   * Get all ACE's that this resource inherits from its parents
+   *
+   * @return  array  A list of ACEs
+   */
+  private function getInheritedAces() {
+    $parent = $this->collection();
+    $inherited = $parent ? $parent->user_prop_acl() : array();
+    while ( count($inherited) && $inherited[0]->protected ) {
+      array_shift($inherited);
+    }
+    foreach( $inherited as &$ace ) {
+      if ( ! $ace->inherited ) {
+        $ace->inherited = $parent->path;
+      }
+    }
+    return $inherited;
   }
 
 
