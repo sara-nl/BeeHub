@@ -303,22 +303,25 @@ nl.sara.testutil.queueTest( 'Grant the group all access to file of user 1', func
       
       var response = data.getResponse( basePath() + 'testDir/file.txt' );
       var prop = response.getProperty( 'DAV:', 'current-user-privilege-set' );
-      var props = prop.getParsedValue();
-      for ( var key in props ) {
-        if ( ( props[ key ].namespace !== 'DAV:' ) ||
-             ( ( props[ key ].tagname !== 'all' ) &&
-               ( props[ key ].tagname !== 'unbind' ) &&
-               ( props[ key ].tagname !== 'bind' ) &&
-               ( props[ key ].tagname !== 'write-acl' ) &&
-               ( props[ key ].tagname !== 'write' ) &&
-               ( props[ key ].tagname !== 'write-content' ) &&
-               ( props[ key ].tagname !== 'write-properties' ) &&
-               ( props[ key ].tagname !== 'read' ) &&
-               ( props[ key ].tagname !== 'read-acl' ) &&
-               ( props[ key ].tagname !== 'read-current-user-privilege-set' )
-             )
+      var privs = prop.getParsedValue();
+      for ( var key in privs ) {
+        if (
+          (
+            ( privs[ key ].namespace !== 'DAV:' ) ||
+            (
+              ( privs[ key ].tagname !== 'unbind' ) &&
+              ( privs[ key ].tagname !== 'write-acl' ) &&
+              ( privs[ key ].tagname !== 'write-content' ) &&
+              ( privs[ key ].tagname !== 'read-acl' ) &&
+              ( privs[ key ].tagname !== 'read-current-user-privilege-set' )
+            )
+          ) &&
+          (
+            ( privs[ key ].namespace !== 'http://beehub.nl/' ) ||
+            ( privs[ key ].tagname !== 'read-content' )
+          )
         ){
-          nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'Unexpected privileges returned: ' + props[ key ].namespace + ' ' + props[ key ].tagname );
+          nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'Unexpected privileges returned: ' + privs[ key ].namespace + ' ' + privs[ key ].tagname );
           return;
         }
       }
@@ -390,21 +393,28 @@ nl.sara.testutil.queueTest( 'Grant user 2 read access to file of user 1', functi
       
       var response = data.getResponse( basePath() + 'testDir/file.txt' );
       var prop = response.getProperty( 'DAV:', 'current-user-privilege-set' );
-      var props = prop.getParsedValue();
-      for ( var key in props ) {
-        if ( ( props[ key ].namespace !== 'DAV:' ) ||
-             ( ( props[ key ].tagname !== 'unbind' ) &&
-               ( props[ key ].tagname !== 'read' ) &&
-               ( props[ key ].tagname !== 'read-acl' ) &&
-               ( props[ key ].tagname !== 'read-current-user-privilege-set' )
-             )
+      var privs = prop.getParsedValue();
+      for ( var key in privs ) {
+        if (
+          (
+            ( privs[ key ].namespace !== 'DAV:' ) ||
+            (
+              ( privs[ key ].tagname !== 'unbind' ) &&
+              ( privs[ key ].tagname !== 'read-acl' ) &&
+              ( privs[ key ].tagname !== 'read-current-user-privilege-set' )
+            )
+          ) &&
+          (
+            ( privs[ key ].namespace !== 'http://beehub.nl/' ) ||
+            ( privs[ key ].tagname !== 'read-content' )
+          )
         ){
-          nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'Unexpected privileges returned: ' + props[ key ].namespace + ' ' + props[ key ].tagname );
+          nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'Unexpected privileges returned: ' + privs[ key ].namespace + ' ' + privs[ key ].tagname );
           return;
         }
       }
 
-      // And test this by trying requests GET (should succeed) and PUT (should be forbidden)
+      // And test this by trying requests GET (should succeed) and PUT and ACL (should be forbidden)
       client2.get( basePath() + 'testDir/file.txt', function( status, data ) {
         if ( ( status !== 200 ) || ( data !== 'Lorem ipsum' ) ) {
           nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'Unable to correctly retrieve the file' );
@@ -416,9 +426,17 @@ nl.sara.testutil.queueTest( 'Grant user 2 read access to file of user 1', functi
             nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'User 2 should get a 403 (forbidden) return code when attempting to write to the file. Instead received this code: ' + status );
             return;
           }
-          
-          nl.sara.testutil.finishTest( testId, nl.sara.testutil.SUCCESS );
-          return;
+
+          client2.acl( basePath() + 'testDir/file.txt', function( status ) {
+            if ( status !== 403 ) {
+              nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'User 2 should get a 403 (forbidden) return code when attempting to change the acl of the file. Instead received this code: ' + status );
+              return;
+            }
+
+            nl.sara.testutil.finishTest( testId, nl.sara.testutil.SUCCESS );
+            return;
+
+          }, acl );
         }, 'Lorem ipsum' );
       } );
       
@@ -466,20 +484,24 @@ nl.sara.testutil.queueTest( 'Grant user 2 read and write access to file of user 
       
       var response = data.getResponse( basePath() + 'testDir/file.txt' );
       var prop = response.getProperty( 'DAV:', 'current-user-privilege-set' );
-      var props = prop.getParsedValue();
-      for ( var key in props ) {
-        if ( ( props[ key ].namespace !== 'DAV:' ) ||
-             ( ( props[ key ].tagname !== 'unbind' ) &&
-               ( props[ key ].tagname !== 'bind' ) &&
-               ( props[ key ].tagname !== 'write' ) &&
-               ( props[ key ].tagname !== 'write-content' ) &&
-               ( props[ key ].tagname !== 'write-properties' ) &&
-               ( props[ key ].tagname !== 'read' ) &&
-               ( props[ key ].tagname !== 'read-acl' ) &&
-               ( props[ key ].tagname !== 'read-current-user-privilege-set' )
-             )
+      var privs = prop.getParsedValue();
+      for ( var key in privs ) {
+        if (
+          (
+            ( privs[ key ].namespace !== 'DAV:' ) ||
+            (
+              ( privs[ key ].tagname !== 'unbind' ) &&
+              ( privs[ key ].tagname !== 'write-content' ) &&
+              ( privs[ key ].tagname !== 'read-acl' ) &&
+              ( privs[ key ].tagname !== 'read-current-user-privilege-set' )
+            )
+          ) &&
+          (
+            ( privs[ key ].namespace !== 'http://beehub.nl/' ) ||
+            ( privs[ key ].tagname !== 'read-content' )
+          )
         ){
-          nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'Unexpected privileges returned: ' + props[ key ].namespace + ' ' + props[ key ].tagname );
+          nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'Unexpected privileges returned: ' + privs[ key ].namespace + ' ' + privs[ key ].tagname );
           return;
         }
       }
@@ -496,9 +518,17 @@ nl.sara.testutil.queueTest( 'Grant user 2 read and write access to file of user 
             nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'User 2 should get a 204 (no content) return code when attempting to write to the file. Instead received this code: ' + status );
             return;
           }
-          
-          nl.sara.testutil.finishTest( testId, nl.sara.testutil.SUCCESS );
-          return;
+
+          client2.acl( basePath() + 'testDir/file.txt', function( status ) {
+            if ( status !== 403 ) {
+              nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'User 2 should get a 403 (forbidden) return code when attempting to change the acl of the file. Instead received this code: ' + status );
+              return;
+            }
+
+            nl.sara.testutil.finishTest( testId, nl.sara.testutil.SUCCESS );
+            return;
+
+          }, acl );
         }, 'Lorem ipsum' );
       } );
       
@@ -546,17 +576,24 @@ nl.sara.testutil.queueTest( 'Grant user 2 write-acl and read access to file of u
       
       var response = data.getResponse( basePath() + 'testDir/file.txt' );
       var prop = response.getProperty( 'DAV:', 'current-user-privilege-set' );
-      var props = prop.getParsedValue();
-      for ( var key in props ) {
-        if ( ( props[ key ].namespace !== 'DAV:' ) ||
-             ( ( props[ key ].tagname !== 'unbind' ) &&
-               ( props[ key ].tagname !== 'write-acl' ) &&
-               ( props[ key ].tagname !== 'read' ) &&
-               ( props[ key ].tagname !== 'read-acl' ) &&
-               ( props[ key ].tagname !== 'read-current-user-privilege-set' )
-             )
+      var privs = prop.getParsedValue();
+      for ( var key in privs ) {
+        if (
+          (
+            ( privs[ key ].namespace !== 'DAV:' ) ||
+            (
+              ( privs[ key ].tagname !== 'unbind' ) &&
+              ( privs[ key ].tagname !== 'write-acl' ) &&
+              ( privs[ key ].tagname !== 'read-acl' ) &&
+              ( privs[ key ].tagname !== 'read-current-user-privilege-set' )
+            )
+          ) &&
+          (
+            ( privs[ key ].namespace !== 'http://beehub.nl/' ) ||
+            ( privs[ key ].tagname !== 'read-content' )
+          )
         ){
-          nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'Unexpected privileges returned: ' + props[ key ].namespace + ' ' + props[ key ].tagname );
+          nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'Unexpected privileges returned: ' + privs[ key ].namespace + ' ' + privs[ key ].tagname );
           return;
         }
       }
@@ -636,17 +673,24 @@ nl.sara.testutil.queueTest( 'Deny user 2 read and write-acl access to file of us
       
       var response = data.getResponse( basePath() + 'testDir/file.txt' );
       var prop = response.getProperty( 'DAV:', 'current-user-privilege-set' );
-      var props = prop.getParsedValue();
-      for ( var key in props ) {
-        if ( ( props[ key ].namespace !== 'DAV:' ) ||
-             ( ( props[ key ].tagname !== 'unbind' ) &&
-               ( props[ key ].tagname !== 'write-acl' ) &&
-               ( props[ key ].tagname !== 'read' ) &&
-               ( props[ key ].tagname !== 'read-acl' ) &&
-               ( props[ key ].tagname !== 'read-current-user-privilege-set' )
-             )
+      var privs = prop.getParsedValue();
+      for ( var key in privs ) {
+        if (
+          (
+            ( privs[ key ].namespace !== 'DAV:' ) ||
+            (
+              ( privs[ key ].tagname !== 'unbind' ) &&
+              ( privs[ key ].tagname !== 'write-acl' ) &&
+              ( privs[ key ].tagname !== 'read-acl' ) &&
+              ( privs[ key ].tagname !== 'read-current-user-privilege-set' )
+            )
+          ) &&
+          (
+            ( privs[ key ].namespace !== 'http://beehub.nl/' ) ||
+            ( privs[ key ].tagname !== 'read-content' )
+          )
         ){
-          nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'Unexpected privileges returned: ' + props[ key ].namespace + ' ' + props[ key ].tagname );
+          nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'Unexpected privileges returned: ' + privs[ key ].namespace + ' ' + privs[ key ].tagname );
           return;
         }
       }
@@ -726,22 +770,25 @@ nl.sara.testutil.queueTest( 'Combine allow all and deny write for user 2 to acce
       
       var response = data.getResponse( basePath() + 'testDir/file.txt' );
       var prop = response.getProperty( 'DAV:', 'current-user-privilege-set' );
-      var props = prop.getParsedValue();
-      for ( var key in props ) {
-        if ( ( props[ key ].namespace !== 'DAV:' ) ||
-             ( ( props[ key ].tagname !== 'all' ) &&
-               ( props[ key ].tagname !== 'unbind' ) &&
-               ( props[ key ].tagname !== 'bind' ) &&
-               ( props[ key ].tagname !== 'write-acl' ) &&
-               ( props[ key ].tagname !== 'write' ) &&
-               ( props[ key ].tagname !== 'write-content' ) &&
-               ( props[ key ].tagname !== 'write-properties' ) &&
-               ( props[ key ].tagname !== 'read' ) &&
-               ( props[ key ].tagname !== 'read-acl' ) &&
-               ( props[ key ].tagname !== 'read-current-user-privilege-set' )
-             )
+      var privs = prop.getParsedValue();
+      for ( var key in privs ) {
+        if (
+          (
+            ( privs[ key ].namespace !== 'DAV:' ) ||
+            (
+              ( privs[ key ].tagname !== 'unbind' ) &&
+              ( privs[ key ].tagname !== 'write-acl' ) &&
+              ( privs[ key ].tagname !== 'write-content' ) &&
+              ( privs[ key ].tagname !== 'read-acl' ) &&
+              ( privs[ key ].tagname !== 'read-current-user-privilege-set' )
+            )
+          ) &&
+          (
+            ( privs[ key ].namespace !== 'http://beehub.nl/' ) ||
+            ( privs[ key ].tagname !== 'read-content' )
+          )
         ){
-          nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'Unexpected privileges returned: ' + props[ key ].namespace + ' ' + props[ key ].tagname );
+          nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'Unexpected privileges returned: ' + privs[ key ].namespace + ' ' + privs[ key ].tagname );
           return;
         }
       }
@@ -812,22 +859,25 @@ nl.sara.testutil.queueTest( 'User 2 cannot deny access to owner of file', functi
       
       var response = data.getResponse( basePath() + 'testDir/file.txt' );
       var prop = response.getProperty( 'DAV:', 'current-user-privilege-set' );
-      var props = prop.getParsedValue();
-      for ( var key in props ) {
-        if ( ( props[ key ].namespace !== 'DAV:' ) ||
-             ( ( props[ key ].tagname !== 'all' ) &&
-               ( props[ key ].tagname !== 'unbind' ) &&
-               ( props[ key ].tagname !== 'bind' ) &&
-               ( props[ key ].tagname !== 'write-acl' ) &&
-               ( props[ key ].tagname !== 'write' ) &&
-               ( props[ key ].tagname !== 'write-content' ) &&
-               ( props[ key ].tagname !== 'write-properties' ) &&
-               ( props[ key ].tagname !== 'read' ) &&
-               ( props[ key ].tagname !== 'read-acl' ) &&
-               ( props[ key ].tagname !== 'read-current-user-privilege-set' )
-             )
+      var privs = prop.getParsedValue();
+      for ( var key in privs ) {
+        if (
+          (
+            ( privs[ key ].namespace !== 'DAV:' ) ||
+            (
+              ( privs[ key ].tagname !== 'unbind' ) &&
+              ( privs[ key ].tagname !== 'write-acl' ) &&
+              ( privs[ key ].tagname !== 'write-content' ) &&
+              ( privs[ key ].tagname !== 'read-acl' ) &&
+              ( privs[ key ].tagname !== 'read-current-user-privilege-set' )
+            )
+          ) &&
+          (
+            ( privs[ key ].namespace !== 'http://beehub.nl/' ) ||
+            ( privs[ key ].tagname !== 'read-content' )
+          )
         ){
-          nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'Unexpected privileges returned: ' + props[ key ].namespace + ' ' + props[ key ].tagname );
+          nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'Unexpected privileges returned: ' + privs[ key ].namespace + ' ' + privs[ key ].tagname );
           return;
         }
       }
@@ -906,12 +956,19 @@ nl.sara.testutil.queueTest( 'File should inherit ACL from directory', function( 
       var response = data.getResponse( basePath() + 'testDir/file.txt' );
       var privs = response.getProperty( 'DAV:', 'current-user-privilege-set' ).getParsedValue();
       for ( var key in privs ) {
-        if ( ( privs[ key ].namespace !== 'DAV:' ) ||
-             ( ( privs[ key ].tagname !== 'unbind' ) &&
-               ( privs[ key ].tagname !== 'read' ) &&
-               ( privs[ key ].tagname !== 'read-acl' ) &&
-               ( privs[ key ].tagname !== 'read-current-user-privilege-set' )
-             )
+        if (
+          (
+            ( privs[ key ].namespace !== 'DAV:' ) ||
+            (
+              ( privs[ key ].tagname !== 'unbind' ) &&
+              ( privs[ key ].tagname !== 'read-acl' ) &&
+              ( privs[ key ].tagname !== 'read-current-user-privilege-set' )
+            )
+          ) &&
+          (
+            ( privs[ key ].namespace !== 'http://beehub.nl/' ) ||
+            ( privs[ key ].tagname !== 'read-content' )
+          )
         ){
           nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'Unexpected privileges returned: ' + privs[ key ].namespace + ' ' + privs[ key ].tagname );
           return;
@@ -919,11 +976,11 @@ nl.sara.testutil.queueTest( 'File should inherit ACL from directory', function( 
       }
 
       // Test the inherited-acl-set
-        var inheritedAclHrefs = response.getProperty( 'DAV:', 'inherited-acl-set' ).getParsedValue();
-        if ( ( inheritedAclHrefs === null ) || ( inheritedAclHrefs.length !== 1 ) || ( inheritedAclHrefs[0] !== basePath() + 'testDir' ) ) {
-          nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'The file should (only) inherit from its direct parent directory' );
-          return;
-        }
+      var inheritedAclHrefs = response.getProperty( 'DAV:', 'inherited-acl-set' ).getParsedValue();
+      if ( ( inheritedAclHrefs === null ) || ( inheritedAclHrefs.length !== 1 ) || ( inheritedAclHrefs[0] !== basePath() + 'testDir' ) ) {
+        nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'The file should (only) inherit from its direct parent directory. Returned value: ' + JSON.stringify( inheritedAclHrefs ) );
+        return;
+      }
 
       // Test the acl
       var retrievedAcl = response.getProperty( 'DAV:', 'acl' ).getParsedValue();

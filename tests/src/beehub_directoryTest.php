@@ -49,7 +49,7 @@ class BeeHub_DirectoryTest extends BeeHub_Tests_Db_Test_Case {
     
     $directory = new \BeeHub_Directory( '/foo/directory/' );
     $this->setCurrentUser( '/system/users/john' );
-    $directory->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_WRITE ), false ) ) );
+    $directory->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
     // I need to reload the directory to avoid cache polution
     $this->obj = new \BeeHub_Directory( '/foo/directory/' );
   }
@@ -159,7 +159,7 @@ class BeeHub_DirectoryTest extends BeeHub_Tests_Db_Test_Case {
 
   public function testMethod_COPYWithoutCollectionSponsor() {
     $bar = new \BeeHub_Directory( '/bar/' );
-    $bar->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
+    $bar->set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
     $this->setCurrentUser( '/system/users/jane' );
     $this->obj->method_COPY( '/bar/directory/' );
 
@@ -187,8 +187,8 @@ class BeeHub_DirectoryTest extends BeeHub_Tests_Db_Test_Case {
     $this->assertSame( array(), $newDirectory->user_prop_acl_internal() );
     $this->assertSame( $this->obj->user_prop( 'test_namespace test_property' ), $newDirectory->user_prop( 'test_namespace test_property' ) );
   }
-  
-  
+
+
   public function testMethod_DELETEforNonemptyDir() {
     $this->obj->create_member( 'some_file.txt' );
     $obj = new \BeeHub_Directory( '/foo' );
@@ -196,8 +196,8 @@ class BeeHub_DirectoryTest extends BeeHub_Tests_Db_Test_Case {
     $this->setExpectedException( '\DAV_Status', null, \DAV::HTTP_CONFLICT );
     $obj->method_DELETE( 'directory' );
   }
-  
-  
+
+
   public function testMethod_DELETEwithoutWritePrivilege() {
     $this->obj->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_WRITE ), true ) ) );
     $obj = new \BeeHub_Directory( '/foo' );

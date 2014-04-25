@@ -78,9 +78,13 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
    */
   public function isVisible() {
     try {
-      $this->assert(DAVACL::PRIV_READ);
+      $this->assert( BeeHub::PRIV_READ_CONTENT );
     } catch (DAV_Status $e) {
-      return false;
+      try {
+        $this->assert( DAVACL::PRIV_READ_ACL );
+      } catch (DAV_Status $e) {
+        return false;
+      }
     }
     return true;
   }
@@ -106,29 +110,85 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
    */
   public function property_priv_read($properties) {
     $retval = array();
+    // Most properties can be read if the file contents can be read
     try {
-      $this->assert(DAVACL::PRIV_READ);
+      $this->assert( BeeHub::PRIV_READ_CONTENT );
       foreach ($properties as $property)
         $retval[$property] = true;
     } catch (DAV_Status $e) {
       foreach ($properties as $property)
         $retval[$property] = false;
     }
-    if (isset($retval[DAV::PROP_ACL]))
+
+    // The 'DAV: acl' property has its own privilege to determine if it is readable
+    if ( isset( $retval[DAV::PROP_ACL] ) ) {
       try {
         $this->assert(DAVACL::PRIV_READ_ACL);
         $retval[DAV::PROP_ACL] = true;
       } catch (DAV_Status $e) {
         $retval[DAV::PROP_ACL] = false;
       }
+    }
+    
+    // And the 'DAV: current-user-privilege-set' property also has its own privilege
+    if ( isset( $retval[DAV::PROP_CURRENT_USER_PRIVILEGE_SET] ) ) {
+      try {
+        $this->assert( DAVACL::PRIV_READ_CURRENT_USER_PRIVILEGE_SET );
+        $retval[DAV::PROP_CURRENT_USER_PRIVILEGE_SET] = true;
+      } catch( DAV_Status $e ) {
+        $retval[DAV::PROP_CURRENT_USER_PRIVILEGE_SET] = false;
+      }
+    }
+
+    // These properties are always readable
     foreach( array(
       DAV::PROP_OWNER,
       DAV::PROP_RESOURCETYPE,
       DAV::PROP_DISPLAYNAME
-    ) as $prop )
-      if (array_key_exists($prop, $retval))
+    ) as $prop ) {
+      if ( array_key_exists( $prop, $retval ) ) {
         $retval[$prop] = true;
+      }
+    }
+
     return $retval;
+  }
+
+
+  /**
+  * By default, properties are writeble if the current user has PRIV_WRITE_CONTENT
+   *
+  * @param   array  $properties  The properties to check for writability
+  * @return  array               An array of (property => isWritable) pairs
+  */
+  public function property_priv_write($properties) {
+    try {
+      $this->assert( DAVACL::PRIV_WRITE_CONTENT );
+      $allow = true;
+    }
+    catch( DAV_Status $e ) {
+      $allow = false;
+    }
+
+    $retval = array();
+    foreach ($properties as $prop){
+      $retval[$prop] = $allow;
+    }
+    return $retval;
+  }
+
+
+  /**
+   * Return all the resource specific response headers for the HEAD request
+   *
+   * This implementation will also assert that you have read-content privileges,
+   * because else you are not allowed to perform HEAD or GET operations.
+   *
+   * @see DAV_Resource::method_HEAD()
+   */
+  public function method_HEAD() {
+    $this->assert( BeeHub::PRIV_READ_CONTENT );
+    return parent::method_HEAD();
   }
 
 
@@ -195,6 +255,18 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
     $retval = $this->user_prop_sponsor();
     return $retval ? new DAV_Element_href($retval) : '';
   }
+
+
+/**
+ * Check that we have the correct privileges to set the ACL
+ *
+ * @param   array  $aces  The ACL in the form of an array of ACEs
+ * @return  mixed         No idea what this method returns
+ */
+public function set_acl( $aces ) {
+  $this->assert( DAVACL::PRIV_WRITE_ACL );
+  return parent::set_acl( $aces );
+}
 
 
   /**
@@ -265,7 +337,6 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
       require( 'views/' . strtolower( get_class( $this ) ) . '.php' );
     }
   }
-
 
 } // class BeeHub_Resource
 

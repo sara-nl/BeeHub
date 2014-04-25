@@ -86,9 +86,11 @@ public function user_prop_getetag() {
  * @TODO set owner and sponsor correctly!
  */
 public function method_COPY( $path ) {
-  $this->assert(DAVACL::PRIV_READ);
+  $this->assert( BeeHub::PRIV_READ_CONTENT );
+  $this->assert( DAVACL::PRIV_READ_ACL );
+  
   $parent = DAV::$REGISTRY->resource( dirname( $path ) );
-  $parent->assert( DAVACL::PRIV_WRITE );
+  $parent->assert( DAVACL::PRIV_WRITE_CONTENT );
 
   // Determine the sponsor
   $user = BeeHub::getAuth()->current_user();
@@ -116,13 +118,14 @@ public function method_COPY( $path ) {
 
 
 public function method_GET() {
+  $this->assert( BeeHub::PRIV_READ_CONTENT );
   return fopen( $this->localPath , 'r' );
 }
 
 
 public function method_PUT($stream) {
   if ( DAV::getPath() === $this->path )
-    $this->assert(DAVACL::PRIV_WRITE);
+    $this->assert( DAVACL::PRIV_WRITE_CONTENT );
   if ( !($resource = fopen( $this->localPath, 'w' )) )
     throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
   try {
@@ -185,7 +188,7 @@ public function method_PUT($stream) {
 
 
 public function method_PUT_range($stream, $start, $end, $total) {
-  $this->assert(DAVACL::PRIV_WRITE);
+  $this->assert( DAVACL::PRIV_WRITE_CONTENT );
   if ( !($resource = fopen( $this->localPath, 'r+' )) )
     throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
   try {

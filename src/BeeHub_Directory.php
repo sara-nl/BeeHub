@@ -44,7 +44,7 @@ public function create_member( $name ) {
 
 
 private function internal_create_member( $name, $collection = false ) {
-  $this->assert(DAVACL::PRIV_WRITE);
+  $this->assert( DAVACL::PRIV_WRITE_CONTENT );
   $path = $this->path . $name;
   $localPath = BeeHub::localPath( $path );
   $cups = $this->current_user_principals();
@@ -78,6 +78,9 @@ private function internal_create_member( $name, $collection = false ) {
 
 
 public function method_COPY( $path ) {
+  $this->assert( BeeHub::PRIV_READ_CONTENT );
+  $this->assert( DAVACL::PRIV_READ_ACL );
+
   $parent = DAV::$REGISTRY->resource( dirname( $path ) );
   if (!$parent)
     throw new DAV_Status(DAV::HTTP_CONFLICT, 'Unable to COPY to unexisting collection');
@@ -98,12 +101,13 @@ public function method_COPY( $path ) {
 }
 
 
-public function method_DELETE( $name )
-{
+public function method_DELETE( $name ) {
+  $this->assert( DAVACL::PRIV_UNBIND );
+
   $path = $this->path . $name;
   $localpath = BeeHub::localPath( $path );
   $resource = DAV::$REGISTRY->resource( $path );
-  $resource->assert(DAVACL::PRIV_WRITE);
+  $resource->assert( DAVACL::PRIV_WRITE_CONTENT );
   if (is_dir($localpath)) {
     if (!@rmdir($localpath))
       throw new DAV_Status(DAV::HTTP_CONFLICT, 'Unable to DELETE resource: ' . $name);
@@ -121,7 +125,7 @@ public function method_DELETE( $name )
  * @see DAV_Resource::method_GET()
  */
 public function method_GET() {
-  $this->assert(DAVACL::PRIV_READ);
+  $this->assert( BeeHub::PRIV_READ_CONTENT );
   $this->include_view();
 }
 
@@ -142,12 +146,14 @@ public function method_MKCOL( $name ) {
 
 
 public function method_MOVE( $member, $destination ) {
+  $this->assert( DAVACL::PRIV_UNBIND );
+
   // Get the ACL of the source (including inherited ACE's)
   $sourceAcl = DAV::$REGISTRY->resource( $this->path . $member )->user_prop_acl();
 
   // Determine if moving is allowed and if so, move the object
-  DAV::$REGISTRY->resource( $this->path . $member )->assert( DAVACL::PRIV_WRITE );
-  DAV::$REGISTRY->resource( dirname($destination) )->assert( DAVACL::PRIV_WRITE );
+  DAV::$REGISTRY->resource( $this->path . $member )->assert( DAVACL::PRIV_WRITE_CONTENT );
+  DAV::$REGISTRY->resource( dirname($destination) )->assert( DAVACL::PRIV_WRITE_CONTENT );
   $localDest = BeeHub::localPath($destination);
   rename(
     BeeHub::localPath( $this->path . $member ),

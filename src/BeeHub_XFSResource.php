@@ -108,8 +108,6 @@ class BeeHub_XFSResource extends BeeHub_Resource {
    * @see BeeHub_Resource::user_set_sponsor()
    */
   protected function user_set_sponsor($sponsor) {
-    $this->assert(DAVACL::PRIV_READ);
-
     // No (correct) sponsor given? Bad request!
     if ( ! ( $sponsor = DAV::$REGISTRY->resource($sponsor) ) ||
          ! $sponsor instanceof BeeHub_Sponsor ||
@@ -134,8 +132,6 @@ class BeeHub_XFSResource extends BeeHub_Resource {
    * @see DAVACL_Resource::user_set_owner()
    */
   protected function user_set_owner($owner) {
-    $this->assert(DAVACL::PRIV_READ);
-
     // The owner should exist and be visible
     if ( ! ( $owner = DAV::$REGISTRY->resource($owner) ) ||
          ! $owner->isVisible() ||
@@ -163,9 +159,9 @@ class BeeHub_XFSResource extends BeeHub_Resource {
     // privileges on both the resource itself as its parent collection
     if ( $this->user_prop_owner() !== $cup->path &&
          $owner->path === $cup->path &&
-         ( $this->assert(DAVACL::PRIV_WRITE) &&
+         ( $this->assert( DAVACL::PRIV_WRITE_CONTENT ) &&
            $this->collection() &&
-           $this->collection()->assert(DAVACL::PRIV_WRITE) ) ) {
+           $this->collection()->assert( DAVACL::PRIV_WRITE_CONTENT ) ) ) {
 
       // If the user is not sponsored by the resource sponsor, we have to change
       // the resource sponsor
@@ -225,7 +221,6 @@ class BeeHub_XFSResource extends BeeHub_Resource {
    * @see DAVACL_Resource::user_set_acl()
    */
   public function user_set_acl($aces) {
-    $this->assert(DAVACL::PRIV_WRITE_ACL);
     $this->user_set(DAV::PROP_ACL, $aces ? DAVACL_Element_ace::aces2json($aces) : null);
     $this->storeProperties();
   }

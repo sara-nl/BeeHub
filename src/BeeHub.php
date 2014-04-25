@@ -47,6 +47,13 @@ class BeeHub {
   public static $SPONSOR_PROPS = array(
     self::PROP_DESCRIPTION     => true,
   );
+
+  /**#@+
+   * These are extra privileges specific for BeeHub
+   */
+  const PRIV_READ_CONTENT = 'http://beehub.nl/ read-content';
+  /**#@-*/
+
   // For the next values: check if you also need to change them in /system/js/beehub.js
   public static $FORBIDDEN_GROUP_NAMES = array(
     'home',
