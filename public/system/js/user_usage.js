@@ -43,7 +43,7 @@
  var svg = d3.select("#bh-dir-acl-directory-usage").append("svg")
    .attr("width", width)
    .attr("height", height)
- .append("g")
+   .append("g")
    .attr("transform", "translate(" + width / 2 + "," + height * .52 + ")");
  
  var partition = d3.layout.partition()
@@ -59,14 +59,14 @@
  
  d3.json("/system/flare.json", function(error, root) {
    var path = svg.datum(root).selectAll("path")
-       .data(partition.nodes)
+     .data(partition.nodes)
      .enter().append("path")
-       .attr("display", function(d) { return d.depth ? null : "none"; }) // hide inner ring
-       .attr("d", arc)
-       .style("stroke", "#fff")
-       .style("fill", function(d) { return color((d.children ? d : d.parent).name); })
-       .style("fill-rule", "evenodd")
-       .each(stash);
+     .attr("display", function(d) { return d.depth ? null : "none"; }) // hide inner ring
+     .attr("d", arc)
+     .style("stroke", "#fff")
+     .style("fill", function(d) { return color((d.children ? d : d.parent).name); })
+     .style("fill-rule", "evenodd")
+     .each(stash);
    
    d3.selectAll("input").on("change", function change() {
      var value = this.value === "count"

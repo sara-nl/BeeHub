@@ -418,6 +418,8 @@ $(function (){
 //           .attr('fill', 'red');
 //   })
 //   
+   
+   $("#bh-gs-usage-div").html("");
    // define dimensions of svg
    var h = 400,
        w = 800;
@@ -468,14 +470,25 @@ $(function (){
                    .scale(xScale)
                    .orient('bottom')
                    .tickSize(0)
+                   
+     // use transformation to adjust position of axis
+     var y_axis = chart.append('g')
+                 .attr('class','axis')
+                 .attr('transform', 'translate('+chartPadding+',0)');
+   
+     // generate y Axis within group using yAxis function
+     yAxis(y_axis);
      
+     // Remember scales
+     var scales = [];
      // create bars
      chart.selectAll('rect')             // returns empty selection
           .data(dataset)                 // parses & counts data
           .enter()                       // binds data to placeholders
           .append('rect')                // creates a rect svg element for every datum
           .attr({
-            'x' : function(d) {       // left-to-right position of left edge of each
+            'x' : function(d,i) {       // left-to-right position of left edge of each
+               scales[i] = xScale(d['props.DAV: owner']);
                return xScale(d['props.DAV: owner']);        // bar
             },
             'y' : function(d) {
@@ -500,36 +513,6 @@ $(function (){
               .attr('fill','red');
                hideValue();
           });
-//     // add text
-//     chart.selectAll('text')
-//          .data(dataset)
-//          .enter()
-//          .append('text')
-//          .text(function(d){
-//            return d.usage/1024/1024
-//          })
-//          // multiple attibutes may be passed in as an object
-//          .attr({
-//            'x' : function(d){
-//              return xScale(d['props.DAV: owner']) + xScale.rangeBand() / 2
-//            }, // position text at the middle of each bar
-//            'y' : function(d){
-//              return h - yScale(d.usage/1024/1024);
-//            }, // base of text will be at top of each bar
-//            'font-family' : 'sans-serif',
-//            'font-size': '13px',
-//            'font-weight' : 'bold',
-//            'fill' : 'black',
-//            'text-anchor' : 'middle'
-//          });
-     
-     // use transformation to adjust position of axis
-     var y_axis = chart.append('g')
-                 .attr('class','axis')
-                 .attr('transform', 'translate('+chartPadding+',0)');
-   
-     // generate y Axis within group using yAxis function
-     yAxis(y_axis);
      
      chart.append('g')
           .attr('class','axis xAxis')
@@ -571,10 +554,28 @@ $(function (){
               }
             })
             .transition()
+            .delay(function(d,i){
+              return i* 50;
+            })
             .duration(1000)
             .attr('x', function(d,i){
-              return xScale(i); // re-position bars based on sorted positions
+              return scales[i]; // re-position bars based on sorted positions
             });
+       
+       chart.selectAll('rect')
+         .each(function(d){
+           newDomain.push(d['props.DAV: owner']);
+         });
+       
+       // update domain of x axis
+       xScale.domain( newDomain );
+       
+       chart.select('.axis.xAxis')
+            .transition()
+            .duration(1000)
+            .call(xAxis)
+            .selectAll('text')
+            .style('text-anchor','end')
        sortDir = sortDir == 'asc' ? 'desc' : 'asc'; // flip the flag
      }
    });
