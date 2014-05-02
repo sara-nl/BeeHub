@@ -102,7 +102,6 @@ require 'views/header.php';
  <br/>
  <div id="bh-gs-panel-usage" class="tab-pane">
  <div id="bh-gs-usage-div"></div>
- <button id="bh-gs-sort">Sort Data</button>
  </div>
  <!--  End usage tab -->
  

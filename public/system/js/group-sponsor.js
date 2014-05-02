@@ -88,7 +88,7 @@ $(function (){
   $('#bh-gs-invite-gs-form').submit(function (event) {
     // Closure for ajax request
     function callback(group_or_sponsor, invitedUser) {
-      return function(status){
+      return function(status) {
         if (status === 409) {
           alert('You are not allowed to remove all the '+group_or_sponsor+' administrators from a '+group_or_sponsor+'. Leave at least one '+group_or_sponsor+' administrator in the '+group_or_sponsor+' or appoint a new '+group_or_sponsor+' administrator!');
           return;
@@ -420,164 +420,249 @@ $(function (){
 //   
    
    $("#bh-gs-usage-div").html("");
-   // define dimensions of svg
-   var h = 400,
-       w = 800;
-   
-   // create svg element
-   var chart = d3.select("#bh-gs-usage-div")
-                 .append('svg') // parent svg element will contain the cgart
-                 .attr('width', w)
-                 .attr('height', h)
-                 
+//   // define dimensions of svg
+//   var h = 400,
+//       w = 800;
+//   
+//   // create svg element
+//   var chart = d3.select("#bh-gs-usage-div")
+//                 .append('svg') // parent svg element will contain the cgart
+//                 .attr('width', w)
+//                 .attr('height', h)
+//                 
+//   d3.json(location.href+"?usage", function(error,inputdata) {
+//     // Stop when error
+//     if (error) return alert(error);
+//     
+//     var dataset = inputdata[0].usage;
+//     
+//     // calculate with of each bar
+//     var barwidth = w/ dataset.length
+//     
+//     var chartPadding = 50;
+//     var chartBottom = h - chartPadding; // 350;
+//     var chartRight = w - chartPadding; // 750
+//     
+//     // add variable to set spacing
+//     var spacing = 1;
+//     
+//     var maxValue = d3.max(dataset, function(d){
+//       return d.usage/1024/1024;
+//     });
+//     
+//     var barLabels = dataset.map(function(datum){
+//       return datum['props.DAV: owner'];
+//     });
+//     
+//     var xScale = d3.scale.ordinal().domain(barLabels).rangeRoundBands([chartPadding, chartRight] , 0.1);
+//                    // divides bands equally among total width, with 10% spacing
+//     var yScale = d3.scale.linear().domain([0,maxValue]).range([chartBottom,chartPadding]).nice();  
+//
+//     
+//     // declare & configure the y axis function
+//     var yAxis = d3.svg.axis().scale(yScale).orient('left');
+//     
+//     // declare & configure the x axis
+//     var xAxis = d3.svg.axis().scale(xScale).orient('bottom').tickSize(0)
+//                   
+//     // use transformation to adjust position of axis
+//     var y_axis = chart.append('g').attr('class','axis').attr('transform', 'translate('+chartPadding+',0)');
+//   
+//     // generate y Axis within group using yAxis function
+//     yAxis(y_axis);
+//     
+//     // Remember scales
+//     var scales = [];
+//     // create bars
+//     chart.selectAll('rect')             // returns empty selection
+//          .data(dataset)                 // parses & counts data
+//          .enter()                       // binds data to placeholders
+//          .append('rect')                // creates a rect svg element for every datum
+//          .attr({
+//            'x' : function(d,i) {       // left-to-right position of left edge of each
+//               scales[i] = xScale(d['props.DAV: owner']);
+//               return xScale(d['props.DAV: owner']);        // bar
+//            },
+//            'y' : function(d) {
+//              return yScale(d.usage/1024/1024);
+//            },
+//            'width' : xScale.rangeBand(),
+//            'height': function(d){
+//              return chartBottom - yScale(d.usage/1024/1024);
+//            },
+//            'fill': 'red'
+//          })
+//          // attach event listener to each bar for mouseover
+//          .on('mouseover', function(d){
+//            d3.select(this)
+//              .attr('fill', 'yellow');
+//               showValue(d);
+//          })
+//          .on('mouseout', function(d){
+//            d3.select(this)
+//              .transition() // add a "smoothing" animation of the transmision
+//              .duration(500) // set the duration of the transition in ms (default 250)
+//              .attr('fill','red');
+//               hideValue();
+//          });
+//     
+//     chart.append('g')
+//          .attr('class','axis xAxis')
+//          .attr('transform', 'translate(0,'+chartBottom+')') // Push to bottom
+//          .call(xAxis) //passes itself (g element) into xAxis function
+//          // rotate tick labels
+//          .selectAll('text')
+//          .style('text-anchor','end')
+//          .attr('transform','rotate(-65)');
+//     
+//     var showValue = function(d){
+//       chart.append('text')
+//            .text(bytesToSize(d.usage),2)
+//            .attr({
+//              'x' : xScale(d['props.DAV: owner']) + xScale.rangeBand() / 2,
+//              'y' : yScale(d.usage/1024/1024) + 15,
+//              'class' : 'value'
+//            })
+//     }
+//     
+//     var hideValue = function(){
+//       chart.select('text.value').remove();
+//     }
+//     
+//     var sortDir = 'asc'; // set a flasg for sort direction
+//     d3.select('button#bh-gs-sort') // add listener to button to activate sorting
+//       .on('click', function(){
+//         sortChart();
+//       });
+//     
+//     var sortChart = function(){
+//       var newDomain = [] // declare array to hold re-ordered ordinal domain for xScale
+//       chart.selectAll('rect')
+//            .sort(function(a,b){
+//              if (sortDir == 'asc'){
+//                return d3.ascending(a.usage, b.usage);
+//              } else {
+//                return d3.descending(a.usage, b.usage);
+//              }
+//            })
+//            .transition()
+//            .delay(function(d,i){
+//              return i* 50;
+//            })
+//            .duration(1000)
+//            .attr('x', function(d,i){
+//              return scales[i]; // re-position bars based on sorted positions
+//            });
+//       
+//       chart.selectAll('rect')
+//         .each(function(d){
+//           newDomain.push(d['props.DAV: owner']);
+//         });
+//       
+//       // update domain of x axis
+//       xScale.domain( newDomain );
+//       
+//       chart.select('.axis.xAxis')
+//            .transition()
+//            .duration(1000)
+//            .call(xAxis)
+//            .selectAll('text')
+//            .style('text-anchor','end')
+//            
+//       sortDir = sortDir == 'asc' ? 'desc' : 'asc'; // flip the flag
+//     }
+//   });
    d3.json(location.href+"?usage", function(error,inputdata) {
-     // Stop when error
-     if (error) return alert(error);
-     
-     var dataset = inputdata[0].usage;
-     
-     // calculate with of each bar
-     var barwidth = w/ dataset.length
-     
-     var chartPadding = 50;
-     var chartBottom = h - chartPadding; // 350;
-     var chartRight = w - chartPadding; // 750
-     
-     // add variable to set spacing
-     var spacing = 1;
-     
-     var maxValue = d3.max(dataset, function(d){
-       return d.usage/1024/1024
-     })
-     var yScale = d3.scale.linear().domain([0,maxValue]).range([chartBottom,chartPadding])
-                                   .nice();
+    // Stop when error
+    if (error) return alert(error);
+    
+    var data = inputdata[0].usage;
+     var valueLabelWidth = 80; // space reserved for value labels (right)
+     var barHeight = 20; // height of one bar
+     var barLabelWidth = 100; // space reserved for bar labels
+     var barLabelPadding = 5; // padding between bar and bar labels (left)
+     var gridLabelHeight = 18; // space reserved for gridline labels
+     var gridChartOffset = 3; // space between start of grid and first bar
+     var maxBarWidth = 420; // width of the bar with the max value
+      
+     // accessor functions 
+     var barLabel = function(d) { return d['props.DAV: owner']; };
+     var barValueGb = function(d) { return parseFloat(d['usage']/1024/1024/1024); };
+     var barValue = function(d) { return parseFloat(d['usage']); };
 
-     var barLabels = dataset.map(function(datum){
-       return datum['props.DAV: owner'];
+     // sorting
+     var sortedData = data.sort(function(a,b){
+       return d3.descending(barValue(a), barValue(b));
      });
      
-     var xScale = d3.scale.ordinal()
-                    .domain(barLabels)
-                    .rangeRoundBands([chartPadding, chartRight] , 0.1);
-                    // divides bands equally among total width, with 10% spacing
+     // scales
+     var yScale = d3.scale.ordinal().domain(d3.range(0, sortedData.length)).rangeBands([0, sortedData.length * barHeight]);
+     var y = function(d, i) { return yScale(i); };
+     var yText = function(d, i) { return y(d, i) + yScale.rangeBand() / 2; };
+     var x = d3.scale.linear().domain([0, d3.max(sortedData, barValueGb)]).range([0, maxBarWidth]);
      
-     // declare & configure the y axis function
-     var yAxis = d3.svg.axis()
-                   .scale(yScale)
-                   .orient('left');
-     // declare & configure the x axis
-     var xAxis = d3.svg.axis()
-                   .scale(xScale)
-                   .orient('bottom')
-                   .tickSize(0)
-                   
-     // use transformation to adjust position of axis
-     var y_axis = chart.append('g')
-                 .attr('class','axis')
-                 .attr('transform', 'translate('+chartPadding+',0)');
-   
-     // generate y Axis within group using yAxis function
-     yAxis(y_axis);
+     // svg container element
+     var chart = d3.select('#bh-gs-usage-div').append("svg")
+       .attr('width', maxBarWidth + barLabelWidth + valueLabelWidth)
+       .attr('height', gridLabelHeight + gridChartOffset + sortedData.length * barHeight);
      
-     // Remember scales
-     var scales = [];
-     // create bars
-     chart.selectAll('rect')             // returns empty selection
-          .data(dataset)                 // parses & counts data
-          .enter()                       // binds data to placeholders
-          .append('rect')                // creates a rect svg element for every datum
-          .attr({
-            'x' : function(d,i) {       // left-to-right position of left edge of each
-               scales[i] = xScale(d['props.DAV: owner']);
-               return xScale(d['props.DAV: owner']);        // bar
-            },
-            'y' : function(d) {
-              return yScale(d.usage/1024/1024);
-            },
-            'width' : xScale.rangeBand(),
-            'height': function(d){
-              return chartBottom - yScale(d.usage/1024/1024);
-            },
-            'fill': 'red'
-          })
-          // attach event listener to each bar for mouseover
-          .on('mouseover', function(d){
-            d3.select(this)
-              .attr('fill', 'yellow');
-               showValue(d);
-          })
-          .on('mouseout', function(d){
-            d3.select(this)
-              .transition() // add a "smoothing" animation of the transmision
-              .duration(500) // set the duration of the transition in ms (default 250)
-              .attr('fill','red');
-               hideValue();
-          });
+     // grid line labels
+     var gridContainer = chart.append('g')
+       .attr('transform', 'translate(' + barLabelWidth + ',' + gridLabelHeight + ')'); 
      
-     chart.append('g')
-          .attr('class','axis xAxis')
-          .attr('transform', 'translate(0,'+chartBottom+')') // Push to bottom
-          .call(xAxis) //passes itself (g element) into xAxis function
-          // rotate tick labels
-          .selectAll('text')
-          .style('text-anchor','end')
-          .attr('transform','rotate(-65)');
+     gridContainer.selectAll("text").data(x.ticks(10)).enter().append("text")
+       .attr("x", x)
+       .attr("dy", -3)
+       .attr("text-anchor", "middle")
+       .text(String);
      
-     var showValue = function(d){
-       chart.append('text')
-            .text(bytesToSize(d.usage),2)
-            .attr({
-              'x' : xScale(d['props.DAV: owner']) + xScale.rangeBand() / 2,
-              'y' : yScale(d.usage/1024/1024) + 15,
-              'class' : 'value'
-            })
-     }
+     // vertical grid lines
+     gridContainer.selectAll("line").data(x.ticks(10)).enter().append("line")
+       .attr("x1", x)
+       .attr("x2", x)
+       .attr("y1", 0)
+       .attr("y2", yScale.rangeExtent()[1] + gridChartOffset)
+       .style("stroke", "#ccc");
      
-     var hideValue = function(){
-       chart.select('text.value').remove();
-     }
+     // bar labels
+     var labelsContainer = chart.append('g')
+       .attr('transform', 'translate(' + (barLabelWidth - barLabelPadding) + ',' + (gridLabelHeight + gridChartOffset) + ')'); 
+     labelsContainer.selectAll('text').data(sortedData).enter().append('text')
+       .attr('y', yText)
+       .attr('stroke', 'none')
+       .attr('fill', '#414042')
+       .attr("dy", ".35em") // vertical-align: middle
+       .attr('text-anchor', 'end')
+       .text(barLabel);
      
-     var sortDir = 'asc'; // set a flasg for sort direction
-     d3.select('button#bh-gs-sort') // add listener to button to activate sorting
-       .on('click', function(){
-         sortChart();
-       });
+     // bars
+     var barsContainer = chart.append('g')
+       .attr('transform', 'translate(' + barLabelWidth + ',' + (gridLabelHeight + gridChartOffset) + ')'); 
+     barsContainer.selectAll("rect").data(sortedData).enter().append("rect")
+       .attr('y', y)
+       .attr('height', yScale.rangeBand())
+       .attr('width', function(d) { return x(barValueGb(d)); })
+       .attr('stroke', 'white')
+       .attr('fill', '#85B88E');
      
-     var sortChart = function(){
-       var newDomain = [] // declare array to hold re-ordered ordinal domain for xScale
-       chart.selectAll('rect')
-            .sort(function(a,b){
-              if (sortDir == 'asc'){
-                return d3.ascending(a.usage, b.usage);
-              } else {
-                return d3.descending(a.usage, b.usage);
-              }
-            })
-            .transition()
-            .delay(function(d,i){
-              return i* 50;
-            })
-            .duration(1000)
-            .attr('x', function(d,i){
-              return scales[i]; // re-position bars based on sorted positions
-            });
-       
-       chart.selectAll('rect')
-         .each(function(d){
-           newDomain.push(d['props.DAV: owner']);
-         });
-       
-       // update domain of x axis
-       xScale.domain( newDomain );
-       
-       chart.select('.axis.xAxis')
-            .transition()
-            .duration(1000)
-            .call(xAxis)
-            .selectAll('text')
-            .style('text-anchor','end')
-       sortDir = sortDir == 'asc' ? 'desc' : 'asc'; // flip the flag
-     }
+     // bar value labels
+     barsContainer.selectAll("text").data(sortedData).enter().append("text")
+       .attr("x", function(d) { return x(barValueGb(d)); })
+       .attr("y", yText)
+       .attr("dx", 3) // padding-left
+       .attr("dy", ".35em") // vertical-align: middle
+       .attr("text-anchor", "start") // text-align: right
+       .attr("fill", "#414042")
+       .attr("stroke", "none")
+       .text(function(d) { return bytesToSize(d3.round(barValue(d), 2),2); });
+     
+     // start line
+     barsContainer.append("line")
+       .attr("y1", -gridChartOffset)
+       .attr("y2", yScale.rangeExtent()[1] + gridChartOffset)
+       .style("stroke", "" +"#000");
+     
+     
    });
  }
 
