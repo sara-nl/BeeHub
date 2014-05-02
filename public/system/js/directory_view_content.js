@@ -112,10 +112,10 @@
 
     // Add listeners
     // Go to users homedirectory handler
-    $('.bh-dir-content-gohome').unbind('click').click(function(){nl.sara.beehub.controller.goToPage($(this).attr("id"))});
+    $('.bh-dir-content-gohome').unbind('click').click(function(){nl.sara.beehub.controller.goToPage($(this).attr("id"));});
     
     // Go up one directory button
-    $('.bh-dir-content-up').unbind('click').click(function(){nl.sara.beehub.controller.goToPage($(this).attr("id"))});
+    $('.bh-dir-content-up').unbind('click').click(function(){nl.sara.beehub.controller.goToPage($(this).attr("id"));});
     
     // Upload button
     $('.bh-dir-content-upload').unbind('click').click(handle_upload_button_click);
@@ -198,7 +198,7 @@
     $('.bh-dir-content-checkbox').unbind( 'click' ).click(handle_checkbox_click);
     
     // Open selected handler: this can be a file or a directory
-    $('.bh-dir-content-openselected').unbind('click').click(function(){nl.sara.beehub.controller.goToPage($(this).attr('data-value'))});
+    $('.bh-dir-content-openselected').unbind('click').click(function(){nl.sara.beehub.controller.goToPage($(this).attr('data-value'));});
 
     // Edit icon
     $('.bh-dir-content-edit').unbind('click').click(handle_edit_menu_click);
@@ -593,6 +593,15 @@
     var resources = getSelectedResources();
     // init and start action "move"
     nl.sara.beehub.controller.initAction(resources, "move");
-  
   };
+
+  /**
+   * Gets the path to the home dir of the user
+   * 
+   * @returns  {String}  The path to the home dir of the current user, or undefined if this is not known (e.g. there is no user logged in)
+   */
+  nl.sara.beehub.view.content.getHomePath = function() {
+    return $( '.bh-dir-content-gohome' ).attr( 'id' );
+  };
+
 })();

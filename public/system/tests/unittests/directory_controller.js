@@ -42,8 +42,8 @@
   var rememberCreateTreeNode =                      nl.sara.beehub.view.tree.createTreeNode;
   var rememberAddResource =                         nl.sara.beehub.view.addResource;
   var rememberTriggerRenameClick =                  nl.sara.beehub.view.content.triggerRenameClick;
-  var rememberShowOverwriteDialog =                 nl.sara.beehub.view.dialog.showOverwriteDialog
-  var rememberGetUnknownResourceValues =            nl.sara.beehub.view.content.getUnknownResourceValues
+  var rememberShowOverwriteDialog =                 nl.sara.beehub.view.dialog.showOverwriteDialog;
+  var rememberGetUnknownResourceValues =            nl.sara.beehub.view.content.getUnknownResourceValues;
   var rememberUpdateResource =                      nl.sara.beehub.view.updateResource;
   var rememberDeleteResource =                      nl.sara.beehub.view.deleteResource;
   var rememberCloseDialog =                         nl.sara.beehub.view.dialog.closeDialog;
@@ -55,7 +55,7 @@
   var rememberSetAlreadyExist =                     nl.sara.beehub.view.dialog.setAlreadyExist;
   var rememberResource =                            nl.sara.beehub.view.addResource;
   var rememberUpdateResource =                      nl.sara.beehub.view.dialog.updateResourceInfo;
-  var rememberSetCopyMoveView =                     nl.sara.beehub.controller.setCopyMoveView
+  var rememberSetCopyMoveView =                     nl.sara.beehub.controller.setCopyMoveView;
   var rememberClearView =                           nl.sara.beehub.view.tree.clearView;
   var rememberSetModal =                            nl.sara.beehub.view.tree.setModal;
   var rememberUsersPath =                           nl.sara.beehub.users_path;
@@ -125,10 +125,14 @@
     nl.sara.beehub.view.acl.moveDownAclRule =               rememberMoveDownAclRule;   
     nl.sara.beehub.view.acl.moveUpAclRule =                 rememberMoveUpAclRule;  
     nl.sara.beehub.principals  =                            deepCopy(rememberPrincipals);
-  }
+  };
   
   /**
    * Deepcopy an object
+   *
+   * @param    {object}  p  source object
+   * @param    {object}  c  destination object (will merge objects)
+   * @returns  {object}     The copied object
    */
   function deepCopy(p,c) {
     var c = c||{};
@@ -152,14 +156,14 @@
           getAces: function(){
             return acl;
           }
-        }
+        };
       }
       if (this.property === "resourcetype") {
         return testType;
       } else {
         return this.property;
       };
-    }
+    };
     
     var responseObject = function(){
     };
@@ -188,14 +192,14 @@
     resource2.displayname = "file2";
     var items =  [resource1, resource2]; 
     
-    return items
+    return items;
   };
   
   var setupCopyMoveTestEnvironment = function(status, secondStatus, existAction, thirdStatus){
     var inModal = true;
     var inView = true;
     var first412 = true;
-    var second412 = true
+    var second412 = true;
     
     nl.sara.beehub.view.dialog.showResourcesDialog =  function(actionFunction){
       actionFunction();
@@ -227,7 +231,7 @@
               first412 = false;
               callback(status);
             } else if (second412) {
-              second412 = false
+              second412 = false;
               callback(secondStatus);
             } else {
               callback(thirdStatus);
@@ -263,7 +267,7 @@
               first412 = false;
               callback(status);
             } else if (second412) {
-              second412 = false
+              second412 = false;
               callback(secondStatus);
             } else {
               callback(thirdStatus);
@@ -327,7 +331,7 @@
     nl.sara.beehub.view.dialog.showError = function(error){
       deepEqual(error, "Moving an item to itself is not possible. Use rename icon for renaming the resource(s)."
           , "Error should be Moving an item to itself is not possible. Use rename icon for renaming the resource(s).");
-    } 
+    };
   };
   
   /**
@@ -371,7 +375,7 @@
     typeTest = "transparant";
     nl.sara.beehub.controller.maskView(typeTest, showTest);
     typeTest = "loading";
-    showTest = false
+    showTest = false;
     nl.sara.beehub.controller.maskView(typeTest, showTest);   
   });
   
@@ -410,12 +414,12 @@
   test( 'nl.sara.beehub.controller.getDisplayName', function() {
     expect(3);
     
-    nl.sara.beehub.users_path = "/home/users/"
-    var username = nl.sara.beehub.users_path + "laura"
+    nl.sara.beehub.users_path = "/home/users/";
+    var username = nl.sara.beehub.users_path + "laura";
     nl.sara.beehub.principals.users["laura"] = "Laura Leistikow";
     
-    nl.sara.beehub.groups_path = "/home/groups/"
-    var groupname = nl.sara.beehub.groups_path + "group"
+    nl.sara.beehub.groups_path = "/home/groups/";
+    var groupname = nl.sara.beehub.groups_path + "group";
     nl.sara.beehub.principals.groups["group"] = "Test group";
     
     var name = undefined;
@@ -476,7 +480,7 @@
     // Setup environment
     var callback = function(){
       ok(true, "Callback function is called.");
-    }
+    };
     
     nl.sara.beehub.view.dialog.showError = function(error){
       deepEqual(error,'Could not load the subdirectories.', "Show error should be called with value testError.");
@@ -567,7 +571,7 @@
       deepEqual(resource.displayname, "displayname", "Resource displayname should be displayname.");
       deepEqual(resource.lastmodified, "getlastmodified", "Resource lastmodified should be getlastmodified.");
       deepEqual(resource.owner, "owner", "Resource owner should be owner.");
-    }
+    };
     
     nl.sara.beehub.view.content.triggerRenameClick = function(resource){
       deepEqual(resource.path, "testPath", "Resource path should be testPath.");
@@ -575,11 +579,11 @@
       deepEqual(resource.displayname, "displayname", "Resource displayname should be displayname.");
       deepEqual(resource.lastmodified, "getlastmodified", "Resource lastmodified should be getlastmodified.");
       deepEqual(resource.owner, "owner", "Resource owner should be owner.");
-    }
+    };
     
     nl.sara.beehub.view.dialog.showError = function(error){
       deepEqual(error, testError, "Error should be Unknown error.");
-    }
+    };
     
     nl.sara.webdav.Property = function(){
       // Do nothing
@@ -609,7 +613,7 @@
     nl.sara.webdav.Client = function(){
       this.move = function(path, callback, newPath, overWriteMode) {
         deepEqual(path, currentDirectory+"/original", "Move should be called called with path original");
-        deepEqual(newPath, currentDirectory+"/new", "Move should be called with new name new.")
+        deepEqual(newPath, currentDirectory+"/new", "Move should be called with new name new.");
         deepEqual(overWriteMode, testOverwrite, "Overwrite mode should be ");
         // Test callback function with different status
         if (firstTest) {
@@ -641,8 +645,8 @@
       resource.contentlength = "contentlength";
       resource.lastmodified  = "lastmodified";
       resource.owner         = "owner";
-      return resource
-    }
+      return resource;
+    };
     
     nl.sara.beehub.view.updateResource = function(resource, resourceNew){
       deepEqual(resource.path, currentDirectory+"/original", "Resource path should be "+ currentDirectory+"/original");
@@ -664,7 +668,7 @@
     
     nl.sara.beehub.view.dialog.closeDialog = function(){
       ok(true, "Close dialog is called.");
-    }
+    };
     
     var resource = new nl.sara.beehub.ClientResource(currentDirectory+"/original");
     
@@ -683,7 +687,7 @@
     var slideTrigger = {
         first: "left",
         second:"hide"
-    }
+    };
     
     // Setup environment
     nl.sara.beehub.view.tree.cancelButton = function(value){
@@ -704,7 +708,7 @@
       } else {
         ok(false, "Slidetrigger is called with wrong value.");
       }
-    }
+    };
     
     nl.sara.beehub.controller.setCopyMoveView(true);
     
@@ -717,7 +721,7 @@
     };
     
     nl.sara.beehub.controller.setCopyMoveView(false);
-  })
+  });
   
   /**
    * Test upload 1
@@ -759,8 +763,8 @@
           break;
         default:
           ok(false, "This should not happen.");
-        }
-      }
+        };
+      };
     };
     
     nl.sara.beehub.view.dialog.setAlreadyExist = function(resource, overwrite, rename, cancel){
@@ -825,7 +829,7 @@
       this.propfind = function(resourcepath, callback ,value ,properties){
         var data = getDataObject("file1", null);
         callback(207, data);
-      }
+      };
     };
     
     nl.sara.beehub.view.addResource = function(resource){
@@ -851,7 +855,7 @@
         } 
       };
       return ajax;
-    }
+    };
     
     // Test status 201 and 204
     putEmptyFileStatus = 201;
@@ -924,7 +928,7 @@
     nl.sara.beehub.view.dialog.updateResourceInfo = function(resource, info){
       deepEqual(resource.path, currentDirectory+"/file1","Resource path should be "+currentDirectory+"/file1.");
       deepEqual(info, "Forbidden","Info should be forbidden.");
-    }
+    };
     
     nl.sara.beehub.controller.initAction(items, "upload");
   });
@@ -1007,7 +1011,7 @@
         } 
       };
       return ajax;
-    }
+    };
     
     // Test status 201 and 204
     putEmptyFileStatus = 201;
@@ -1070,7 +1074,7 @@
     nl.sara.beehub.view.dialog.updateResourceInfo = function(resource, info){
       deepEqual(resource.path, currentDirectory+"/file1","Resource path should be "+currentDirectory+"/file1.");
       deepEqual(info, "test","Info should be test.");
-    }
+    };
     
     nl.sara.beehub.controller.initAction(items, "upload");
   });
@@ -1405,7 +1409,7 @@
       this.propfind = function(resourcepath, callback ,value ,properties){
         var data = getDataObject("file1", null);
         callback(207, data);
-      }
+      };
     };
     
     nl.sara.beehub.view.dialog.updateResourceInfo = function(resource, info){
@@ -1441,7 +1445,7 @@
         } 
       };
       return ajax;
-    }
+    };
     
     // Test status 201 and 204
     putEmptyFileStatus = 201;
@@ -1566,7 +1570,7 @@
         } 
       };
       return ajax;
-    }
+    };
     
     // Test status 201 and 204
     putEmptyFileStatus = 201;
@@ -1846,7 +1850,7 @@
         } 
       };
       return ajax;
-    }
+    };
     
     // Test status 201 and 204
     putEmptyFileStatus = 201;
@@ -1959,7 +1963,7 @@
         } 
       };
       return ajax;
-    }
+    };
       
     // Test status 201 and 204
     putEmptyFileStatus = 201;
@@ -2016,7 +2020,7 @@
     nl.sara.beehub.view.dialog.showError = function(error){
       deepEqual(error, "Moving an item to itself is not possible. Use rename icon for renaming the resource(s)."
           , "Error should be Moving an item to itself is not possible. Use rename icon for renaming the resource(s).");
-    }
+    };
     
     nl.sara.beehub.view.deleteResource = function(resource){
       deepEqual(resource.path, currentDirectory+"/file1", "Path should be "+currentDirectory+"/file1");
@@ -2998,15 +3002,15 @@
     
     nl.sara.beehub.view.acl.getViewPath = function(){
       return "testPath";
-    }
+    };
     
     nl.sara.webdav.Client = function(){
       this.acl = function(path, callback, acl){
         deepEqual(path,"testPath", "Path should be testPath");
         deepEqual(acl.test, "acl", "Acl test should be acl.");
         callback(status);
-      }
-    }
+      };
+    };
     
     var aclOk = function(){
       ok(true, "acl ok is called.");
@@ -3018,7 +3022,7 @@
     
     nl.sara.beehub.view.dialog.showError = function(error){
       deepEqual(error, testError, "Test error should be "+testError);
-    } 
+    };
     
     status = 200;
     nl.sara.beehub.controller.saveAclOnServer(aclOk, aclError);
@@ -3037,7 +3041,7 @@
    * Test getAclFromServer
    */
   test('nl.sara.beehub.controller.getAclFromServer', function(){
-    expect(63);
+    expect(57);
     
     var errorTest = "";
     var testIndex = 0;
@@ -3053,7 +3057,7 @@
       isprotected       :     false,
       grantdeny         :     2,
       permString        :     "deny write, change acl",
-      getPrivilegeNames :     function(){return ["write","write-acl"]}
+      getPrivilegeNames :     function(){return ["write","write-acl"];}
      },{
       principal         :     nl.sara.webdav.Ace.AUTHENTICATED,
       principalString   :     'DAV: authenticated',
@@ -3062,7 +3066,7 @@
       inherited         :     true,
       grantdeny         :     1,
       permString        :     "allow read",
-      getPrivilegeNames :     function(){return ["read"]}
+      getPrivilegeNames :     function(){return ["read"];}
      },{
       principal         :     nl.sara.webdav.Ace.ALL,
       principalString   :     "DAV: all",
@@ -3071,7 +3075,7 @@
       inherited         :     true,
       grantdeny         :     1,
       permString        :     "allow read",
-      getPrivilegeNames :     function(){return ["read"]}
+      getPrivilegeNames :     function(){return ["read"];}
      },{
       principal         :     {tagname: "owner"},
       principalString   :     'DAV: owner',
@@ -3080,7 +3084,7 @@
       isprotected       :     false,
       grantdeny         :     1,
       permString        :     "allow read",
-      getPrivilegeNames :     function(){return ["read"]}
+      getPrivilegeNames :     function(){return ["read"];}
      },{
       principal         :     nl.sara.webdav.Ace.SELF,
       principalString   :     'DAV: self',
@@ -3089,7 +3093,7 @@
       inherited         :     true,
       grantdeny         :     1,
       permString        :     "allow read",
-      getPrivilegeNames :     function(){return ["read"]}
+      getPrivilegeNames :     function(){return ["read"];}
      },{
       principal         :     nl.sara.webdav.Ace.UNAUTHENTICATED,
       principalString   :     'DAV: unauthenticated',
@@ -3098,7 +3102,7 @@
       inherited         :     true,
       grantdeny         :     1,
       permString        :     "allow unknown privilege (combination)",
-      getPrivilegeNames :     function(){return ["write"]}
+      getPrivilegeNames :     function(){return ["write"];}
       }
     ];
     
@@ -3110,7 +3114,7 @@
       isprotected       :     false,
       grantdeny         :     2,
       permString        :     "deny write, change acl",
-      getPrivilegeNames :     function(){return ["write","write-acl"]}
+      getPrivilegeNames :     function(){return ["write","write-acl"];}
      },{
       principal         :     nl.sara.webdav.Ace.AUTHENTICATED,
       principalString   :     'DAV: authenticated',
@@ -3119,7 +3123,7 @@
       inherited         :     false,
       grantdeny         :     1,
       permString        :     "allow read",
-      getPrivilegeNames :     function(){return ["read"]}
+      getPrivilegeNames :     function(){return ["read"];}
      },{
       principal         :     nl.sara.webdav.Ace.ALL,
       principalString   :     "DAV: all",
@@ -3128,7 +3132,7 @@
       inherited         :     false,
       grantdeny         :     1,
       permString        :     "allow read",
-      getPrivilegeNames :     function(){return ["read"]}
+      getPrivilegeNames :     function(){return ["read"];}
      },{
       principal         :     {tagname: "owner"},
       principalString   :     'DAV: owner',
@@ -3137,7 +3141,7 @@
       isprotected       :     false,
       grantdeny         :     1,
       permString        :     "allow read",
-      getPrivilegeNames :     function(){return ["read"]}
+      getPrivilegeNames :     function(){return ["read"];}
      },{
       principal         :     nl.sara.webdav.Ace.SELF,
       principalString   :     'DAV: self',
@@ -3146,7 +3150,7 @@
       inherited         :     false,
       grantdeny         :     1,
       permString        :     "allow read",
-      getPrivilegeNames :     function(){return ["read"]}
+      getPrivilegeNames :     function(){return ["read"];}
      },{
       principal         :     nl.sara.webdav.Ace.UNAUTHENTICATED,
       principalString   :     'DAV: unauthenticated',
@@ -3155,7 +3159,7 @@
       inherited         :     false,
       grantdeny         :     1,
       permString        :     "allow unknown privilege (combination)",
-      getPrivilegeNames :     function(){return ["write"]}
+      getPrivilegeNames :     function(){return ["write"];}
       }
     ];
     
@@ -3197,7 +3201,7 @@
          data = getDataObject("/test", null, 200, aclTest);
          callback(207, data);
         }
-      }
+      };
     };
     
     nl.sara.beehub.view.setCustomAclOnResource = function(ownACL, resourcePath){
@@ -3207,7 +3211,7 @@
     
     nl.sara.beehub.view.dialog.showError = function(error){
       deepEqual(error, errorTest, "Error should be "+errorTest);
-    }
+    };
     
     nl.sara.beehub.view.acl.setView = function(view, path){
       if (closeDialogTest){
@@ -3217,11 +3221,11 @@
          deepEqual(view, "resource", "View should be resource.");
          deepEqual(path, currentDirectory+"/test", "Path should be "+currentDirectory+'/test'); 
       }
-    }
+    };
     
     nl.sara.beehub.view.dialog.clearView = function(){
       ok(true,"Clear view is called.");
-    }
+    };
     
     nl.sara.beehub.view.dialog.showAcl= function(html, resourcePath, closeDialogFunction){
       if (html !== undefined) {
@@ -3233,27 +3237,28 @@
         closeDialogTest = true;
         closeDialogFunction();
         closeDialogTest=false;
-    }
+    };
     
     nl.sara.beehub.view.acl.setAddAclRuleDialogClickHandler = function(addAclRuleDialog){
-      var userInput = {
-          principal : "test",
-          permissions : "read"
-      }
+      var readPrivilege = new nl.sara.webdav.Privilege();
+      readPrivilege.namespace = 'DAV:';
+      readPrivilege.tagname = 'read';
+      var ace = new nl.sara.webdav.Ace();
+      ace.principal = 'test';
+      ace.addPrivilege( readPrivilege );
       addAclRuleDialogTest = true;
-      addAclRuleDialog(userInput);
+      addAclRuleDialog( ace );
       addAclRuleDialogTest = false;
     };
     
-    nl.sara.beehub.view.acl.createRow = function(aceObject){
+    nl.sara.beehub.view.acl.createRow = function(ace){
       if (addAclRuleDialogTest) {
-        deepEqual(aceObject.principal,"test", "Principal should be test");
+        deepEqual(ace.principal,"test", "Principal should be test");
       } else {
-       deepEqual(aceObject.principal,aclTest[testIndex].principalString, "Principal should be "+aclTest[testIndex].principalString);
-       deepEqual(aceObject.invert,aclTest[testIndex].invertprincipal, "Invert should be "+aclTest[testIndex].invertprincipal);
-       deepEqual(aceObject.protected,aclTest[testIndex].isprotected, "Protected should be "+aclTest[testIndex].isprotected);
-       deepEqual(aceObject.invertprincipal,aclTest[testIndex].invertprincipal, "Invertprincipal should be "+aclTest[testIndex].invertprincipal);
-       deepEqual(aceObject.permissions,aclTest[testIndex].permString, "Permissions string should be "+aclTest[testIndex].permString);
+       deepEqual(ace.principal, aclTest[testIndex].principal, "Principal should be "+aclTest[testIndex].principalString);
+       deepEqual(ace.isprotected, aclTest[testIndex].isprotected, "Protected should be "+aclTest[testIndex].isprotected);
+       deepEqual(ace.invertprincipal, aclTest[testIndex].invertprincipal, "Invertprincipal should be "+aclTest[testIndex].invertprincipal);
+       deepEqual(ace.getPrivilegeNames( 'DAV:' ), aclTest[testIndex].getPrivilegeNames(), "Permissions string should be "+aclTest[testIndex].permString);
  
        testIndex++;
       }
@@ -3276,69 +3281,242 @@
     
     nl.sara.beehub.controller.saveAclOnServer = function(okFunction, notOkFunction){
       notOkFunction();
-    }
+    };
     
     nl.sara.beehub.controller.getAclFromServer(currentDirectory+'/test');
   });
-  
+
   /**
    * Test nl.sara.beehub.controller.addAclRule
    */
   test("nl.sara.beehub.controller.addAclRule", function(){
     expect(5);
-    
+
     nl.sara.beehub.view.dialog.showAddRuleDialog = function(actionFunction, html){
       if (html.length > 0){
         ok(true, "Html is created.");
       }
-      var userInput = {
-          principal : "testPricipal",
-          permissions : "testPermissions"
-      };
-      actionFunction(userInput);
-    }
-    nl.sara.beehub.view.acl.createRow = function(ace){
-      return "testRow";
+      var readPrivilege = new nl.sara.webdav.Privilege();
+      readPrivilege.namespace = 'DAV:';
+      readPrivilege.tagname = 'read';
+      var ace = new nl.sara.webdav.Ace();
+      ace.principal = 'testPrincipal';
+      ace.addPrivilege( readPrivilege );
+      actionFunction(ace);
     };
-    
+
     nl.sara.beehub.view.acl.addRow = function(row, index){
-      deepEqual(row, "testRow", "Row should be testRow.");
       deepEqual(index,0, "Index should be 0.");
-    }
-    
+    };
+
     nl.sara.beehub.controller.saveAclOnServer = function(okfunc, notokfunc){
       okfunc();
       notokfunc();
     };
-    
+
     nl.sara.beehub.view.dialog.clearView = function(){
       ok(true, "Clear view is called.");
-    } 
-    
+    };
+
     nl.sara.beehub.view.acl.deleteRowIndex = function(index){
       deepEqual(index, 1, "Index should be 1.");
-    }
-    
+    };
+
     nl.sara.beehub.controller.addAclRule();
-  })
-  
+  });
+
+  /**
+   * Test nl.sara.beehub.controller.addAclRule: grant privilege on home dir
+   */
+  test("nl.sara.beehub.controller.addAclRule: grant privilege on home dir --> cancel on warning", function(){
+    expect(3);
+
+    nl.sara.beehub.view.acl.getViewPath = function(){ return nl.sara.beehub.view.getHomePath(); };
+
+    nl.sara.beehub.view.dialog.showAddRuleDialog = function(actionFunction, html){
+      if (html.length > 0){
+        ok(true, "Html is created.");
+      }
+      var readPrivilege = new nl.sara.webdav.Privilege();
+      readPrivilege.namespace = 'DAV:';
+      readPrivilege.tagname = 'read';
+      var ace = new nl.sara.webdav.Ace();
+      ace.principal = nl.sara.webdav.Ace.ALL;
+      ace.grantdeny = nl.sara.webdav.Ace.GRANT;
+      ace.addPrivilege( readPrivilege );
+      actionFunction(ace);
+    };
+
+    nl.sara.beehub.view.acl.addRow = function(row, index){
+      ok( false, 'addRow should not be called' );
+    };
+
+    nl.sara.beehub.controller.saveAclOnServer = function(okfunc, notokfunc){
+      ok( false, 'saveAclOnServer should not be called' );
+    };
+
+    nl.sara.beehub.view.dialog.clearView = function(){
+      ok(true, "Clear view is called.");
+    };
+
+    nl.sara.beehub.view.acl.deleteRowIndex = function(index){
+      ok( false, 'deleteRowIndex should not be called' );
+    };
+
+    var oldConfirm = window.confirm;
+    window.confirm = function() {
+      ok( true, 'User is being asked what he/she wants' );
+      return false;
+    };
+    nl.sara.beehub.controller.addAclRule();
+    window.confirm = oldConfirm;
+  });
+
+  /**
+   * Test nl.sara.beehub.controller.addAclRule: grant privilege on home dir
+   */
+  test("nl.sara.beehub.controller.addAclRule: grant privilege on home dir --> accept warning", function(){
+    expect(6);
+
+    nl.sara.beehub.view.acl.getViewPath = function(){ return nl.sara.beehub.view.getHomePath(); };
+
+    nl.sara.beehub.view.dialog.showAddRuleDialog = function(actionFunction, html){
+      if (html.length > 0){
+        ok(true, "Html is created.");
+      }
+      var readPrivilege = new nl.sara.webdav.Privilege();
+      readPrivilege.namespace = 'DAV:';
+      readPrivilege.tagname = 'read';
+      var ace = new nl.sara.webdav.Ace();
+      ace.principal = nl.sara.webdav.Ace.ALL;
+      ace.grantdeny = nl.sara.webdav.Ace.GRANT;
+      ace.addPrivilege( readPrivilege );
+      actionFunction(ace);
+    };
+
+    nl.sara.beehub.view.acl.addRow = function(row, index){
+      deepEqual(index,0, "Index should be 0.");
+    };
+
+    nl.sara.beehub.controller.saveAclOnServer = function(okfunc, notokfunc){
+      okfunc();
+      notokfunc();
+    };
+
+    nl.sara.beehub.view.dialog.clearView = function(){
+      ok(true, "Clear view is called.");
+    };
+
+    nl.sara.beehub.view.acl.deleteRowIndex = function(index){
+      deepEqual(index, 1, "Index should be 1.");
+    };
+
+    var oldConfirm = window.confirm;
+    window.confirm = function() {
+      ok( true, 'User is being asked what he/she wants' );
+      return true;
+    };
+    nl.sara.beehub.controller.addAclRule();
+    window.confirm = oldConfirm;
+  });
+
   /**
    * Test changePermissions
    */
   test("nl.sara.beehub.controller.changePermissions", function(){
     expect(2);
-    
+
     nl.sara.beehub.controller.saveAclOnServer = function(okfunc, notokfunc){
       okfunc();
       notokfunc();
     };
-    
+
+    var readPrivilege = new nl.sara.webdav.Privilege();
+    readPrivilege.namespace = 'DAV:';
+    readPrivilege.tagname = 'read';
+    var ace = new nl.sara.webdav.Ace();
+    ace.principal = 'some_principal';
+    ace.addPrivilege( readPrivilege );
+    var originalRow = nl.sara.beehub.view.acl.createRow( ace );
+
     nl.sara.beehub.view.acl.changePermissions = function(row, oldVal){
-      deepEqual(row, "row", "Row should be row.");
+      deepEqual(row, originalRow, "Row should be row.");
       deepEqual(oldVal, "oldVal", "Oldval should be oldVal.");
     };
-    
-    nl.sara.beehub.controller.changePermissions("row", "oldVal");
+
+    nl.sara.beehub.controller.changePermissions( originalRow, "oldVal" );
+  });
+
+  /**
+   * Test changePermissions
+   */
+  test("nl.sara.beehub.controller.changePermissions: grant privilege on home dir --> cancel on warning", function(){
+    expect(3);
+
+    nl.sara.beehub.view.acl.getViewPath = function(){ return nl.sara.beehub.view.getHomePath(); };
+
+    nl.sara.beehub.controller.saveAclOnServer = function(okfunc, notokfunc){
+      ok( false, 'savAclOnServer should not be called' );
+      okfunc();
+      notokfunc();
+    };
+
+    var readPrivilege = new nl.sara.webdav.Privilege();
+    readPrivilege.namespace = 'DAV:';
+    readPrivilege.tagname = 'read';
+    var ace = new nl.sara.webdav.Ace();
+    ace.principal = nl.sara.webdav.Ace.ALL;
+    ace.addPrivilege( readPrivilege );
+    var originalRow = nl.sara.beehub.view.acl.createRow( ace );
+
+    nl.sara.beehub.view.acl.changePermissions = function(row, oldVal){
+      deepEqual(row, originalRow, "Row should be row.");
+      deepEqual(oldVal, "oldVal", "Oldval should be oldVal.");
+    };
+
+    var oldConfirm = window.confirm;
+    window.confirm = function() {
+      ok( true, 'User is being asked what he/she wants' );
+      return false;
+    };
+    nl.sara.beehub.controller.changePermissions( originalRow, "oldVal" );
+    window.confirm = oldConfirm;
+  });
+
+  /**
+   * Test changePermissions
+   */
+  test("nl.sara.beehub.controller.changePermissions: grant privilege on home dir --> accept warning", function(){
+    expect(4);
+
+    nl.sara.beehub.view.acl.getViewPath = function(){ return nl.sara.beehub.view.getHomePath(); };
+
+    nl.sara.beehub.controller.saveAclOnServer = function(okfunc, notokfunc){
+      ok( true, 'savAclOnServer should be called' );
+      okfunc();
+      notokfunc();
+    };
+
+    var readPrivilege = new nl.sara.webdav.Privilege();
+    readPrivilege.namespace = 'DAV:';
+    readPrivilege.tagname = 'read';
+    var ace = new nl.sara.webdav.Ace();
+    ace.principal = nl.sara.webdav.Ace.ALL;
+    ace.addPrivilege( readPrivilege );
+    var originalRow = nl.sara.beehub.view.acl.createRow( ace );
+
+    nl.sara.beehub.view.acl.changePermissions = function(row, oldVal){
+      deepEqual(row, originalRow, "Row should be row.");
+      deepEqual(oldVal, "oldVal", "Oldval should be oldVal.");
+    };
+
+    var oldConfirm = window.confirm;
+    window.confirm = function() {
+      ok( true, 'User is being asked what he/she wants' );
+      return true;
+    };
+    nl.sara.beehub.controller.changePermissions( originalRow, "oldVal" );
+    window.confirm = oldConfirm;
   });
   
   /**
@@ -3349,7 +3527,7 @@
     
     var firstTest = true;
     
-    var t = setTimeout(function(){ok(false, "This timeout should not be called.")},3000);
+    var t = setTimeout(function(){ok(false, "This timeout should not be called.");},3000);
     
     nl.sara.beehub.controller.saveAclOnServer = function(okfunc, notokfunc){
       if (firstTest){
@@ -3357,7 +3535,7 @@
       } else {
         notokfunc();
       }
-    } 
+    };
     
     nl.sara.beehub.view.acl.addRow = function(row, index){
       deepEqual(row, "testRow", "Row should be testRow.");
@@ -3371,9 +3549,9 @@
     nl.sara.beehub.controller.deleteAclRule("testRow", 1, t);
     
     firstTest = false;
-    t = setTimeout(function(){ok(false, "This timeout should not be called.")},3000);
+    t = setTimeout(function(){ok(false, "This timeout should not be called.");},3000);
     nl.sara.beehub.controller.deleteAclRule("testRow", 1, t);
-  })
+  });
   
   /**
    * Test moveDownAclRule
@@ -3383,7 +3561,7 @@
     
     var firstTest = true;
     
-    var t = setTimeout(function(){ok(false, "This timeout should not be called.")},3000);
+    var t = setTimeout(function(){ok(false, "This timeout should not be called.");},3000);
     nl.sara.beehub.controller.saveAclOnServer = function(okfunc, notokfunc){
       if (firstTest){
         okfunc();
@@ -3405,9 +3583,9 @@
     
     // Test not ok
     firstTest = false;
-    t = setTimeout(function(){ok(false, "This timeout should not be called.")},3000);
+    t = setTimeout(function(){ok(false, "This timeout should not be called.");},3000);
     nl.sara.beehub.controller.moveDownAclRule("row", t);
-  })
+  });
   
     /**
    * Test moveUpAclRule
@@ -3417,7 +3595,7 @@
     
     var firstTest = true;
     
-    var t = setTimeout(function(){ok(false, "This timeout should not be called.")},3000);
+    var t = setTimeout(function(){ok(false, "This timeout should not be called.");},3000);
     nl.sara.beehub.controller.saveAclOnServer = function(okfunc, notokfunc){
       if (firstTest){
         okfunc();
@@ -3439,7 +3617,7 @@
     
     // Test not ok
     firstTest = false;
-    t = setTimeout(function(){ok(false, "This timeout should not be called.")},3000);
+    t = setTimeout(function(){ok(false, "This timeout should not be called.");},3000);
     nl.sara.beehub.controller.moveUpAclRule("row", t);
-  })
+  });
 })();
