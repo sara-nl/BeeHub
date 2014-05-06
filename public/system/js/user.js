@@ -225,7 +225,7 @@ $(function (){
      totalSize = root.size;
      
      // Update header
-     $("#bh-profile-usage-header").html(root.path+"<br>"+bytesToSize(root.size,1)+", "+(100 * root.size / totalSize).toPrecision(3)+" % of total usage");
+     $("#bh-profile-usage-header").html(root.path+"<br>"+nl.sara.beehub.utils.bytesToSize(root.size,1)+", "+(100 * root.size / totalSize).toPrecision(3)+" % of total usage");
      
      var path = svg.selectAll("path")
       .data(partition.nodes(root))
@@ -240,7 +240,7 @@ $(function (){
      // Click handler, when value not empty update header and zoom sunburst graphic
      function click(d) {
        if (d.name !== "empty") {
-        $("#bh-profile-usage-header").html(d.path+"<br>"+bytesToSize(d.size,1)+", "+(100 * d.size / totalSize).toPrecision(3)+" % of total usage");
+        $("#bh-profile-usage-header").html(d.path+"<br>"+nl.sara.beehub.utils.bytesToSize(d.size,1)+", "+(100 * d.size / totalSize).toPrecision(3)+" % of total usage");
         path.transition()
           .duration(750)
           .attrTween("d", arcTween(d));
@@ -253,7 +253,7 @@ $(function (){
         div.transition()        
             .duration(200)      
             .style("opacity", .9);      
-        div .html("<b>"+d.path+"</b><br>"+(100 * d.size / totalSize).toPrecision(3)+" % of total usage ("+bytesToSize(d.size,1)+")")  
+        div .html("<b>"+d.path+"</b><br>"+(100 * d.size / totalSize).toPrecision(3)+" % of total usage ("+nl.sara.beehub.utils.bytesToSize(d.size,1)+")")  
             .style("left", (d3.event.pageX+5) + "px")     
             .style("top", (d3.event.pageY - 28) + "px");   
        };
@@ -293,40 +293,6 @@ $(function (){
      }
    } 
  }
-
- /**
-  * Calculate size from bytes to readable size
-  * 
-  * @param {Integer} bytes      Bytes to calculate
-  * @param {Integer} precision  Precision
-  * 
-  */
- var bytesToSize = function(bytes, precision)
- {  
-     var kilobyte = 1024;
-     var megabyte = kilobyte * 1024;
-     var gigabyte = megabyte * 1024;
-     var terabyte = gigabyte * 1024;
-    
-     if ((bytes >= 0) && (bytes < kilobyte)) {
-         return bytes + ' B';
-  
-     } else if ((bytes >= kilobyte) && (bytes < megabyte)) {
-         return (bytes / kilobyte).toFixed(precision) + ' KB';
-  
-     } else if ((bytes >= megabyte) && (bytes < gigabyte)) {
-         return (bytes / megabyte).toFixed(precision) + ' MB';
-  
-     } else if ((bytes >= gigabyte) && (bytes < terabyte)) {
-         return (bytes / gigabyte).toFixed(precision) + ' GB';
-  
-     } else if (bytes >= terabyte) {
-         return (bytes / terabyte).toFixed(precision) + ' TB';
-  
-     } else {
-         return bytes + ' B';
-     }
- };
 
  /**
   * Check if name object exists in object

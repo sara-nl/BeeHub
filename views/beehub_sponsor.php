@@ -101,7 +101,6 @@ require 'views/header.php';
  <!-- Usage tab -->
  <br/>
  <div id="bh-gs-panel-usage" class="tab-pane">
- <div id="bh-gs-usage-div"></div>
  </div>
  <!--  End usage tab -->
  

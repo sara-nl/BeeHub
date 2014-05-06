@@ -99,7 +99,7 @@ class BeeHub_Sponsor extends BeeHub_Principal {
       }',
       array(
         'condition' => array(
-          "props.http://beehub%2Enl/ sponsor" => "e-infra"
+          "props.http://beehub%2Enl/ sponsor" => $this->name
         )
       )
     );
