@@ -1112,9 +1112,13 @@
       aclProp.tagname = 'acl';
       webdavClient.propfind( resourcePath, function( status, data ) {
         if ( status === 207 ) {
+          
           var response = data.getResponse( resourcePath );
           if ( response === undefined ) {
-            response = data.getResponse( resourcePath + '/' );
+            if ( resourcePath.substr( -1 ) === '/' ) {
+              resourcePath = resourcePath.substr( 0, resourcePath.length -1 );
+            }
+            response = data.getResponse( resourcePath );
           }
           var aces = response.getProperty( 'DAV:', 'acl' ).getParsedValue().getAces();
           // Determine if there are non-inherited and non-protected ACE's
