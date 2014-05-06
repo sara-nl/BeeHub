@@ -171,9 +171,7 @@ $(function (){
    * Create vertical bar chart with usage data.
    * 
    */
- var createUsageView = function() {
-//   $("#bh-gs-usage-div").html("");
-   
+ var createUsageView = function() {   
    d3.json(location.href+"?usage", function(error,inputdata) {
     // Stop when error
     if (error) return alert(error);
@@ -182,7 +180,7 @@ $(function (){
     
     // Stop when sponsor has no users
     if (data.length === 0){
-      $('#bh-gs-panel-usage').html('<h5 style="margin-left:10px;">No users available for data usage graphic.</h5>');
+      $('#bh-gs-panel-usage').html('<h5 style="margin-left:10px;">No storage used for this sponsor.</h5>'); 
       return;
     };
     
