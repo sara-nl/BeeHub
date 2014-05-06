@@ -631,7 +631,7 @@ try {
         $( function() {
           $( \'.bh-dir-content-upload\' )
             .unbind( \'click\' )
-            .removeClass( \'bh-dir-content-upload\' )
+//            .removeClass( \'bh-dir-content-upload\' )
             .attr( \'disabled\', \'disabled\' );
         } );
       </script>
