@@ -1030,19 +1030,22 @@
   };
   
   var addAclRuleDialog = function( ace ){
-    // Add row in view
-    var row = nl.sara.beehub.view.acl.createRow(ace);
-    nl.sara.beehub.view.acl.addRow(row, nl.sara.beehub.view.acl.getIndexLastProtected());
-    
-    var functionSaveAclOk = function(){
-      // Do Nothing;
-    };
-    
-    var functionSaveAclError = function(){
-      // Update view
-      nl.sara.beehub.view.acl.deleteRowIndex(nl.sara.beehub.view.acl.getIndexLastProtected() + 1);
-    };
-    nl.sara.beehub.controller.saveAclOnServer(functionSaveAclOk, functionSaveAclError);
+    if ( checkHomeFolderPrivileges( ace ) ) {
+ 
+     // Add row in view
+     var row = nl.sara.beehub.view.acl.createRow(ace);
+     nl.sara.beehub.view.acl.addRow(row, nl.sara.beehub.view.acl.getIndexLastProtected());
+     
+     var functionSaveAclOk = function(){
+       // Do Nothing;
+     };
+     
+     var functionSaveAclError = function(){
+       // Update view
+       nl.sara.beehub.view.acl.deleteRowIndex(nl.sara.beehub.view.acl.getIndexLastProtected() + 1);
+     };
+     nl.sara.beehub.controller.saveAclOnServer(functionSaveAclOk, functionSaveAclError);
+    }
   };
   
   var createGetAclCallback = function(resourcePath){
@@ -1148,7 +1151,6 @@
     if ( nl.sara.beehub.view.acl.getViewPath() !== nl.sara.beehub.view.getHomePath() ) {
       return true;
     }
-
     if (
       ( ace.grantdeny === nl.sara.webdav.Ace.GRANT ) &&
       (

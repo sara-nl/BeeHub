@@ -526,7 +526,11 @@
    */
   var handle_acl_menu_click = function(e){
     e.preventDefault();
-    nl.sara.beehub.controller.getAclFromServer($(this).closest('tr').attr('id'));
+    var path = $(this).closest('tr').attr('id');
+    if (!path.match(/\/$/)) {
+      path=path+'/'; 
+    };
+    nl.sara.beehub.controller.getAclFromServer(path);
   }; 
   
   /*
