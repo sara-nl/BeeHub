@@ -31,6 +31,7 @@
   var treeNode = $( "#bh-dir-tree ul.dynatree-container" );
   
   var rememberPrincipals =                           deepCopy(nl.sara.beehub.principals);
+  var rememberConfirm =                             window.confirm;
   var rememberClearAllViews =                       nl.sara.beehub.view.clearAllViews;
   var rememberClearDialogView =                     nl.sara.beehub.view.dialog.clearView;
   var rememberMaskView =                            nl.sara.beehub.view.maskView;
@@ -75,8 +76,8 @@
   var rememberCreateRow =                           nl.sara.beehub.view.acl.createRow;
   var rememberChangePermissions =                   nl.sara.beehub.view.acl.changePermissions;
   var rememberMoveDownAclRule =                     nl.sara.beehub.view.acl.moveDownAclRule;
-  var rememberMoveUpAclRule =                       nl.sara.beehub.view.acl.moveUpAclRule;
- 
+  var rememberMoveUpAclRule =                       nl.sara.beehub.view.acl.moveUpAclRule; 
+  var rememberSetAddAclRuleDialogClickHandler =     nl.sara.beehub.view.acl.setAddAclRuleDialogClickHandler;
   
   var backToOriginalEnvironment = function(){
     nl.sara.beehub.view.clearAllViews =                     rememberClearAllViews;
@@ -125,6 +126,9 @@
     nl.sara.beehub.view.acl.moveDownAclRule =               rememberMoveDownAclRule;   
     nl.sara.beehub.view.acl.moveUpAclRule =                 rememberMoveUpAclRule;  
     nl.sara.beehub.principals  =                            deepCopy(rememberPrincipals);
+    nl.sara.beehub.view.acl.setAddAclRuleDialogClickHandler= rememberSetAddAclRuleDialogClickHandler; 
+    window.confirm =                                         rememberConfirm;                            ;
+
   };
   
   /**
@@ -3285,7 +3289,142 @@
     
     nl.sara.beehub.controller.getAclFromServer(currentDirectory+'/test');
   });
+  
+ 
+  /**
+   * Test private addAclRuleDialog via getAclFromServer : grant privilege on home dir
+   */
+  test("nl.sara.beehub.controller.addAclRule: grant privilege on home dir --> cancel on warning", function(){
+    expect(1);
 
+     nl.sara.beehub.view.acl.getViewPath = function(){ return nl.sara.beehub.view.getHomePath(); };
+
+     nl.sara.beehub.view.acl.setView = function(){
+       // Do nothing
+     };
+     
+     nl.sara.beehub.view.acl.addRow = function(row, index){
+       // Do nothing
+     };
+ 
+     nl.sara.beehub.controller.saveAclOnServer = function(okfunc, notokfunc){
+       ok( false, 'saveAclOnServer should not be called' );
+     };
+ 
+     nl.sara.beehub.view.acl.deleteRowIndex = function(index){
+       ok( false, 'deleteRowIndex should not be called' );
+     };
+
+     nl.sara.beehub.view.dialog.showAcl = function(){
+       // Do nothing
+     };
+    
+    nl.sara.webdav.Client = function(){
+      this.propfind = function(path,callback){
+          var data = getDataObject(nl.sara.beehub.view.getHomePath(), null, 200, [{
+          principal         :     nl.sara.webdav.Ace.SELF,
+          principalString   :     'DAV: self',
+          invertprincipal   :     false,
+          isprotected       :     false,
+          inherited         :     false,
+          grantdeny         :     1,
+          permString        :     "allow read",
+          getPrivilegeNames :     function(){return ["read"];}
+         }]);
+        callback(207, data);
+      },
+      this.acl = function(){
+        
+      }
+    }
+    
+    nl.sara.beehub.view.acl.setAddAclRuleDialogClickHandler = function(addAclRuleDialog){
+      var readPrivilege = new nl.sara.webdav.Privilege();
+      readPrivilege.namespace = 'DAV:';
+      readPrivilege.tagname = 'read';
+      var ace = new nl.sara.webdav.Ace();
+      ace.principal = nl.sara.webdav.Ace.ALL;
+      ace.grantdeny = nl.sara.webdav.Ace.GRANT;
+      ace.addPrivilege( readPrivilege );
+      addAclRuleDialog( ace );
+    };
+    
+    window.confirm = function() { 
+      ok( true, 'User is being asked what he/she wants' );
+      return false;
+    };
+    
+    // call function on home
+    nl.sara.beehub.controller.getAclFromServer(nl.sara.beehub.view.getHomePath());
+  });
+  
+  /**
+   * Test private addAclRuleDialog via getAclFromServer : grant privilege on home dir
+   */
+  test("nl.sara.beehub.controller.addAclRule: grant privilege on home dir --> OK on warning", function(){
+    expect(2);
+
+     nl.sara.beehub.view.acl.getViewPath = function(){ return nl.sara.beehub.view.getHomePath(); };
+
+     nl.sara.beehub.view.acl.setView = function(){
+       // Do nothing
+     };
+     
+     nl.sara.beehub.view.acl.addRow = function(row, index){
+       // Do nothing
+     };
+ 
+     nl.sara.beehub.controller.saveAclOnServer = function(okfunc, notokfunc){
+       ok( true, 'saveAclOnServer should be called' );
+     };
+ 
+     nl.sara.beehub.view.acl.deleteRowIndex = function(index){
+       ok( false, 'deleteRowIndex should not be called' );
+     };
+
+     nl.sara.beehub.view.dialog.showAcl = function(){
+       // Do nothing
+     };
+    
+    nl.sara.webdav.Client = function(){
+      this.propfind = function(path,callback){
+          var data = getDataObject(nl.sara.beehub.view.getHomePath(), null, 200, [{
+          principal         :     nl.sara.webdav.Ace.SELF,
+          principalString   :     'DAV: self',
+          invertprincipal   :     false,
+          isprotected       :     false,
+          inherited         :     false,
+          grantdeny         :     1,
+          permString        :     "allow read",
+          getPrivilegeNames :     function(){return ["read"];}
+         }]);
+        callback(207, data);
+      },
+      this.acl = function(){
+        
+      }
+    }
+    
+    nl.sara.beehub.view.acl.setAddAclRuleDialogClickHandler = function(addAclRuleDialog){
+      var readPrivilege = new nl.sara.webdav.Privilege();
+      readPrivilege.namespace = 'DAV:';
+      readPrivilege.tagname = 'read';
+      var ace = new nl.sara.webdav.Ace();
+      ace.principal = nl.sara.webdav.Ace.ALL;
+      ace.grantdeny = nl.sara.webdav.Ace.GRANT;
+      ace.addPrivilege( readPrivilege );
+      addAclRuleDialog( ace );
+    };
+    
+    window.confirm = function() { 
+      ok( true, 'User is being asked what he/she wants' );
+      return true;
+    };
+    
+    // call function on home
+    nl.sara.beehub.controller.getAclFromServer(nl.sara.beehub.view.getHomePath());
+  });
+  
   /**
    * Test nl.sara.beehub.controller.addAclRule
    */
@@ -3411,13 +3550,11 @@
       deepEqual(index, 1, "Index should be 1.");
     };
 
-    var oldConfirm = window.confirm;
     window.confirm = function() {
       ok( true, 'User is being asked what he/she wants' );
       return true;
     };
     nl.sara.beehub.controller.addAclRule();
-    window.confirm = oldConfirm;
   });
 
   /**
@@ -3474,13 +3611,11 @@
       deepEqual(oldVal, "oldVal", "Oldval should be oldVal.");
     };
 
-    var oldConfirm = window.confirm;
     window.confirm = function() {
       ok( true, 'User is being asked what he/she wants' );
       return false;
     };
     nl.sara.beehub.controller.changePermissions( originalRow, "oldVal" );
-    window.confirm = oldConfirm;
   });
 
   /**
