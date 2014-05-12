@@ -5,9 +5,8 @@
         "php": ">=5.3.3",
         "ext-fileinfo": "*",
         "ext-mbstring": "*",
-        "ext-mysqli": "*",
+        "ext-mongo": "*",
         "ext-session": "*",
-        "ext-xattr": "*",
         "pieterb/webdav-php": "1.0.*"
     },
     "require-dev": {

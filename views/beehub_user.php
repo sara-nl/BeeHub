@@ -1,7 +1,18 @@
 <?php
-$footer = '<script type="text/javascript" src="/system/js/user.js"></script>';
+$footer = '<script type="text/javascript" src="/system/js/user.js"></script>
+  <script type="text/javascript" src="/system/js/plugins/d3.min.js"></script>';
 $header = '
 <style type="text/css">
+div.bh-user-usage-tooltip {   
+  position: absolute;           
+  text-align: left;                          
+  padding: 5px;             
+  font: 12px sans-serif;        
+  background: #E8F1E9;   
+  border: 0px;      
+  border-radius: 5px;           
+  pointer-events: none;         
+}
 	.control-label-left {
     	text-align: left !important;
 // 			color: #008741 !important;
@@ -24,9 +35,10 @@ require 'views/header.php';
   <li <?= !isset($_GET['verification_code']) ? 'class="active"' : '' ?>><a href="#panel-profile" data-toggle="tab">My profile</a></li>
   <li><a href="#panel-password" data-toggle="tab">Change password</a></li>
   <li><a href="#panel-surfconext" data-toggle="tab">SURFconext</a></li>
-  <?php if ( !is_null( $unverified_address ) ) : ?>
+  <?php if ( !is_null( $this->unverified_address ) ) : ?>
     <li <?= isset($_GET['verification_code']) ? 'class="active"' : '' ?>><a href="#panel-verify" data-toggle="tab">Verify e-mail address</a></li>
   <?php endif; ?>
+  <li><a href="#bh-profile-panel-usage" data-toggle="tab">Usage</a></li>
 </ul>
 
 <!-- Tab contents -->
@@ -46,7 +58,7 @@ require 'views/header.php';
         <input type="text" id="displayname" name="displayname" value="<?= DAV::xmlescape($this->user_prop(DAV::PROP_DISPLAYNAME)) ?>" required />
       </div>
     </div>
-    <?php if ( !is_null( $unverified_address ) ) : ?>
+    <?php if ( !is_null( $this->unverified_address ) ) : ?>
       <div class="control-group warning">
     <?php else: ?>
     	<div class="control-group">
@@ -54,8 +66,8 @@ require 'views/header.php';
       <label class="control-label" for="email">E-mail address</label>
       <div class="controls">
         <input type="email" id="email" name="email" value="<?= DAV::xmlescape($this->user_prop(BeeHub::PROP_EMAIL)) ?>" required />
-        <?php if ( !is_null( $unverified_address ) ) : ?>
-        	<span class="help-inline">You've requested to change this to <?= DAV::xmlescape($unverified_address) ?>, but you haven't verified this address yet!</span>
+        <?php if ( !is_null( $this->unverified_address ) ) : ?>
+        	<span class="help-inline">You've requested to change this to <?= DAV::xmlescape($this->unverified_address) ?>, but you haven't verified this address yet!</span>
         <?php endif; ?>
       </div>
     </div>
@@ -145,10 +157,17 @@ require 'views/header.php';
 	</div>
 </div>
 
-<?php if ( !is_null( $unverified_address ) ) : ?>
+<!-- Usage tab -->
+<div id="bh-profile-panel-usage" class="tab-pane fade">
+ <div style="height:25px"><h4 id="bh-profile-usage-header"></h4></div>
+ <div id="bh-profile-usage-graph"></div>
+</div>
+
+<!-- End Usage tab -->
+<?php if ( !is_null( $this->unverified_address ) ) : ?>
   <div id="panel-verify" class="tab-pane fade <?= isset($_GET['verification_code']) ? 'in active' : '' ?>">
     <form id="verify_email" class="form-horizontal" method="post">
-      <h4>Verify email address: <?= $unverified_address ?></h4>
+      <h4>Verify email address: <?= $this->unverified_address ?></h4>
       <p>Please verify your e-mail address by entering the verification code you've recieved through an e-mail and for security reasons, enter your password.</p>
       <div class="control-group">
         <label class="control-label" for="verification_code">Verification code: </label>

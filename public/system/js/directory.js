@@ -60,6 +60,10 @@ if (nl.sara.beehub.view.acl === undefined) {
   /** @namespace Acl view */
   nl.sara.beehub.view.acl = {};
 }
+if (nl.sara.beehub.view.user_usage === undefined) {
+  /** @namespace User usage view */
+  nl.sara.beehub.view.user_usage = {};
+}
 
 // On load
 $(function() {

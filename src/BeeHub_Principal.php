@@ -106,17 +106,14 @@ abstract class BeeHub_Principal extends BeeHub_Resource implements DAVACL_Princi
   public static function update_principals_json() {
     $json = array();
 
-    foreach( array( 'user', 'group', 'sponsor' ) as $thing ) {
+    foreach( array( 'users', 'groups', 'sponsors' ) as $thing ) {
+      $collection = BeeHub::getNoSQL()->selectCollection($thing);
+      $resultSet = $collection->find( array(), array( 'name' => true, 'displayname' => true) );
       $things = array();
-      $stmt = BeeHub_DB::execute(
-        "SELECT   `{$thing}_name`, `displayname`
-         FROM     `beehub_{$thing}s`
-         ORDER BY `displayname`"
-      );
-      while ( $row = $stmt->fetch_row() )
-        $things[$row[0]] = $row[1];
-      $stmt->free_result();
-      $json["{$thing}s"] = $things;
+      foreach ( $resultSet as $row ) {
+        $things[ $row['name'] ] = $row['displayname'];
+      }
+      $json[ $thing ] = $things;
     }
 
     $local_js_path = dirname( dirname( __FILE__ ) ) . '/public' .

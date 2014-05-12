@@ -79,19 +79,15 @@ class BeeHub_Sponsors extends BeeHub_Principal_Collection {
       throw new DAV_Status( DAV::HTTP_BAD_REQUEST, 'Sponsor name has the wrong format. The name can be a maximum of 255 characters long and should start with an alphanumeric character, followed by alphanumeric characters or one of the following: _-.' );
     }
 
-    // Store in the database
-    try {
-      $statement = BeeHub_DB::execute(
-        'INSERT INTO `beehub_sponsors` (`sponsor_name`) VALUES (?)',
-        's', $sponsor_name
-      );
-    }catch ( Exception $exception ) {
-      if ( $exception->getCode() === 1062 ) { // Duplicate key: bad request!
-        throw new DAV_Status( DAV::HTTP_CONFLICT, "Sponsor name already exists, please choose a different sponsor name!" );
-      }else{
-        throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR );
-      }
+    // Check if the group name doesn't exist
+    $collection = BeeHub::getNoSQL()->sponsors;
+    $result = $collection->findOne( array( 'name' => $sponsor_name ), array( 'name' => true) );
+    if ( !is_null( $result ) ) { // Duplicate key: bad request!
+      throw new DAV_Status(DAV::HTTP_CONFLICT, "Sponsor name already exists, please choose a different sponsor name!");
     }
+    
+    // Store in the database
+    $collection->insert( array( 'name' => $sponsor_name ) );
 
     // Fetch the sponsor and store extra properties
     $sponsor = DAV::$REGISTRY->resource( BeeHub::SPONSORS_PATH . $sponsor_name );
@@ -116,16 +112,8 @@ class BeeHub_Sponsors extends BeeHub_Principal_Collection {
 
 
   protected function init_members() {
-    $stmt = BeeHub_DB::execute(
-      'SELECT `sponsor_name`
-       FROM `beehub_sponsors`
-       ORDER BY `displayname`'
-    );
-    $this->members = array();
-    while ($row = $stmt->fetch_row()) {
-      $this->members[] = rawurlencode($row[0]);
-    }
-    $stmt->free_result();
+    $collection = BeeHub::getNoSQL()->sponsors;
+    $this->members = $collection->find()->sort( array( 'displayname' => 1 ) );
   }
 
 

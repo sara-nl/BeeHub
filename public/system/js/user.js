@@ -168,4 +168,247 @@ $(function (){
 		    	};
 		    }, $("#verify_email").serialize());
 	});
+	
+ // Usage tab
+ $('a[href="#bh-profile-panel-usage"]').unbind('click').click(function(e){
+   createUsageView(); 
+ });
+  
+ /**
+  * Create sunburst accounting graphic with 3d.js
+  * 
+  */
+ var createUsageView = function(){
+   // Clear previous graphics
+   $("#bh-profile-usage-graph").html("");
+   
+   var totalSize = 0;
+   
+   var width = 640,
+   height = 420,
+   radius = Math.min(width, height) / 2;
+
+   var x = d3.scale.linear()
+       .range([0, 2 * Math.PI]);
+   
+   var y = d3.scale.sqrt()
+       .range([0, radius]);
+   
+   var color = d3.scale.category20c();
+   
+   var svg = d3.select("#bh-profile-usage-graph").append("svg")
+       .attr("width", width)
+       .attr("height", height)
+       .append("g")
+       .attr("transform", "translate(" + width / 2 + "," + (height / 2 + 10) + ")")
+   
+   var partition = d3.layout.partition()
+       .value(function(d) { return d.size; });
+   
+   var arc = d3.svg.arc()
+       .startAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x))); })
+       .endAngle(function(d) { return Math.max(0, Math.min(2 * Math.PI, x(d.x + d.dx))); })
+       .innerRadius(function(d) { return Math.max(0, y(d.y)); })
+       .outerRadius(function(d) { return Math.max(0, y(d.y + d.dy)); });
+   
+   // Tooltip div
+   var div = d3.select("#bh-profile-usage-graph").append("div")   
+    .attr("class", "bh-user-usage-tooltip")               
+    .style("opacity", 0);
+   
+   // Read data from server
+   d3.json(location.href+"?usage", function(error, response) {
+     // Get data from response
+     var root = rewriteUsageResponse(response[0].usage);
+     
+     // Remember totalSize of the root
+     totalSize = root.size;
+     
+     // Update header
+     $("#bh-profile-usage-header").html(root.path+"<br>"+nl.sara.beehub.utils.bytesToSize(root.size,1)+", "+(100 * root.size / totalSize).toPrecision(3)+" % of total usage");
+     
+     var path = svg.selectAll("path")
+      .data(partition.nodes(root))
+      .enter().append("path")
+      .attr("d", arc)
+      .style("stroke", "#fff")
+      .style("fill", function(d) { return determineColor(d); })
+      .on("click", click)
+      .on("mouseover", mouseover)   
+      .on("mouseout", mouseout);
+
+     // Click handler, when value not empty update header and zoom sunburst graphic
+     function click(d) {
+       if (d.name !== "empty") {
+        $("#bh-profile-usage-header").html(d.path+"<br>"+nl.sara.beehub.utils.bytesToSize(d.size,1)+", "+(100 * d.size / totalSize).toPrecision(3)+" % of total usage");
+        path.transition()
+          .duration(750)
+          .attrTween("d", arcTween(d));
+       }
+     }
+     
+     // Mouseover handler, when value not empty show tooltip
+     function mouseover(d) {
+       if (d.name !== "empty") {
+        div.transition()        
+            .duration(200)      
+            .style("opacity", .9);      
+        div .html("<b>"+d.path+"</b><br>"+(100 * d.size / totalSize).toPrecision(3)+" % of total usage ("+nl.sara.beehub.utils.bytesToSize(d.size,1)+")")  
+            .style("left", (d3.event.pageX+5) + "px")     
+            .style("top", (d3.event.pageY - 28) + "px");   
+       };
+     }
+     
+     // Mouseout handler, when value not empty hide tooltip
+     function mouseout(d) {  
+       if (d.name !== "empty") {
+         div.transition()        
+             .duration(500)      
+             .style("opacity", 0);   
+       }
+     }
+   });
+   
+   d3.select(self.frameElement).style("height", height + "px");
+   
+   // Interpolate the scales!
+   function arcTween(d) {
+     var xd = d3.interpolate(x.domain(), [d.x, d.x + d.dx]),
+         yd = d3.interpolate(y.domain(), [d.y, 1]),
+         yr = d3.interpolate(y.range(), [d.y ? 20 : 0, radius]);
+     return function(d, i) {
+       return i
+           ? function(t) { return arc(d); }
+           : function(t) { x.domain(xd(t)); y.domain(yd(t)).range(yr(t)); return arc(d); };
+     };
+   }
+   
+   // Color of graphic part
+   function determineColor(d){
+    var percentage = (100 * d.value / totalSize).toPrecision(3);
+     if (d.name === "empty"){
+       return "#FFFFFF";
+     } else {
+       return color((d.children ? d : d.parent).name); 
+     }
+   } 
+ }
+
+ /**
+  * Check if name object exists in object
+  * 
+  * @param {Object} children Child object to check in
+  * @param {String} name     String to check
+  */
+ var checkExist = function(children, name){
+   var exist = false;
+   var child = 0;
+   for (var j=0 ; j < children.length; j++){
+     
+     // check of match dan exist = true
+     if (children[j].name === name){
+       exist = true;
+       child = j;
+     }
+   };
+  // bestaat hij bij de children 
+  if (exist) {
+    return child;
+  } else {
+    return null;
+  }
+ } 
+ 
+ /**
+  * Put json response of accounting data request in object for 3d.js
+  * 
+  * @param {Json} data Json object to rewrite
+  * 
+  */
+ var rewriteUsageResponse = function(data){
+  var returnValue = {
+      "name" : "root",
+      "children" : []     
+  };
+  
+  $.each(data, function(i, value){
+    if (value["_id"] === "/"){
+      returnValue.size = value["value"];
+      returnValue.path = "BeeHub root";
+      return;
+    };
+   var children = returnValue.children;  
+   var dirs = value["_id"].split("/");
+    
+   for (var i=1; i < dirs.length-1; i++) { 
+     var exist = checkExist(children,dirs[i]);
+     
+      // last one
+      if (i === (dirs.length -2)) {
+        if (exist !== null) {
+          // change size
+          children[exist].size = value["value"]; 
+        } else {
+           //create object with size
+           var add = {
+            "name": dirs[i],
+            "size": value["value"],
+            "children": [],
+            "path": value["_id"]
+           };
+           children.push(add);
+        }
+      // not last one
+      } else {
+        if (exist !== null) {
+          // do nothing
+          children = children[exist].children;
+        } else {
+          // create object without size
+          var add = {
+           "name": dirs[i],
+           "children": [],
+           "size": 0,
+           "path": value["_id"]
+          };
+          children.push(add);
+          // pas children aan
+          children = add.children;
+        }
+      }
+    }
+  });
+ 
+  calculateSizes(returnValue);
+  return returnValue;
+ }
+ 
+ /**
+  * Calculates the sizes of child object and create an empty child for not used space. 
+  * 
+  * Sunburst graphic of 3d.js fills the whole child. This function add free 
+  * space child object in the childs so that free space can be colored white.
+  * 
+  * @param {Object} returnValue Object with 3d.js input
+  * 
+  */
+ var calculateSizes = function(returnValue) {
+   var size = 0;
+   for (var key in returnValue.children) {
+     size = size + returnValue.children[key].size;
+     if (returnValue.children[key].children.length > 0){
+       calculateSizes(returnValue.children[key]);
+     }
+   }
+   
+   if ((returnValue.size - size) > 0) {
+    var add = {
+        "name": "empty",
+        "children": [],
+        "size": returnValue.size - size,
+        "path": "empty"
+       };
+    returnValue.children.push(add);
+   }
+ };
 });

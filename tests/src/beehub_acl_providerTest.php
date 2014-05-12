@@ -72,7 +72,8 @@ class BeeHub_ACL_ProviderTest extends BeeHub_Tests_Db_Test_Case {
 
     $config = \BeeHub::config();
     $adminGroup = new \BeeHub_Group( $config['namespace']['admin_group'] );
-    $adminGroup->change_memberships( array( 'jane' ), true, true, false, true, true, false );
+    $adminGroup->change_memberships( array( 'jane' ), \BeeHub_Group::USER_ACCEPT );
+    $adminGroup->change_memberships( array( 'jane' ), \BeeHub_Group::ADMIN_ACCEPT );
 
     $this->setCurrentUser( '/system/users/jane' );
     $this->assertTrue( $obj->wheel(), 'BeeHub_ACL_Provider::wheel() should return true, because Jane is also a member of the admin group' );

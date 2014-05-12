@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 ################################################################################
 #                                                                              #
@@ -33,10 +33,11 @@ CONTINUE=0
 DATADIR=""
 SIMPLESAML=""
 ADMIN_GROUP="admin"
-MYSQL_HOST="localhost"
-MYSQL_USERNAME=""
-MYSQL_PASSWORD=""
-MYSQL_DATABASE=""
+MONGO_HOST="localhost"
+MONGO_PORT="27017"
+MONGO_USERNAME=""
+MONGO_PASSWORD=""
+MONGO_DATABASE=""
 REALM=""
 MAIL_ADDRESS=""
 MAIL_NAME=""
@@ -84,30 +85,46 @@ while [[ "${CONTINUE}" != "y" ]]; do
   fi
 
   while [[ 1 -eq 1 ]]; do
-    echo "What host runs the mySQL database? [${MYSQL_HOST}] "
-    read MYSQL_HOST_2
-    if [[ "${MYSQL_HOST_2}" != "" ]]; then
-      MYSQL_HOST="${MYSQL_HOST_2}"
+    echo "What host runs MongoDB? [${MONGO_HOST}] "
+    read MONGO_HOST_2
+    if [[ "${MONGO_HOST_2}" != "" ]]; then
+      MONGO_HOST="${MONGO_HOST_2}"
     fi
-    echo "What is the mySQL username? [${MYSQL_USERNAME}] "
-    read MYSQL_USERNAME_2
-    if [[ "${MYSQL_USERNAME_2}" != "" ]]; then
-      MYSQL_USERNAME="${MYSQL_USERNAME_2}"
+    echo "What port is being used by MongoDB? [${MONGO_PORT}] "
+    read MONGO_PORT_2
+    if [[ "${MONGO_PORT_2}" != "" ]]; then
+      MONGO_PORT="${MONGO_PORT_2}"
     fi
-    echo "What is the mySQL password? [${MYSQL_PASSWORD}] "
-    read MYSQL_PASSWORD_2
-    if [[ "${MYSQL_PASSWORD_2}" != "" ]]; then
-      MYSQL_PASSWORD="${MYSQL_PASSWORD_2}"
+    echo "What is the MongoDB username? [${MONGO_USERNAME}] "
+    read MONGO_USERNAME_2
+    if [[ "${MONGO_USERNAME_2}" != "" ]]; then
+      MONGO_USERNAME="${MONGO_USERNAME_2}"
     fi
-    echo "What is the mySQL database? [${MYSQL_DATABASE}] "
-    read MYSQL_DATABASE_2
-    if [[ "${MYSQL_DATABASE_2}" != "" ]]; then
-      MYSQL_DATABASE="${MYSQL_DATABASE_2}"
+    echo "What is the MongoDB password? [${MONGO_PASSWORD}] "
+    read MONGO_PASSWORD_2
+    if [[ "${MONGO_PASSWORD_2}" != "" ]]; then
+      MONGO_PASSWORD="${MONGO_PASSWORD_2}"
     fi
-    MYSQL_WORKS=1
-    mysql "--host=${MYSQL_HOST}" "--user=${MYSQL_USERNAME}" "--password=${MYSQL_PASSWORD}" "--database=${MYSQL_DATABASE}" "--execute=SHOW TABLES;" >/dev/null 2>&1 || MYSQL_WORKS=0
-    if [[ ${MYSQL_WORKS} -eq 0 ]]; then
-      echo -e "\nEither you entered wrong mysql connection information, or the mySQL server is unreachable. Please make sure the mySQL server is running and reachable and/or retry entering your mySQL connection information"
+    echo "What is the MongoDB database? [${MONGO_DATABASE}] "
+    read MONGO_DATABASE_2
+    if [[ "${MONGO_DATABASE_2}" != "" ]]; then
+      MONGO_DATABASE="${MONGO_DATABASE_2}"
+    fi
+
+    TMPFILE=$(mktemp --tmpdir beehub.mongo_instructions.XXXXXXXXXX)
+    echo 'db;' > "${TMPFILE}"
+    MONGO_PARAMS=''
+    if [[ "${MONGO_USERNAME}" != "" ]]; then
+      $MONGO_PARAMS="--username '${MONGO_USERNAME}'"
+    fi
+    if [[ "${MONGO_PASSWORD}" != "" ]]; then
+      $MONGO_PARAMS="${MONGO_PARAMS} --password '${MONGO_PASSWORD}'"
+    fi
+    MONGO_WORKS=1
+    mongo --host "${MONGO_HOST}" --port "${MONGO_PORT}" ${MONGO_PARAMS} "${MONGO_DATABASE}" "${TMPFILE}" >/dev/null 2>&1 || MONGO_WORKS=0
+    rm -f "${TMPFILE}"
+    if [[ ${MONGO_WORKS} -eq 0 ]]; then
+      echo -e "\nEither you entered wrong MongoDB connection information, or the MongoDB server is unreachable. Please make sure the MongoDB server is running and reachable and/or retry entering your MongoDB connection information"
     else
       break
     fi
@@ -152,11 +169,12 @@ simplesamlphp = "${SIMPLESAML}"
 [namespace]
 admin_group   = "/system/groups/${ADMIN_GROUP}"
 
-[mysql]
-host     = "${MYSQL_HOST}"
-username = "${MYSQL_USERNAME}"
-password = "${MYSQL_PASSWORD}"
-database = "${MYSQL_DATABASE}"
+[mongo]
+host     = "${MONGO_HOST}"
+port     = "${MONGO_PORT}"
+user     = "${MONGO_USERNAME}"
+password = "${MONGO_PASSWORD}"
+database = "${MONGO_DATABASE}"
 
 [authentication]
 realm = "${REALM}"

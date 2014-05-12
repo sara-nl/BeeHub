@@ -1,6 +1,6 @@
 <?php
 /**
- * Contains tests for the class BeeHub_XFSResource
+ * Contains tests for the class BeeHub_MongoResource
  *
  * Copyright ©2007-2014 SURFsara b.v., Amsterdam, The Netherlands
  *
@@ -22,14 +22,14 @@ declare( encoding = 'UTF-8' );
 namespace BeeHub\tests;
 
 /**
- * Tests for the class BeeHub_XFSResource
+ * Tests for the class BeeHub_MongoResource
  * @package     BeeHub
  * @subpackage  tests
  */
-class BeeHub_XFSResourceTest extends BeeHub_Tests_Db_Test_Case {
+class BeeHub_MongoResourceTest extends BeeHub_Tests_Db_Test_Case {
 
   /**
-   * @var  \BeeHub_XFSResource  The unit under test
+   * @var  \BeeHub_MongoResource  The unit under test
    */
   private $obj;
 
@@ -41,7 +41,7 @@ class BeeHub_XFSResourceTest extends BeeHub_Tests_Db_Test_Case {
       return;
     }
 
-    $this->obj = new \BeeHub_XFSResource( '/foo/file.txt' );
+    $this->obj = new \BeeHub_MongoResource( '/foo/file.txt' );
   }
 
 
@@ -55,16 +55,16 @@ class BeeHub_XFSResourceTest extends BeeHub_Tests_Db_Test_Case {
     $this->obj->method_PROPPATCH( $property, $value );
     $this->obj->storeProperties();
 
-    // Now, if I create a new instance of \BeeHub_XFSResource for the same file, it should have the property set
-    $fileReloaded = new \BeeHub_XFSResource( '/foo/file.txt' );
+    // Now, if I create a new instance of \BeeHub_MongoResource for the same file, it should have the property set
+    $fileReloaded = new \BeeHub_MongoResource( '/foo/file.txt' );
     $this->assertSame( $value, $fileReloaded->user_prop( $property ) );
 
     // Delete the property
     $fileReloaded->method_PROPPATCH( $property );
     $fileReloaded->storeProperties();
 
-    // Now, if I create yet another instance of \BeeHub_XFSResource for the same file, it should not have the property set
-    $fileAgainReloaded = new \BeeHub_XFSResource( '/foo/file.txt' );
+    // Now, if I create yet another instance of \BeeHub_MongoResource for the same file, it should not have the property set
+    $fileAgainReloaded = new \BeeHub_MongoResource( '/foo/file.txt' );
     $this->assertNull( $fileAgainReloaded->user_prop( $property ) );
   }
 
@@ -93,7 +93,7 @@ class BeeHub_XFSResourceTest extends BeeHub_Tests_Db_Test_Case {
     // resource. This last case is actually not an error in
     // user_prop_getlastmodified, but a problem nevertheless
     touch( \BeeHub::localPath( '/foo/file.txt' ) );
-    $file = new \BeeHub_XFSResource( '/foo/file.txt' );
+    $file = new \BeeHub_MongoResource( '/foo/file.txt' );
     $this->assertLessThan( 1, $file->user_prop_getlastmodified() - time() );
   }
 
@@ -116,7 +116,7 @@ class BeeHub_XFSResourceTest extends BeeHub_Tests_Db_Test_Case {
     $this->assertEquals( $acl, $this->obj->user_prop_acl_internal() );
 
     $this->setCurrentUser( '/system/users/jane' );
-    $file = new \BeeHub_XFSResource( '/foo/file.txt' );
+    $file = new \BeeHub_MongoResource( '/foo/file.txt' );
     $this->setExpectedException( 'DAV_Status', null, \DAV::HTTP_FORBIDDEN );
     $file->user_set_acl( $acl );
   }
@@ -151,7 +151,8 @@ class BeeHub_XFSResourceTest extends BeeHub_Tests_Db_Test_Case {
   public function testGiveAwayResource() {
     $this->setCurrentUser( '/system/users/john' );
     $sponsor = new \BeeHub_Sponsor( '/system/sponsors/sponsor_a' );
-    $sponsor->change_memberships( array( 'jane' ), true, true, true, true );
+    $sponsor->change_memberships( array( 'jane' ), \BeeHub_Sponsor::ADMIN_ACCEPT );
+    $sponsor->change_memberships( array( 'jane' ), \BeeHub_Sponsor::SET_ADMIN );
 
     $this->obj->method_PROPPATCH( \DAV::PROP_OWNER, '<D:href>/system/users/jane</D:href>' );
     $this->assertSame( '/system/users/jane', $this->obj->user_prop( \DAV::PROP_OWNER ) );
@@ -164,13 +165,14 @@ class BeeHub_XFSResourceTest extends BeeHub_Tests_Db_Test_Case {
     $this->obj->collection()->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
     $this->obj->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_WRITE ), true ) ) );
     $sponsor = new \BeeHub_Sponsor( '/system/sponsors/sponsor_a' );
-    $sponsor->change_memberships( array( 'jane' ), true, true, true, true );
+    $sponsor->change_memberships( array( 'jane' ), \BeeHub_Sponsor::ADMIN_ACCEPT );
+    $sponsor->change_memberships( array( 'jane' ), \BeeHub_Sponsor::SET_ADMIN );
     $jane = new \BeeHub_User( '/system/users/jane' );
     $jane->user_set_sponsor( '/system/sponsors/sponsor_a' );
     $jane->storeProperties();
 
     $this->setCurrentUser( '/system/users/jane' );
-    $file = new \BeeHub_XFSResource( '/foo/file.txt' );
+    $file = new \BeeHub_MongoResource( '/foo/file.txt' );
     $this->setExpectedException( 'DAV_Status', null, \DAV::HTTP_FORBIDDEN );
     $file->method_PROPPATCH( \DAV::PROP_OWNER, '<D:href>/system/users/jane</D:href>' );
   }
@@ -182,7 +184,8 @@ class BeeHub_XFSResourceTest extends BeeHub_Tests_Db_Test_Case {
     $this->obj->collection()->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), true ) ) );
     $this->obj->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
     $sponsor = new \BeeHub_Sponsor( '/system/sponsors/sponsor_a' );
-    $sponsor->change_memberships( array( 'jane' ), true, true, true, true );
+    $sponsor->change_memberships( array( 'jane' ), \BeeHub_Sponsor::ADMIN_ACCEPT );
+    $sponsor->change_memberships( array( 'jane' ), \BeeHub_Sponsor::SET_ADMIN );
     $jane = new \BeeHub_User( '/system/users/jane' );
     $jane->user_set_sponsor( '/system/sponsors/sponsor_a' );
     $jane->storeProperties();
@@ -190,7 +193,7 @@ class BeeHub_XFSResourceTest extends BeeHub_Tests_Db_Test_Case {
     \DAV::$REGISTRY->forget( '/foo' );
 
     $this->setCurrentUser( '/system/users/jane' );
-    $file = new \BeeHub_XFSResource( '/foo/file.txt' );
+    $file = new \BeeHub_MongoResource( '/foo/file.txt' );
     $this->setExpectedException( 'DAV_Status', null, \DAV::HTTP_FORBIDDEN );
     $file->method_PROPPATCH( \DAV::PROP_OWNER, '<D:href>/system/users/jane</D:href>' );
   }
@@ -204,9 +207,11 @@ class BeeHub_XFSResourceTest extends BeeHub_Tests_Db_Test_Case {
     $this->obj->collection()->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
     $this->obj->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
     $sponsorA = new \BeeHub_Sponsor( '/system/sponsors/sponsor_a' );
-    $sponsorA->change_memberships( array( 'jane' ), true, true, true, true );
+    $sponsorA->change_memberships( array( 'jane' ), \BeeHub_Sponsor::ADMIN_ACCEPT );
+    $sponsorA->change_memberships( array( 'jane' ), \BeeHub_Sponsor::SET_ADMIN );
     $sponsorB = new \BeeHub_Sponsor( '/system/sponsors/sponsor_b' );
-    $sponsorB->change_memberships( array( 'jane' ), true, true, true, true );
+    $sponsorB->change_memberships( array( 'jane' ), \BeeHub_Sponsor::ADMIN_ACCEPT );
+    $sponsorB->change_memberships( array( 'jane' ), \BeeHub_Sponsor::SET_ADMIN );
     $jane = new \BeeHub_User( '/system/users/jane' );
     $jane->user_set_sponsor( '/system/sponsors/sponsor_a' );
     $jane->storeProperties();
@@ -230,9 +235,11 @@ class BeeHub_XFSResourceTest extends BeeHub_Tests_Db_Test_Case {
     $this->obj->collection()->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
     $this->obj->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
     $sponsorA = new \BeeHub_Sponsor( '/system/sponsors/sponsor_a' );
-    $sponsorA->change_memberships( array( 'jane' ), true, true, true, true );
+    $sponsorA->change_memberships( array( 'jane' ), \BeeHub_Sponsor::ADMIN_ACCEPT );
+    $sponsorA->change_memberships( array( 'jane' ), \BeeHub_Sponsor::SET_ADMIN );
     $sponsorB = new \BeeHub_Sponsor( '/system/sponsors/sponsor_b' );
-    $sponsorB->change_memberships( array( 'jane' ), true, true, true, true );
+    $sponsorB->change_memberships( array( 'jane' ), \BeeHub_Sponsor::ADMIN_ACCEPT );
+    $sponsorB->change_memberships( array( 'jane' ), \BeeHub_Sponsor::SET_ADMIN );
     $jane = new \BeeHub_User( '/system/users/jane' );
     $jane->user_set_sponsor( '/system/sponsors/sponsor_a' );
     $jane->storeProperties();
@@ -270,9 +277,11 @@ class BeeHub_XFSResourceTest extends BeeHub_Tests_Db_Test_Case {
     $this->obj->collection()->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
     $this->obj->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
     $sponsorA = new \BeeHub_Sponsor( '/system/sponsors/sponsor_a' );
-    $sponsorA->change_memberships( array( 'jane' ), true, true, true, true );
+    $sponsorA->change_memberships( array( 'jane' ), \BeeHub_Sponsor::ADMIN_ACCEPT );
+    $sponsorA->change_memberships( array( 'jane' ), \BeeHub_Sponsor::SET_ADMIN );
     $sponsorB = new \BeeHub_Sponsor( '/system/sponsors/sponsor_b' );
-    $sponsorB->change_memberships( array( 'jane' ), true, true, true, true );
+    $sponsorB->change_memberships( array( 'jane' ), \BeeHub_Sponsor::ADMIN_ACCEPT );
+    $sponsorB->change_memberships( array( 'jane' ), \BeeHub_Sponsor::SET_ADMIN );
     $jane = new \BeeHub_User( '/system/users/jane' );
     $jane->user_set_sponsor( '/system/sponsors/sponsor_a' );
     $jane->storeProperties();
@@ -296,7 +305,8 @@ class BeeHub_XFSResourceTest extends BeeHub_Tests_Db_Test_Case {
   public function testChangeSponsorOfUnownedResource() {
     $this->setCurrentUser( '/system/users/john' );
     $sponsorA = new \BeeHub_Sponsor( '/system/sponsors/sponsor_a' );
-    $sponsorA->change_memberships( array( 'jane' ), true, true, true, true );
+    $sponsorA->change_memberships( array( 'jane' ), \BeeHub_Sponsor::ADMIN_ACCEPT );
+    $sponsorA->change_memberships( array( 'jane' ), \BeeHub_Sponsor::SET_ADMIN );
     $this->obj->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
 
     $this->setCurrentUser( '/system/users/jane' );
@@ -307,7 +317,8 @@ class BeeHub_XFSResourceTest extends BeeHub_Tests_Db_Test_Case {
 
   public function testChangeSponsorToUnsponsoredSponsor() {
     $sponsor = new \BeeHub_Sponsor( '/system/sponsors/sponsor_b' );
-    $sponsor->change_memberships( array( 'jane' ), true, true, true, true );
+    $sponsor->change_memberships( array( 'jane' ), \BeeHub_Sponsor::ADMIN_ACCEPT );
+    $sponsor->change_memberships( array( 'jane' ), \BeeHub_Sponsor::SET_ADMIN );
     $this->obj->user_set( \DAV::PROP_OWNER, '/system/users/jane' );
 
     $this->setCurrentUser( '/system/users/jane' );
@@ -318,7 +329,8 @@ class BeeHub_XFSResourceTest extends BeeHub_Tests_Db_Test_Case {
 
   public function testChangeSponsor() {
     $sponsor = new \BeeHub_Sponsor( '/system/sponsors/sponsor_b' );
-    $sponsor->change_memberships( array( 'jane' ), true, true, true, true );
+    $sponsor->change_memberships( array( 'jane' ), \BeeHub_Sponsor::ADMIN_ACCEPT );
+    $sponsor->change_memberships( array( 'jane' ), \BeeHub_Sponsor::SET_ADMIN );
     $this->obj->user_set( \DAV::PROP_OWNER, '/system/users/jane' );
 
     $this->setCurrentUser( '/system/users/jane' );
@@ -327,6 +339,6 @@ class BeeHub_XFSResourceTest extends BeeHub_Tests_Db_Test_Case {
     $this->assertSame( '/system/sponsors/sponsor_b', $this->obj->user_prop_sponsor() );
   }
 
-} // class BeeHub_XFSResourceTest
+} // class BeeHub_MongoResourceTest
 
 // End of file

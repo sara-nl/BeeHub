@@ -26,9 +26,17 @@ namespace BeeHub\tests;
  * @package     BeeHub
  * @subpackage  tests
  */
-class BeeHub_RegistryTest extends \PHPUnit_Framework_TestCase {
+class BeeHub_RegistryTest extends BeeHub_Tests_Db_Test_Case {
+
+  private $alternate_pid = false;
+
 
   public function setUp() {
+    // We need to prevent that we continue with tests in a different proces
+    if ( $this->alternate_pid ) {
+      exit();
+    }
+    
     parent::setUp();
     setUp();
   }
@@ -39,7 +47,7 @@ class BeeHub_RegistryTest extends \PHPUnit_Framework_TestCase {
       $this->markTestSkipped( 'No storage backend specified; all tests depending on the storage backend are skipped' );
       return;
     }
-    
+
     $registry = \BeeHub_Registry::inst();
     $resourceFile = $registry->resource( '/foo/file.txt' );
     $this->assertInstanceOf( '\BeeHub_File', $resourceFile );
@@ -71,224 +79,221 @@ class BeeHub_RegistryTest extends \PHPUnit_Framework_TestCase {
 
 
   public function testShallowReadLock() {
-    declare( ticks = 1 ) {
-      @\unlink( 'locksAreSet.deleteMe' );
-      @\unlink( 'readLockDidNotHang.deleteMe' );
-      @\unlink( 'allowWriteLocks.deleteMe' );
-      @\unlink( 'writeLockHangsLongEnough.deleteMe' );
-      @\unlink( 'writeLockSet.deleteMe' );
-      $registry = \BeeHub_Registry::inst();
-  
-      $pid = pcntl_fork();
-      if ($pid === -1) {
-        $this->markTestSkipped( "Unable to fork process" );
-        return;
-      }
-      \BeeHub_DB::forceReconnect();
+    @\unlink( 'locksAreSet.deleteMe' );
+    @\unlink( 'readLockDidNotHang.deleteMe' );
+    @\unlink( 'allowWriteLocks.deleteMe' );
+    @\unlink( 'writeLockHangsLongEnough.deleteMe' );
+    @\unlink( 'writeLockSet.deleteMe' );
+    $registry = \BeeHub_Registry::inst();
+    $pid = pcntl_fork();
+    if ($pid === -1) {
+      $this->markTestSkipped( "Unable to fork process" );
+      return;
+    }
+    \BeeHub::forceMongoReconnect();
 
-      if ( $pid !== 0 ) {
-        // This is the parent process. I could put this code after the if statement,
-        // But now everything in the code is in the same (chronological) order as
-        // how it is supposed to run.
+    if ( $pid !== 0 ) {
+      // This is the parent process. I could put this code after the if statement,
+      // But now everything in the code is in the same (chronological) order as
+      // how it is supposed to run.
 
-        // Set a shallow read and write lock should just happen
-        $timeBeforeLocks = time();
-        $registry->shallowLock( array( '/foo/file.txt' ), array( '/foo/file2.txt' ) );
-        $this->assertGreaterThanOrEqual( -1, $timeBeforeLocks - time() ); // Let's assert that it takes less than a second to set the locks, else something is seriously wrong
+      // Set a shallow read and write lock should just happen
+      $timeBeforeLocks = time();
+      $registry->shallowLock( array( 'foo/file.txt' ), array( 'foo/file2.txt' ) );
+      $this->assertGreaterThanOrEqual( -1, $timeBeforeLocks - time() ); // Let's assert that it takes less than a second to set the locks, else something is seriously wrong
 
-        \touch( 'locksAreSet.deleteMe' );
-      } elseif ( $pid === 0 ) {
-        // we are the child
-        $counter = 0;  
-        while( ! \file_exists( 'locksAreSet.deleteMe' ) ) {
-          \sleep( 1 );
-          if ( $counter++ > 10 ) {
-            $this->assertTrue( false, 'Waited for 10 seconds for the initial locks to be set. This is really much much much too long' );
-          }
-        }
-
-        $timeBeforeReadLock = \time();
-        $registry->shallowLock( array(), array( '/foo/file2.txt' ) );
-        if ( ( \time() - $timeBeforeReadLock ) <= 1 ) {
-          \touch( 'readLockDidNotHang.deleteMe' ); // Let's assert that it takes less than a second to set the locks, else something is seriously wrong
-        }
-
-        // From another thread: Setting a shallow write lock on a resource with a read lock should hang until the read lock is released
-        $registry->shallowLock( array( '/foo/file2.txt' ) );
-        if ( \file_exists( 'allowWriteLocks.deleteMe' ) ) {
-          \touch( 'writeLockHangsLongEnough.deleteMe' );
-        }
-
-        \touch( 'writeLockSet.deleteMe' );
-        \BeeHub_DB::mysqli()->close();
-        exit();
-      }
-      // Only the parent process will get to this
-
-      // Then let's wait a second
-      \sleep( 2 );
-      \touch( 'allowWriteLocks.deleteMe' );
-      $registry->shallowUnlock();
+      \touch( 'locksAreSet.deleteMe' );
+    } elseif ( $pid === 0 ) {
+      // we are the child
+      $this->alternate_pid = true;
 
       $counter = 0;  
-      while( ! \file_exists( 'writeLockSet.deleteMe' ) ) {
+      while( ! \file_exists( 'locksAreSet.deleteMe' ) ) {
         \sleep( 1 );
         if ( $counter++ > 10 ) {
-          $this->assertTrue( false, 'Waited for 10 seconds for the write lock to be set. This is really much much much too long' );
+          $this->assertTrue( false, 'Waited for 10 seconds for the initial locks to be set. This is really much much much too long' );
         }
       }
-      
-      $this->assertTrue( \file_exists( 'readLockDidNotHang.deleteMe' ), 'A shallow read lock can be set immediately on resources with just another shallow read lock' );
-      $this->assertTrue( \file_exists( 'writeLockHangsLongEnough.deleteMe' ), 'A shallow write lock can not be set on resources with a shallow read lock' );
-  
-      @\unlink( 'locksAreSet.deleteMe' );
-      @\unlink( 'readLockDidNotHang.deleteMe' );
-      @\unlink( 'allowWriteLocks.deleteMe' );
-      @\unlink( 'writeLockHangsLongEnough.deleteMe' );
-      @\unlink( 'writeLockSet.deleteMe' );
+
+      $timeBeforeReadLock = \time();
+      $registry->shallowLock( array(), array( '/foo/file2.txt' ) );
+      if ( ( \time() - $timeBeforeReadLock ) <= 1 ) {
+        \touch( 'readLockDidNotHang.deleteMe' ); // Let's assert that it takes less than a second to set the locks, else something is seriously wrong
+      }
+      $registry->shallowUnlock();
+
+      // From another thread: Setting a shallow write lock on a resource with a read lock should hang until the read lock is released
+      $registry->shallowLock( array( '/foo/file2.txt' ) );
+      if ( \file_exists( 'allowWriteLocks.deleteMe' ) ) {
+        \touch( 'writeLockHangsLongEnough.deleteMe' );
+      }
+
+      \touch( 'writeLockSet.deleteMe' );
+      exit();
     }
+    // Only the parent process will get to this
+
+    // Then let's wait a second
+    \sleep( 2 );
+    \touch( 'allowWriteLocks.deleteMe' );
+    $registry->shallowUnlock();
+
+    $counter = 0;
+    while( ! \file_exists( 'writeLockSet.deleteMe' ) ) {
+      \sleep( 1 );
+      if ( $counter++ > 10 ) {
+        $this->assertTrue( false, 'Waited for 10 seconds for the write lock to be set. This is really much much much too long' );
+      }
+    }
+
+    $this->assertTrue( \file_exists( 'readLockDidNotHang.deleteMe' ), 'A shallow read lock can be set immediately on resources with just another shallow read lock' );
+    $this->assertTrue( \file_exists( 'writeLockHangsLongEnough.deleteMe' ), 'A shallow write lock can not be set on resources with a shallow read lock' );
+
+    @\unlink( 'locksAreSet.deleteMe' );
+    @\unlink( 'readLockDidNotHang.deleteMe' );
+    @\unlink( 'allowWriteLocks.deleteMe' );
+    @\unlink( 'writeLockHangsLongEnough.deleteMe' );
+    @\unlink( 'writeLockSet.deleteMe' );
   }
 
 
   public function testShallowReadLockOnWriteLock() {
-    declare( ticks = 1 ) {
-      @\unlink( 'locksAreSet.deleteMe' );
-      @\unlink( 'allowReadLocks.deleteMe' );
-      @\unlink( 'readLockHangsLongEnough.deleteMe' );
-      @\unlink( 'readLockSet.deleteMe' );
-      $registry = \BeeHub_Registry::inst();
-  
-      $pid = pcntl_fork();
-      if ($pid === -1) {
-        $this->markTestSkipped( "Unable to fork process" );
-        return;
-      }
-      \BeeHub_DB::forceReconnect();
+    @\unlink( 'locksAreSet.deleteMe' );
+    @\unlink( 'allowReadLocks.deleteMe' );
+    @\unlink( 'readLockHangsLongEnough.deleteMe' );
+    @\unlink( 'readLockSet.deleteMe' );
+    $registry = \BeeHub_Registry::inst();
 
-      if ( $pid !== 0 ) {
-        // This is the parent process. I could put this code after the if statement,
-        // But now everything in the code is in the same (chronological) order as
-        // how it is supposed to run.
+    $pid = pcntl_fork();
+    if ($pid === -1) {
+      $this->markTestSkipped( "Unable to fork process" );
+      return;
+    }
+    \BeeHub::forceMongoReconnect();
 
-        // Set a shallow read and write lock should just happen
-        $timeBeforeLocks = time();
-        $registry->shallowLock( array( '/foo/file.txt' ), array( '/foo/file2.txt' ) );
-        $this->assertGreaterThanOrEqual( -1, $timeBeforeLocks - time() ); // Let's assert that it takes less than a second to set the locks, else something is seriously wrong
+    if ( $pid !== 0 ) {
+      // This is the parent process. I could put this code after the if statement,
+      // But now everything in the code is in the same (chronological) order as
+      // how it is supposed to run.
 
-        \touch( 'locksAreSet.deleteMe' );
-      } elseif ( $pid === 0 ) {
-        // we are the child
-        $counter = 0;  
-        while( ! \file_exists( 'locksAreSet.deleteMe' ) ) {
-          \sleep( 1 );
-          if ( $counter++ > 10 ) {
-            $this->assertTrue( false, 'Waited for 10 seconds for the initial locks to be set. This is really much much much too long' );
-          }
-        }
+      // Set a shallow read and write lock should just happen
+      $timeBeforeLocks = time();
+      $registry->shallowLock( array( '/foo/file.txt' ), array( '/foo/file2.txt' ) );
+      $this->assertGreaterThanOrEqual( -1, $timeBeforeLocks - time() ); // Let's assert that it takes less than a second to set the locks, else something is seriously wrong
 
-        // From another thread: Setting a shallow read lock on a resource with a write lock should hang until the write lock is released
-        $registry->shallowLock( array(), array( '/foo/file.txt' ) );
-        if ( \file_exists( 'allowReadLocks.deleteMe' ) ) {
-          \touch( 'readLockHangsLongEnough.deleteMe' );
-        }
+      \touch( 'locksAreSet.deleteMe' );
+    } elseif ( $pid === 0 ) {
+      // we are the child
+      $this->alternate_pid = true;
 
-        \touch( 'readLockSet.deleteMe' );
-        \BeeHub_DB::mysqli()->close();
-        exit();
-      }
-      // Only the parent process will get to this
-
-      // Then let's wait a second
-      \sleep( 2 );
-      \touch( 'allowReadLocks.deleteMe' );
-      $registry->shallowUnlock();
-
-      $counter = 0;  
-      while( ! \file_exists( 'readLockSet.deleteMe' ) ) {
+      $counter = 0;
+      while( ! \file_exists( 'locksAreSet.deleteMe' ) ) {
         \sleep( 1 );
         if ( $counter++ > 10 ) {
-          $this->assertTrue( false, 'Waited for 10 seconds for the read lock to be set. This is really much much much too long' );
+          $this->assertTrue( false, 'Waited for 10 seconds for the initial locks to be set. This is really much much much too long' );
         }
       }
-      
-      $this->assertTrue( \file_exists( 'readLockHangsLongEnough.deleteMe' ), 'A shallow read lock can not be set on resources with a shallow write lock' );
-  
-      @\unlink( 'locksAreSet.deleteMe' );
-      @\unlink( 'allowReadLocks.deleteMe' );
-      @\unlink( 'readLockHangsLongEnough.deleteMe' );
-      @\unlink( 'readLockSet.deleteMe' );
+
+      // From another thread: Setting a shallow read lock on a resource with a write lock should hang until the write lock is released
+      $registry->shallowLock( array(), array( '/foo/file.txt' ) );
+      if ( \file_exists( 'allowReadLocks.deleteMe' ) ) {
+        \touch( 'readLockHangsLongEnough.deleteMe' );
+      }
+
+      \touch( 'readLockSet.deleteMe' );
+      exit();
     }
+    // Only the parent process will get to this
+
+    // Then let's wait a second
+    \sleep( 2 );
+    \touch( 'allowReadLocks.deleteMe' );
+    $registry->shallowUnlock();
+
+    $counter = 0;
+    while( ! \file_exists( 'readLockSet.deleteMe' ) ) {
+      \sleep( 1 );
+      if ( $counter++ > 10 ) {
+        $this->assertTrue( false, 'Waited for 10 seconds for the read lock to be set. This is really much much much too long' );
+      }
+    }
+
+    $this->assertTrue( \file_exists( 'readLockHangsLongEnough.deleteMe' ), 'A shallow read lock can not be set on resources with a shallow write lock' );
+
+    @\unlink( 'locksAreSet.deleteMe' );
+    @\unlink( 'allowReadLocks.deleteMe' );
+    @\unlink( 'readLockHangsLongEnough.deleteMe' );
+    @\unlink( 'readLockSet.deleteMe' );
   }
 
 
   public function testShallowWriteLock() {
-    declare( ticks = 1 ) {
-      @\unlink( 'locksAreSet.deleteMe' );
-      @\unlink( 'allowWriteLocks.deleteMe' );
-      @\unlink( 'writeLockHangsLongEnough.deleteMe' );
-      @\unlink( 'writeLockSet.deleteMe' );
-      $registry = \BeeHub_Registry::inst();
-  
-      $pid = pcntl_fork();
-      if ($pid === -1) {
-        $this->markTestSkipped( "Unable to fork process" );
-        return;
-      }
-      \BeeHub_DB::forceReconnect();
+    @\unlink( 'locksAreSet.deleteMe' );
+    @\unlink( 'allowWriteLocks.deleteMe' );
+    @\unlink( 'writeLockHangsLongEnough.deleteMe' );
+    @\unlink( 'writeLockSet.deleteMe' );
+    $registry = \BeeHub_Registry::inst();
 
-      if ( $pid !== 0 ) {
-        // This is the parent process. I could put this code after the if statement,
-        // But now everything in the code is in the same (chronological) order as
-        // how it is supposed to run.
+    $pid = pcntl_fork();
+    if ($pid === -1) {
+      $this->markTestSkipped( "Unable to fork process" );
+      return;
+    }
+    \BeeHub::forceMongoReconnect();
 
-        // Set a shallow read and write lock should just happen
-        $timeBeforeLocks = time();
-        $registry->shallowLock( array( '/foo/file.txt' ), array( '/foo/file2.txt' ) );
-        $this->assertGreaterThanOrEqual( -1, $timeBeforeLocks - time() ); // Let's assert that it takes less than a second to set the locks, else something is seriously wrong
+    if ( $pid !== 0 ) {
+      // This is the parent process. I could put this code after the if statement,
+      // But now everything in the code is in the same (chronological) order as
+      // how it is supposed to run.
 
-        \touch( 'locksAreSet.deleteMe' );
-      } elseif ( $pid === 0 ) {
-        // we are the child
-        $counter = 0;  
-        while( ! \file_exists( 'locksAreSet.deleteMe' ) ) {
-          \sleep( 1 );
-          if ( $counter++ > 10 ) {
-            $this->assertTrue( false, 'Waited for 10 seconds for the initial locks to be set. This is really much much much too long' );
-          }
-        }
-    
-        // From another thread: Setting a shallow write lock on a resource with another write lock should hang until the other write lock is released
-        $registry->shallowLock( array( '/foo/file.txt' ) );
-        if ( \file_exists( 'allowWriteLocks.deleteMe' ) ) {
-          \touch( 'writeLockHangsLongEnough.deleteMe' );
-        }
+      // Set a shallow read and write lock should just happen
+      $timeBeforeLocks = time();
+      $registry->shallowLock( array( '/foo/file.txt' ), array( '/foo/file2.txt' ) );
+      $this->assertGreaterThanOrEqual( -1, $timeBeforeLocks - time() ); // Let's assert that it takes less than a second to set the locks, else something is seriously wrong
 
-        \touch( 'writeLockSet.deleteMe' );
-        \BeeHub_DB::mysqli()->close();
-        exit();
-      }
-      // Only the parent process will get to this
+      \touch( 'locksAreSet.deleteMe' );
+    } elseif ( $pid === 0 ) {
+      // we are the child
+      $this->alternate_pid = true;
 
-      // Then let's wait a second
-      \sleep( 2 );
-      \touch( 'allowWriteLocks.deleteMe' );
-      $registry->shallowUnlock();
-
-      $counter = 0;  
-      while( ! \file_exists( 'writeLockSet.deleteMe' ) ) {
+      $counter = 0;
+      while( ! \file_exists( 'locksAreSet.deleteMe' ) ) {
         \sleep( 1 );
         if ( $counter++ > 10 ) {
-          $this->assertTrue( false, 'Waited for 10 seconds for the write lock to be set. This is really much much much too long' );
+          $this->assertTrue( false, 'Waited for 10 seconds for the initial locks to be set. This is really much much much too long' );
         }
       }
-      
-      $this->assertTrue( \file_exists( 'writeLockHangsLongEnough.deleteMe' ), 'A shallow write lock can not be set on resources with another shallow write lock' );
-  
-      @\unlink( 'locksAreSet.deleteMe' );
-      @\unlink( 'allowWriteLocks.deleteMe' );
-      @\unlink( 'writeLockHangsLongEnough.deleteMe' );
-      @\unlink( 'writeLockSet.deleteMe' );
+
+      // From another thread: Setting a shallow write lock on a resource with another write lock should hang until the other write lock is released
+      $registry->shallowLock( array( '/foo/file.txt' ) );
+      if ( \file_exists( 'allowWriteLocks.deleteMe' ) ) {
+        \touch( 'writeLockHangsLongEnough.deleteMe' );
+      }
+
+      \touch( 'writeLockSet.deleteMe' );
+      exit();
     }
+    // Only the parent process will get to this
+
+    // Then let's wait a second
+    \sleep( 2 );
+    \touch( 'allowWriteLocks.deleteMe' );
+    $registry->shallowUnlock();
+
+    $counter = 0;
+    while( ! \file_exists( 'writeLockSet.deleteMe' ) ) {
+      \sleep( 1 );
+      if ( $counter++ > 10 ) {
+        $this->assertTrue( false, 'Waited for 10 seconds for the write lock to be set. This is really much much much too long' );
+      }
+    }
+
+    $this->assertTrue( \file_exists( 'writeLockHangsLongEnough.deleteMe' ), 'A shallow write lock can not be set on resources with another shallow write lock' );
+
+    @\unlink( 'locksAreSet.deleteMe' );
+    @\unlink( 'allowWriteLocks.deleteMe' );
+    @\unlink( 'writeLockHangsLongEnough.deleteMe' );
+    @\unlink( 'writeLockSet.deleteMe' );
   }
 
 } // class BeeHub_RegistryTest

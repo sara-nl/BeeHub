@@ -43,9 +43,6 @@ require_once( \dirname( __DIR__ ) . \DIRECTORY_SEPARATOR . 'src' . \DIRECTORY_SE
 
 // Check for configuration file
 loadTestConfig();
-if ( \BeeHub_DB::createDbTables() === false ) {
-  die( 'Unable to create database structure' );
-}
 
 
 /**

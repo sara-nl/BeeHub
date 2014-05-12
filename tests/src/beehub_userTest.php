@@ -71,12 +71,12 @@ class BeeHub_UserTest extends BeeHub_Tests_Db_Test_Case {
     // Give Jane a sponsor, and this should automatically be her default sponsor
     $this->setCurrentUser( '/system/users/john' );
     $sponsor = new \BeeHub_Sponsor( '/system/sponsors/sponsor_a' );
-    $sponsor->change_memberships( array( 'jane' ), true, false, true, false );
+    $sponsor->change_memberships( array( 'jane' ), \BeeHub_Sponsor::ADMIN_ACCEPT );
     $userWithSponsor = \DAV::$REGISTRY->resource( '/system/users/jane' );
     $this->assertSame( '/system/sponsors/sponsor_a', $userWithSponsor->user_prop_sponsor() );
 
     // Remove the only sponsor Jane has and she should have no default sponsor either
-    $sponsor->change_memberships( array( 'jane' ), false, false, false, false );
+    $sponsor->change_memberships( array( 'jane' ), \BeeHub_Sponsor::DELETE_MEMBER );
     $userWithoutSponsor = \DAV::$REGISTRY->resource( '/system/users/jane' );
     $this->assertNull( $userWithoutSponsor->user_prop_sponsor() );
   }

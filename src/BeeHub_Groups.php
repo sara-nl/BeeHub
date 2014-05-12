@@ -43,7 +43,7 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
     $displayname = $_POST['displayname'];
     $description = $_POST['description'];
     $group_name = $_POST['group_name'];
-    $user_sponsor = basename( BeeHub::getAuth()->current_user()->user_prop( BeeHub::PROP_SPONSOR ) );
+    $user_sponsor = BeeHub::getAuth()->current_user()->user_prop( BeeHub::PROP_SPONSOR );
     // If you don't have a (default) sponsor, you're not allowed to add a group
     if (empty($user_sponsor)) {
       throw DAV::forbidden("Only users with a sponsor are allowed to create groups");
@@ -55,29 +55,21 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
       throw new DAV_Status( DAV::HTTP_BAD_REQUEST, 'Group name has the wrong format. The name can be a maximum of 255 characters long and should start with an alphanumeric character, followed by alphanumeric characters or one of the following: _-.' );
     }
 
-    // Store in the database
-    try {
-      $statement = BeeHub_DB::execute(
-        'INSERT INTO `beehub_groups` (`group_name`) VALUES (?)',
-        's', $group_name
-      );
-    }catch (Exception $exception) {
-      if ($exception->getCode() === 1062) { // Duplicate key: bad request!
-        throw new DAV_Status(DAV::HTTP_CONFLICT, "Group name already exists, please choose a different group name!" );
-      }else{
-        throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
-      }
+    // Check if the group name doesn't exist
+    $collection = BeeHub::getNoSQL()->groups;
+    $result = $collection->findOne( array( 'name' => $group_name ), array( 'name' => true) );
+    if ( !is_null( $result ) ) { // Duplicate key: bad request!
+      throw new DAV_Status(DAV::HTTP_CONFLICT, "Group name already exists, please choose a different group name!");
     }
 
-    $groupdir = BeeHub::$CONFIG['environment']['datadir'] . $group_name;
+    $groupdir = DAV::unslashify(BeeHub::$CONFIG['environment']['datadir']) . DIRECTORY_SEPARATOR . $group_name;
     // Check for existing groupdir
     if (file_exists($groupdir)) {
-      BeeHub_DB::execute(
-        'DELETE FROM `beehub_groups` WHERE `group_name`=?',
-        's', $group_name
-      );
       throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
     }
+
+    // Store in the database
+    $collection->insert( array( 'name' => $group_name ) );
 
     // Fetch the group and store extra properties
     $group = DAV::$REGISTRY->resource( BeeHub::GROUPS_PATH . $group_name );
@@ -88,17 +80,18 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
     $group->storeProperties();
 
     // Add the current user as admin of the group
-    $group->change_memberships(
-      array( basename( $this->user_prop_current_user_principal() ) ),
-      true, true, true
-    );
+    $group->change_memberships( basename( $this->user_prop_current_user_principal() ), BeeHub_Group::USER_ACCEPT );
+    $group->change_memberships( basename( $this->user_prop_current_user_principal() ), BeeHub_Group::ADMIN_ACCEPT );
+    $group->change_memberships( basename( $this->user_prop_current_user_principal() ), BeeHub_Group::SET_ADMIN );
 
     // And create a group directory
     if (!mkdir($groupdir)) {
       throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
     }
-    xattr_set( $groupdir, rawurlencode('DAV: acl'), '[["' . BeeHub::GROUPS_PATH . rawurlencode($group->name) . '",false,["DAV: read", "DAV: write"],false]]' );
-    xattr_set( $groupdir, rawurlencode(BeeHub::PROP_SPONSOR), BeeHub::SPONSORS_PATH . rawurlencode( $user_sponsor ) );
+    $groupdir_resource = DAV::$REGISTRY->resource( '/' . $group_name );
+    $groupdir_resource->user_set( BeeHub::PROP_SPONSOR, $user_sponsor );
+    $groupdir_resource->user_set( DAV::PROP_ACL, '[["' . BeeHub::GROUPS_PATH . rawurlencode($group->name) . '",false,["DAV: read", "DAV: write"],false]]' );
+    $groupdir_resource->storeProperties();
 
     // Group created, redirect to the group page
     DAV::redirect(
@@ -111,35 +104,26 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
   public function report_principal_property_search($properties) {
     if ( 1 !== count( $properties ) ||
          ! isset( $properties[DAV::PROP_DISPLAYNAME] ) ||
-         1 !== count( $properties[DAV::PROP_DISPLAYNAME] ) )
+         1 !== count( $properties[DAV::PROP_DISPLAYNAME] ) ) {
       throw new DAV_Status(
         DAV::HTTP_BAD_REQUEST,
         'You\'re searching for a property which cannot be searched.'
       );
-    $match = $properties[DAV::PROP_DISPLAYNAME][0];
-    $match = str_replace(array('_', '%'), array('\\_', '\\%'), $match) . '%';
-    $stmt = BeeHub_DB::execute(
-      'SELECT `group_name`
-       FROM `beehub_groups`
-       WHERE `displayname` LIKE ?', 's', $match
-    );
-    $retval = array();
-    while ($row = $stmt->fetch_row()) {
-      $retval[] = BeeHub::GROUPS_PATH .
-        rawurlencode($row[0]);
     }
-    $stmt->free_result();
+    $match = '^' . preg_quote( $properties[DAV::PROP_DISPLAYNAME][0] ) . '.*$';
+    $collection = BeeHub::getNoSQL()->groups;
+    $resultSet = $collection->find( array( 'displayname' => array( '$regex' => $match, '$options' => 'i' ) ), array( 'name' => true ) );
+    $retval = array();
+    foreach ( $resultSet as $row ) {
+      $retval[] = BeeHub::GROUPS_PATH . rawurlencode( $row['name'] );
+    }
     return $retval;
   }
 
 
   protected function init_members() {
-    $stmt = BeeHub_DB::execute('SELECT `group_name` FROM `beehub_groups` ORDER BY `displayname`');
-    $this->members = array();
-    while ($row = $stmt->fetch_row()) {
-      $this->members[] = rawurlencode($row[0]);
-    }
-    $stmt->free_result();
+    $collection = BeeHub::getNoSQL()->groups;
+    $this->members = $collection->find( array(), array( 'name' ) )->sort( array( 'displayname' => 1 ) );
   }
 
 

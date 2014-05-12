@@ -26,7 +26,7 @@
 class BeeHub_Users extends BeeHub_Principal_Collection {
 
   /**
-   * Returns either a form to register a new user or a form to verify your e-mail address. No authentication required.
+   * Returns a form to register a new user. No authentication required.
    * @see DAV_Resource::method_GET
    */
   public function method_GET() {
@@ -50,7 +50,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
 
 
   /**
-   * Handles both the form to register a new user and the form to verify an e-mail address. No authentication required.
+   * Handles the form to register a new user. No authentication required.
    * @see DAV_Resource::method_POST()
    */
   public function method_POST(&$headers) {
@@ -64,32 +64,22 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
       throw new DAV_Status( DAV::HTTP_BAD_REQUEST, 'User name has the wrong format. The name can be a maximum of 255 characters long and should start with an alphanumeric character, followed by alphanumeric character, followed by alphanumeric characters or one of the following: _-.' );
     }
 
+    // Check if the username doesn't exist
+    $collection = BeeHub::getNoSQL()->users;
+    $result = $collection->findOne( array( 'name' => $user_name ), array( 'name' => true) );
+    if ( !is_null( $result ) ) { // Duplicate key: bad request!
+      throw new DAV_Status(DAV::HTTP_CONFLICT, "User name already exists, please choose a different user name!");
+    }
+
+    $userdir = DAV::unslashify(BeeHub::$CONFIG['environment']['datadir']) . DIRECTORY_SEPARATOR . 'home' . DIRECTORY_SEPARATOR . $user_name;
+    // Check for existing userdir
+    if (file_exists($userdir)) {
+      throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
+    }
+
     // Store in the database
-    try{
-      $statement = BeeHub_DB::execute(
-        'INSERT INTO `beehub_users`
-            (`user_name`)
-          VALUES (?)',
-        's', $user_name
-      );
-    }catch (Exception $exception) {
-      if ($exception->getCode() === 1062) { // Duplicate key: bad request!
-        throw new DAV_Status(DAV::HTTP_CONFLICT, "User name already exists, please choose a different user name!");
-      }else{
-        throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
-      }
-    }
-
-    $userdir = BeeHub::$CONFIG['environment']['datadir'] . 'home' . DIRECTORY_SEPARATOR . $user_name;
-    // Check for existing groupdir
-    if ( file_exists( $userdir ) ) {
-      BeeHub_DB::execute(
-        'DELETE FROM `beehub_users` WHERE `user_name`=?',
-        's', $user_name
-      );
-      throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR );
-    }
-
+    $collection->insert( array( 'name' => $user_name ) );
+    
     // Fetch the user and store extra properties
     $user = DAV::$REGISTRY->resource(
       BeeHub::USERS_PATH . rawurlencode($user_name)
@@ -97,16 +87,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
     $user->set_password($password);
     $user->user_set(DAV::PROP_DISPLAYNAME, $displayname);
     $user->user_set(BeeHub::PROP_EMAIL, $email);
-    // TODO: This should not be hard coded, a new user should not have a sponsor but request one after his account is created, but I want to inform the user about his through the not-yet-existing notification system
-    $user->user_set(BeeHub::PROP_SPONSOR, 'e-infra');
-    BeeHub_DB::execute(
-      'INSERT INTO `beehub_sponsor_members`
-          (`sponsor_name`, `user_name`, `is_accepted`, `is_admin`)
-        VALUES (\'e-infra\', ?, ?, ?)
-        ON DUPLICATE KEY
-          UPDATE `is_accepted` = 1',
-      'sii', $user_name, 1, 0
-    );
+    
     // Just to be clear: the above lines will have to be deleted somewhere in the future, but the lines below should stay
     $auth = BeeHub::getAuth();
     if ($auth->simpleSaml()->isAuthenticated()) {
@@ -121,14 +102,20 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
       $user->user_set(BeeHub::PROP_SURFCONEXT_DESCRIPTION, $surfconext_description);
     }
     $user->storeProperties();
+    
+    // TODO: This should not be hard coded, a new user should not have a sponsor but request one after his account is created, but I want to inform the user about his through the not-yet-existing notification system
+    $sponsor = DAV::$REGISTRY->resource('/system/sponsors/e-infra');
+    $sponsor->change_memberships( $user_name, BeeHub_Sponsor::USER_ACCEPT );
 
     // And create a user directory
     if (!mkdir($userdir)) {
       throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
     }
-    xattr_set( $userdir, rawurlencode('DAV: owner'), BeeHub::USERS_PATH . rawurlencode($user_name) );
+    $userdir_resource = DAV::$REGISTRY->resource('/home/' . $user_name);
+    $userdir_resource->user_set( DAV::PROP_OWNER, $user->path );
     // TODO: this should not be hard coded. When a users is accepted by his/her first sponsor, this should automatically be set.
-    xattr_set( $userdir, rawurlencode(BeeHub::PROP_SPONSOR), '/system/sponsors/e-infra' );
+    $userdir_resource->user_set( BeeHub::PROP_SPONSOR, '/system/sponsors/e-infra' );
+    $userdir_resource->storeProperties();
 
     // Show the confirmation
     $this->include_view('new_user_confirmation', array('email_address'=>$email));
@@ -137,35 +124,27 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
   public function report_principal_property_search($properties) {
     if ( 1 !== count( $properties ) ||
          ! isset( $properties[DAV::PROP_DISPLAYNAME] ) ||
-         1 !== count( $properties[DAV::PROP_DISPLAYNAME] ) )
+         1 !== count( $properties[DAV::PROP_DISPLAYNAME] ) ) {
+      
       throw new DAV_Status(
         DAV::HTTP_BAD_REQUEST,
         'You\'re searching for a property which cannot be searched.'
       );
-    $match = $properties[DAV::PROP_DISPLAYNAME][0];
-    $match = str_replace(array('_', '%'), array('\\_', '\\%'), $match) . '%';
-    $stmt = BeeHub_DB::execute(
-      'SELECT `user_name`
-       FROM `beehub_users`
-       WHERE `displayname` LIKE ?', 's', $match
-    );
-    $retval = array();
-    while ($row = $stmt->fetch_row()) {
-      $retval[] = BeeHub::USERS_PATH .
-        rawurlencode($row[0]);
     }
-    $stmt->free_result();
+    $match = '^' . preg_quote( $properties[DAV::PROP_DISPLAYNAME][0] ) . '.*$';
+    $collection = BeeHub::getNoSQL()->users;
+    $resultSet = $collection->find( array( 'displayname' => array( '$regex' => $match, '$options' => 'i' ) ), array( 'name' => true ) );
+    $retval = array();
+    foreach ( $resultSet as $row ) {
+      $retval[] = BeeHub::USERS_PATH . rawurlencode( $row['name'] );
+    }
     return $retval;
   }
 
 
   protected function init_members() {
-    $stmt = BeeHub_DB::execute('SELECT `user_name` FROM `beehub_users`');
-    $this->members = array();
-    while ($row = $stmt->fetch_row()) {
-      $this->members[] = rawurlencode($row[0]);
-    }
-    $stmt->free_result();
+    $collection = BeeHub::getNoSQL()->users;
+    $this->members = $collection->find()->sort( array( 'displayname' => 1 ) );
   }
 
 

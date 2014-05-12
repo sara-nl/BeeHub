@@ -24,7 +24,7 @@
  * Some class.
  * @package BeeHub
  */
-class BeeHub_XFSResource extends BeeHub_Resource {
+class BeeHub_MongoResource extends BeeHub_Resource {
 
 
   /**
@@ -48,11 +48,27 @@ class BeeHub_XFSResource extends BeeHub_Resource {
 
   protected function init_props() {
     if (is_null($this->stored_props)) {
+      $collection = BeeHub::getNoSQL()->files;
+      $path = DAV::unslashify( $this->path );
+      if ( substr( $path, 0, 1 ) === '/' ) {
+        $path = substr( $path, 1 );
+      }
+      $path = urldecode( $path );
+      $document = $collection->findOne( array('path' => $path ) );
       $this->stored_props = array();
-      $attributes = xattr_list($this->localPath);
-      foreach ($attributes as $attribute)
-        $this->stored_props[rawurldecode($attribute)] =
-                xattr_get($this->localPath, $attribute);
+      
+      if ( !is_null( $document ) && !empty( $document['props'] ) ) {
+        foreach ( $document['props'] as $key => $value ) {
+          $decoded_key = rawurldecode( $key );
+          if ( $decoded_key === DAV::PROP_OWNER ) {
+            $value = BeeHub::USERS_PATH . rawurlencode( $value );
+          }
+          if ( $decoded_key === BeeHub::PROP_SPONSOR ) {
+            $value = BeeHub::SPONSORS_PATH . rawurlencode( $value );
+          }
+          $this->stored_props[ $decoded_key ] = $value;
+        }
+      }
     }
   }
 
@@ -151,8 +167,12 @@ class BeeHub_XFSResource extends BeeHub_Resource {
       throw DAV::forbidden();
 
     // Get the sponsor of this resource
-    if ( ($sponsor = $this->user_prop_sponsor()) )
+    if ( $sponsor = $this->user_prop_sponsor() ) {
       $sponsor = DAV::$REGISTRY->resource($sponsor);
+    }else{
+      // There is no sponsor set for this file. How can that be?
+      throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR, 'There is no sponsor set for this file!' );
+    }
 
     // If you are owner, and the new owner is sponsored by the resource sponsor
     if ( $this->user_prop_owner() === $cup->path &&
@@ -210,13 +230,42 @@ class BeeHub_XFSResource extends BeeHub_Resource {
    * @throws DAV_Status in particular 507 (Insufficient Storage)
    */
   public function storeProperties() {
-    if (!$this->touched)
+    if (!$this->touched) {
       return;
-    foreach (xattr_list($this->localPath) as $attribute)
-      if (!isset($this->stored_props[rawurldecode($attribute)]))
-        xattr_remove($this->localPath, $attribute);
-    foreach ($this->stored_props as $name => $value)
-      xattr_set($this->localPath, rawurlencode($name), $value);
+    }
+    
+    $collection = BeeHub::getNoSQL()->files;
+    $path = DAV::unslashify( $this->path );
+    if ( substr( $path, 0, 1 ) === '/' ) {
+      $path = substr( $path, 1 );
+    }
+    $path = urldecode( $path );
+    $document = $collection->findOne( array('path' => $path ) );
+    
+    $urlencodedProps = array();
+    foreach ( $this->stored_props as $key => $value ) {
+      if ( ( $key === DAV::PROP_OWNER ) ||
+           ( $key === BeeHub::PROP_SPONSOR ) ){
+        $value = rawurldecode( basename( $value ) );
+      }
+      // This url encodes only the characters needed to create valid mongoDB keys. You can just run rawurldecode to decode it.
+      $encodedKey = str_replace(
+          array( '%'  , '$'  , '.'   ),
+          array( '%25', '%24', '%2E' ),
+          $key
+      );
+      $urlencodedProps[ $encodedKey ] = $value;
+    }
+    
+    if ( is_null( $document ) ) {
+      $document = array(
+          'path' => DAV::unslashify( $this->path ),
+          'props' => $urlencodedProps );
+    }else{
+      $document['props'] = $urlencodedProps;
+    }
+    $collection->save( $document );
+    
     $this->touched = false;
   }
 
@@ -229,6 +278,27 @@ class BeeHub_XFSResource extends BeeHub_Resource {
     $this->user_set(DAV::PROP_ACL, $aces ? DAVACL_Element_ace::aces2json($aces) : null);
     $this->storeProperties();
   }
+  
+  
+  /**
+   * Gets all members who have a certain property set
+   * @param   string  $prop  The property which should be set on the member
+   * @return  array          An array with all paths to members who have the property set
+   */
+  public function get_members_with_prop($prop) {
+    $collection = BeeHub::getNoSQL()->files;
+    $results = $collection->find(
+            array(
+                'path' => array( '$regex' => preg_quote( DAV::slashify( $this->path ) ) . '.*'),
+                'props.' . $prop => array( '$exists' => true ) ),
+            array('path' => 1, 'props.' . $prop => 1)
+            );
+    $returnVal = array();
+    foreach ( $results as $result ) {
+      $returnVal[$result['path']] = $result['props'][$prop];
+    }
+    return $returnVal;
+  }
 
 
-} // class BeeHub_XFSResource
+} // class BeeHub_MongoResource

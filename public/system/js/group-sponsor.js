@@ -88,7 +88,7 @@ $(function (){
   $('#bh-gs-invite-gs-form').submit(function (event) {
     // Closure for ajax request
     function callback(group_or_sponsor, invitedUser) {
-      return function(status){
+      return function(status) {
         if (status === 409) {
           alert('You are not allowed to remove all the '+group_or_sponsor+' administrators from a '+group_or_sponsor+'. Leave at least one '+group_or_sponsor+' administrator in the '+group_or_sponsor+' or appoint a new '+group_or_sponsor+' administrator!');
           return;
@@ -141,34 +141,144 @@ $(function (){
       location.pathname,
       function(status, data) {
         if (status === 207) {
-            $('#bh-gs-display-name-value').text($('input[name="displayname"]').val());
-            $('#bh-gs-description-value').text($('textarea[name="description"]').val());
-            $('#bh-gs-display').removeClass('hide');
-            $('#bh-gs-edit').addClass('hide');
+          var newDisplayname = $('input[name="displayname"]').val();
+          var newDescription = $('textarea[name="description"]').val();
+          $('#bh-gs-display-name-value').text(newDisplayname);
+          $('#bh-gs-description-value').text(newDescription);
+          var orgValue= $('#bh-gs-display-name').attr("data-org-name");
+          var newHeader = $('#bh-gs-header').html().replace(orgValue,newDisplayname);
+          $('#bh-gs-header').html(newHeader);
+          $('#bh-gs-display-name').attr("data-org-name", newDisplayname);
+          $('#bh-gs-sponsor-description').attr("data-org-name", newDescription);
+          alert("The "+group_or_sponsor+" is changed.")
         } else {
-          alert( "Something went wrong. The '+group_or_sponsor+' is not changed." );
+          alert( "Something went wrong. The "+group_or_sponsor+" is not changed." );
+          $('input[name="displayname"]').val($('#bh-gs-display-name').attr("data-org-name")); 
+          $('textarea[name="description"]').val($('#bh-gs-sponsor-description').attr("data-org-name"));
         }
       }, setProps);
 
     return false;
   });
-	
-  $('#bh-gs-cancel-button').click(
-	function() {
-	  $('input[name="displayname"]').val($('#bh-gs-display-name-value').text());
-	  $('textarea[name="description"]').val($('#bh-gs-description-value').text());
-	  $('#bh-gs-display').removeClass('hide');
-      $('#bh-gs-edit').addClass('hide');
-  }); // End of button click event listener
-  
-  $('#bh-gs-edit-button').click(
-    function() {
-      $('#bh-gs-display').addClass('hide');
-      $('#bh-gs-edit').removeClass('hide');
-    }
-  );
-	
-  var handleDemote = function(event){
+ 
+ //Change tab listeners
+  // Usage tab sponsors
+  $('a[href="#bh-gs-panel-usage"]').unbind('click').click(function(e){
+    createUsageView();
+  });
+
+  /**
+   * Create vertical bar chart with usage data.
+   * 
+   */
+ var createUsageView = function() {   
+   d3.json(location.href+"?usage", function(error,inputdata) {
+    // Stop when error
+    if (error) return alert(error);
+    
+    var data = inputdata[0].usage;
+    
+    // Stop when sponsor has no users
+    if (data.length === 0){
+      $('#bh-gs-panel-usage').html('<h5 style="margin-left:10px;">No storage used for this sponsor.</h5>'); 
+      return;
+    };
+    
+    $('#bh-gs-panel-usage').html('<h5 style="margin-left:160px;">Total data usage per user in GB</h5><div id="bh-gs-usage-div"></div>');
+
+    var valueLabelWidth = 80; // space reserved for value labels (right)
+    var barHeight = 20; // height of one bar
+    var barLabelWidth = 150; // space reserved for bar labels
+    var barLabelPadding = 10; // padding between bar and bar labels (left)
+    var gridLabelHeight = 18; // space reserved for gridline labels
+    var gridChartOffset = 3; // space between start of grid and first bar
+    var maxBarWidth = 420; // width of the bar with the max value
+     
+    // accessor functions 
+    var barLabel = function(d) { return nl.sara.beehub.principals['users'][d['props.DAV: owner']]; };
+    var barValueGb = function(d) { return parseFloat(d['usage']/1024/1024/1024); };
+    var barValue = function(d) { return parseFloat(d['usage']); };
+
+    // sorting
+    var sortedData = data.sort(function(a,b){
+      return d3.descending(barValue(a), barValue(b));
+    });
+    
+    // scales
+    var yScale = d3.scale.ordinal().domain(d3.range(0, sortedData.length)).rangeBands([0, sortedData.length * barHeight]);
+    var y = function(d, i) { return yScale(i); };
+    var yText = function(d, i) { return y(d, i) + yScale.rangeBand() / 2; };
+    var x = d3.scale.linear().domain([0, d3.max(sortedData, barValueGb)]).range([0, maxBarWidth]);
+    
+    // svg container element
+    var chart = d3.select('#bh-gs-usage-div').append("svg")
+      .attr('width', maxBarWidth + barLabelWidth + valueLabelWidth)
+      .attr('height', gridLabelHeight + gridChartOffset + sortedData.length * barHeight);  
+    
+    // grid line labels
+    var gridContainer = chart.append('g')
+      .attr('transform', 'translate(' + barLabelWidth + ',' + gridLabelHeight + ')'); 
+    
+    gridContainer.selectAll("text").data(x.ticks(10)).enter().append("text")
+      .attr("x", x)
+      .attr("dy", -3)
+      .attr("text-anchor", "middle")
+      .attr("font-size", "10px")
+      .text(String);
+    
+    // vertical grid lines
+    gridContainer.selectAll("line").data(x.ticks(10)).enter().append("line")
+      .attr("x1", x)
+      .attr("x2", x)
+      .attr("y1", 0)
+      .attr("y2", yScale.rangeExtent()[1] + gridChartOffset)
+      .style("stroke", "#ccc");
+    
+    // bar labels
+    var labelsContainer = chart.append('g')
+      .attr('transform', 'translate(' + (barLabelWidth - barLabelPadding) + ',' + (gridLabelHeight + gridChartOffset) + ')'); 
+    
+    labelsContainer.selectAll('text').data(sortedData).enter().append('text')
+      .attr('y', yText)
+      .attr('stroke', 'none')
+      .attr('fill', '#414042')
+      .attr("dy", ".35em") // vertical-align: middle
+      .attr('text-anchor', 'end')
+      .attr("font-size", "13px")
+      .text(barLabel);
+    
+    // bars
+    var barsContainer = chart.append('g')
+      .attr('transform', 'translate(' + barLabelWidth + ',' + (gridLabelHeight + gridChartOffset) + ')'); 
+    
+    barsContainer.selectAll("rect").data(sortedData).enter().append("rect")
+      .attr('y', y)
+      .attr('height', yScale.rangeBand())
+      .attr('width', function(d) { return x(barValueGb(d)); })
+      .attr('stroke', 'white')
+      .attr('fill', '#85B88E');
+    
+    // bar value labels
+    barsContainer.selectAll("text").data(sortedData).enter().append("text")
+      .attr("x", function(d) { return x(barValueGb(d)); })
+      .attr("y", yText)
+      .attr("dx", 3) // padding-left
+      .attr("dy", ".35em") // vertical-align: middle
+      .attr("text-anchor", "start") // text-align: right
+      .attr("fill", "#414042")
+      .attr("stroke", "none")
+      .attr("font-size", "13px")
+      .text(function(d) { return nl.sara.beehub.utils.bytesToSize(d3.round(barValue(d), 2),2); });
+    
+    // start line
+    barsContainer.append("line")
+      .attr("y1", -gridChartOffset)
+      .attr("y2", yScale.rangeExtent()[1] + gridChartOffset)
+      .style("stroke", "" +"#000");
+   });
+ }
+ 
+ var handleDemote = function(event){
 	var button = $(event.target);
 	// send request to server
 	  var client = new nl.sara.webdav.Client();
@@ -213,7 +323,7 @@ $(function (){
           return;
         }
         if (status !== 200) {
-          alert('Something went wrong on the server. No changes were made.'+status);
+          alert('Something went wrong on the server. No changes were made.');
           return;
         };
         var demotebutton = $('<button type="button" value="'+button.val()+'" class="btn btn-primary demote_link">Demote to member</button>');

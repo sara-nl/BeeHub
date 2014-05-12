@@ -23,7 +23,7 @@
  * Interface to a folder.
  * @package BeeHub
  */
-class BeeHub_Directory extends BeeHub_XFSResource implements DAV_Collection {
+class BeeHub_Directory extends BeeHub_MongoResource implements DAV_Collection {
 
 
 /**
@@ -67,43 +67,61 @@ private function internal_create_member( $name, $collection = false ) {
   if ( !$result )
     throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
 
-  // And set the xattributes
+  // And set the attributes
+  $new_resource = DAV::$REGISTRY->resource($path);
   if ( ! $collection ) {
-    xattr_set( $localPath, rawurlencode( DAV::PROP_GETETAG), BeeHub_DB::ETag() );
+    $new_resource->user_set( DAV::PROP_GETETAG, BeeHub::ETag() );
   }
-  xattr_set( $localPath, rawurlencode( DAV::PROP_OWNER  ), $this->user_prop_current_user_principal() );
-  xattr_set( $localPath, rawurlencode( BeeHub::PROP_SPONSOR ), $sponsor );
-  return DAV::$REGISTRY->resource( $path );
+  $new_resource->user_set( DAV::PROP_OWNER, $this->user_prop_current_user_principal() );
+  $new_resource->user_set( BeeHub::PROP_SPONSOR, $sponsor );
+  $new_resource->storeProperties();
+  return $new_resource;
 }
 
 
 public function method_COPY( $path ) {
+  $this->init_props();
   $parent = DAV::$REGISTRY->resource( dirname( $path ) );
   if (!$parent)
     throw new DAV_Status(DAV::HTTP_CONFLICT, 'Unable to COPY to unexisting collection');
   if (!$parent instanceof BeeHub_Directory)
     throw new DAV_Status(DAV::HTTP_FORBIDDEN);
-  $newResource = $parent->internal_create_member(basename($path), true);
-  // TODO: Should we check here if the xattr to be copied is in the 'user.' realm?
-  foreach(xattr_list($this->localPath) as $xattr)
-    if ( !in_array( rawurldecode($xattr), array(
-      DAV::PROP_GETETAG,
-      DAV::PROP_OWNER,
-      DAV::PROP_GROUP,
-      BeeHub::PROP_SPONSOR,
-      DAV::PROP_ACL,
-      DAV::PROP_LOCKDISCOVERY
-    ) ) )
-      xattr_set( $newResource->localPath, $xattr, xattr_get( $this->localPath, $xattr ) );
+  
+  // And copy the attributes
+  $newResource = $parent->internal_create_member( basename( $path ), true );
+  foreach( $this->stored_props as $prop => $value ) {
+    if ( !in_array( $prop, array(
+          DAV::PROP_GETETAG,
+          DAV::PROP_OWNER,
+          BeeHub::PROP_SPONSOR,
+          DAV::PROP_ACL,
+          DAV::PROP_LOCKDISCOVERY
+          ) ) ) {
+      $newResource->user_set( $prop, $value );
+    }
+  }
+  $newResource->storeProperties();
 }
 
 
 public function method_DELETE( $name )
 {
   $path = $this->path . $name;
-  $localpath = BeeHub::localPath( $path );
+  
   $resource = DAV::$REGISTRY->resource( $path );
   $resource->assert(DAVACL::PRIV_WRITE);
+  
+  // Remove the entry from mongoDB too
+  $filesCollection = BeeHub::getNoSQL()->selectCollection( 'files' );
+  if ( substr( $path, 0, 1 ) === '/' ) {
+    $unslashifiedPath = DAV::unslashify( substr( $path, 1 ) );
+  }else{
+    $unslashifiedPath = DAV::unslashify( $path );
+  }
+  $filesCollection->remove( array( 'path' => $unslashifiedPath ) );
+
+  // And then from the filesystem
+  $localpath = BeeHub::localPath( $path );
   if (is_dir($localpath)) {
     if (!@rmdir($localpath))
       throw new DAV_Status(DAV::HTTP_CONFLICT, 'Unable to DELETE resource: ' . $name);
@@ -112,6 +130,7 @@ public function method_DELETE( $name )
     if (!@unlink($localpath))
       throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
   }
+
   DAV::$REGISTRY->forget( $path );
 }
 
@@ -152,6 +171,21 @@ public function method_MOVE( $member, $destination ) {
   rename(
     BeeHub::localPath( $this->path . $member ),
     $localDest
+  );
+  
+  // Then move all properties to the new location
+  $filesCollection = BeeHub::getNoSQL()->selectCollection( 'files' );
+  $path = DAV::unslashify( $this->path . $member );
+  if ( substr( $path, 0, 1 ) === '/' ) {
+    $path = substr( $path, 1 );
+  }
+  $newPath = DAV::unslashify( $destination );
+  if ( substr( $newPath, 0, 1 ) === '/' ) {
+    $newPath = substr( $newPath, 1 );
+  }
+  $filesCollection->findAndModify(
+    array( 'path' => $path ),
+    array( '$set' => array( 'path' => $newPath ) )
   );
 
   // We need to make sure that the effective ACL at the destination is the same as at the resource

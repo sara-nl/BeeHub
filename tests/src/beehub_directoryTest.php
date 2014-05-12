@@ -42,7 +42,8 @@ class BeeHub_DirectoryTest extends BeeHub_Tests_Db_Test_Case {
     }
 
     $sponsorA = new \BeeHub_Sponsor( '/system/sponsors/sponsor_a' );
-    $sponsorA->change_memberships( array( 'jane' ), true, true, true, true );
+    $sponsorA->change_memberships( array( 'jane' ), \BeeHub_Sponsor::ADMIN_ACCEPT );
+    $sponsorA->change_memberships( array( 'jane' ), \BeeHub_Sponsor::SET_ADMIN );
     $jane = new \BeeHub_User( '/system/users/jane' );
     $jane->user_set_sponsor( '/system/sponsors/sponsor_a' );
     $jane->storeProperties();
@@ -78,9 +79,10 @@ class BeeHub_DirectoryTest extends BeeHub_Tests_Db_Test_Case {
 
   public function testCreate_memberWithoutCollectionSponsor() {
     $sponsorA = new \BeeHub_Sponsor( '/system/sponsors/sponsor_a' );
-    $sponsorA->change_memberships( array( 'jane' ), false, false, false, false );
+    $sponsorA->change_memberships( array( 'jane' ), \BeeHub_Sponsor::DELETE_MEMBER );
     $sponsorB = new \BeeHub_Sponsor( '/system/sponsors/sponsor_b' );
-    $sponsorB->change_memberships( array( 'jane' ), true, true, true, true );
+    $sponsorB->change_memberships( array( 'jane' ), \BeeHub_Sponsor::ADMIN_ACCEPT );
+    $sponsorB->change_memberships( array( 'jane' ), \BeeHub_Sponsor::SET_ADMIN );
     $jane = new \BeeHub_User( '/system/users/jane' );
     $jane->user_set_sponsor( '/system/sponsors/sponsor_b' );
     $jane->storeProperties();
@@ -97,13 +99,14 @@ class BeeHub_DirectoryTest extends BeeHub_Tests_Db_Test_Case {
 
   public function testCreate_member() {
     $sponsorB = new \BeeHub_Sponsor( '/system/sponsors/sponsor_b' );
-    $sponsorB->change_memberships( array( 'jane' ), true, true, true, true );
+    $sponsorB->change_memberships( array( 'jane' ), \BeeHub_Sponsor::ADMIN_ACCEPT );
+    $sponsorB->change_memberships( array( 'jane' ), \BeeHub_Sponsor::SET_ADMIN );
     $jane = new \BeeHub_User( '/system/users/jane' );
     $jane->user_set_sponsor( '/system/sponsors/sponsor_b' );
     $jane->storeProperties();
 
     $this->setCurrentUser( '/system/users/jane' );
-    $this->obj->create_member( 'nextfile.txt' );
+    $this->obj->create_member( 'nextfile.txt', true );
     $file = \DAV::$REGISTRY->resource( $this->obj->path . 'nextfile.txt' );
 
     $this->assertSame( '/system/sponsors/sponsor_a', $file->user_prop_sponsor() );
@@ -174,7 +177,8 @@ class BeeHub_DirectoryTest extends BeeHub_Tests_Db_Test_Case {
 
   public function testMethod_COPY() {
     $sponsorB = new \BeeHub_Sponsor( '/system/sponsors/sponsor_b' );
-    $sponsorB->change_memberships( array( 'jane' ), true, true, true, true );
+    $sponsorB->change_memberships( array( 'jane' ), \BeeHub_Sponsor::ADMIN_ACCEPT );
+    $sponsorB->change_memberships( array( 'jane' ), \BeeHub_Sponsor::SET_ADMIN );
     $bar = new \BeeHub_Directory( '/bar/' );
     $bar->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
     $this->setCurrentUser( '/system/users/jane' );
@@ -187,8 +191,8 @@ class BeeHub_DirectoryTest extends BeeHub_Tests_Db_Test_Case {
     $this->assertSame( array(), $newDirectory->user_prop_acl_internal() );
     $this->assertSame( $this->obj->user_prop( 'test_namespace test_property' ), $newDirectory->user_prop( 'test_namespace test_property' ) );
   }
-  
-  
+
+
   public function testMethod_DELETEforNonemptyDir() {
     $this->obj->create_member( 'some_file.txt' );
     $obj = new \BeeHub_Directory( '/foo' );
@@ -196,8 +200,8 @@ class BeeHub_DirectoryTest extends BeeHub_Tests_Db_Test_Case {
     $this->setExpectedException( '\DAV_Status', null, \DAV::HTTP_CONFLICT );
     $obj->method_DELETE( 'directory' );
   }
-  
-  
+
+
   public function testMethod_DELETEwithoutWritePrivilege() {
     $this->obj->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_WRITE ), true ) ) );
     $obj = new \BeeHub_Directory( '/foo' );
@@ -269,9 +273,10 @@ class BeeHub_DirectoryTest extends BeeHub_Tests_Db_Test_Case {
 
   public function testMethod_MKCOLWithoutCollectionSponsor() {
     $sponsorA = new \BeeHub_Sponsor( '/system/sponsors/sponsor_a' );
-    $sponsorA->change_memberships( array( 'jane' ), false, false, false, false );
+    $sponsorA->change_memberships( array( 'jane' ), \BeeHub_Sponsor::DELETE_MEMBER );
     $sponsorB = new \BeeHub_Sponsor( '/system/sponsors/sponsor_b' );
-    $sponsorB->change_memberships( array( 'jane' ), true, true, true, true );
+    $sponsorB->change_memberships( array( 'jane' ), \BeeHub_Sponsor::ADMIN_ACCEPT );
+    $sponsorB->change_memberships( array( 'jane' ), \BeeHub_Sponsor::SET_ADMIN );
     $jane = new \BeeHub_User( '/system/users/jane' );
     $jane->user_set_sponsor( '/system/sponsors/sponsor_b' );
     $jane->storeProperties();
@@ -288,7 +293,8 @@ class BeeHub_DirectoryTest extends BeeHub_Tests_Db_Test_Case {
 
   public function testMethod_MKCOL() {
     $sponsorB = new \BeeHub_Sponsor( '/system/sponsors/sponsor_b' );
-    $sponsorB->change_memberships( array( 'jane' ), true, true, true, true );
+    $sponsorB->change_memberships( array( 'jane' ), \BeeHub_Sponsor::ADMIN_ACCEPT );
+    $sponsorB->change_memberships( array( 'jane' ), \BeeHub_Sponsor::SET_ADMIN );
     $jane = new \BeeHub_User( '/system/users/jane' );
     $jane->user_set_sponsor( '/system/sponsors/sponsor_b' );
     $jane->storeProperties();

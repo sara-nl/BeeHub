@@ -41,7 +41,7 @@ class beehubTest extends BeeHub_Tests_Db_Test_Case {
     // I only check for the section names; else I'm checking parse_ini_file().
     $this->assertArrayHasKey( 'environment'   , $config, 'BeeHub::config() should contain the key \'environment\'' );
     $this->assertArrayHasKey( 'namespace'     , $config, 'BeeHub::config() should contain the key \'namespace\'' );
-    $this->assertArrayHasKey( 'mysql'         , $config, 'BeeHub::config() should contain the key \'mysql\'' );
+    $this->assertArrayHasKey( 'mongo'         , $config, 'BeeHub::config() should contain the key \'mongo\'' );
     $this->assertArrayHasKey( 'authentication', $config, 'BeeHub::config() should contain the key \'authentication\'' );
     $this->assertArrayHasKey( 'email'         , $config, 'BeeHub::config() should contain the key \'email\'' );
   }

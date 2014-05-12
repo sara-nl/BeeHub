@@ -261,7 +261,7 @@
       row.push('<td class="type" data-value="'+nl.sara.beehub.controller.htmlEscape(resource.type)+'"><i data-value="'+nl.sara.beehub.controller.htmlEscape(resource.path)+'" class="icon-folder-close bh-dir-content-openselected" style="cursor: pointer">></i></td>');
     } else {
       // Size
-      row.push('<td class="contentlength" data-value="'+nl.sara.beehub.controller.htmlEscape(resource.contentlength)+'">'+nl.sara.beehub.controller.bytesToSize(resource.contentlength, 2)+'</td>');
+      row.push('<td class="contentlength" data-value="'+nl.sara.beehub.controller.htmlEscape(resource.contentlength)+'">'+nl.sara.beehub.utils.bytesToSize(resource.contentlength, 2)+'</td>');
       //Type
       row.push('<td class="type" data-value="'+nl.sara.beehub.controller.htmlEscape(resource.type)+'">'+nl.sara.beehub.controller.htmlEscape(resource.type)+'</td>');
   

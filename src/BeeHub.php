@@ -272,64 +272,60 @@ class BeeHub {
   public static function notifications( BeeHub_Auth $auth ) {
     $notifications = array();
     if ($auth->is_authenticated()) {
-      $user = $auth->current_user();
+      $currentUser = $auth->current_user();
 
       // Fetch all group invitations
-      $statement = BeeHub_DB::execute('
-        SELECT `beehub_groups`.`group_name`,
-               `beehub_groups`.`displayname`
-          FROM `beehub_group_members` JOIN `beehub_groups` USING(`group_name`)
-         WHERE `beehub_group_members`.`is_invited` = 1 AND
-               `beehub_group_members`.`is_requested` = 0 AND
-               `beehub_group_members`.`user_name` = ?
-      ', 's', $user->name);
-      while ($row = $statement->fetch_row()) {
-        $notifications[] = array('type'=>'group_invitation', 'data'=>array('group'=>BeeHub::GROUPS_PATH . $row[0], 'displayname'=>$row[1]));
+      $groupsCollection = BeeHub::getNoSQL()->groups;
+      $invitationsResultSet = $groupsCollection->find( array( 'admin_accepted_memberships' => $currentUser->name ), array( 'name' => true, 'displayname' => true ) );
+      foreach ( $invitationsResultSet as $row ) {
+        $notifications[] = array(
+            'type' => 'group_invitation',
+            'data' => array(
+                'group'       => BeeHub::GROUPS_PATH . rawurlencode( $row['name'] ),
+                'displayname' => $row['displayname']
+            )
+        );
       }
 
       // Fetch all group membership requests
-      $statement = BeeHub_DB::execute('
-        SELECT `beehub_groups`.`group_name`,
-               `beehub_groups`.`displayname`,
-               `beehub_users`.`user_name`,
-               `beehub_users`.`displayname`,
-               `beehub_users`.`email`
-          FROM `beehub_group_members` JOIN `beehub_groups` USING(`group_name`) JOIN `beehub_users` USING(`user_name`)
-         WHERE `beehub_group_members`.`is_invited` = 0 AND
-               `beehub_group_members`.`is_requested` = 1 AND
-               `beehub_group_members`.`group_name` IN (
-                  SELECT `beehub_group_members`.`group_name`
-                    FROM `beehub_group_members`
-                   WHERE `beehub_group_members`.`is_admin` = 1 AND
-                         `beehub_group_members`.`user_name` = ?
-               )
-      ', 's', $user->name);
-      while ($row = $statement->fetch_row()) {
-        $notifications[] = array( 'type'=>'group_request', 'data'=>array( 'group'=>BeeHub::GROUPS_PATH . $row[0], 'group_displayname'=>$row[1], 'user'=>BeeHub::USERS_PATH . $row[2], 'user_displayname'=>$row[3], 'user_email'=>$row[4] ) );
+      $groupRequestsResultSet = $groupsCollection->find( array( 'user_accepted_memberships' => array( '$exists' => true ), 'admins' => $currentUser->name ), array( 'name' => true, 'displayname' => true, 'user_accepted_memberships' => true ) );
+      foreach ( $groupRequestsResultSet as $group ) {
+        foreach ( $group['user_accepted_memberships'] as $user_name ) {
+          $user = DAV::$REGISTRY->resource( BeeHub::USERS_PATH . $user_name );
+          $notifications[] = array(
+              'type' => 'group_request',
+              'data' => array(
+                  'group'             => BeeHub::GROUPS_PATH . rawurlencode( $group['name'] ),
+                  'group_displayname' => $group['displayname'],
+                  'user'              => $user->path,
+                  'user_displayname'  => $user->user_prop_displayname(),
+                  'user_email'        => $user->user_prop( BeeHub::PROP_EMAIL )
+              )
+          );
+        }
       }
 
       // If the user doesn't have a sponsor, he can't do anything.
-      if ( count( $user->prop( BeeHub::PROP_SPONSOR_MEMBERSHIP ) ) === 0 ) {
+      if ( count( $currentUser->prop( BeeHub::PROP_SPONSOR_MEMBERSHIP ) ) === 0 ) {
         $notifications[] = array( 'type'=>'no_sponsor', 'data'=>array() );
       }else{
         // Fetch all sponsor membership requests
-        $statement = BeeHub_DB::execute('
-          SELECT `beehub_sponsors`.`sponsor_name`,
-                `beehub_sponsors`.`displayname`,
-                `beehub_users`.`user_name`,
-                `beehub_users`.`displayname`,
-                `beehub_users`.`email`
-            FROM `beehub_sponsor_members` JOIN `beehub_sponsors` USING(`sponsor_name`) JOIN `beehub_users` USING(`user_name`)
-          WHERE `beehub_sponsor_members`.`is_accepted` = 0 AND
-                `beehub_sponsor_members`.`sponsor_name` IN (
-                    SELECT `beehub_sponsor_members`.`sponsor_name`
-                      FROM `beehub_sponsor_members`
-                    WHERE `beehub_sponsor_members`.`is_admin` = 1 AND
-                          `beehub_sponsor_members`.`user_name` = ?
+        $sponsorsCollection = BeeHub::getNoSQL()->sponsors;
+        $sponsorRequestsResultSet = $sponsorsCollection->find( array( 'user_accepted_memberships' => array( '$exists' => true ), 'admins' => $currentUser->name ), array( 'name' => true, 'displayname' => true, 'user_accepted_memberships' => true ) );
+        foreach ( $sponsorRequestsResultSet as $sponsor ) {
+          foreach ( $sponsor['user_accepted_memberships'] as $user_name ) {
+            $user = DAV::$REGISTRY->resource( BeeHub::USERS_PATH . $user_name );
+            $notifications[] = array(
+                'type' => 'sponsor_request',
+                'data' => array(
+                    'sponsor'             => BeeHub::SPONSORS_PATH . rawurlencode( $sponsor['name'] ),
+                    'sponsor_displayname' => $sponsor['displayname'],
+                    'user'                => $user->path,
+                    'user_displayname'    => $user->user_prop_displayname(),
+                    'user_email'          => $user->user_prop( BeeHub::PROP_EMAIL )
                 )
-        ', 's', $user->name);
-        while ($row = $statement->fetch_row()) {
-          $notifications[] = array( 'type'=>'sponsor_request', 'data'=>array( 'sponsor'=>BeeHub::SPONSORS_PATH . $row[0], 'sponsor_displayname'=>$row[1], 'user'=>BeeHub::USERS_PATH . $row[2], 'user_displayname'=>$row[3], 'user_email'=>$row[4] ) );
+            );
+          }
         }
       } // end else for if ( count( $user->prop( BeeHub::PROP_SPONSOR_MEMBERSHIP ) ) === 0 )
     } // end if ($auth->is_authenticated())
@@ -438,6 +434,76 @@ class BeeHub {
       self::$CONFIG[$section] = array();
     }
     self::$CONFIG[$section][$field] = $value;
+  }
+  
+  
+  /**
+   * @var  MongoClient  The mongoDB client
+   */
+  private static $mongo = null;
+  
+  
+  /**
+   * Return the noSQL database
+   * @todo    Move database name to the configuration file
+   * @return  MongoDB  The noSQL database
+   */
+  public static function getNoSQL() {
+    $config = BeeHub::config();
+    if ( ! isset( $config['mongo'] ) || ! isset( $config['mongo']['database'] ) ) {
+      throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR );
+    }
+
+    if ( ! ( self::$mongo instanceof MongoClient ) ) {
+      if ( ! empty( $config['mongo']['host'] ) ) {
+        $server = 'mongodb://';
+        if ( ! empty( $config['mongo']['user'] ) && ! empty( $config['mongo']['password'] ) ) {
+          $server .= $config['mongo']['user'] . ':' . $config['mongo']['password'];
+        }
+        $server .= $config['mongo']['host'];
+        if ( ! empty( $config['mongo']['port'] ) ) {
+          $server .= ':' . $config['mongo']['port'];
+        }
+        self::$mongo = new MongoClient( $server );
+      }else{
+        self::$mongo = new MongoClient();
+      }
+    }
+
+    return self::$mongo->selectDB( $config['mongo']['database'] );
+  }
+  
+  
+  /**
+   * Closes the current mongo connection so a new connection will be made
+   */
+  public static function forceMongoReconnect() {
+    if ( self::$mongo instanceof MongoClient ) {
+      self::$mongo->close();
+    }
+    self::$mongo = null;
+  }
+
+  
+  /**
+   * Returns a new, unique, unused ETag
+   * @return  String      The new ETag
+   * @throws  DAV_Status  When a database error occurs
+   */
+  public static function ETag() {
+    $result = BeeHub::getNoSQL()->command( array(
+      'findAndModify' => "beehub_system",
+      'query'         => array( 'name' => 'etag' ),
+      'update'        => array( '$inc' => array( 'counter' => 1 ) ),
+      'new'           => true
+    ) );
+    
+    if ( $result['ok'] != 1 ) {
+trigger_error(print_r($result, true));
+      throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR );
+    }
+    $etag = $result['value']['counter'];
+    return '"' . trim( base64_encode( pack( 'H*', dechex( $etag ) ) ), '=' ) . '"';
   }
 
 

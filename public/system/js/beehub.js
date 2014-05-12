@@ -34,6 +34,9 @@ if (nl.sara.beehub === undefined) {
 if (nl.sara.beehub.codec === undefined) {
   nl.sara.beehub.codec = {};
 }
+if (nl.sara.beehub.utils === undefined) {
+  nl.sara.beehub.utils = {};
+}
 
 // Some static values change these also in /src/beehub.php
 nl.sara.beehub.users_path            = "/system/users/";
@@ -187,4 +190,37 @@ nl.sara.beehub.codec.Sponsor.toXML = function(value, xmlDoc){
 
 nl.sara.webdav.Property.addCodec(nl.sara.beehub.codec.Sponsor);
 
+/**
+ * Calculate size from bytes to readable size
+ * 
+ * @param {Integer} bytes      Bytes to calculate
+ * @param {Integer} precision  Precision
+ * 
+ */
+nl.sara.beehub.utils.bytesToSize = function(bytes, precision)
+{  
+    var kilobyte = 1024;
+    var megabyte = kilobyte * 1024;
+    var gigabyte = megabyte * 1024;
+    var terabyte = gigabyte * 1024;
+   
+    if ((bytes >= 0) && (bytes < kilobyte)) {
+        return bytes + ' B';
+ 
+    } else if ((bytes >= kilobyte) && (bytes < megabyte)) {
+        return (bytes / kilobyte).toFixed(precision) + ' KB';
+ 
+    } else if ((bytes >= megabyte) && (bytes < gigabyte)) {
+        return (bytes / megabyte).toFixed(precision) + ' MB';
+ 
+    } else if ((bytes >= gigabyte) && (bytes < terabyte)) {
+        return (bytes / gigabyte).toFixed(precision) + ' GB';
+ 
+    } else if (bytes >= terabyte) {
+        return (bytes / terabyte).toFixed(precision) + ' TB';
+ 
+    } else {
+        return bytes + ' B';
+    }
+};
 // End of file

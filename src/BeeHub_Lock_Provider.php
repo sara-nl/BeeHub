@@ -26,7 +26,6 @@
 class BeeHub_Lock_Provider implements DAV_Lock_Provider {
 
 
-const PROPNAME   = 'DAV%3A%20lockdiscovery';
 const MAXTIMEOUT = 3600;
 
 
@@ -58,26 +57,18 @@ private static function timeout($timeout) {
  * @return  array          An array with all locks (as \DAV_Element_activelock objects)
  */
 public function memberLocks($path) {
-  exec( 'getfattr --absolute-names -n "user.' . self::PROPNAME . '" -R ' . BeeHub::escapeshellarg(BeeHub::localPath($path)) . ' 2>/dev/null', $output );
-  $result = array();
-  $filename = null;
-  foreach ($output as $line)
-    if (preg_match('@^# file: (.*)$@', $line, $matches))
-      $filename = stripcslashes($matches[1]);
-    elseif ( $filename &&
-             preg_match(
-               '@^user\\.DAV%3A%20lockdiscovery="((?:\\\\.|[^"\\\\])*)"$@',
-               $line, $matches
-             ) )
-      $result[$filename] = stripcslashes($matches[1]);
-  unset ($result[BeeHub::localPath($path)]);
+  $resource = DAV::$REGISTRY->resource( $path );
+  $result = $resource->get_members_with_prop( DAV::PROP_LOCKDISCOVERY );
   $retval = array();
-  foreach($result as $localPath => $lockdiscovery) {
+  foreach($result as $memberPath => $lockdiscovery) {
     $l = json_decode($lockdiscovery, true);
     if ( 0 == $l['timeout'] || $l['timeout'] > time() )
       $retval[$l['locktoken']] = new DAV_Element_activelock( $l );
-    else
-      xattr_remove($localPath, self::PROPNAME);
+    else {
+      $member_resource = DAV::$REGISTRY->resource( $memberPath );
+      $member_resource->user_set( DAV::PROP_LOCKDISCOVERY, null );
+      $member_resource->storeProperties();
+    }
   }
   return $retval;
 }
@@ -93,14 +84,16 @@ public function memberLocks($path) {
  * @return  \DAV_Element_activelock|null         The lock on the resource, or null if none is set
  */
 public function getlock($path) {
-  if ( $value = json_decode(
-         @xattr_get( BeeHub::localPath($path), self::PROPNAME ),
-         true
-       ) )
-    if ($value['timeout'] && $value['timeout'] < time())
-      xattr_remove(BeeHub::localPath($path), self::PROPNAME);
-    else
+  $resource = \DAV::$REGISTRY->resource( $path );
+  if ( $value = $resource->user_prop( DAV::PROP_LOCKDISCOVERY ) ) {
+    $value = json_decode( $value, true );
+    if ( $value['timeout'] && $value['timeout'] < time() ) {
+      $resource->user_set( DAV::PROP_LOCKDISCOVERY, null );
+      $resource->storeProperties();
+    }else{
       return new DAV_Element_activelock( $value );
+    }
+  }
   return null;
 }
 
@@ -124,10 +117,7 @@ public function setlock($lockroot, $depth, $owner, $timeout) {
     );
   }
   $timeout = self::timeout($timeout);
-  $stmt = BeeHub_DB::execute('SELECT UUID()');
-  $row = $stmt->fetch_row();
-  $locktoken = 'opaquelocktoken:' . $row[0];
-  $stmt->free_result();
+  $locktoken = 'opaquelocktoken:' . $this->getUUIDv4URN();
   $activelock = new DAV_Element_activelock( array(
     'lockroot'  => $lockroot,
     'depth'     => $depth,
@@ -135,10 +125,9 @@ public function setlock($lockroot, $depth, $owner, $timeout) {
     'owner'     => $owner,
     'timeout'   => $timeout
   ) );
-  xattr_set(
-    BeeHub::localpath($lockroot), rawurlencode(DAV::PROP_LOCKDISCOVERY),
-    json_encode($activelock)
-  );
+  $resource = DAV::$REGISTRY->resource( $lockroot );
+  $resource->user_set( DAV::PROP_LOCKDISCOVERY, json_encode( $activelock ) );
+  $resource->storeProperties();
   return $locktoken;
 }
 
@@ -153,17 +142,21 @@ public function setlock($lockroot, $depth, $owner, $timeout) {
  */
 public function refresh($path, $locktoken, $timeout) {
   $timeout = self::timeout($timeout);
-  $lock = @xattr_get( BeeHub::localPath($path), self::PROPNAME );
+  $resource = DAV::$REGISTRY->resource( $path );
+  $lock = $resource->user_prop( DAV::PROP_LOCKDISCOVERY );
   if (!$lock) return false;
   $lock = new DAV_Element_activelock( json_decode($lock, true) );
   if ( $lock->timeout && $lock->timeout < time() ) {
-    xattr_remove( BeeHub::localPath($path), self::PROPNAME );
+    $resource->user_set( DAV::PROP_LOCKDISCOVERY, null );
+    $resource->storeProperties();
     return false;
   }
   if ( $locktoken != $lock->locktoken )
     return false;
   $lock->timeout = $timeout;
-  xattr_set( BeeHub::localPath($lock->lockroot), self::PROPNAME, json_encode($lock) );
+  $lock_root = DAV::$REGISTRY->resource( $lock->lockroot );
+  $lock_root->user_set( DAV::PROP_LOCKDISCOVERY, json_encode( $lock ) );
+  $lock_root->storeProperties();
   return true;
 }
 
@@ -175,12 +168,42 @@ public function refresh($path, $locktoken, $timeout) {
  * @return  boolean         True on success, false on failure
  */
 public function unlock($path) {
-  $value = @xattr_get( BeeHub::localPath($path), self::PROPNAME );
+  $resource = DAV::$REGISTRY->resource( $path );
+  $value = $resource->user_prop( DAV::PROP_LOCKDISCOVERY );
   if (!$value) return false;
   $value = json_decode($value, true);
   $retval = $value['timeout'] >= time() || 0 == $value['timeout'];
-  xattr_remove( BeeHub::localPath($path), self::PROPNAME );
+  $resource->user_set( DAV::PROP_LOCKDISCOVERY, null );
+  $resource->storeProperties();
   return $retval;
+}
+
+
+private function getUUIDv4URN() {
+  // Determine octets in pairs of 2 to prevent using mt_rand with max values > 2^32
+  $octetPairs = array();
+  for ($counter = 0; $counter < 8; $counter++) {
+    $octetPairs[] = mt_rand( 0, 0xffff );
+  }
+  
+  // octet 6 should start with 0100
+  $octetPairs[3] = $octetPairs[3] & 0xfff | 0x4000 ;
+  
+  // octet 8 should start with 10
+  $octetPairs[4] = $octetPairs[4] & 0x3fff | 0x8000 ;
+  
+  // Create the correct strings
+  return 'urn:uuid:' . sprintf(
+          '%04x%04x-%04x-%04x-%04x-%04x%04x%04x',
+          $octetPairs[0],
+          $octetPairs[1],
+          $octetPairs[2],
+          $octetPairs[3],
+          $octetPairs[4],
+          $octetPairs[5],
+          $octetPairs[6],
+          $octetPairs[7]
+  );
 }
 
 

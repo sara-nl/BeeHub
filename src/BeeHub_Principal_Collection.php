@@ -65,7 +65,6 @@ public function report_principal_search_property_set() {
 
 
 protected $members = null;
-protected $current = 0;
 
 
 abstract protected function init_members();
@@ -80,9 +79,11 @@ protected function init_props() {
  * @return mixed
  */
 public function current() {
-  if (null === $this->members)
+  if (null === $this->members) {
     $this->init_members();
-  return $this->members[$this->current];
+  }
+  $current = $this->members->current();
+  return $current['name'];
 }
 
 
@@ -90,7 +91,10 @@ public function current() {
  * @return scalar
  */
 public function key()     {
-  return $this->current;
+  if (null === $this->members) {
+    $this->init_members();
+  }
+  return $this->members->key();
 }
 
 
@@ -98,7 +102,10 @@ public function key()     {
  * @return void
  */
 public function next()    {
-  $this->current++;
+  if (null === $this->members) {
+    $this->init_members();
+  }
+  $this->members->next();
 }
 
 
@@ -106,7 +113,10 @@ public function next()    {
  * @return void
  */
 public function rewind()  {
-  $this->current = 0;
+  if (null === $this->members) {
+    $this->init_members();
+  }
+  $this->members->rewind();
 }
 
 
@@ -114,9 +124,10 @@ public function rewind()  {
  * @return boolean
  */
 public function valid()   {
-  if (null === $this->members)
+  if (null === $this->members) {
     $this->init_members();
-  return $this->current < count($this->members);
+  }
+  return $this->members->valid();
 }
 
 

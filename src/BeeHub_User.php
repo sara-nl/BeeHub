@@ -23,7 +23,7 @@
  * BeeHub user
  *
  * There are a few properties defined which are stored in the database instead
- * of as xfs attribute. These properties are credentials and user contact info:
+ * of as file attribute. These properties are credentials and user contact info:
  * BeeHub::PROP_NAME
  * BeeHub::PROP_EMAIL
  * BeeHub::PROP_X509
@@ -36,14 +36,14 @@
  */
 class BeeHub_User extends BeeHub_Principal {
   /**
-   * @var  string  The original e-mail address as specified in the database. This is used to check if the user wants to change his/her e-mail address.
-   */
-  private $original_email = null;
-    
-  /**
    * @var  string  The (encrypted) password
    */
   private $password = null;
+  
+  /**
+   * @var  string  The unverified e-mail address (if one is set)
+   */
+  protected $unverified_address = null;
 
 
   /**
@@ -51,25 +51,87 @@ class BeeHub_User extends BeeHub_Principal {
    * @see DAV_Resource::method_GET()
    */
   public function method_GET() {
+    if ( isset( $_GET['usage'] ) && $this->is_admin() ) {
+      // If the usage is requested, this is gathered by a seperate method
+      return $this->method_GET_usage();
+    }
+    
+    // Else prepare the profile page
+    $this->init_props();
+    
     if ($this->is_admin()) {
-      $unverified_address = null;
-      $statement = BeeHub_DB::execute(
-        'SELECT `unverified_email`
-            FROM `beehub_users`
-          WHERE `user_name` = ? AND
-                `verification_expiration` > NOW()',
-        's', $this->name
-      );
-      if ($row = $statement->fetch_row()) {
-        $unverified_address = $row[0];
-      }elseif ( isset( $_GET['verification_code'] ) ) {
+      if ( is_null( $this->unverified_address ) && isset( $_GET['verification_code'] ) ) {
         unset($_GET['verification_code']);
       }
-      $this->include_view(null, array('unverified_address'=>$unverified_address));
+      $this->include_view( null, array( 'unverified_address' => $this->unverified_address ) );
     }else{
       //TODO: Show a (non-editable) profile page
       throw DAV::forbidden();
     }
+  }
+  
+  
+  /**
+   * Gathers the usage statistics for this sponsors and return it to the client
+   * in json format
+   * 
+   * @return  string  Usage statistics JSON encoded
+   */
+  private function method_GET_usage() {
+    $db = BeeHub::getNoSQL();
+    
+    $stats = $db->command(
+      array(
+        'mapReduce' => 'files',
+        'map' => 
+//        '
+//          function() {
+//            if ( this.props === undefined || this.props[ "DAV: getcontentlength" ] === undefined || this.props[ "DAV: getcontentlength" ] < 1 ) {
+//              return;
+//            }
+//            var path = "/" + this.path;
+//            var parent = path.substr( 0, path.lastIndexOf( "/" ) );
+//            emit( parent, this.props["DAV: getcontentlength"] );
+//          }
+//        ',
+        '
+          function() {
+            if ( this.props === undefined || this.props[ "DAV: getcontentlength" ] === undefined || this.props[ "DAV: getcontentlength" ] < 1 ) {
+              return;
+            }
+            var pathParts = this.path.split("/");
+            pathParts.pop();
+            pathParts.unshift( "" );
+            var path = "";
+            for ( var key in pathParts ) {
+              path +=  pathParts[key] + "/";
+              emit( path, this.props["DAV: getcontentlength"] );
+            }
+          }
+        ',
+        'reduce' => '
+          function( id, values ) {
+            return Array.sum( values );
+          }
+        ',
+        'out' => array( 'inline' => 1 ),
+        'query' => array( 'props.DAV: owner' => $this->name )
+      )
+    );
+    
+    if ( ! $stats['ok'] ) {
+      throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR, 'Unable to retrieve usage statistics due to an unknown error' );
+    }
+    
+    return json_encode(
+      array(
+        array(
+          'user' => $this->path,
+          'time' => date( 'c' ),
+          'usage' => $stats['results']
+        )
+      )
+    );
   }
 
 
@@ -99,76 +161,55 @@ class BeeHub_User extends BeeHub_Principal {
   protected function init_props() {
     if (is_null($this->stored_props)) {
       $this->stored_props = array();
-
-      $statement_props = BeeHub_DB::execute(
-        'SELECT
-          `displayname`,
-          `email`,
-          `password`,
-          `surfconext_id`,
-          `surfconext_description`,
-          `x509`,
-          `sponsor_name`
-         FROM `beehub_users`
-         WHERE `user_name` = ?', 's', $this->name
-      );
-      $row = $statement_props->fetch_row();
-      if ( is_null($row) )
+      
+      $collection = BeeHub::getNoSQL()->users;
+      $result = $collection->findOne( array( 'name' => $this->name ) );
+      if ( is_null( $result ) ) {
         throw new DAV_Status( DAV::HTTP_NOT_FOUND );
+      }
 
-      $this->stored_props[DAV::PROP_DISPLAYNAME] = $row[0];
-      if (!is_null($row[1])) {
-        $this->stored_props[BeeHub::PROP_EMAIL]  = $row[1];
-        $this->original_email                    = $row[1];
+      $this->stored_props[DAV::PROP_DISPLAYNAME] = @$result['displayname'];
+      if ( isset( $result['email'] ) ) {
+        $this->stored_props[BeeHub::PROP_EMAIL]  = $result['email'];
       }
-      if (!is_null($row[3])) {
-        $this->stored_props[BeeHub::PROP_SURFCONEXT] = $row[3];
+      if ( isset( $result['surfconext_id'] ) ) {
+        $this->stored_props[BeeHub::PROP_SURFCONEXT] = $result['surfconext_id'];
       }
-      if (!is_null($row[4])) {
-        $this->stored_props[BeeHub::PROP_SURFCONEXT_DESCRIPTION] = $row[4];
+      if ( isset( $result['surfconext_description'] ) ) {
+        $this->stored_props[BeeHub::PROP_SURFCONEXT_DESCRIPTION] = $result['surfconext_description'];
       }
-      if (!is_null($row[5])) {
-        $this->stored_props[BeeHub::PROP_X509]   = $row[5];
+      if ( isset( $result['x509'] ) ) {
+        $this->stored_props[BeeHub::PROP_X509] = $result['x509'];
       }
-      if (!is_null($row[6])) {
-        $this->stored_props[BeeHub::PROP_SPONSOR]   = BeeHub::SPONSORS_PATH . $row[6];
+      if ( isset( $result['default_sponsor'] ) ) {
+        $this->stored_props[BeeHub::PROP_SPONSOR] = BeeHub::SPONSORS_PATH . rawurlencode( $result['default_sponsor'] );
       }
-      if (!empty($row[2])) {
-        $this->password = $row[2];
+      if ( isset( $result['password'] ) ) {
+        $this->password = $result['password'];
       }else{
         $this->password = null;
       }
-      $statement_props->free_result();
+      
+      if ( isset( $result['unverified_email'] ) && isset( $result['verification_expiration'] ) && ( $result['verification_expiration'] > time() ) ) {
+        $this->unverified_address = $result['unverified_email'];
+      }
 
       // Fetch all group memberships
-      $statement_groups = BeeHub_DB::execute(
-        'SELECT `group_name`
-           FROM `beehub_group_members`
-          WHERE `user_name` = ?
-            AND `is_invited` = 1
-            AND `is_requested` = 1', 's', $this->name
-      );
       $groups = array();
-      while ($row = $statement_groups->fetch_row()) {
-        $groups[] = BeeHub::GROUPS_PATH .
-          rawurlencode($row[0]);
+      if ( isset( $result['groups'] ) ) {
+        foreach ( $result['groups'] as $group ) {
+          $groups[] = BeeHub::GROUPS_PATH . rawurlencode( $group );
+        }
       }
-      $statement_groups->free_result();
       $this->stored_props[DAV::PROP_GROUP_MEMBERSHIP] = $groups;
 
       // Fetch all sponsor memberships
-      $statement_sponsors = BeeHub_DB::execute(
-        'SELECT `sponsor_name`
-           FROM `beehub_sponsor_members`
-          WHERE `user_name` = ?
-            AND `is_accepted` = 1', 's', $this->name
-      );
       $sponsors = array();
-      while ($row = $statement_sponsors->fetch_row()) {
-        $sponsors[] = BeeHub::SPONSORS_PATH .
-          rawurlencode($row[0]);
+      if ( isset( $result['sponsors'] ) ) {
+        foreach ( $result['sponsors'] as $sponsor ) {
+          $sponsors[] = BeeHub::SPONSORS_PATH . rawurlencode( $sponsor );
+        }
       }
-      $statement_sponsors->free_result();
       $this->stored_props[BeeHub::PROP_SPONSOR_MEMBERSHIP] = $sponsors;
       
       // If there is no default sponsor set, but the user has sponsors, we have to set one now. In other words, it is impossible to have sponsors but not a default sponsor
@@ -195,76 +236,65 @@ class BeeHub_User extends BeeHub_Principal {
     if (!$this->touched) {
       return;
     }
-
-    $p_displayname     = @$this->stored_props[DAV::PROP_DISPLAYNAME];
-    $p_surfconext      = @$this->stored_props[BeeHub::PROP_SURFCONEXT];
-    $p_surfconext_desc = @$this->stored_props[BeeHub::PROP_SURFCONEXT_DESCRIPTION];
-    $p_x509            = @$this->stored_props[BeeHub::PROP_X509];
-    // TODO: Check if sponsor exists!
-    $p_sponsor         = basename( @$this->stored_props[BeeHub::PROP_SPONSOR] );
+    
+    $collection = BeeHub::getNoSQL()->users;
+    $document = $collection->findOne( array( 'name' => $this->name ) );
+    
+    if ( isset( $this->stored_props[DAV::PROP_DISPLAYNAME] ) ) {
+      $document['displayname'] = $this->stored_props[DAV::PROP_DISPLAYNAME];
+    }else{
+      unset( $document['displayname'] );
+    }
+    if ( isset( $this->stored_props[BeeHub::PROP_X509] ) ) {
+      $document['x509'] = $this->stored_props[BeeHub::PROP_X509];
+    }else{
+      unset( $document['x509'] );
+    }
+    
+    // Check whether the SURFconext ID already exists
+    if ( isset( $this->stored_props[BeeHub::PROP_SURFCONEXT] ) ) {
+      $conextDuplicate = $collection->findOne( array( 'surfconext_id' => $this->stored_props[BeeHub::PROP_SURFCONEXT] ), array( 'name' => true ) );
+      if ( !is_null($conextDuplicate ) && ( $conextDuplicate['name'] !== $this->name ) ) {
+        throw new DAV_Status(DAV::HTTP_CONFLICT, "This SURFconext id is already used by a different BeeHub user.");
+      }
+      $document['surfconext_id']          = @$this->stored_props[BeeHub::PROP_SURFCONEXT];
+      $document['surfconext_description'] = @$this->stored_props[BeeHub::PROP_SURFCONEXT_DESCRIPTION];
+    }else{
+      unset( $document['surfconext_id'], $document['surfconext_description']);
+    }
+    
+    $p_sponsor = rawurldecode( basename( @$this->stored_props[BeeHub::PROP_SPONSOR] ) );
+    if ( isset( $document['sponsors'] ) && is_array( $document['sponsors'] ) && in_array( $p_sponsor, $document['sponsors'] ) ) {
+      $document['default_sponsor'] = $p_sponsor;
+    }
 
     $change_email = false;
-    if (@$this->stored_props[BeeHub::PROP_EMAIL] !== $this->original_email) {
+    if ( @$this->stored_props[BeeHub::PROP_EMAIL] !== @$document['email'] ) {
       $change_email = true;
-      $p_email = @$this->stored_props[BeeHub::PROP_EMAIL];
-      $p_verification_code = md5(time() . '0-c934q2089#$#%@#$jcq2iojc43q9  i1d' . rand(0, 10000));
+      $document['unverified_email'] = @$this->stored_props[BeeHub::PROP_EMAIL];
+      $document['verification_code'] = md5(time() . '0-c934q2089#$#%@#$jcq2iojc43q9  i1d' . rand(0, 10000));
+      $document['verification_expiration'] = time() + (60 * 60 * 24);
     }
-
+    
     // Write all data to database
-    $updateStatement = BeeHub_DB::mysqli()->prepare(
-      'UPDATE `beehub_users`
-          SET `displayname` = ?,
-              `surfconext_id` = ?,
-              `surfconext_description` = ?,
-              `x509` = ?,
-              `sponsor_name` = ?' .
-              ($change_email ? ',`unverified_email`=?,`verification_code`=?,`verification_expiration`=NOW() + INTERVAL 1 DAY' : '') .
-      ' WHERE `user_name` = ?'
-    );
-    if ($change_email) { // No new password, but there is a new e-mail address
-      $updateStatement->bind_param(
-        'ssssssss',
-        $p_displayname,
-        $p_surfconext,
-        $p_surfconext_desc,
-        $p_x509,
-        $p_sponsor,
-        $p_email,
-        $p_verification_code,
-        $this->name
-      );
-    }else{ // No new password, no new e-mail address
-      $updateStatement->bind_param(
-        'ssssss',
-        $p_displayname,
-        $p_surfconext,
-        $p_surfconext_desc,
-        $p_x509,
-        $p_sponsor,
-        $this->name
-      );
-    }
-    if (!$updateStatement->execute()) {
-      if ($exception->getCode() === 1062) { // Duplicate key: bad request!
-        throw new DAV_Status(DAV::HTTP_CONFLICT, "The following properties should be unique, at least one of them is not: e-mail address, SURFconext id");
-      }else{
-        throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
-      }
+    $saveResult = $collection->save( $document );
+    if ( ! $saveResult['ok'] ) {
+      throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
     }
 
     // Notify the user if needed
     if ($change_email) {
-      $activation_link = BeeHub::urlbase(true) . $this->path . '?verification_code=' . $p_verification_code;
+      $activation_link = BeeHub::urlbase(true) . $this->path . '?verification_code=' . $document['verification_code'];
       $message =
-'Dear ' . $p_displayname . ',
+'Dear ' . $document['displayname'] . ',
 
-This e-mail address (' . $p_email . ') is added to the BeeHub account \'' . $this->name . '\'. You need to confirm this action by following this link:
+This e-mail address (' . $document['unverified_email'] . ') is added to the BeeHub account \'' . $this->name . '\'. You need to confirm this action by following this link:
 
 ' . $activation_link . '
 
 If this link doesn\'t work, on your profile page go to the tab \'Verify e-mail address\' and fill out the following verification code:
 
-' . $p_verification_code . '
+' . $document['verification_code'] . '
 
 Note that your verification code is only valid for 24 hours. Also, for new users, if you don\'t have a validated e-mail address, your account will automatically be removed after 24 hours.
 
@@ -273,7 +303,7 @@ If this was a mistake, or you do not want to add this e-mail address to this Bee
 Best regards,
 
 BeeHub';
-      BeeHub::email($p_displayname . ' <' . $p_email . '>',
+      BeeHub::email($document['displayname'] . ' <' . $document['unverified_email'] . '>',
                     'Verify e-mail address for BeeHub',
                     $message);
     }
@@ -325,8 +355,13 @@ BeeHub';
   public function set_password($password) {
     $encrypted_password = crypt($password, '$6$rounds=5000$' . md5(time() . rand(0, 99999)) . '$');
 
-    BeeHub_DB::execute( 'UPDATE `beehub_users` SET `password`=? WHERE `user_name`=?',
-                        'ss', $encrypted_password, $this->name);
+    $collection = BeeHub::getNoSQL()->users;
+    $document = $collection->findOne( array( 'name' => $this->name ) );
+    $document['password'] = $encrypted_password;
+    $saveResult = $collection->save( $document );
+    if ( ! $saveResult['ok'] ) {
+      throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
+    }
 
     $this->password = $encrypted_password;
   }
@@ -338,26 +373,21 @@ BeeHub';
    * @return  boolean        True if the code verified correctly, false if the code was wrong
    */
   public function verify_email_address($code) {
-    $updateStatement = BeeHub_DB::execute(
-      'UPDATE `beehub_users`
-          SET `email` = `unverified_email`,
-              `unverified_email` = null,
-              `verification_code` = null,
-              `verification_expiration` = null
-        WHERE `user_name` = ?
-          AND `verification_code` = ?
-          AND `verification_expiration` > NOW()',
-      'ss', $this->name, $code
-    );
-    if ($updateStatement->statement->affected_rows > 0) {
-      $propStatement = BeeHub_DB::execute(
-        'SELECT `email` FROM `beehub_users` WHERE `user_name`=?',
-        's', $this->name
-      );
-      $row = $propStatement->fetch_row();
-      $this->stored_props[BeeHub::PROP_EMAIL]  = $row[0];
-      $this->original_email                    = $row[0];
+    $collection = BeeHub::getNoSQL()->users;
+    $document = $collection->findOne( array( 'name' => $this->name ) );
+    
+    if ( ( $document['verification_code'] === $code ) &&
+         ( $document['verification_expiration'] > time() ) ) {
+      
+      $document['email'] = $document['unverified_email'];
+      unset( $document['unverified_email'], $document['verification_code'], $document['verification_expiration'] );
+      $saveResult = $collection->save( $document );
+      if ( ! $saveResult['ok'] ) {
+        throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
+      }
+      $this->stored_props[BeeHub::PROP_EMAIL]  = $document['email'];
       return true;
+      
     }else{
       return false;
     }
@@ -453,30 +483,35 @@ BeeHub';
   
   
   public function create_password_reset_code() {
-    $reset_code = md5(time() . ' yrn 67%$ V 4e eshgbJGEc43y5f*INTj67rbf3cw rv' . rand(0, 10000));
-    BeeHub_DB::execute(
-      'UPDATE `beehub_users`
-          SET `password_reset_code` = ?,
-              `password_reset_expiration` = NOW() + INTERVAL 1 HOUR
-        WHERE `user_name` = ?',
-      'ss', $reset_code, $this->name
-    );
-    return $reset_code;
+    $collection = BeeHub::getNoSQL()->users;
+    $document = $collection->findOne( array( 'name' => $this->name ) );
+    $document['password_reset_code'] = md5(time() . ' yrn 67%$ V 4e eshgbJGEc43y5f*INTj67rbf3cw rv' . rand(0, 10000));
+    $document['password_reset_expiration'] = time() + ( 60 * 60 );
+    $saveResult = $collection->save( $document );
+    if ( ! $saveResult['ok'] ) {
+      throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
+    }
+    return $document['password_reset_code'];
   }
   
   
   public function check_password_reset_code($reset_code) {
-    $updateStatement = BeeHub_DB::execute(
-      'UPDATE `beehub_users`
-          SET `password_reset_code` = null,
-              `password_reset_expiration` = null
-        WHERE `user_name` = ?
-          AND `password_reset_code` = ?
-          AND `password_reset_expiration` > NOW()',
-      'ss', $this->name, $reset_code
-    );
+    $collection = BeeHub::getNoSQL()->users;
+    $document = $collection->findOne( array( 'name' => $this->name ) );
     
-    return ($updateStatement->statement->affected_rows > 0);
+    if ( ( $document['password_reset_code'] === $reset_code ) &&
+         ( $document['password_reset_expiration'] > time() ) ) {
+      
+      unset( $document['password_reset_code'], $document['password_reset_expiration'] );
+      $saveResult = $collection->save( $document );
+      if ( ! $saveResult['ok'] ) {
+        throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
+      }
+      return true;
+      
+    }else{
+      return false;
+    }
   }
 
 

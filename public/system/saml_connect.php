@@ -45,7 +45,8 @@ if ( !$user->check_password($_POST['password']) ) {
 }
 
 // Unlink potential other local account linked to this SURFconext ID
-BeeHub_DB::execute('UPDATE `beehub_users` SET `surfconext_id`=null, `surfconext_description`=null WHERE `surfconext_id`=?', 's', $surfId);
+$collection = BeeHub::getNoSQL()->users;
+$collection->update( array( 'surfconext_id' => $surfId ), array( '$unset' => array( 'surfconext_id' => '', 'surfconext_description' => '' ) ) );
 
 // And connect it to the current user
 $user->user_set(BeeHub::PROP_SURFCONEXT, $surfId);

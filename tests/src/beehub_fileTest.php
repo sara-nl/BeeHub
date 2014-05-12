@@ -42,12 +42,15 @@ class BeeHub_FileTest extends BeeHub_Tests_Db_Test_Case {
     }
 
     $sponsorA = new \BeeHub_Sponsor( '/system/sponsors/sponsor_a' );
-    $sponsorA->change_memberships( array( 'jane' ), true, true, true, true );
+    $sponsorA->change_memberships( array( 'jane' ), \BeeHub_Sponsor::ADMIN_ACCEPT );
+    $sponsorA->change_memberships( array( 'jane' ), \BeeHub_Sponsor::SET_ADMIN );
     $jane = new \BeeHub_User( '/system/users/jane' );
     $jane->user_set_sponsor( '/system/sponsors/sponsor_a' );
     $jane->storeProperties();
     $foo = new \BeeHub_Group( '/system/groups/foo' );
-    $foo->change_memberships( array( 'jane' ), true, true, true, true, true, true );
+    $foo->change_memberships( array( 'jane' ), \BeeHub_Group::USER_ACCEPT );
+    $foo->change_memberships( array( 'jane' ), \BeeHub_Group::ADMIN_ACCEPT );
+    $foo->change_memberships( array( 'jane' ), \BeeHub_Group::SET_ADMIN );
     $this->obj = new \BeeHub_File( '/foo/file.txt' );
     $_SERVER['REQUEST_URI'] = '/foo/file.txt';
   }
@@ -110,7 +113,8 @@ class BeeHub_FileTest extends BeeHub_Tests_Db_Test_Case {
 
   public function testMethod_COPY() {
     $sponsorB = new \BeeHub_Sponsor( '/system/sponsors/sponsor_b' );
-    $sponsorB->change_memberships( array( 'jane' ), true, true, true, true );
+    $sponsorB->change_memberships( array( 'jane' ), \BeeHub_Sponsor::ADMIN_ACCEPT );
+    $sponsorB->change_memberships( array( 'jane' ), \BeeHub_Sponsor::SET_ADMIN );
     $this->setCurrentUser( '/system/users/john' );
     $bar = new \BeeHub_Directory( '/bar' );
     $bar->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_WRITE ), false ) ) );
