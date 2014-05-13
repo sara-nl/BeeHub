@@ -149,6 +149,10 @@
 <!-- End tab contents -->
 
 <?php
-  $footer='<script type="text/javascript" src="/system/js/groups-sponsors.js"></script>';
+  $footer .='
+           <script type="text/javascript" src="/system/js/gs.js"></script>
+           <script type="text/javascript" src="/system/js/gs-controller.js"></script>
+           <script type="text/javascript" src="/system/js/gs-view.js"></script>
+  ';
   require 'views/footer.php';
 
