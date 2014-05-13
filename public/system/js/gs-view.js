@@ -38,7 +38,7 @@ nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.init = function() {
 };
 
 /**
- * Set handler in view
+ * Set handlers in view
  */
 nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.setHandlers = function() {
   // prevent hide previous collaped item
@@ -73,8 +73,19 @@ nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.setHandlers = function() {
   
   // Action when the leave button in a group is clicked
   $('.bh-gs-mygs-leave-button').on('click', this.leaveButton.bind(this));
+  
+  // Do not collapse at button clicks
+  $('.accordion-heading a').click(function (e) {
+    e.stopPropagation();
+  });
 }
 
+/**
+ * Submit button click handler
+ * 
+ * Prevent default when name field is not correct.
+ * 
+ */
 nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.submitButton = function (e) {
   if (!this.gsNameListener(null, $('#bh-gs-name'))) {
     e.preventDefault();
@@ -84,64 +95,74 @@ nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.submitButton = function (e) 
   };
 };
 
+/**
+ * Leave button click handler in my groups tab
+ */
 nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.leaveButton = function (e) {
-  function callback(button, scope){
-    return function(status, data){
-      $(button).closest('.accordion-group').remove();
-      // TODO Update Join tab
-    };
-  };
-
+  function callback(){
+    $(e.target).closest('.accordion-group').remove();
+   // TODO Update Join tab
+  }
+  
   // Are you sure?
   if ( confirm( 'Are you sure you want to leave the '+this.controller.group_or_sponsor+' '+$(e.target).parent().prev().html()+' ?' ) ) {
     // Send leave request to server
-    this.controller.leaveRequest(e.target.value, callback(e.target, this));
+    this.controller.leaveRequest(e.target.value, callback);
   };
 };
 
+/**
+ * Join button click handler in join tab
+ */
 nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.joinListener = function (e) { 
-  function callback(button, scope) {
-    return function(){
-      if ( button.text === 'Accept invitation' ) {
-        // TODO: this should be handled more gracefully
-        location.reload();
-        return;
-      };
-      
-      // Change button to join button
-      var cancelrequestbutton = $('<button type="button" value="'+button.value+'" class="btn btn-danger bh-gs-join-leave-button">Cancel request</button>');
-      cancelrequestbutton.unbind('click').on ('click', scope.joinLeaveListener.bind(scope));
-      $(button).closest('a').append(cancelrequestbutton);
-      $(button).remove();
-    };
-  };
+  var scope = this;
+  var button = e.target;
   
-  this.controller.joinRequest(e.target.value, callback(e.target, this));
+  function callback(){
+   if ( button.text === 'Accept invitation' ) {
+     // TODO: this should be handled more gracefully
+     location.reload();
+     return;
+   };
+   
+   // Change button to join button
+   var cancelrequestbutton = $('<button type="button" value="'+button.value+'" class="btn btn-danger bh-gs-join-leave-button">Cancel request</button>');
+   cancelrequestbutton.unbind('click').on ('click', scope.joinLeaveListener.bind(scope));
+   $(button).closest('a').append(cancelrequestbutton);
+   $(button).remove();
+  };
+  this.controller.joinRequest(e.target.value, callback);
 };
 
+/**
+ * Cancel request button handler in join tab
+ */
 nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.joinLeaveListener = function(e){
-  // Closure for ajax request
-  function callback(button, scope){
-   return function(status){
-     // Change button to join button
-     var joinbutton = $('<button type="button" value="'+button.value+'" class="btn btn-success bh-gs-join-button">Join</button>');
-     joinbutton.unbind('click').on('click', scope.joinListener.bind(scope));
-         $(button).closest('a').append(joinbutton);
-         $(button).remove();
-         // Remove group from mygroups or my sponsors
-         var leavebutton = $('[id="bh-gs-panel-mygs"]').find('[value="'+button.value+'"]');
-         if ( leavebutton.length !== 0 ) {
-           leavebutton.closest('.accordion-group').remove();
-         };
-     };
-  };
+  var button = e.target;
+  var scope = this;
+  
+  function callback(){
+   // Change button to join button
+   var joinbutton = $('<button type="button" value="'+button.value+'" class="btn btn-success bh-gs-join-button">Join</button>');
+   joinbutton.unbind('click').on('click', scope.joinListener.bind(scope));
+       $(button).closest('a').append(joinbutton);
+       $(button).remove();
+       // Remove group from mygroups or my sponsors
+       var leavebutton = $('[id="bh-gs-panel-mygs"]').find('[value="'+button.value+'"]');
+       if ( leavebutton.length !== 0 ) {
+         leavebutton.closest('.accordion-group').remove();
+       };
+   };
   
   // Are you sure?
   if (confirm('Are you sure you want to cancel membership of the '+this.controller.group_or_sponsor+' '+$(e.target).closest('td').prev().html()+' ?')) {
-    this.controller.leaveRequest(e.target.value, callback(e.target, this));
+    this.controller.leaveRequest(e.target.value, callback);
   };
 };
 
+/**
+ * Search function in join tab
+ */
 nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.filterByName = function(){ 
   var filterfield=$(this);
    // when field is empty, filter icon
@@ -167,6 +188,9 @@ nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.filterByName = function(){
    }).show();
 };
 
+/**
+ * Checks name field
+ */
 nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.gsNameListener = function(e, field){
   var gsNameField;
   if (e !== null) {

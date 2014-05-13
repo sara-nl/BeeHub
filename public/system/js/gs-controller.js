@@ -42,36 +42,31 @@ nl.sara.beehub.gs.Controller = function() {
  */
 nl.sara.beehub.gs.Controller.prototype.joinRequest = function(value, callback) {
   // closure for ajax request
-  function joinCallback(callback) {
-   return function(status) {
-     if (status !== 200) {
-       alert('Something went wrong on the server. No changes were made.');
-       return;
-     }
-     callback();  
-   };
-  }
+  function joinCallback(status) {
+    if (status !== 200) {
+      alert('Something went wrong on the server. No changes were made.');
+      return;
+    }
+    callback();  
+  };
   
 	// Send leave request to server
 	var client = new nl.sara.webdav.Client();
-	client.post(value, joinCallback(callback) , 'join=1');
+	client.post(value, joinCallback , 'join=1');
 };
 
 nl.sara.beehub.gs.Controller.prototype.leaveRequest = function(value, callback){
-  // closure for ajax request
-  function leaveCallback(callback) {
-   return function(status) {
-     if ( status === 409 ) {
-       alert("You can't leave this group, you're the last administrator! Don't leave your herd without a shepherd, please appoint a new administrator before leaving them!");
-       return;
-     } else if ( status !== 200 ) {
-       alert('Something went wrong on the server. No changes were made.');
-       return;
-     };
-     callback();  
-   };
-  }
+  function leaveCallback(status) {
+    if ( status === 409 ) {
+      alert("You can't leave this group, you're the last administrator! Don't leave your herd without a shepherd, please appoint a new administrator before leaving them!");
+      return;
+    } else if ( status !== 200 ) {
+      alert('Something went wrong on the server. No changes were made.');
+      return;
+    };
+    callback();  
+  };
   
   var client = new nl.sara.webdav.Client();
-		client.post(value, leaveCallback(callback), 'leave=1');
+		client.post(value, leaveCallback, 'leave=1');
 };
