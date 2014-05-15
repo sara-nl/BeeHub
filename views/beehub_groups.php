@@ -8,9 +8,9 @@
 
 <!-- Tabs-->
 <ul id="beehub-top-tabs" class="nav nav-tabs">
-  <li class="active"><a href="#bh-gs-panel-mygs" data-toggle="tab">My groups</a></li>
-  <li><a href="#bh-gs-panel-join" data-toggle="tab">Join</a></li>
-  <li><a href="#bh-gs-panel-create" data-toggle="tab">Create</a></li>
+  <li class="active"><a href="#bh-gss-panel-mygss" data-toggle="tab">My groups</a></li>
+  <li><a href="#bh-gss-panel-join" data-toggle="tab">Join</a></li>
+  <li><a href="#bh-gss-panel-create" data-toggle="tab">Create</a></li>
 </ul>
 
 <!-- Tab contents -->
@@ -18,9 +18,9 @@
 
 	<!-- My Groups tab -->
 	<br/>
-  <div id="bh-gs-panel-mygs" class="tab-pane fade in active">
+  <div id="bh-gss-panel-mygss" class="tab-pane fade in active">
   	<!--    List with my groups -->
-    <div class="accordion" id="bh-gs-mygs">
+    <div class="accordion" id="bh-gss-mygss">
         <?php
       $i = 1;
       foreach ($groups as $group) :
@@ -28,7 +28,7 @@
       ?>
         <div class="accordion-group">
           <div class="accordion-heading">
-            <div class="accordion-toggle" data-toggle="collapse" data-parent="#bh-gs-mygs" href="#bh-gs-mygs-<?= $i ?>">
+            <div class="accordion-toggle" data-toggle="collapse" data-parent="#bh-gss-mygss" href="#bh-gss-mygss-<?= $i ?>">
               <table width="100%"><tbody><tr>
                 <th align="left"><?= DAV::xmlescape($group->user_prop_displayname()) ?></th>
                 <td align="right">
@@ -39,12 +39,12 @@
                   <a href="<?= $group->path ?>" class="btn">View</a>
                   <?php endif; ?>
                   <!--    Leave button -->
-                  <button type="button" value="<?= $group->path ?>" class="btn btn-danger bh-gs-mygs-leave-button">Leave</button>
+                  <button type="button" value="<?= $group->path ?>" class="btn btn-danger bh-gss-mygss-leave-button">Leave</button>
                 </td>
               </tr></tbody></table>
             </div>
           </div>
-          <div id="bh-gs-mygs-<?= $i ?>" class="accordion-body collapse">
+          <div id="bh-gss-mygss-<?= $i ?>" class="accordion-body collapse">
 
             <div class="accordion-inner">
               <?= DAV::xmlescape($group->user_prop(BeeHub::PROP_DESCRIPTION)) ?>
@@ -61,21 +61,21 @@
 	<!--   End my groups tab -->
 
 	<!-- Join tab -->
-  <div id="bh-gs-panel-join" class="tab-pane fade">
+  <div id="bh-gss-panel-join" class="tab-pane fade">
 <!-- 	  <br> -->
 	  <div class="control-group">
 <!-- 	    <label class="control-label" for="inputIcon">Filter by name:</label> -->
 		    <div class="controls">
 			    <div class="input-prepend">
- 				    <span class="add-on" id="bh-gs-icon-filter"><i class="icon-filter"></i></span>
-				    <input class="span3" id="bh-gs-filter-by-name" type="text" placeholder="Filter by name..." autocomplete="off" />
+ 				    <span class="add-on" id="bh-gss-icon-filter"><i class="icon-filter"></i></span>
+				    <input class="span3" id="bh-gss-filter-by-name" type="text" placeholder="Filter by name..." autocomplete="off" />
 			    </div>
 	    </div>
     </div>
   	<br>
 
 		<!--    List with all groups -->
-    <div class="accordion" id="bh-gs-join-gs">
+    <div class="accordion" id="bh-gss-join-gss">
         <?php
       $i = 1;
       foreach ($groups as $group) :
@@ -84,23 +84,23 @@
         ?> 
         <div class="accordion-group">
           <div class="accordion-heading">
-            <div class="accordion-toggle" data-toggle="collapse" data-parent="#bh-gs-join-gs" href="#bh-gs-join-gs-<?= $i ?>">
+            <div class="accordion-toggle" data-toggle="collapse" data-parent="#bh-gss-join-gss" href="#bh-gss-join-gss-<?= $i ?>">
               <table width="100%"><tbody><tr>
                 <th align="left"><?= DAV::xmlescape($group->user_prop_displayname()) ?></th>
                 <td align="right">
                   <!--    Leave, Cancel request or Join button -->
                   <?php if ($group->is_requested()) : ?>
-                    <a><button type="button" value="<?= $group->path ?>" class="btn btn-danger bh-gs-join-leave-button">Cancel request</button></a>
+                    <a><button type="button" value="<?= $group->path ?>" class="btn btn-danger bh-gss-join-leave-button">Cancel request</button></a>
                   <?php elseif ( $group->is_invited() ) : ?>
-                    <a><button type="button" value="<?= $group->path ?>" class="btn btn-success bh-gs-join-button">Accept invitation</button></a>
+                    <a><button type="button" value="<?= $group->path ?>" class="btn btn-success bh-gss-join-button">Accept invitation</button></a>
                   <?php else : ?>
-                    <a><button type="button" value="<?= $group->path ?>" class="btn btn-success bh-gs-join-button">Join</button></a>
+                    <a><button type="button" value="<?= $group->path ?>" class="btn btn-success bh-gss-join-button">Join</button></a>
                   <?php endif; ?>
                 </td>
               </tr></tbody></table>
             </div>
           </div>
-          <div id="bh-gs-join-gs-<?= $i ?>" class="accordion-body collapse">
+          <div id="bh-gss-join-gss-<?= $i ?>" class="accordion-body collapse">
             <div class="accordion-inner">
               <?= DAV::xmlescape($group->user_prop(BeeHub::PROP_DESCRIPTION)) ?>
             </div>
@@ -117,24 +117,24 @@
 
 	<!-- Create tab -->
 	<br/>
-	<div id="bh-gs-panel-create" class="tab-pane fade">
-    <form id="bh-gs-create-form" class="form-horizontal" action="<?= BeeHub::GROUPS_PATH ?>" method="post">
+	<div id="bh-gss-panel-create" class="tab-pane fade">
+    <form id="bh-gss-create-form" class="form-horizontal" action="<?= BeeHub::GROUPS_PATH ?>" method="post">
 	    <div class="control-group">
-		    <label class="control-label" for="bh-gs-name">Group name</label>
+		    <label class="control-label" for="bh-gss-name">Group name</label>
 		    <div class="controls">
-		    	<input type="text" id="bh-gs-name" name="group_name" required>
+		    	<input type="text" id="bh-gss-name" name="group_name" required>
 		    </div>
 	    </div>
 	    <div class="control-group">
-		    <label class="control-label" for="bh-gs-display-name">Display name</label>
+		    <label class="control-label" for="bh-gss-display-name">Display name</label>
 		    <div class="controls">
-		    	<input type="text" id="bh-gs-display-name" name="displayname" required>
+		    	<input type="text" id="bh-gss-display-name" name="displayname" required>
 		    </div>
 	    </div>
 	      <div class="control-group">
-		    <label class="control-label" for="bh-gs-description">Group description</label>
+		    <label class="control-label" for="bh-gss-description">Group description</label>
 		    <div class="controls">
-		    	<textarea class="input-xlarge" id="bh-gs-description" rows="5" name="description"></textarea>
+		    	<textarea class="input-xlarge" id="bh-gss-description" rows="5" name="description"></textarea>
 		    </div>
 	    </div>
 	    <div class="control-group">
@@ -151,8 +151,8 @@
 
 <?php
   $footer .='
-    <script type="text/javascript" src="/system/js/gs.js"></script>
-    <script type="text/javascript" src="/system/js/gs-controller.js"></script>
-    <script type="text/javascript" src="/system/js/gs-view.js"></script>
+    <script type="text/javascript" src="/system/js/gss.js"></script>
+    <script type="text/javascript" src="/system/js/gss-controller.js"></script>
+    <script type="text/javascript" src="/system/js/gss-view.js"></script>
   ';
   require 'views/footer.php';

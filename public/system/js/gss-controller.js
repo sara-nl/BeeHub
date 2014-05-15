@@ -21,7 +21,7 @@
 
 "use strict";
 
-nl.sara.beehub.gs.Controller = function() {  
+nl.sara.beehub.gss.Controller = function() {  
   this.path = location.pathname;
   // add slash to the end of path
   if (!this.path.match(/\/$/)) {
@@ -40,7 +40,7 @@ nl.sara.beehub.gs.Controller = function() {
 /*
  * Action when the join button at a group is clicked
  */
-nl.sara.beehub.gs.Controller.prototype.joinRequest = function(value, callback) {
+nl.sara.beehub.gss.Controller.prototype.joinRequest = function(value, callback) {
   // closure for ajax request
   function joinCallback(status) {
     if (status !== 200) {
@@ -55,7 +55,7 @@ nl.sara.beehub.gs.Controller.prototype.joinRequest = function(value, callback) {
 	client.post(value, joinCallback , 'join=1');
 };
 
-nl.sara.beehub.gs.Controller.prototype.leaveRequest = function(value, callback){
+nl.sara.beehub.gss.Controller.prototype.leaveRequest = function(value, callback){
   function leaveCallback(status) {
     if ( status === 409 ) {
       alert("You can't leave this group, you're the last administrator! Don't leave your herd without a shepherd, please appoint a new administrator before leaving them!");

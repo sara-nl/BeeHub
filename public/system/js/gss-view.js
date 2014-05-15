@@ -25,22 +25,22 @@
  * @author Laura Leistikow (laura.leistikow@surfsara.nl)
  * 
  */
-nl.sara.beehub.gs.view.GroupsSponsorsView = function() {
-  this.controller = new nl.sara.beehub.gs.Controller(); 
+nl.sara.beehub.gss.view.GroupsSponsorsView = function() {
+  this.controller = new nl.sara.beehub.gss.Controller(); 
   this.init();
 };
 
 /**
  * Initialize view
  */
-nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.init = function() { 
+nl.sara.beehub.gss.view.GroupsSponsorsView.prototype.init = function() { 
   this.setHandlers();
 };
 
 /**
  * Set handlers in view
  */
-nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.setHandlers = function() {
+nl.sara.beehub.gss.view.GroupsSponsorsView.prototype.setHandlers = function() {
   // prevent hide previous collaped item
   $('.accordion-heading').unbind('click').click(function (e) {
     $(this).next().collapse("toggle");
@@ -57,22 +57,22 @@ nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.setHandlers = function() {
   });
   
   // Add join button handler
-  $('.bh-gs-join-button').unbind('click').on('click', this.joinListener.bind(this));
+  $('.bh-gss-join-button').unbind('click').on('click', this.joinListener.bind(this));
   
   // Action when the leave button in a group is clicked
-  $('.bh-gs-join-leave-button').unbind('click').on('click', this.joinLeaveListener.bind(this));
+  $('.bh-gss-join-leave-button').unbind('click').on('click', this.joinLeaveListener.bind(this));
   
   // Action when the filter field is changed
-  $('#bh-gs-filter-by-name').unbind('keyup').keyup(this.filterByName);
+  $('#bh-gss-filter-by-name').unbind('keyup').keyup(this.filterByName);
   
   // Action when the groupsname field will change
-  $('#bh-gs-name').unbind('change').on('change', this.gsNameListener.bind(this));
+  $('#bh-gss-name').unbind('change').on('change', this.gssNameListener.bind(this));
     
   // Submit handler
-  $('#bh-gs-create-form').submit(this.submitButton.bind(this));
+  $('#bh-gss-create-form').submit(this.submitButton.bind(this));
   
   // Action when the leave button in a group is clicked
-  $('.bh-gs-mygs-leave-button').on('click', this.leaveButton.bind(this));
+  $('.bh-gss-mygss-leave-button').on('click', this.leaveButton.bind(this));
   
   // Do not collapse at button clicks
   $('.accordion-heading a').click(function (e) {
@@ -86,8 +86,8 @@ nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.setHandlers = function() {
  * Prevent default when name field is not correct.
  * 
  */
-nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.submitButton = function (e) {
-  if (!this.gsNameListener(null, $('#bh-gs-name'))) {
+nl.sara.beehub.gss.view.GroupsSponsorsView.prototype.submitButton = function (e) {
+  if (!this.gssNameListener(null, $('#bh-gss-name'))) {
     e.preventDefault();
     return false;
   } else {
@@ -98,7 +98,7 @@ nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.submitButton = function (e) 
 /**
  * Leave button click handler in my groups tab
  */
-nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.leaveButton = function (e) {
+nl.sara.beehub.gss.view.GroupsSponsorsView.prototype.leaveButton = function (e) {
   function callback(){
     $(e.target).closest('.accordion-group').remove();
    // TODO Update Join tab
@@ -114,7 +114,7 @@ nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.leaveButton = function (e) {
 /**
  * Join button click handler in join tab
  */
-nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.joinListener = function (e) { 
+nl.sara.beehub.gss.view.GroupsSponsorsView.prototype.joinListener = function (e) { 
   var scope = this;
   var button = e.target;
   
@@ -126,7 +126,7 @@ nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.joinListener = function (e) 
    };
    
    // Change button to join button
-   var cancelrequestbutton = $('<button type="button" value="'+button.value+'" class="btn btn-danger bh-gs-join-leave-button">Cancel request</button>');
+   var cancelrequestbutton = $('<button type="button" value="'+button.value+'" class="btn btn-danger bh-gss-join-leave-button">Cancel request</button>');
    cancelrequestbutton.unbind('click').on ('click', scope.joinLeaveListener.bind(scope));
    $(button).closest('a').append(cancelrequestbutton);
    $(button).remove();
@@ -137,18 +137,18 @@ nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.joinListener = function (e) 
 /**
  * Cancel request button handler in join tab
  */
-nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.joinLeaveListener = function(e){
+nl.sara.beehub.gss.view.GroupsSponsorsView.prototype.joinLeaveListener = function(e){
   var button = e.target;
   var scope = this;
   
   function callback(){
    // Change button to join button
-   var joinbutton = $('<button type="button" value="'+button.value+'" class="btn btn-success bh-gs-join-button">Join</button>');
+   var joinbutton = $('<button type="button" value="'+button.value+'" class="btn btn-success bh-gss-join-button">Join</button>');
    joinbutton.unbind('click').on('click', scope.joinListener.bind(scope));
        $(button).closest('a').append(joinbutton);
        $(button).remove();
        // Remove group from mygroups or my sponsors
-       var leavebutton = $('[id="bh-gs-panel-mygs"]').find('[value="'+button.value+'"]');
+       var leavebutton = $('[id="bh-gss-panel-mygss"]').find('[value="'+button.value+'"]');
        if ( leavebutton.length !== 0 ) {
          leavebutton.closest('.accordion-group').remove();
        };
@@ -163,26 +163,26 @@ nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.joinLeaveListener = function
 /**
  * Search function in join tab
  */
-nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.filterByName = function(){ 
+nl.sara.beehub.gss.view.GroupsSponsorsView.prototype.filterByName = function(){ 
   var filterfield=$(this);
    // when field is empty, filter icon
-   $(this).parent().find('[id="bh-gs-icon-erase"]').remove();
-   $(this).parent().find('[id="bh-gs-icon-filter"]').remove();
+   $(this).parent().find('[id="bh-gss-icon-erase"]').remove();
+   $(this).parent().find('[id="bh-gss-icon-filter"]').remove();
    if ( filterfield.val().length === 0 ){
      // Zorgen dat dit ook werkt voor sponsors
-     var iconfilter = $('<span class="add-on" id="bh-gs-icon-filter"><i class="icon-filter" ></i></span>');
+     var iconfilter = $('<span class="add-on" id="bh-gss-icon-filter"><i class="icon-filter" ></i></span>');
      $(this).parent().prepend(iconfilter);
    // when field is not empty, erase icon with listener
    } else {
-     var iconerase = $('<span class="add-on" id="bh-gs-icon-erase"><i class="icon-remove-circle" ></i></span>');
+     var iconerase = $('<span class="add-on" id="bh-gss-icon-erase"><i class="icon-remove-circle" ></i></span>');
      $(this).parent().prepend(iconerase);
-     $('#bh-gs-icon-erase').on('click', function (e) {
+     $('#bh-gss-icon-erase').on('click', function (e) {
        filterfield.val("");
        filterfield.trigger('keyup');
      });
    };
    var regex = new RegExp(filterfield.val(), 'gi' );
-   $('div#bh-gs-join-gs.accordion').find('.accordion-group').filter(function(index) {
+   $('div#bh-gss-join-gss.accordion').find('.accordion-group').filter(function(index) {
      $(this).hide();
      return $(this).find('th').html().match(regex) !== null;
    }).show();
@@ -191,65 +191,64 @@ nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.filterByName = function(){
 /**
  * Checks name field
  */
-nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.gsNameListener = function(e, field){
-  var gsNameField;
+nl.sara.beehub.gss.view.GroupsSponsorsView.prototype.gssNameListener = function(e, field){
+  var gssNameField;
   if (e !== null) {
-    gsNameField = $(e.target);
+    gssNameField = $(e.target);
   } else {
-    gsNameField = field;
+    gssNameField = field;
   };
 
   var showError = function(error){
-   gsNameField.parent().parent().addClass('error');
+   gssNameField.parent().parent().addClass('error');
    var errorSpan = $( '<span class="help-inline"></span>' );
       errorSpan.text( error );
-   gsNameField.parent().append( errorSpan );
+   gssNameField.parent().append( errorSpan );
   };
 
   // TODO make tooltip with field specifications
   // This is included in bootstrap with patern
 
   // clear error
-  gsNameField.next().remove();
-  gsNameField.parent().parent().removeClass('error');
+  gssNameField.next().remove();
+  gssNameField.parent().parent().removeClass('error');
 
   // value not system
   if (this.controller.group_or_sponsor === "group") {
-   if ( nl.sara.beehub.forbidden_group_names.indexOf( gsNameField.val() ) > -1 ) {
-   showError(gsNameField.val()+' is not a valid groupname.');
+   if ( nl.sara.beehub.forbidden_group_names.indexOf( gssNameField.val() ) > -1 ) {
+   showError(gssNameField.val()+' is not a valid groupname.');
    return false;
    };
   };
 
  // Seperate regular expressions to make the errors more specific.
  // value starts with a-zA-Z0-9, else return
-  if (!RegExp('^[a-zA-Z0-9]{1}.*$').test(gsNameField.val())) {
+  if (!RegExp('^[a-zA-Z0-9]{1}.*$').test(gssNameField.val())) {
    showError('First character must be a alphanumeric character.');
    return false;
   }
  // value only contain a-zA-Z0-9_-., else return
-  if (!RegExp('^[a-zA-Z0-9]{1}[a-zA-Z0-9_\\-\\.]*$').test(gsNameField.val())) {
+  if (!RegExp('^[a-zA-Z0-9]{1}[a-zA-Z0-9_\\-\\.]*$').test(gssNameField.val())) {
    showError('This field can contain aphanumeric characters, numbers, "-", "_" and ".".');
    return false;
   }
  // value contain 1-255 characters, else return
-  if (!RegExp('^[a-zA-Z0-9]{1}[a-zA-Z0-9_\\-\\.]{0,255}$').test(gsNameField.val())) {
+  if (!RegExp('^[a-zA-Z0-9]{1}[a-zA-Z0-9_\\-\\.]{0,255}$').test(gssNameField.val())) {
   showError('This field can contain maximal 255 characters.');
   return false;
   }
   if (this.controller.group_or_sponsor === "group") {
-   if (nl.sara.beehub.principals.groups[gsNameField.val()] !== undefined) {
+   if (nl.sara.beehub.principals.groups[gssNameField.val()] !== undefined) {
     showError('This groupname is already in use.');
     return false;
    };
   };
   if (this.controller.group_or_sponsor === "sponsor") {
-    if (nl.sara.beehub.principals.sponsors[gsNameField.val()] !== undefined) {
+    if (nl.sara.beehub.principals.sponsors[gssNameField.val()] !== undefined) {
      showError('This sponsorname is already in use.');
      return false;
     };
   };
-
   return true;
 };
 
