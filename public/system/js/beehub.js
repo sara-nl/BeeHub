@@ -223,4 +223,28 @@ nl.sara.beehub.utils.bytesToSize = function(bytes, precision)
         return bytes + ' B';
     }
 };
+
+/**
+ * Returns path with slash at the end
+ */
+nl.sara.beehub.utils.getPath = function() {
+ var path = location.pathname;
+ // add slash to the end of path
+ if (!path.match(/\/$/)) {
+   path=path+'/'; 
+ } 
+ return path;
+}
+
+nl.sara.beehub.utils.getGroupOrSponsor = function() {
+  // Check if it is group or sponsor page 
+  var group_or_sponsor="";
+  var path = nl.sara.beehub.utils.getPath();
+  if ( path.substr(0, nl.sara.beehub.groups_path.length) === nl.sara.beehub.groups_path ) {
+    group_or_sponsor = "group";
+  } else if ( path.substr(0, nl.sara.beehub.sponsors_path.length) === nl.sara.beehub.sponsors_path ) {
+    group_or_sponsor = "sponsor";
+  }
+  return group_or_sponsor;
+}
 // End of file

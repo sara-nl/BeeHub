@@ -25,22 +25,23 @@
  * @author Laura Leistikow (laura.leistikow@surfsara.nl)
  * 
  */
-nl.sara.beehub.gss.view.GroupsSponsorsView = function() {
-  this.controller = new nl.sara.beehub.gss.Controller(); 
+nl.sara.beehub.gs.view.GroupsSponsorsView = function(controller, parent) {
+  this.controller = controller;
+  this.parent = parent
   this.init();
 };
 
 /**
  * Initialize view
  */
-nl.sara.beehub.gss.view.GroupsSponsorsView.prototype.init = function() { 
+nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.init = function() { 
   this.setHandlers();
 };
 
 /**
  * Set handlers in view
  */
-nl.sara.beehub.gss.view.GroupsSponsorsView.prototype.setHandlers = function() {
+nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.setHandlers = function() {
   // prevent hide previous collaped item
   $('.accordion-heading').unbind('click').click(function (e) {
     $(this).next().collapse("toggle");
@@ -86,7 +87,7 @@ nl.sara.beehub.gss.view.GroupsSponsorsView.prototype.setHandlers = function() {
  * Prevent default when name field is not correct.
  * 
  */
-nl.sara.beehub.gss.view.GroupsSponsorsView.prototype.submitButton = function (e) {
+nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.submitButton = function (e) {
   if (!this.gssNameListener(null, $('#bh-gss-name'))) {
     e.preventDefault();
     return false;
@@ -98,7 +99,7 @@ nl.sara.beehub.gss.view.GroupsSponsorsView.prototype.submitButton = function (e)
 /**
  * Leave button click handler in my groups tab
  */
-nl.sara.beehub.gss.view.GroupsSponsorsView.prototype.leaveButton = function (e) {
+nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.leaveButton = function (e) {
   function callback(){
     $(e.target).closest('.accordion-group').remove();
    // TODO Update Join tab
@@ -114,7 +115,7 @@ nl.sara.beehub.gss.view.GroupsSponsorsView.prototype.leaveButton = function (e) 
 /**
  * Join button click handler in join tab
  */
-nl.sara.beehub.gss.view.GroupsSponsorsView.prototype.joinListener = function (e) { 
+nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.joinListener = function (e) { 
   var scope = this;
   var button = e.target;
   
@@ -137,7 +138,7 @@ nl.sara.beehub.gss.view.GroupsSponsorsView.prototype.joinListener = function (e)
 /**
  * Cancel request button handler in join tab
  */
-nl.sara.beehub.gss.view.GroupsSponsorsView.prototype.joinLeaveListener = function(e){
+nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.joinLeaveListener = function(e){
   var button = e.target;
   var scope = this;
   
@@ -163,7 +164,7 @@ nl.sara.beehub.gss.view.GroupsSponsorsView.prototype.joinLeaveListener = functio
 /**
  * Search function in join tab
  */
-nl.sara.beehub.gss.view.GroupsSponsorsView.prototype.filterByName = function(){ 
+nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.filterByName = function(){ 
   var filterfield=$(this);
    // when field is empty, filter icon
    $(this).parent().find('[id="bh-gss-icon-erase"]').remove();
@@ -191,7 +192,7 @@ nl.sara.beehub.gss.view.GroupsSponsorsView.prototype.filterByName = function(){
 /**
  * Checks name field
  */
-nl.sara.beehub.gss.view.GroupsSponsorsView.prototype.gssNameListener = function(e, field){
+nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.gssNameListener = function(e, field){
   var gssNameField;
   if (e !== null) {
     gssNameField = $(e.target);

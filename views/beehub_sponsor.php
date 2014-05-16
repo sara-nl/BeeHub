@@ -60,11 +60,11 @@ require 'views/header.php';
          <td align="right">
            <!-- Promote or demote? -->
            <?php if ( $member['is_admin'] ) : ?>
-           <button type="button" value="<?= DAV::xmlescape($member['user_name']) ?>" class="btn btn-primary demote_link">Demote to member</button>
+           <button type="button" value="<?= DAV::xmlescape($member['user_name']) ?>" class="btn btn-primary bh-gs-demote-gs">Demote to member</button>
            <?php else : ?>
-           <button type="button" value="<?= DAV::xmlescape($member['user_name']) ?>" class="btn btn-primary promote_link">Promote to admin</button>
+           <button type="button" value="<?= DAV::xmlescape($member['user_name']) ?>" class="btn btn-primary bh-gs-promote-gs">Promote to admin</button>
            <?php endif; ?>
-           <button type="button" value="<?= DAV::xmlescape($member['user_name']) ?>" class="btn btn-danger remove_link">Remove member</button>
+           <button type="button" value="<?= DAV::xmlescape($member['user_name']) ?>" class="btn btn-danger bh-gs-remove-gs">Remove member</button>
          </td>
         <?php endif; ?>
         </tr></tbody></table></div>
@@ -108,7 +108,10 @@ require 'views/header.php';
  <!-- End tab contents -->
 
 <?php
-$footer='<script type="text/javascript" src="/system/js/group-sponsor.js"></script>
+$footer='<script type="text/javascript" src="/system/js/groupsponsor.js"></script>
+         <script type="text/javascript" src="/system/js/gs-controller.js"></script>
+         <script type="text/javascript" src="/system/js/gs-view.js"></script>
+         <script type="text/javascript" src="/system/js/groupsponsor-view.js"></script>
          <script type="text/javascript" src="/system/js/plugins/d3.min.js"></script>
 ';
 require 'views/footer.php';
