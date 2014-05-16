@@ -76,6 +76,9 @@ nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.setHandlers = function() {
   $('.bh-gss-mygss-leave-button').on('click', this.leaveButton.bind(this));
   
   // Do not collapse at button clicks
+  $('.accordion-heading button').click(function (e) {
+    e.stopPropagation();
+  });
   $('.accordion-heading a').click(function (e) {
     e.stopPropagation();
   });
@@ -100,6 +103,7 @@ nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.submitButton = function (e) 
  * Leave button click handler in my groups tab
  */
 nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.leaveButton = function (e) {
+  alert("callbacknotok nog niet klaar");
   function callback(){
     $(e.target).closest('.accordion-group').remove();
    // TODO Update Join tab
@@ -116,6 +120,7 @@ nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.leaveButton = function (e) {
  * Join button click handler in join tab
  */
 nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.joinListener = function (e) { 
+  alert("callbacknotok nog niet klaar");
   var scope = this;
   var button = e.target;
   

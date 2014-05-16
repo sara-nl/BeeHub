@@ -32,7 +32,7 @@ nl.sara.beehub.gs.view.View = function(view, controller) {
     this.view = new nl.sara.beehub.gs.view.GroupsSponsorsView(controller, this);
     return;
   }
-  if (view === "groupssponsors") {
+  if (view === "groupsponsor") {
     this.view = new nl.sara.beehub.gs.view.GroupSponsorView(controller, this);
     return;
   }
@@ -44,9 +44,9 @@ nl.sara.beehub.gs.view.View = function(view, controller) {
  */
 nl.sara.beehub.gs.view.View.prototype.mask = function(mask){
   if (mask) {
-    $("#bh-dir-mask-transparant").hide();
-  } else {
     $("#bh-dir-mask-transparant").show();
+  } else {
+    $("#bh-dir-mask-transparant").hide();
   }
 }
 
