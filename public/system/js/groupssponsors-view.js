@@ -101,30 +101,40 @@ nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.submitButton = function (e) 
 
 /**
  * Leave button click handler in my groups tab
+ * 
+ * @param {Event} e
  */
-nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.leaveButton = function (e) {
-  alert("callbacknotok nog niet klaar");
-  function callback(){
+nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.leaveButton = function (e) {  
+  var view = this;
+  
+  function callbackOk(){
     $(e.target).closest('.accordion-group').remove();
+    view.parent.mask(false);
    // TODO Update Join tab
+  }
+  
+  function callbackNotOk(){
+    view.parent.mask(false);
   }
   
   // Are you sure?
   if ( confirm( 'Are you sure you want to leave the '+this.controller.group_or_sponsor+' '+$(e.target).parent().prev().html()+' ?' ) ) {
+    view.parent.mask(true);
     // Send leave request to server
-    this.controller.leaveRequest(e.target.value, callback);
+    this.controller.leaveRequest(e.target.value, callbackOk, callbackNotOk);
   };
 };
 
 /**
  * Join button click handler in join tab
+ * 
+ * @param {Event} e
  */
 nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.joinListener = function (e) { 
-  alert("callbacknotok nog niet klaar");
-  var scope = this;
+  var view = this;
   var button = e.target;
   
-  function callback(){
+  function callbackOk(){
    if ( button.text === 'Accept invitation' ) {
      // TODO: this should be handled more gracefully
      location.reload();
@@ -133,69 +143,91 @@ nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.joinListener = function (e) 
    
    // Change button to join button
    var cancelrequestbutton = $('<button type="button" value="'+button.value+'" class="btn btn-danger bh-gss-join-leave-button">Cancel request</button>');
-   cancelrequestbutton.unbind('click').on ('click', scope.joinLeaveListener.bind(scope));
+   cancelrequestbutton.unbind('click').on ('click', view.joinLeaveListener.bind(view));
    $(button).closest('a').append(cancelrequestbutton);
    $(button).remove();
+   view.parent.mask(false);
   };
-  this.controller.joinRequest(e.target.value, callback);
+  
+  function callbackNotOk(){
+    view.parent.mask(false);
+  };
+  
+  view.parent.mask(true);
+  this.controller.joinRequest(e.target.value, callbackOk, callbackNotOk);
 };
 
 /**
  * Cancel request button handler in join tab
+ * 
+ * @param {Event} e
  */
 nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.joinLeaveListener = function(e){
   var button = e.target;
-  var scope = this;
+  var view = this;
   
-  function callback(){
+  function callbackOk(){
    // Change button to join button
    var joinbutton = $('<button type="button" value="'+button.value+'" class="btn btn-success bh-gss-join-button">Join</button>');
-   joinbutton.unbind('click').on('click', scope.joinListener.bind(scope));
-       $(button).closest('a').append(joinbutton);
-       $(button).remove();
-       // Remove group from mygroups or my sponsors
-       var leavebutton = $('[id="bh-gss-panel-mygss"]').find('[value="'+button.value+'"]');
-       if ( leavebutton.length !== 0 ) {
-         leavebutton.closest('.accordion-group').remove();
-       };
+   joinbutton.unbind('click').on('click', view.joinListener.bind(view));
+   $(button).closest('a').append(joinbutton);
+   $(button).remove();
+   // Remove group from mygroups or my sponsors
+   var leavebutton = $('[id="bh-gss-panel-mygss"]').find('[value="'+button.value+'"]');
+   if ( leavebutton.length !== 0 ) {
+     leavebutton.closest('.accordion-group').remove();
    };
+   
+   view.parent.mask(false);
+  };
+   
+  function callbackNotOk(){
+    view.parent.mask(false);
+  }
   
   // Are you sure?
   if (confirm('Are you sure you want to cancel membership of the '+this.controller.group_or_sponsor+' '+$(e.target).closest('td').prev().html()+' ?')) {
-    this.controller.leaveRequest(e.target.value, callback);
+    view.parent.mask(true);
+    view.controller.leaveRequest(e.target.value, callbackOk, callbackNotOk);
   };
 };
 
 /**
  * Search function in join tab
+ * 
  */
 nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.filterByName = function(){ 
   var filterfield=$(this);
-   // when field is empty, filter icon
-   $(this).parent().find('[id="bh-gss-icon-erase"]').remove();
-   $(this).parent().find('[id="bh-gss-icon-filter"]').remove();
-   if ( filterfield.val().length === 0 ){
-     // Zorgen dat dit ook werkt voor sponsors
-     var iconfilter = $('<span class="add-on" id="bh-gss-icon-filter"><i class="icon-filter" ></i></span>');
-     $(this).parent().prepend(iconfilter);
-   // when field is not empty, erase icon with listener
-   } else {
-     var iconerase = $('<span class="add-on" id="bh-gss-icon-erase"><i class="icon-remove-circle" ></i></span>');
-     $(this).parent().prepend(iconerase);
-     $('#bh-gss-icon-erase').on('click', function (e) {
-       filterfield.val("");
-       filterfield.trigger('keyup');
-     });
-   };
-   var regex = new RegExp(filterfield.val(), 'gi' );
-   $('div#bh-gss-join-gss.accordion').find('.accordion-group').filter(function(index) {
-     $(this).hide();
-     return $(this).find('th').html().match(regex) !== null;
-   }).show();
+  // when field is empty, filter icon
+  $(this).parent().find('[id="bh-gss-icon-erase"]').remove();
+  $(this).parent().find('[id="bh-gss-icon-filter"]').remove();
+  if ( filterfield.val().length === 0 ){
+    // Zorgen dat dit ook werkt voor sponsors
+    var iconfilter = $('<span class="add-on" id="bh-gss-icon-filter"><i class="icon-filter" ></i></span>');
+    $(this).parent().prepend(iconfilter);
+  // when field is not empty, erase icon with listener
+  } else {
+    var iconerase = $('<span class="add-on" id="bh-gss-icon-erase"><i class="icon-remove-circle" ></i></span>');
+    $(this).parent().prepend(iconerase);
+    $('#bh-gss-icon-erase').on('click', function (e) {
+      filterfield.val("");
+      filterfield.trigger('keyup');
+    });
+  };
+  var regex = new RegExp(filterfield.val(), 'gi' );
+  $('div#bh-gss-join-gss.accordion').find('.accordion-group').filter(function(index) {
+    $(this).hide();
+    return $(this).find('th').html().match(regex) !== null;
+  }).show();
 };
 
 /**
  * Checks name field
+ * 
+ * This function can be called as event handler but also with an input fiels as parameter
+ * 
+ * @param {Event}      e
+ * @param {DOM object} field
  */
 nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.gssNameListener = function(e, field){
   var gssNameField;

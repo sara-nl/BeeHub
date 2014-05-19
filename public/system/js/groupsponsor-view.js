@@ -31,7 +31,6 @@ nl.sara.beehub.gs.view.GroupSponsorView = function(controller, parent) {
   this.init();
 };
 
-
 /**
  * Initialize view
  */
