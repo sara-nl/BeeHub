@@ -19,105 +19,113 @@
 
 "use strict";
 
-/**
- * @class Group and sponsor view
- * 
- * @author Laura Leistikow (laura.leistikow@surfsara.nl)
- * 
- */
-nl.sara.beehub.gs.view.GroupSponsorView = function(controller, parent) {
-  this.controller = controller;
-  this.parent = parent
-  this.init();
-};
-
-/**
- * Initialize view
- */
-nl.sara.beehub.gs.view.GroupSponsorView.prototype.init = function() { 
-  this.setHandlers();
-};
-
-/**
- * Set handlers in view
- */
-nl.sara.beehub.gs.view.GroupSponsorView.prototype.setHandlers = function() {
+(function() { 
+  /**
+  * @class Group and sponsor view
+  * 
+  * @author Laura Leistikow (laura.leistikow@surfsara.nl)
+  * 
+  */
+ nl.sara.beehub.gs.view.GroupSponsorView = function(controller) {
+   var view = this;
+   this.controller = controller;
+   controller.addView(view);
+   setHandlers(view);
+ };
+ 
+ /**
+  * Set handlers in view
+  */
+ function setHandlers(view) {
   var map = {};
   
   // Search user
-  var view = this;
   view.invitedUser = '';
-
+  
   $('#bh-gs-invite-typeahead').typeahead({
-   source: function (query, process) {
-     // implementation
-     var users = [];
-     map = {};
-     $.each(nl.sara.beehub.principals.users, function (userName, displayName) {
-         map[displayName+" ("+userName+")"] = userName;
-         users.push(displayName+" ("+userName+")");
-     });
-     process(users);
-    },
-    updater: function (item) {
-     view.invitedUser=map[item];
-     return item;
-    },
-    matcher: function (item) {
-     // implementation
-     if ( item.toLowerCase().indexOf(this.query.trim().toLowerCase()) !== -1 ) {
-      return true;
-     }
-    },
-    sorter: function (items) {
-     // implementation
-     return items.sort();
-    },
-    highlighter: function (item) {
-     // implementation
-     var regex = new RegExp( '(' + this.query + ')', 'gi' );
-     return item.replace( regex, "<strong>$1</strong>" );
-    }
-    // check if username is valid
+  source: function (query, process) {
+    // implementation
+  var users = [];
+  map = {};
+  $.each(nl.sara.beehub.principals.users, function (userName, displayName) {
+      map[displayName+" ("+userName+")"] = userName;
+      users.push(displayName+" ("+userName+")");
+   });
+   process(users);
+  },
+  updater: function (item) {
+   view.invitedUser=map[item];
+   return item;
+  },
+  matcher: function (item) {
+   // implementation
+   if ( item.toLowerCase().indexOf(this.query.trim().toLowerCase()) !== -1 ) {
+    return true;
+   }
+  },
+  sorter: function (items) {
+   // implementation
+   return items.sort();
+  },
+  highlighter: function (item) {
+   // implementation
+  var regex = new RegExp( '(' + this.query + ')', 'gi' );
+  return item.replace( regex, "<strong>$1</strong>" );
+  }
+  // check if username is valid
   }).blur(function(){
    if( map[ $( this ).val() ] === null ) {
      $('#bh-gs-invite-typeahead').val('');
-     view.invitedUser = ""; 
+  view.invitedUser = ""; 
    }
   });
   
   // Action when the invite button is clicked
-  $('#bh-gs-invite-gs-form').submit(this.handleAddUser.bind(this));
- 
+  $('#bh-gs-invite-gs-form').submit(handleAddUser.bind(view));
+  
   // Action when the save button is clicked
-  $('#bh-gs-edit-form').submit(this.handleSubmit.bind(this));
+  $('#bh-gs-edit-form').submit(handleSubmit.bind(view));
   
   // Demote group or sponsor handler
-  $('.bh-gs-demote-gs').click(this.handleDemote.bind(this));
+  $('.bh-gs-demote-gs').click(handleDemote.bind(view));
   
   // Promote group or sponsor handler
-  $('.bh-gs-promote-gs').click(this.handlePromote.bind(this));
+  $('.bh-gs-promote-gs').click(handlePromote.bind(view));
   
   // Remove group or sponsor handler
-  $('.bh-gs-remove-gs').on('click', this.handleRemove.bind(this));
+  $('.bh-gs-remove-gs').on('click', handleRemove.bind(view));
   
   //Change tab listeners
-   // Usage tab sponsors
-   $('a[href="#bh-gs-panel-usage"]').unbind('click').click(this.createUsageView.bind(this));
-}
-
-/**
- * Handle submit button click
- * 
- * @param {Event} e
- */
-nl.sara.beehub.gs.view.GroupSponsorView.prototype.handleSubmit = function (e) {
-  var view = this;
-  e.preventDefault();
-  
-  var group_or_sponsor = this.controller.group_or_sponsor;
-    
-  function callbackOk(){
+  // Usage tab sponsors
+  $('a[href="#bh-gs-panel-usage"]').unbind('click').click(createUsageView.bind(view));
+ }
+ 
+ /**
+  * Handle submit button click (change group)
+  * 
+  * @param {Event} e
+  */
+ function handleSubmit(e) {
+   var view = this;
+   e.preventDefault();
+      
+   var displayName = $('input[name="displayname"]').val();
+   var description = $('textarea[name="description"]').val();
+   
+   view.changeGroupSponsorStarted = true;
+   
+   nl.sara.beehub.gs.view.utils.mask(true);
+   view.controller.changeGroupOrSponsor(location.pathname, displayName, description);
+ };
+ 
+ /**
+  * Update view after succesfully group changed request
+  * 
+  */
+ nl.sara.beehub.gs.view.GroupSponsorView.prototype.updateChangeGroupSponsorSucceeded = function(){
+   var view = this;
+   var group_or_sponsor = nl.sara.beehub.utils.getGroupOrSponsor();
+   
    var newDisplayname = $('input[name="displayname"]').val();
    var newDescription = $('textarea[name="description"]').val();
    $('#bh-gs-display-name-value').text(newDisplayname);
@@ -127,145 +135,285 @@ nl.sara.beehub.gs.view.GroupSponsorView.prototype.handleSubmit = function (e) {
    $('#bh-gs-header').html(newHeader);
    $('#bh-gs-display-name').attr("data-org-name", newDisplayname);
    $('#bh-gs-sponsor-description').attr("data-org-name", newDescription);
-   alert("The "+group_or_sponsor+" is changed.")
-   view.parent.mask(false);
-  };
-  
-  function callbackNotOk(){
-    alert( "Something went wrong. The "+group_or_sponsor+" is not changed." );
-    $('input[name="displayname"]').val($('#bh-gs-display-name').attr("data-org-name")); 
-    $('textarea[name="description"]').val($('#bh-gs-sponsor-description').attr("data-org-name"));
-    view.parent.mask(false);
-  };
-  
-  var displayName = $('input[name="displayname"]').val();
-  var description = $('textarea[name="description"]').val();
-  
-  view.parent.mask(true);
-  view.controller.changeGroupOrSponsor(location.pathname, displayName, description, callbackOk, callbackNotOk);
-};
-  
-/**
- * Handle add user button click
- * 
- * @param {Event} event
- * 
- */
-nl.sara.beehub.gs.view.GroupSponsorView.prototype.handleAddUser = function (event) {
- event.preventDefault();
- 
- var view = this;
-
- var group_or_sponsor = this.controller.group_or_sponsor;
- var invitedUser = this.invitedUser;
-  
- function callbackOk() {
-  $('#bh-gs-invite-typeahead').val("");
-// TODO remove reload page
-//  view.parent.mask(false);
-  if (group_or_sponsor === "group") {
-    alert(nl.sara.beehub.principals.users[invitedUser] + " has been added.");
-  } else if (group_or_sponsor === "sponsor") {
-    alert(nl.sara.beehub.principals.users[invitedUser] + " has been added.");
-  }
-  window.location.reload();
+   if (view.changeGroupSponsorStarted) {
+     alert("The "+group_or_sponsor+" is changed.")
+     view.changeGroupSponsorStarted = false;
+     nl.sara.beehub.gs.view.utils.mask(false);
+   }
  }
  
- function callbackNotOk(){
-   view.parent.mask(false);
- }
+ /**
+  * Update view after failed group changed request
+  * 
+  * @param {Integer} status Failure status from server
+  * 
+  */
+ nl.sara.beehub.gs.view.GroupSponsorView.prototype.updateChangeGroupSponsorFailed = function(status) {
+   var view = this;
+   var group_or_sponsor = nl.sara.beehub.utils.getGroupOrSponsor();
 
- if (this.invitedUser !== "") {
-  view.parent.mask(true);
-  this.controller.addUser(this.invitedUser, callbackOk, callbackNotOk);
+   $('input[name="displayname"]').val($('#bh-gs-display-name').attr("data-org-name")); 
+   $('textarea[name="description"]').val($('#bh-gs-sponsor-description').attr("data-org-name"));
+   
+   if (view.changeGroupSponsorStarted) {
+     alert( "Something went wrong. The "+group_or_sponsor+" is not changed." );
+     view.changeGroupSponsorStarted = false;
+     nl.sara.beehub.gs.view.utils.mask(false);
+   }
+ }
+   
+ /**
+  * Handle add user button click
+  * 
+  * @param {Event} event
+  * 
+  */
+ function handleAddUser(event) {
+  event.preventDefault();
+  
+  var view = this;
+
+  var group_or_sponsor = nl.sara.beehub.utils.getGroupOrSponsor();
+  var invitedUser = this.invitedUser;
+ 
+  if (view.invitedUser !== "") {
+   view.addUserStarted = true;
+   nl.sara.beehub.gs.view.utils.mask(true);
+   this.controller.addUser(view.invitedUser);
+  };
  };
-};
-
-/**
- * Handles demote group or sponsor
- * 
- * @param {Event} e
- */
-nl.sara.beehub.gs.view.GroupSponsorView.prototype.handleDemote = function(event) {
-  var button = $(event.target);
-  var view = this;
-  
-  function callbackOk(){
-    //if succeeded, change button to promote to admin
-    var promotebutton = $('<button type="button" value="'+button.val()+'" class="btn btn-primary bh-gs-promote-gs">Promote to admin</button>');
-    promotebutton.click(view.handlePromote.bind(view));
-    var cell = button.parent('td');
-    cell.prepend(promotebutton);
-    button.remove();
-    view.parent.mask(false);
-  };
-  
-  function callbackNotOk() {
-    view.parent.mask(false);
-  }
-
-  view.parent.mask(true);
-  view.controller.demoteUser(button.val(), callbackOk);
-};
-
-/**
- * Handle promote to admin button
- * 
- * @param {Event} e
- */
-nl.sara.beehub.gs.view.GroupSponsorView.prototype.handlePromote = function(event){
-  var button = $(event.target);
-  var view = this;
-
- function callbackOk() {
-   var demotebutton = $('<button type="button" value="'+button.val()+'" class="btn btn-primary bh-gs-demote-gs">Demote to member</button>');
-   demotebutton.click(view.handleDemote.bind(view));
-   var cell = button.parent('td');
-   cell.prepend(demotebutton);
-   button.remove();
-   view.parent.mask(false);
- }
  
- function callbackNotOk() {
-   view.parent.mask(false);
- }
- 
- this.parent.mask(true);
- this.controller.promoteUser(button.val(), callbackOk, callbackNotOk);
-};
+ /**
+  * Update view after succesfull add user request
+  *
+  */
+ nl.sara.beehub.gs.view.GroupSponsorView.prototype.updateAddUserSucceeded = function(user){
+   var view = this;
    
-/**
- * Handle remove button
- * 
- * @param {Event} e
- */
-nl.sara.beehub.gs.view.GroupSponsorView.prototype.handleRemove = function(e){
-  var view = this;
-  var button = $(e.target);
-  
-  function callbackOk(){
-    $('#bh-gs-user-'+button.val()).remove();
-    view.parent.mask(false);
-  };
-  
-  function callbackNotOk(){
-    view.parent.mask(false);
-  };
-  
-  view.parent.mask(true);
-  this.controller.removeUser(button.val(),callbackOk, callbackNotOk);
-}; // End of bh-gs-remove-gs event listener
+   $('#bh-gs-invite-typeahead').val("");
+ // TODO remove reload page
+ //  nl.sara.beehub.gs.view.utils.mask(false);
+   if (nl.sara.beehub.utils.getGroupOrSponsor() === "group") {
+     alert(nl.sara.beehub.principals.users[user] + " has been added.");
+   } else if (nl.sara.beehub.utils.getGroupOrSponsor() === "sponsor") {
+     alert(nl.sara.beehub.principals.users[user] + " has been added.");
+   }
+   // TODO remove if when reload will be removed
+   if (view.addUserStarted) {
+     window.location.reload();
+   };
+   view.addUserStarted = false;
+ }
+ 
+ /**
+  * Update view after failed add user request
+  * 
+  * @param {Integer} status Failure status from server
+  * 
+  */
+ nl.sara.beehub.gs.view.GroupSponsorView.prototype.updateAddUserFailed = function(status){
+   var view = this;
+   if (view.addUserStarted) {
+    switch(status) {
+     case nl.sara.beehub.gs.Controller.STATUS_LAST_ADMIN:
+      alert(nl.sara.beehub.gs.view.utils.STATUS_LAST_ADMIN_ALERT);
+      break;
+     case nl.sara.beehub.gs.Controller.STATUS_NOT_ALLOWED:
+       alert(nl.sara.beehub.gs.view.utils.STATUS_NOT_ALLOWED_ALERT);
+      break;
+     default:
+       alert(nl.sara.beehub.gs.view.utils.STATUS_UNKNOWN_ERROR_ALERT);
+    }; 
+    view.addUserStarted = false;
+    nl.sara.beehub.gs.view.utils.mask(false);
+   };
+ }
 
+ /**
+  * Handles demote group or sponsor
+  * 
+  * @param {Event} e
+  */
+ function handleDemote(event) {
+   var user = $(event.target).val();
+   var view = this;
+  
+   view.demoteUserStarted = true;
+   nl.sara.beehub.gs.view.utils.mask(true);
+   view.controller.demoteUser(user);
+ };
+ 
+ /**
+  * Update view after succesfull demote user request
+  * 
+  */
+ nl.sara.beehub.gs.view.GroupSponsorView.prototype.updateDemoteUserSucceeded = function(user){
+  var view = this;
+  var button = $('button[type="button"][value="'+user+'"]')
+
+   //if succeeded, change button to promote to admin
+   button.text("Promote to member");
+   button.addClass("btn-success");
+   button.removeClass("btn-danger");
+   button.unbind('click').on('click',handlePromote.bind(view));
+  
+   if (view.demoteUserStarted) {
+     nl.sara.beehub.gs.view.utils.mask(false);
+     view.demoteUserStarted = false;
+   };
+ };
+ 
+ /**
+  * Update view after failed demote user request
+  * 
+  * @param {Integer} status Failure status from server
+  * 
+  */
+ nl.sara.beehub.gs.view.GroupSponsorView.prototype.updateDemoteUserFailed = function(status){
+   var view = this;
+
+   if (view.demoteUserStarted) {
+    switch(status) {
+     case nl.sara.beehub.gs.Controller.STATUS_LAST_ADMIN:
+      alert(nl.sara.beehub.gs.view.utils.STATUS_LAST_ADMIN_ALERT);
+      break;
+     case nl.sara.beehub.gs.Controller.STATUS_NOT_ALLOWED:
+       alert(nl.sara.beehub.gs.view.utils.STATUS_NOT_ALLOWED_ALERT);
+      break;
+     default:
+       alert(nl.sara.beehub.gs.view.utils.STATUS_UNKNOWN_ERROR_ALERT);
+    }; 
+    nl.sara.beehub.gs.view.utils.mask(false);
+    view.demoteUserStarted = false;
+   };
+ }
+ 
+ /**
+  * Handle promote to admin button
+  * 
+  * @param {Event} e
+  */
+ function handlePromote(event){
+  var view = this;
+  
+  view.promoteUserStarted = true;
+  nl.sara.beehub.gs.view.utils.mask(true);
+  this.controller.promoteUser($(event.target).val());
+ };
+ 
+ /**
+  * Update view after successfull promote user request 
+  */
+ nl.sara.beehub.gs.view.GroupSponsorView.prototype.updatePromoteUserSucceeded = function(user){
+   var view = this;
+   
+   console.log($('button[type="button"][value="'+user+'"]'));
+   var button = $('button[type="button"][value="'+user+'"]').find('bh-gs-promote-gs');
+   console.log(button);
+
+   //if succeeded, change button to promote to admin
+   button.text("Demote to member");
+   button.removeClass("btn-success");
+   button.addClass("btn-danger");
+   button.unbind('click').on('click',handleDemote.bind(view));
+   
+   if (view.promoteUserStarted) {
+     view.promoteUserStarted = true;
+     nl.sara.beehub.gs.view.utils.mask(false);
+   };
+ };
+ 
+ /**
+  * Update view after failed promote user request
+  * 
+  * @param {Integer} status Failure status from server
+  * 
+  */
+ nl.sara.beehub.gs.view.GroupSponsorView.prototype.updatePromoteUserFailed = function(status){
+   var view = this;
+   if (view.promoteUserStarted) {
+    switch(status) {
+     case nl.sara.beehub.gs.Controller.STATUS_NOT_ALLOWED:
+       alert(nl.sara.beehub.gs.view.utils.STATUS_NOT_ALLOWED_ALERT);
+      break;
+     default:
+       alert(nl.sara.beehub.gs.view.utils.STATUS_UNKNOWN_ERROR_ALERT);
+    }; 
+    nl.sara.beehub.gs.view.utils.mask(false);
+    view.promoteUserStarted = false;
+   };
+ };
     
+ /**
+  * Handle remove button
+  * 
+  * @param {Event} e
+  */
+ function handleRemove(e){
+   var view = this;
    
-/**
- * Create vertical bar chart with usage data.
- * 
- */
-nl.sara.beehub.gs.view.GroupSponsorView.prototype.createUsageView = function() { 
- var view = this;
+   view.removeUserStarted = true;
+   nl.sara.beehub.gs.view.utils.mask(true);
+   this.controller.removeUser($(e.target).val());
+ }; // End of bh-gs-remove-gs event listener
  
- function callbackOk(data) {
+ /**
+  * Update view after successfull remove user request
+  * 
+  * @param {String} user Removed user
+  * 
+  */
+ nl.sara.beehub.gs.view.GroupSponsorView.prototype.updateRemoveUserSucceeded = function(user){ 
+   var view = this;
+   
+   $('#bh-gs-user-'+user).remove();
+   if (view.removeUserStarted) {
+     nl.sara.beehub.gs.view.utils.mask(false);
+     view.removeUserStarted = false;
+   };
+ }
+ 
+ /**
+  * Update view after failed remove user request
+  * 
+  * @param {Integer} status Failure status from server
+  * 
+  */
+ nl.sara.beehub.gs.view.GroupSponsorView.prototype.updateRemoveUserFailed = function(status){ 
+   var view = this;
+   if (view.removeUserStarted) {
+    switch(status) {
+     case nl.sara.beehub.gs.Controller.STATUS_LAST_ADMIN:
+      alert(nl.sara.beehub.gs.view.utils.STATUS_LAST_ADMIN_ALERT);
+      break;
+     case nl.sara.beehub.gs.Controller.STATUS_NOT_ALLOWED:
+       alert(nl.sara.beehub.gs.view.utils.STATUS_NOT_ALLOWED_ALERT);
+      break;
+     default:
+       alert(nl.sara.beehub.gs.view.utils.STATUS_UNKNOWN_ERROR_ALERT);
+    }; 
+     nl.sara.beehub.gs.view.utils.mask(false);
+     view.removeUserStarted = false;
+   };
+ };
+    
+ /**
+  * Create vertical bar chart with usage data.
+  * 
+  */
+ function createUsageView() { 
+  view.getUsageDataStarted = true;
+  nl.sara.beehub.gs.view.utils.mask(true);
+  view.controller.getUsageData(location.href+"?usage");
+ }
+ 
+ /**
+  * Update view after successfull get usage data request
+  * 
+  * @param {JSON} data Usage data from server
+  * 
+  */
+ nl.sara.beehub.gs.view.GroupSponsorView.prototype.updateUsageDataSucceeded = function(data){ 
    // Stop when sponsor has no users
    if (data.length === 0){
      $('#bh-gs-panel-usage').html('<h5 style="margin-left:10px;">No storage used for this sponsor.</h5>'); 
@@ -363,13 +511,24 @@ nl.sara.beehub.gs.view.GroupSponsorView.prototype.createUsageView = function() {
      .attr("y1", -gridChartOffset)
      .attr("y2", yScale.rangeExtent()[1] + gridChartOffset)
      .style("stroke", "" +"#000");
-   view.parent.mask(false);
+   
+   if (view.getUsageDataStarted) {
+     nl.sara.beehub.gs.view.utils.mask(false);
+     view.getUsageDataStarted = false;
+   }
  };
  
- function callbackNotOk(){
-   view.parent.mask(false);
+ /**
+  * Update view after failed get usage data request
+  * 
+  * @param {String} error Failure error from server
+  * 
+  */
+ nl.sara.beehub.gs.view.GroupSponsorView.prototype.updateUsageDataFailed = function(error){ 
+   if (view.getUsageDataStarted) {
+     alert(error);
+     nl.sara.beehub.gs.view.utils.mask(false);
+     view.getUsageDataStarted = false;
+   }
  };
- 
- view.parent.mask(true);
- view.controller.getUsageData(location.href+"?usage", callbackOk, callbackNotOk);
-}
+})();

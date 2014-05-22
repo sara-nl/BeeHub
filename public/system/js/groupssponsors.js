@@ -30,7 +30,13 @@ if (nl.sara.beehub.gs.view === undefined) {
   nl.sara.beehub.gs.view = {};
 }
 
+if (nl.sara.beehub.gs.view.utils === undefined) {
+  /** @namespace Group and sponsor */
+  nl.sara.beehub.gs.view.utils = {};
+}
+
 // After load
 $(function () {
-  new nl.sara.beehub.gs.Controller("groupssponsors");
+  var controller = new nl.sara.beehub.gs.Controller();
+  new nl.sara.beehub.gs.view.GroupsSponsorsView(controller);
 });

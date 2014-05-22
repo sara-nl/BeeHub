@@ -25,17 +25,7 @@
  * @author Laura Leistikow (laura.leistikow@surfsara.nl)
  * 
  */
-nl.sara.beehub.gs.view.View = function(view, controller) { 
-  this.controller = controller;
-  
-  if (view === "groupssponsors") {
-    this.view = new nl.sara.beehub.gs.view.GroupsSponsorsView(controller, this);
-    return;
-  }
-  if (view === "groupsponsor") {
-    this.view = new nl.sara.beehub.gs.view.GroupSponsorView(controller, this);
-    return;
-  }
+nl.sara.beehub.gs.view.View = function() { 
 };
 
 /**
@@ -47,7 +37,7 @@ nl.sara.beehub.gs.view.View.prototype.mask = function(mask){
     $("#bh-dir-mask-transparant").show();
   } else {
     $("#bh-dir-mask-transparant").hide();
-  }
-}
+  };
+};
 
 

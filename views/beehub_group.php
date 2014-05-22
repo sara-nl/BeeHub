@@ -93,7 +93,7 @@ require 'views/header.php';
 <?php
 $footer='<script type="text/javascript" src="/system/js/groupsponsor.js"></script>
         <script type="text/javascript" src="/system/js/gs-controller.js"></script>
-        <script type="text/javascript" src="/system/js/gs-view.js"></script>
+        <script type="text/javascript" src="/system/js/gs-utils.js"></script>
         <script type="text/javascript" src="/system/js/groupsponsor-view.js"></script>
   ';
 require 'views/footer.php';

@@ -1,5 +1,5 @@
 /**
- * Copyright ©2013 SURFsara bv, The Netherlands
+ * Copyright ©2014 SURFsara bv, The Netherlands
  *
  * This file is part of the beehub client
  *
@@ -15,29 +15,22 @@
  *
  * You should have received a copy of the GNU Lesser General Public License
  * along with beehub.  If not, see <http://www.gnu.org/licenses/>.
- *
- * @author Laura Leistikow (laura.leistikow@surfsara.nl)
  */
 
 "use strict";
 
-if (nl.sara.beehub.gs === undefined) {
-  /** @namespace Group and sponsor */
-  nl.sara.beehub.gs = {};
-}
+/**
+ * Mask view
+ * 
+ */
+nl.sara.beehub.gs.view.utils.mask = function(mask) {
+  if (mask) {
+    $("#bh-dir-mask-transparant").show();
+  } else {
+    $("#bh-dir-mask-transparant").hide();
+  };
+};
 
-if (nl.sara.beehub.gs.view === undefined) {
-  /** @namespace Group and sponsor */
-  nl.sara.beehub.gs.view = {};
-}
-
-if (nl.sara.beehub.gs.view.utils === undefined) {
-  /** @namespace Group and sponsor */
-  nl.sara.beehub.gs.view.utils = {};
-}
-
-// After load
-$(function () {
-  var controller = new nl.sara.beehub.gs.Controller();
-  new nl.sara.beehub.gs.view.GroupSponsorView(controller);
-});
+nl.sara.beehub.gs.view.utils.STATUS_LAST_ADMIN_ALERT    = "You can't leave this group, you're the last administrator! Don't leave your herd without a shepherd, please appoint a new administrator before leaving them!" ;
+nl.sara.beehub.gs.view.utils.STATUS_NOT_ALLOWED_ALERT   = 'You are not allowed to perform this action!';
+nl.sara.beehub.gs.view.utils.STATUS_UNKNOWN_ERROR_ALERT = 'Something went wrong on the server. No changes were made.';
