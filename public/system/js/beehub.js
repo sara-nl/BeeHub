@@ -247,4 +247,30 @@ nl.sara.beehub.utils.getGroupOrSponsor = function() {
   }
   return group_or_sponsor;
 }
+
+/*
+ * Returns displayname from object
+ * 
+ * @param   {String}  name  object
+ * 
+ * @return  {String}        Displayname
+ */
+nl.sara.beehub.utils.getDisplayName = function(name){
+  if (name === undefined) {
+    return "";
+  };
+  if (name.indexOf(nl.sara.beehub.users_path) !== -1){
+    var displayName = nl.sara.beehub.principals.users[name.replace(nl.sara.beehub.users_path,'')];
+    return displayName;
+  };
+  if (name.indexOf(nl.sara.beehub.groups_path) !== -1){
+    var displayName = nl.sara.beehub.principals.groups[name.replace(nl.sara.beehub.groups_path,'')];
+    return displayName;
+  };
+  if (name.indexOf(nl.sara.beehub.sponsors_path) !== -1){
+    var displayName = nl.sara.beehub.principals.sponsors[name.replace(nl.sara.beehub.sponsors_path,'')];
+    return displayName;
+  };
+  return "Unknown displayname";
+};
 // End of file

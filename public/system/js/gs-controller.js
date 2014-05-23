@@ -262,14 +262,14 @@
    function callback(status, data) {
      if (status === 207) {
        views.forEach(function(view) {
-         if (view.updateAfterChangeGroupSponsorSucceeded !== undefined) {
-           view.updateAfterChangeGroupSponsorSucceeded();
+         if (view.updateChangeGroupSponsorSucceeded !== undefined) {
+           view.updateChangeGroupSponsorSucceeded();
          };
        });
      } else {
        views.forEach(function(view) {
-         if (view.updateAfterChangeGroupSponsorFailed !== undefined) {
-           view.updateAfterChangeGroupSponsorFailed(status);
+         if (view.updateChangeGroupSponsorFailed !== undefined) {
+           view.updateChangeGroupSponsorFailed(status);
          };
        }); 
      };
@@ -296,7 +296,7 @@
      } else {
        views.forEach(function(view) {
          if (view.updateUsageDataSucceeded !== undefined) {
-           view.updateUsageDataSucceeded(data);
+           view.updateUsageDataSucceeded(data[0].usage);
          };
        }); 
      };

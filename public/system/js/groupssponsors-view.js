@@ -102,9 +102,8 @@ function setHandlers(view) {
   */
 function leaveListener(e) {  
    var view = this;
-   
    // Are you sure?
-   if ( confirm( 'Are you sure you want to leave the '+view.controller.group_or_sponsor+' '+$(e.target).parent().prev().html()+' ?' ) ) {
+   if ( confirm( 'Are you sure you want to leave the '+view.controller.group_or_sponsor+' '+nl.sara.beehub.utils.getDisplayName($(e.target).val())+' ?' ) ) {
      nl.sara.beehub.gs.view.utils.mask(false);
      view.leaveRequestStarted = true;
 

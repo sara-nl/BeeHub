@@ -249,12 +249,12 @@
   */
  nl.sara.beehub.gs.view.GroupSponsorView.prototype.updateDemoteUserSucceeded = function(user){
   var view = this;
-  var button = $('button[type="button"][value="'+user+'"]')
+//  var button = $('button[type="button"][value="'+user+'"][class="bs-gs-demote-gs"')
+  var button = $('button[type="button"][value="'+user+'"].bh-gs-demote-gs');
 
    //if succeeded, change button to promote to admin
-   button.text("Promote to member");
-   button.addClass("btn-success");
-   button.removeClass("btn-danger");
+   button.text("Promote to admin");
+   button.removeClass("bh-gs-demote-gs").addClass("bh-gs-promote-gs");
    button.unbind('click').on('click',handlePromote.bind(view));
   
    if (view.demoteUserStarted) {
@@ -301,20 +301,17 @@
   this.controller.promoteUser($(event.target).val());
  };
  
- /**
+ /** 
   * Update view after successfull promote user request 
   */
  nl.sara.beehub.gs.view.GroupSponsorView.prototype.updatePromoteUserSucceeded = function(user){
    var view = this;
    
-   console.log($('button[type="button"][value="'+user+'"]'));
-   var button = $('button[type="button"][value="'+user+'"]').find('bh-gs-promote-gs');
-   console.log(button);
+   var button = $('button[type="button"][value="'+user+'"].bh-gs-promote-gs');
 
    //if succeeded, change button to promote to admin
    button.text("Demote to member");
-   button.removeClass("btn-success");
-   button.addClass("btn-danger");
+   button.removeClass("bh-gs-promote-gs").addClass("bh-gs-demote-gs");
    button.unbind('click').on('click',handleDemote.bind(view));
    
    if (view.promoteUserStarted) {
@@ -402,6 +399,8 @@
   * 
   */
  function createUsageView() { 
+  var view = this;
+  
   view.getUsageDataStarted = true;
   nl.sara.beehub.gs.view.utils.mask(true);
   view.controller.getUsageData(location.href+"?usage");
@@ -414,6 +413,8 @@
   * 
   */
  nl.sara.beehub.gs.view.GroupSponsorView.prototype.updateUsageDataSucceeded = function(data){ 
+   var view = this;
+   
    // Stop when sponsor has no users
    if (data.length === 0){
      $('#bh-gs-panel-usage').html('<h5 style="margin-left:10px;">No storage used for this sponsor.</h5>'); 
