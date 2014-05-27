@@ -19,18 +19,18 @@
 
 "use strict";
 
+nl.sara.beehub.gs.view.utils.STATUS_LAST_ADMIN_ALERT    = "You can't leave this group, you're the last administrator! Don't leave your herd without a shepherd, please appoint a new administrator before leaving them!" ;
+nl.sara.beehub.gs.view.utils.STATUS_NOT_ALLOWED_ALERT   = 'You are not allowed to perform this action!';
+nl.sara.beehub.gs.view.utils.STATUS_UNKNOWN_ERROR_ALERT = 'Something went wrong on the server. No changes were made.';
+
 /**
  * Mask view
  * 
  */
 nl.sara.beehub.gs.view.utils.mask = function(mask) {
   if (mask) {
-    $("#bh-dir-mask-transparant").show();
+    $("body").append('<div id="bh-dir-mask-transparant"></div>');
   } else {
-    $("#bh-dir-mask-transparant").hide();
+    $("#bh-dir-mask-transparant").remove();
   };
 };
-
-nl.sara.beehub.gs.view.utils.STATUS_LAST_ADMIN_ALERT    = "You can't leave this group, you're the last administrator! Don't leave your herd without a shepherd, please appoint a new administrator before leaving them!" ;
-nl.sara.beehub.gs.view.utils.STATUS_NOT_ALLOWED_ALERT   = 'You are not allowed to perform this action!';
-nl.sara.beehub.gs.view.utils.STATUS_UNKNOWN_ERROR_ALERT = 'Something went wrong on the server. No changes were made.';

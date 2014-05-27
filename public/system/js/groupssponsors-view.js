@@ -27,9 +27,10 @@
   * @author Laura Leistikow (laura.leistikow@surfsara.nl)
   * 
   */
- nl.sara.beehub.gs.view.GroupsSponsorsView = function(controller) {
+ nl.sara.beehub.gs.view.GroupsSponsorsView = function(controller, viewDiv) {
    var view = this;
    this.controller = controller;
+   this.viewDiv = viewDiv;
    controller.addView(view);
    setHandlers(view);
  };
@@ -39,43 +40,43 @@
   */
 function setHandlers(view) {
    // prevent hide previous collaped item
-   $('.accordion-heading').unbind('click').click(function (e) {
+   $('.accordion-heading', view.viewDiv).unbind('click').click(function (e) {
      $(this).next().collapse("toggle");
    });
  
    // Kleur bij openklappen aanpassen
-   $('.accordion-group').unbind('show').on('show', function (e) {
+   $('.accordion-group', view.viewDiv).unbind('show').on('show', function (e) {
       $(e.target).parent().addClass('accordion-group-active');
    });
  
    // Kleur bij inklappen weer verwijderen
-   $('.accordion-group').unbind('hide').on('hide', function (e) {
+   $('.accordion-group', view.viewDiv).unbind('hide').on('hide', function (e) {
      $(e.target).parent().removeClass('accordion-group-active');
    });
    
    // Add join button handler
-   $('.bh-gss-join-button').unbind('click').on('click', joinListener.bind(view));
+   $('.bh-gss-join-button', view.viewDiv).unbind('click').on('click', joinListener.bind(view));
    
    // Action when the leave button in a group is clicked
-   $('.bh-gss-join-leave-button').unbind('click').on('click', leaveListener.bind(view));
+   $('.bh-gss-join-leave-button', view.viewDiv).unbind('click').on('click', leaveListener.bind(view));
    
    // Action when the filter field is changed
-   $('#bh-gss-filter-by-name').unbind('keyup').keyup(filterByName);
+   $('#bh-gss-filter-by-name', view.viewDiv).unbind('keyup').keyup(filterByName);
    
    // Action when the groupsname field will change
-   $('#bh-gss-name').unbind('change').on('change', gssNameListener.bind(view));
+   $('#bh-gss-name', view.viewDiv).unbind('change').on('change', gssNameListener.bind(view));
      
    // Submit handler
-   $('#bh-gss-create-form').submit(submitButton.bind(view));
+   $('#bh-gss-create-form', view.viewDiv).submit(submitButton.bind(view));
    
    // Action when the leave button in a group is clicked
-   $('.bh-gss-mygss-leave-button').on('click', leaveListener.bind(view));
+   $('.bh-gss-mygss-leave-button', view.viewDiv).on('click', leaveListener.bind(view));
    
    // Do not collapse at button clicks
-   $('.accordion-heading button').click(function (e) {
+   $('.accordion-heading button', view.viewDiv).click(function (e) {
      e.stopPropagation();
    });
-   $('.accordion-heading a').click(function (e) {
+   $('.accordion-heading a', view.viewDiv).click(function (e) {
      e.stopPropagation();
    });
  }
@@ -87,7 +88,7 @@ function setHandlers(view) {
   * 
   */
  function submitButton(e) {
-   if (!this.gssNameListener(null, $('#bh-gss-name'))) {
+   if (!this.gssNameListener(null, $('#bh-gss-name', this.viewDiv))) {
      e.preventDefault();
      return false;
    } else {
@@ -119,7 +120,7 @@ function leaveListener(e) {
  nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.updateLeaveSucceeded = function(user){
    var view = this;
    
-   var button = $('button[type="button"][value="'+user+'"]');
+   var button = $('button[type="button"][value="'+user+'"]', this.viewDiv);
    
    // Change button to join button in join tab
    if (button.text() === "Cancel request"){
@@ -187,7 +188,7 @@ function leaveListener(e) {
  nl.sara.beehub.gs.view.GroupsSponsorsView.prototype.updateJoinSucceeded = function(user){
    var view = this;
    
-   var button = $('button[type="button"][value="'+user+'"]');
+   var button = $('button[type="button"][value="'+user+'"]', this.viewDiv);
    if ( button.text() === 'Accept invitation' ) {
      // TODO: this should be handled more gracefully
      location.reload();
@@ -205,8 +206,8 @@ function leaveListener(e) {
    if (view.joinRequestStarted){
      view.joinRequestStarted = false;
      nl.sara.beehub.gs.view.utils.mask(false);
-   }
- }
+   };
+ };
  
  /**
   * Update view after failed join request
@@ -222,7 +223,7 @@ function leaveListener(e) {
     view.joinRequestStarted = false;
     nl.sara.beehub.gs.view.utils.mask(false);
    };
- }
+ };
  
  /**
   * Search function in join tab
@@ -241,13 +242,13 @@ function leaveListener(e) {
    } else {
      var iconerase = $('<span class="add-on" id="bh-gss-icon-erase"><i class="icon-remove-circle" ></i></span>');
      $(this).parent().prepend(iconerase);
-     $('#bh-gss-icon-erase').on('click', function (e) {
+     $('#bh-gss-icon-erase', this.viewDiv).on('click', function (e) {
        filterfield.val("");
        filterfield.trigger('keyup');
      });
    };
    var regex = new RegExp(filterfield.val(), 'gi' );
-   $('div#bh-gss-join-gss.accordion').find('.accordion-group').filter(function(index) {
+   $('div#bh-gss-join-gss.accordion', this.viewDiv).find('.accordion-group').filter(function(index) {
      $(this).hide();
      return $(this).find('th').html().match(regex) !== null;
    }).show();
@@ -296,12 +297,12 @@ function gssNameListener(e, field){
    if (!RegExp('^[a-zA-Z0-9]{1}.*$').test(gssNameField.val())) {
     showError('First character must be a alphanumeric character.');
     return false;
-   }
+   };
   // value only contain a-zA-Z0-9_-., else return
    if (!RegExp('^[a-zA-Z0-9]{1}[a-zA-Z0-9_\\-\\.]*$').test(gssNameField.val())) {
     showError('This field can contain aphanumeric characters, numbers, "-", "_" and ".".');
     return false;
-   }
+   };
   // value contain 1-255 characters, else return
    if (!RegExp('^[a-zA-Z0-9]{1}[a-zA-Z0-9_\\-\\.]{0,255}$').test(gssNameField.val())) {
    showError('This field can contain maximal 255 characters.');

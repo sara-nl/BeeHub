@@ -26,9 +26,10 @@
   * @author Laura Leistikow (laura.leistikow@surfsara.nl)
   * 
   */
- nl.sara.beehub.gs.view.GroupSponsorView = function(controller) {
+ nl.sara.beehub.gs.view.GroupSponsorView = function(controller, viewDiv) {
    var view = this;
    this.controller = controller;
+   this.viewDiv = viewDiv;
    controller.addView(view);
    setHandlers(view);
  };
@@ -42,7 +43,7 @@
   // Search user
   view.invitedUser = '';
   
-  $('#bh-gs-invite-typeahead').typeahead({
+  $('#bh-gs-invite-typeahead', view.viewDiv).typeahead({
   source: function (query, process) {
     // implementation
   var users = [];
@@ -61,7 +62,7 @@
    // implementation
    if ( item.toLowerCase().indexOf(this.query.trim().toLowerCase()) !== -1 ) {
     return true;
-   }
+   };
   },
   sorter: function (items) {
    // implementation
@@ -75,30 +76,30 @@
   // check if username is valid
   }).blur(function(){
    if( map[ $( this ).val() ] === null ) {
-     $('#bh-gs-invite-typeahead').val('');
-  view.invitedUser = ""; 
-   }
+     $('#bh-gs-invite-typeahead', this.viewDiv).val('');
+     view.invitedUser = ""; 
+   };
   });
   
   // Action when the invite button is clicked
-  $('#bh-gs-invite-gs-form').submit(handleAddUser.bind(view));
+  $('#bh-gs-invite-gs-form' , view.viewDiv).submit(handleAddUser.bind(view));
   
   // Action when the save button is clicked
-  $('#bh-gs-edit-form').submit(handleSubmit.bind(view));
+  $('#bh-gs-edit-form', view.viewDiv).submit(handleSubmit.bind(view));
   
   // Demote group or sponsor handler
-  $('.bh-gs-demote-gs').click(handleDemote.bind(view));
+  $('.bh-gs-demote-gs', view.viewDiv).click(handleDemote.bind(view));
   
   // Promote group or sponsor handler
-  $('.bh-gs-promote-gs').click(handlePromote.bind(view));
+  $('.bh-gs-promote-gs', view.viewDiv).click(handlePromote.bind(view));
   
   // Remove group or sponsor handler
-  $('.bh-gs-remove-gs').on('click', handleRemove.bind(view));
+  $('.bh-gs-remove-gs', view.viewDiv).on('click', handleRemove.bind(view));
   
   //Change tab listeners
   // Usage tab sponsors
-  $('a[href="#bh-gs-panel-usage"]').unbind('click').click(createUsageView.bind(view));
- }
+  $('a[href="#bh-gs-panel-usage"]', view.viewDiv).unbind('click').click(createUsageView.bind(view));
+ };
  
  /**
   * Handle submit button click (change group)
@@ -109,8 +110,8 @@
    var view = this;
    e.preventDefault();
       
-   var displayName = $('input[name="displayname"]').val();
-   var description = $('textarea[name="description"]').val();
+   var displayName = $('input[name="displayname"]', this.viewDiv).val();
+   var description = $('textarea[name="description"]', this.viewDiv).val();
    
    view.changeGroupSponsorStarted = true;
    
@@ -126,21 +127,21 @@
    var view = this;
    var group_or_sponsor = nl.sara.beehub.utils.getGroupOrSponsor();
    
-   var newDisplayname = $('input[name="displayname"]').val();
-   var newDescription = $('textarea[name="description"]').val();
-   $('#bh-gs-display-name-value').text(newDisplayname);
-   $('#bh-gs-description-value').text(newDescription);
-   var orgValue= $('#bh-gs-display-name').attr("data-org-name");
-   var newHeader = $('#bh-gs-header').html().replace(orgValue,newDisplayname);
-   $('#bh-gs-header').html(newHeader);
-   $('#bh-gs-display-name').attr("data-org-name", newDisplayname);
-   $('#bh-gs-sponsor-description').attr("data-org-name", newDescription);
+   var newDisplayname = $('input[name="displayname"]', this.viewDiv).val();
+   var newDescription = $('textarea[name="description"]', this.viewDiv).val();
+   $('#bh-gs-display-name-value', this.viewDiv).text(newDisplayname);
+   $('#bh-gs-description-value', this.viewDiv).text(newDescription);
+   var orgValue= $('#bh-gs-display-name', this.viewDiv).attr("data-org-name");
+   var newHeader = $('#bh-gs-header', this.viewDiv).html().replace(orgValue,newDisplayname);
+   $('#bh-gs-header', this.viewDiv).html(newHeader);
+   $('#bh-gs-display-name', this.viewDiv).attr("data-org-name", newDisplayname);
+   $('#bh-gs-sponsor-description', this.viewDiv).attr("data-org-name", newDescription);
    if (view.changeGroupSponsorStarted) {
      alert("The "+group_or_sponsor+" is changed.")
      view.changeGroupSponsorStarted = false;
      nl.sara.beehub.gs.view.utils.mask(false);
-   }
- }
+   };
+ };
  
  /**
   * Update view after failed group changed request
@@ -152,15 +153,15 @@
    var view = this;
    var group_or_sponsor = nl.sara.beehub.utils.getGroupOrSponsor();
 
-   $('input[name="displayname"]').val($('#bh-gs-display-name').attr("data-org-name")); 
-   $('textarea[name="description"]').val($('#bh-gs-sponsor-description').attr("data-org-name"));
+   $('input[name="displayname"]', this.viewDiv).val($('#bh-gs-display-name').attr("data-org-name")); 
+   $('textarea[name="description"]', this.viewDiv).val($('#bh-gs-sponsor-description', this.viewDiv).attr("data-org-name"));
    
    if (view.changeGroupSponsorStarted) {
      alert( "Something went wrong. The "+group_or_sponsor+" is not changed." );
      view.changeGroupSponsorStarted = false;
      nl.sara.beehub.gs.view.utils.mask(false);
-   }
- }
+   };
+ };
    
  /**
   * Handle add user button click
@@ -190,7 +191,7 @@
  nl.sara.beehub.gs.view.GroupSponsorView.prototype.updateAddUserSucceeded = function(user){
    var view = this;
    
-   $('#bh-gs-invite-typeahead').val("");
+   $('#bh-gs-invite-typeahead', this.viewDiv).val("");
  // TODO remove reload page
  //  nl.sara.beehub.gs.view.utils.mask(false);
    if (nl.sara.beehub.utils.getGroupOrSponsor() === "group") {
@@ -203,7 +204,7 @@
      window.location.reload();
    };
    view.addUserStarted = false;
- }
+ };
  
  /**
   * Update view after failed add user request
@@ -227,7 +228,7 @@
     view.addUserStarted = false;
     nl.sara.beehub.gs.view.utils.mask(false);
    };
- }
+ };
 
  /**
   * Handles demote group or sponsor
@@ -250,7 +251,7 @@
  nl.sara.beehub.gs.view.GroupSponsorView.prototype.updateDemoteUserSucceeded = function(user){
   var view = this;
 //  var button = $('button[type="button"][value="'+user+'"][class="bs-gs-demote-gs"')
-  var button = $('button[type="button"][value="'+user+'"].bh-gs-demote-gs');
+  var button = $('button[type="button"][value="'+user+'"].bh-gs-demote-gs', this.viewDiv);
 
    //if succeeded, change button to promote to admin
    button.text("Promote to admin");
@@ -307,7 +308,7 @@
  nl.sara.beehub.gs.view.GroupSponsorView.prototype.updatePromoteUserSucceeded = function(user){
    var view = this;
    
-   var button = $('button[type="button"][value="'+user+'"].bh-gs-promote-gs');
+   var button = $('button[type="button"][value="'+user+'"].bh-gs-promote-gs', this.viewDiv);
 
    //if succeeded, change button to promote to admin
    button.text("Demote to member");
@@ -363,12 +364,12 @@
  nl.sara.beehub.gs.view.GroupSponsorView.prototype.updateRemoveUserSucceeded = function(user){ 
    var view = this;
    
-   $('#bh-gs-user-'+user).remove();
+   $('#bh-gs-user-'+user, this.viewDiv).remove();
    if (view.removeUserStarted) {
      nl.sara.beehub.gs.view.utils.mask(false);
      view.removeUserStarted = false;
    };
- }
+ };
  
  /**
   * Update view after failed remove user request
@@ -404,7 +405,7 @@
   view.getUsageDataStarted = true;
   nl.sara.beehub.gs.view.utils.mask(true);
   view.controller.getUsageData(location.href+"?usage");
- }
+ };
  
  /**
   * Update view after successfull get usage data request
@@ -417,11 +418,11 @@
    
    // Stop when sponsor has no users
    if (data.length === 0){
-     $('#bh-gs-panel-usage').html('<h5 style="margin-left:10px;">No storage used for this sponsor.</h5>'); 
+     $('#bh-gs-panel-usage', this.viewDiv).html('<h5 style="margin-left:10px;">No storage used for this sponsor.</h5>'); 
      return;
    };
    
-   $('#bh-gs-panel-usage').html('<h5 style="margin-left:160px;">Total data usage per user in GB</h5><div id="bh-gs-usage-div"></div>');
+   $('#bh-gs-panel-usage', this.viewDiv).html('<h5 style="margin-left:160px;">Total data usage per user in GB</h5><div id="bh-gs-usage-div"></div>');
 
    var valueLabelWidth = 80; // space reserved for value labels (right)
    var barHeight = 20; // height of one bar
@@ -516,7 +517,7 @@
    if (view.getUsageDataStarted) {
      nl.sara.beehub.gs.view.utils.mask(false);
      view.getUsageDataStarted = false;
-   }
+   };
  };
  
  /**
@@ -530,6 +531,6 @@
      alert(error);
      nl.sara.beehub.gs.view.utils.mask(false);
      view.getUsageDataStarted = false;
-   }
+   };
  };
 })();

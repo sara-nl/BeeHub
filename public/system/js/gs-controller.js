@@ -21,7 +21,7 @@
 
 "use strict";
 
-(function(){
+(function() {
  nl.sara.beehub.gs.Controller = function() {  
    this.path = nl.sara.beehub.utils.getPath();
    this.group_or_sponsor = nl.sara.beehub.utils.getGroupOrSponsor();
@@ -53,17 +53,14 @@
   * Add user request
   * 
   * @param {String}    user           Username to add
-  * @param {Function}  callbackOk     Function to call succeeded
-  * @param {Function}  callbackNotOk  Function to call when something went wrong
-  * 
   */
- nl.sara.beehub.gs.Controller.prototype.addUser = function(user){
+ nl.sara.beehub.gs.Controller.prototype.addUser = function(user) {
    var views = this.views;
     
    function callback(status, data) {
      if (status === 200) {
        views.forEach(function(view) {
-         if (view.updateAddUserSucceeded !== undefined) {
+         if (view.updateAddUserSucceeded !== undefined){
            view.updateAddUserSucceeded(user);
          };
        });
@@ -78,15 +75,12 @@
  
    var client = new nl.sara.webdav.Client();
    client.post(window.location.pathname, callback, 'add_members[]='+user);
- }
+ };
  
  /**
   * Remove user request
   * 
   * @param {String}    user           Username to remove
-  * @param {Function}  callbackOk     Function to call when succeeded
-  * @param {Function}  callbackNotOk  Function to call when something went wrong
-  * 
   */
  nl.sara.beehub.gs.Controller.prototype.removeUser = function(user){
   var views = this.views;
@@ -110,15 +104,12 @@
  //send request to server
   var client = new nl.sara.webdav.Client();
   client.post(window.location.pathname, callback , 'delete_members[]='+user);
- }
+ };
  
  /**
   * Promote user request
   * 
   * @param {String}    user           Username to promote
-  * @param {Function}  callbackOk     Function to call when succeeded
-  * @param {Function}  callbackNotOk  Function to call when something went wrong
-  * 
   */
  nl.sara.beehub.gs.Controller.prototype.promoteUser = function(user) { 
   var views = this.views;
@@ -142,17 +133,15 @@
   // send request to server
   var client = new nl.sara.webdav.Client();
   client.post(window.location.pathname, callback, 'add_admins[]='+user);
- }
+ };
  
  /**
   * Demote user request
   * 
   * @param {String}    user           Username to demote
-  * @param {Function}  callbackOk     Function to call when succeeded
-  * @param {Function}  callbackNotOk  Function to call when something went wrong
   * 
   */
- nl.sara.beehub.gs.Controller.prototype.demoteUser = function(user){  
+ nl.sara.beehub.gs.Controller.prototype.demoteUser = function(user) {  
    var views = this.views;
 
    function callback(status, data) {
@@ -173,7 +162,7 @@
      
    var client = new nl.sara.webdav.Client();
    client.post(window.location.pathname, callback, 'delete_admins[]='+user);
- }
+ };
  
  /**
   * Join user request
@@ -237,10 +226,7 @@
   * 
   * @param {Location}  location       Group or sponsor location to change
   * @param {String}    disp           New displayname
-  * @param {String}    desc           New description
-  * @param {Function}  callbackOk     Function to call when succeeded
-  * @param {Function}  callbackNotOk  Function to call when something went wrong
-  * 
+  * @param {String}    desc           New description 
   */
  nl.sara.beehub.gs.Controller.prototype.changeGroupOrSponsor = function(location, disp, desc){
    var views = this.views
@@ -275,7 +261,7 @@
      };
    };
    client.proppatch(location, callback, setProps);
- }
+ };
  
  /**
   * Get usage data

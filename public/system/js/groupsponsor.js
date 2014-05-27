@@ -39,5 +39,6 @@ if (nl.sara.beehub.gs.view.utils === undefined) {
 // After load
 $(function () {
   var controller = new nl.sara.beehub.gs.Controller();
-  new nl.sara.beehub.gs.view.GroupSponsorView(controller);
+  var viewDiv = $('#bs-gs-view');
+  new nl.sara.beehub.gs.view.GroupSponsorView(controller, viewDiv);
 });

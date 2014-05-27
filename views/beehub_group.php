@@ -22,73 +22,73 @@ require 'views/header.php';
   <?php endif; ?>
 </ul>
 
-<!-- Tab contents -->
-<div class="tab-content">
-
- <!-- My Members tab -->
- <div id="bh-gs-panel-members" class="tab-pane fade in active">
-  <?php if ( $this->is_member() ) : ?>
-   <?php if ( $this->is_admin() ) : ?>
-     <form id="bh-gs-invite-gs-form" class="form-horizontal">
-       <div class="control-group">
-         <div class="controls bh-gs-invite_members">
-           <button  type="submit" class="btn btn-primary">Add user</button>
-           <input type="text" id="bh-gs-invite-typeahead" data-provide="typeahead" placeholder="Type username..." autocomplete="off" required>
-         </div>
-       </div>
-     </form>
-  <?php endif; ?>
+<div id="bs-gs-view">
+ <!-- Tab contents -->
+ <div class="tab-content">
  
-  <?php foreach ($members as $member) : ?>
-    <div class="row-fluid" id="bh-gs-user-<?= DAV::xmlescape($member['user_name']) ?>">
-      <div class="span12 well well-small"><table width="100%"><tbody><tr>
-        <th align="left"><?= DAV::xmlescape($member['displayname']) ?> </th>
-        <?php if ($this->is_admin()) : ?>
-         <td align="right">
-           <!-- Promote or demote? -->
-           <?php if ( $member['is_admin'] ) : ?>
-           <button type="button" value="<?= DAV::xmlescape($member['user_name']) ?>" class="btn btn-primary bh-gs-demote-gs">Demote to member</button>
-           <?php else : ?>
-           <button type="button" value="<?= DAV::xmlescape($member['user_name']) ?>" class="btn btn-primary bh-gs-promote-gs">Promote to admin</button>
-           <?php endif; ?>
-           <button type="button" value="<?= DAV::xmlescape($member['user_name']) ?>" class="btn btn-danger bh-gs-remove-gs">Remove member</button>
-         </td>
-        <?php endif; ?>
-        </tr></tbody></table></div>
+  <!-- My Members tab -->
+  <div id="bh-gs-panel-members" class="tab-pane fade in active">
+   <?php if ( $this->is_member() ) : ?>
+    <?php if ( $this->is_admin() ) : ?>
+      <form id="bh-gs-invite-gs-form" class="form-horizontal">
+        <div class="control-group">
+          <div class="controls bh-gs-invite_members">
+            <button  type="submit" class="btn btn-primary">Add user</button>
+            <input type="text" id="bh-gs-invite-typeahead" data-provide="typeahead" placeholder="Type username..." autocomplete="off" required>
+          </div>
+        </div>
+      </form>
+   <?php endif; ?>
+  
+   <?php foreach ($members as $member) : ?>
+     <div class="row-fluid" id="bh-gs-user-<?= DAV::xmlescape($member['user_name']) ?>">
+       <div class="span12 well well-small"><table width="100%"><tbody><tr>
+         <th align="left"><?= DAV::xmlescape($member['displayname']) ?> </th>
+         <?php if ($this->is_admin()) : ?>
+          <td align="right">
+            <!-- Promote or demote? -->
+            <?php if ( $member['is_admin'] ) : ?>
+            <button type="button" value="<?= DAV::xmlescape($member['user_name']) ?>" class="btn btn-primary bh-gs-demote-gs">Demote to member</button>
+            <?php else : ?>
+            <button type="button" value="<?= DAV::xmlescape($member['user_name']) ?>" class="btn btn-primary bh-gs-promote-gs">Promote to admin</button>
+            <?php endif; ?>
+            <button type="button" value="<?= DAV::xmlescape($member['user_name']) ?>" class="btn btn-danger bh-gs-remove-gs">Remove member</button>
+          </td>
+         <?php endif; ?>
+         </tr></tbody></table></div>
+       </div>
+     <?php endforeach ?>
+   <?php endif ?>
+  </div>
+  <!--  End members tab -->
+ 
+  <!-- Edit tab -->
+  <div id="bh-gs-panel-edit" class="tab-pane">
+    <form id="bh-gs-edit-form" class="form-horizontal" action="<?= DAV::xmlescape($this->path) ?>" method="post">
+      <div class="control-group">
+        <label class="control-label bh-gs-display-gs" for="bh-gs-display-name">Display name</label>
+        <div class="controls">
+          <input type="text" id="bh-gs-display-name" name="displayname" value="<?= DAV::xmlescape( $this->user_prop_displayname() ) ?>" required data-org-name="<?= DAV::xmlescape( $this->user_prop_displayname() ) ?>"/>
+        </div>
       </div>
-    <?php endforeach ?>
-  <?php endif ?>
- </div>
- <!--  End members tab -->
-
- <!-- Edit tab -->
- <div id="bh-gs-panel-edit" class="tab-pane">
-   <form id="bh-gs-edit-form" class="form-horizontal" action="<?= DAV::xmlescape($this->path) ?>" method="post">
-     <div class="control-group">
-       <label class="control-label bh-gs-display-gs" for="bh-gs-display-name">Display name</label>
-       <div class="controls">
-         <input type="text" id="bh-gs-display-name" name="displayname" value="<?= DAV::xmlescape( $this->user_prop_displayname() ) ?>" required data-org-name="<?= DAV::xmlescape( $this->user_prop_displayname() ) ?>"/>
-       </div>
-     </div>
-     <div class="control-group">
-       <label class="control-label bh-gs-display-gs" for="bh-gs-sponsor-description">Group description</label>
-       <div class="controls">
-         <textarea class="input-xlarge" id="bh-gs-sponsor-description" rows="5" name="description" data-org-name="<?= DAV::xmlescape( $this->user_prop(BeeHub::PROP_DESCRIPTION) ) ?>"><?= DAV::xmlescape( $this->user_prop(BeeHub::PROP_DESCRIPTION) ) ?></textarea>
-       </div>
-     </div>
-     <div class="control-group">
-       <div class="controls">
-         <button type="submit" class="btn btn-primary">Save</button>
-       </div>
-     </div>
-   </form>
- </div>
- <!--  End edit tab -->
- 
- </div>
- <!-- Disable input -->
- <div id="bh-dir-mask-transparant" hidden="hidden"></div>
- <!-- End tab contents -->
+      <div class="control-group">
+        <label class="control-label bh-gs-display-gs" for="bh-gs-sponsor-description">Group description</label>
+        <div class="controls">
+          <textarea class="input-xlarge" id="bh-gs-sponsor-description" rows="5" name="description" data-org-name="<?= DAV::xmlescape( $this->user_prop(BeeHub::PROP_DESCRIPTION) ) ?>"><?= DAV::xmlescape( $this->user_prop(BeeHub::PROP_DESCRIPTION) ) ?></textarea>
+        </div>
+      </div>
+      <div class="control-group">
+        <div class="controls">
+          <button type="submit" class="btn btn-primary">Save</button>
+        </div>
+      </div>
+    </form>
+  </div>
+  <!--  End edit tab -->
+  
+  </div>
+  <!-- End tab contents -->
+</div>
 
 <?php
 $footer='<script type="text/javascript" src="/system/js/groupsponsor.js"></script>
