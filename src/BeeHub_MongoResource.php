@@ -1,7 +1,7 @@
 <?php
 
 /*·************************************************************************
- * Copyright ©2007-2014 SARA b.v., Amsterdam, The Netherlands
+ * Copyright ©2007-2014 SURFsara b.v., Amsterdam, The Netherlands
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -15,13 +15,13 @@
  **************************************************************************/
 
 /**
- * File documentation (who cares)
+ * Contains the BeeHub_MongoResource class
  * @package BeeHub
  */
 
 
 /**
- * Some class.
+ * The class contains all shared functionality between resources stored in Mongo
  * @package BeeHub
  */
 class BeeHub_MongoResource extends BeeHub_Resource {
@@ -235,11 +235,7 @@ class BeeHub_MongoResource extends BeeHub_Resource {
     }
     
     $collection = BeeHub::getNoSQL()->files;
-    $path = DAV::unslashify( $this->path );
-    if ( substr( $path, 0, 1 ) === '/' ) {
-      $path = substr( $path, 1 );
-    }
-    $path = urldecode( $path );
+    $path = urldecode( trim( $this->path, '/' ) );
     $document = $collection->findOne( array('path' => $path ) );
     
     $urlencodedProps = array();
@@ -256,16 +252,16 @@ class BeeHub_MongoResource extends BeeHub_Resource {
       );
       $urlencodedProps[ $encodedKey ] = $value;
     }
-    
+
     if ( is_null( $document ) ) {
       $document = array(
-          'path' => DAV::unslashify( $this->path ),
+          'path' => $path,
           'props' => $urlencodedProps );
     }else{
       $document['props'] = $urlencodedProps;
     }
     $collection->save( $document );
-    
+
     $this->touched = false;
   }
 
