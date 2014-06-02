@@ -115,8 +115,13 @@
     text-shadow: 0 1px 1px rgba(255, 255, 255, 0.75);
     vertical-align: middle;
 }
+
 .bh-dir-small-column {
 	width: 12px
+}
+
+.bh-dir-sponsor, .bh-dir-sponsor-dropdown, .bh-dir-sponsor-select {
+	 width: 200px !important
 }
 
 /* Tree settings */

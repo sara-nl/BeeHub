@@ -264,6 +264,7 @@ require 'views/header.php';
           <th>Type</th>
           <th>Modified</th>
           <th>Owner</th>
+          <th>Sponsor</th>
           <th class="bh-dir-small-column"></th>     
           <!-- share file, not yet implemented -->
           <!--  <th class="bh-dir-small-column"></th> -->          
@@ -300,6 +301,7 @@ require 'views/header.php';
             continue;
           }
           $owner = BeeHub_Registry::inst()->resource( $member->user_prop_owner() );
+          $sponsor = BeeHub_Registry::inst()->resource( $member->user_prop_sponsor() );
           
           // Determine if it is a file and is writable. If so, we'll want to keep the upload button enabled
           if ( ! $writableFiles && ( $member->prop_resourcetype() !== DAV_Collection::RESOURCETYPE ) ) {
@@ -383,6 +385,12 @@ require 'views/header.php';
             <td class="owner" data-value="<?= DAV::xmlescape( $owner->path ) ?>">
               <?= DAV::xmlescape( $owner->user_prop_displayname() ) ?>
             </td>
+            <td class="bh-dir-sponsor" data-value="<?= DAV::xmlescape( $owner->user_prop_sponsor() ) ?>" style="cursor: pointer">
+            <?= DAV::xmlescape( $sponsor->user_prop_displayname() ) ?>
+          </td>
+          <td class="bh-dir-sponsor-dropdown" hidden="hidden">
+          <select class="bh-dir-sponsor-select">
+          </select>
             <?php if ( count( $member->user_prop_acl_internal() ) > 0 ) : ?>
               <td class="bh-resource-specific-acl" title="Resource specific ACL set!"><i class="icon-star-empty"></i></td>
             <?php else : ?>
