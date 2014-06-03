@@ -272,7 +272,7 @@
     // Property request
     var webdav = new nl.sara.webdav.Client();
     var resourcetypeProp = new nl.sara.webdav.Property();
-    resourcetypeProp.tagname = 'sponsor-memberships';
+    resourcetypeProp.tagname = 'sponsor-membership';
     resourcetypeProp.namespace='http://beehub.nl/';
     var properties = [resourcetypeProp];
     webdav.propfind(path, callback ,1,properties);
