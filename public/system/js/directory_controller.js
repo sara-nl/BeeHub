@@ -252,6 +252,33 @@
   };
   
   /**
+   * Get sponsors from server
+   */
+  nl.sara.beehub.controller.getSponsors = function(path){
+    
+    function callback(status){
+      var sponsors = [];
+      var sponsor = {};
+      sponsor.name = "test1";
+      sponsor.displayname = "display1";
+      sponsors.push(sponsor);
+      var sponsor2 = {};
+      sponsor2.name = "test2";
+      sponsor2.displayname = "display2";
+      sponsors.push(sponsor2);
+      nl.sara.beehub.view.content.setSponsorDropdown(status, path, sponsors);
+    }
+  
+    // Property request
+    var webdav = new nl.sara.webdav.Client();
+    var resourcetypeProp = new nl.sara.webdav.Property();
+    resourcetypeProp.tagname = 'sponsor-memberships';
+    resourcetypeProp.namespace='http://beehub.nl/';
+    var properties = [resourcetypeProp];
+    webdav.propfind(path, callback ,1,properties);
+  };
+  
+  /**
    * Get tree node from server
    * 
    * Public function

@@ -556,9 +556,24 @@
    * @param {Event} e
    */ 
   var handle_sponsor_click = function(e){
-    var row = $(this).closest('tr');
-    var dropdown = '<option value="sponsor1"> Sponsor1 </option>';
-    dropdown += '<option value="sponsor2"> Sponsor2 </option>';
+ // create resource object
+    var owner = $(e.target).closest('tr').find('.owner').attr('data-value');
+    nl.sara.beehub.view.maskView("transparant", true);
+    nl.sara.beehub.controller.getSponsors(owner);
+  };
+  
+  /**
+   * Set sponsor dropdown
+   * 
+   * @param {Object} resource Resource object
+   * @param {Object} sponsors Sponsors object with name and displayname
+   */
+  nl.sara.beehub.view.content.setSponsorDropdown = function(status, path, sponsors){
+    var dropdown = "";
+    for (var sponsor in sponsors){
+      dropdown += '<option value="'+sponsors[sponsor].name+'"> '+sponsors[sponsor].displayname+' </option>';
+    };
+    var row = $("tr[id='"+path+"']");
     row.find('.bh-dir-sponsor').hide();
     row.find('.bh-dir-sponsor-dropdown').show();
     row.find('.bh-dir-sponsor-select').focus();
@@ -567,9 +582,19 @@
       row.find('.bh-dir-sponsor-dropdown').hide();
       row.find('.bh-dir-sponsor').show();
     });
+//    row.find('.bh-dir-sponsor-dropdown').unbind('change').on('change', function(e){
+//      var name = $(e.target).val();
+//      var displayname = $(e.target).find(":selected").text());
+//      var sponsor = {
+//          "name":        name,
+//          "displayname": displayname
+//      }
+//      nl.sara.beehub.controller.getSponsors(path);
+//    });
+    nl.sara.beehub.view.maskView("transparant", false);
     // Get available sponsors
     // Create dropdown
-  };
+  }
   
   /**
    * Onclick handler upload button content view
