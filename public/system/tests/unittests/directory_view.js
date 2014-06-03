@@ -79,9 +79,9 @@
     nl.sara.beehub.view.content.deleteResource =            rememberContentDeleteResource;
     nl.sara.beehub.view.tree.removePath =                   rememberTreeRemovePath;
     nl.sara.beehub.view.content.setCustomAclOnResource =    rememberSetCustomAclOnResource;
-    nl.sara.beehub.view.updateResource =                    rememberUpdateResource;
     nl.sara.beehub.view.hideAllFixedButtons =               rememberHideAllFixedButtons;
-  }
+    nl.sara.beehub.view.updateResource =                    rememberUpdateResource;
+  };
   
   /**
    * Test init
