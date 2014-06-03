@@ -13,16 +13,16 @@ $header = '<style type="text/css">
 
 require 'views/header.php';
 ?>
-<h4 id="bh-gs-header"><?= DAV::xmlescape( $this->user_prop( DAV::PROP_DISPLAYNAME ) ) ?> (<?= DAV::xmlescape(basename($this->path)) ?>)</h4><br>
-<!-- Tabs-->
-<ul id="beehub-top-tabs" class="nav nav-tabs">
-  <li class="active"><a href="#bh-gs-panel-members" data-toggle="tab">Members</a></li>
-  <?php if ( $this->is_admin() ) : ?>
-   <li><a href="#bh-gs-panel-edit" data-toggle="tab">Edit</a></li>
-  <?php endif; ?>
-</ul>
-
 <div id="bs-gs-view">
+ <h4 id="bh-gs-header"><?= DAV::xmlescape( $this->user_prop( DAV::PROP_DISPLAYNAME ) ) ?> (<?= DAV::xmlescape(basename($this->path)) ?>)</h4><br>
+ <!-- Tabs-->
+ <ul id="beehub-top-tabs" class="nav nav-tabs">
+   <li class="active"><a href="#bh-gs-panel-members" data-toggle="tab">Members</a></li>
+   <?php if ( $this->is_admin() ) : ?>
+    <li><a href="#bh-gs-panel-edit" data-toggle="tab">Edit</a></li>
+   <?php endif; ?>
+ </ul>
+
  <!-- Tab contents -->
  <div class="tab-content">
  

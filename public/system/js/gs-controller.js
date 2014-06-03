@@ -38,6 +38,7 @@
  
  nl.sara.beehub.gs.Controller.STATUS_LAST_ADMIN = 409;
  nl.sara.beehub.gs.Controller.STATUS_NOT_ALLOWED = 403;
+ nl.sara.beehub.gs.Controller.STATUS_OK = 201;
  
  /**
   * Add view to controller
@@ -58,7 +59,7 @@
    var views = this.views;
     
    function callback(status, data) {
-     if (status === 200) {
+     if (status === nl.sara.beehub.gs.Controller.STATUS_OK) {
        views.forEach(function(view) {
          if (view.updateAddUserSucceeded !== undefined){
            view.updateAddUserSucceeded(user);
@@ -86,7 +87,7 @@
   var views = this.views;
   
   function callback(status, data) {
-    if (status === 200) {
+    if (status === nl.sara.beehub.gs.Controller.STATUS_OK) {
       views.forEach(function(view) {
         if (view.updateRemoveUserSucceeded !== undefined) {
           view.updateRemoveUserSucceeded(user);
@@ -115,7 +116,7 @@
   var views = this.views;
 
   function callback(status, data) {
-    if (status === 200) {
+    if (status === nl.sara.beehub.gs.Controller.STATUS_OK) {
       views.forEach(function(view) {
         if (view.updatePromoteUserSucceeded !== undefined) {
           view.updatePromoteUserSucceeded(user);
@@ -145,7 +146,7 @@
    var views = this.views;
 
    function callback(status, data) {
-     if (status === 200) {
+     if (status === nl.sara.beehub.gs.Controller.STATUS_OK) {
        views.forEach(function(view) {
          if (view.updateDemoteUserSucceeded !== undefined) {
            view.updateDemoteUserSucceeded(user);
@@ -174,7 +175,7 @@
    var views = this.views;
 
    function callback(status, data) {
-     if (status === 200) {
+     if (status === nl.sara.beehub.gs.Controller.STATUS_OK) {
        views.forEach(function(view) {
          if (view.updateJoinSucceeded !== undefined) {
            view.updateJoinSucceeded(user);
@@ -203,7 +204,7 @@
    var views = this.views;
 
    function callback(status, data) {
-     if (status === 200) {
+     if (status === nl.sara.beehub.gs.Controller.STATUS_OK) {
        views.forEach(function(view) {
          if (view.updateLeaveSucceeded !== undefined) {
            view.updateLeaveSucceeded(user);
