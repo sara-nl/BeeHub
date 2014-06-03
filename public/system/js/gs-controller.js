@@ -38,7 +38,7 @@
  
  nl.sara.beehub.gs.Controller.STATUS_LAST_ADMIN = 409;
  nl.sara.beehub.gs.Controller.STATUS_NOT_ALLOWED = 403;
- nl.sara.beehub.gs.Controller.STATUS_OK = 201;
+ nl.sara.beehub.gs.Controller.STATUS_OK = 200;
  
  /**
   * Add view to controller
