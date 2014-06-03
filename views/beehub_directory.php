@@ -98,7 +98,7 @@ require 'views/header.php';
 
   <!--	CONTENT: Home button-->
   <button
-    <?= ( ! BeeHub_Auth::inst()->is_authenticated() || ( $this->path === '/home/' . BeeHub_Auth::inst()->current_user()->name . '/' ) ) ? 'disabled="disabled"' : 'id="' . DAV::xmlescape( preg_replace('@^' . BeeHub::USERS_PATH . '(.*)@', '/home/\1/', BeeHub_Auth::inst()->current_user()->path) ) . '"' ?>
+    <?= ( ( ! BeeHub_Auth::inst()->is_authenticated() || ( $this->path === '/home/' . BeeHub_Auth::inst()->current_user()->name . '/' ) ) ? 'disabled="disabled"' : '' ) . 'id="' . DAV::xmlescape( preg_replace('@^' . BeeHub::USERS_PATH . '(.*)@', '/home/\1/', BeeHub_Auth::inst()->current_user()->path) ) . '"' ?>
     class="btn btn-small bh-dir-content-gohome" data-toggle="tooltip"
     title="Go to home folder">
     <i class="icon-home"></i> Home
@@ -639,7 +639,7 @@ try {
         $( function() {
           $( \'.bh-dir-content-upload\' )
             .unbind( \'click\' )
-            .removeClass( \'bh-dir-content-upload\' )
+//            .removeClass( \'bh-dir-content-upload\' )
             .attr( \'disabled\', \'disabled\' );
         } );
       </script>

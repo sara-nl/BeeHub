@@ -125,7 +125,7 @@
       "props" :
       {
         "http://beehub%2Enl/ sponsor": "sponsor_a",
-        "DAV: acl": "[[\"/system/groups/foo\",false,[\"DAV: read\", \"DAV: write\"],false]]"
+        "DAV: acl": "[[\"/system/users/john\",false,[\"DAV: all\"],false],[\"/system/groups/foo\",false,[\"DAV: read\", \"DAV: write\"],false]]"
       }
     },
     {
@@ -226,7 +226,7 @@
       "props" :
       {
         "http://beehub%2Enl/ sponsor": "sponsor_b",
-        "DAV: acl": "[[\"/system/groups/bar\",false,[\"DAV: read\", \"DAV: write\"],false]]"
+        "DAV: acl": "[[\"/system/users/john\",false,[\"DAV: all\"],false],[\"/system/groups/bar\",false,[\"DAV: read\", \"DAV: write\"],false]]"
       }
     },
     {

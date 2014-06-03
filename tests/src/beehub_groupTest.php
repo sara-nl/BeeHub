@@ -299,7 +299,7 @@ class BeeHub_GroupTest extends BeeHub_Tests_Db_Test_Case {
   public function testMethod_POST_AddAdmin(){
     $bar = new \BeeHub_Group( '/system/groups/bar' );
     $bar->change_memberships( array( 'jane' ), \BeeHub_Group::ADMIN_ACCEPT );
-    
+
     $_POST['add_admins'] = array('/system/users/jane');
     $headers = array();
 
@@ -363,7 +363,11 @@ class BeeHub_GroupTest extends BeeHub_Tests_Db_Test_Case {
     $foo = new \BeeHub_Group( '/system/groups/foo' );
     $foo->change_memberships( array( 'jane' ), \BeeHub_Group::USER_ACCEPT );
     $foo->change_memberships( array( 'jane' ), \BeeHub_Group::ADMIN_ACCEPT );
-    $this->assertSame( array( '/system/users/john', '/system/users/jane' ), $foo->user_prop_group_member_set() );
+    $expectedMemberships = array( '/system/users/jane', '/system/users/john' );
+    sort( $expectedMemberships );
+    $returnedMemberships = $foo->user_prop_group_member_set();
+    sort( $returnedMemberships );
+    $this->assertSame( $expectedMemberships, $returnedMemberships );
 
     $this->setCurrentUser( '/system/users/john' );
     $foo->method_POST( $headers );
