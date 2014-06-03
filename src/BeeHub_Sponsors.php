@@ -1,7 +1,7 @@
 <?php
 
 /*·************************************************************************
- * Copyright ©2007-2012 SARA b.v., Amsterdam, The Netherlands
+ * Copyright ©2007-2014 SURFsara b.v., Amsterdam, The Netherlands
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may
  * not use this file except in compliance with the License. You may obtain
@@ -15,7 +15,7 @@
  **************************************************************************/
 
 /**
- * File documentation (who cares)
+ * Contains the BeeHub_Sponsors class
  * @package BeeHub
  */
 
@@ -98,10 +98,8 @@ class BeeHub_Sponsors extends BeeHub_Principal_Collection {
     $sponsor->storeProperties();
 
     // Add the current user as admin of the sponsor
-    $sponsor->change_memberships(
-      array( basename( $this->user_prop_current_user_principal() ) ),
-      true, true
-    );
+    $sponsor->change_memberships( basename( $this->user_prop_current_user_principal() ), BeeHub_Sponsor::ADMIN_ACCEPT );
+    $sponsor->change_memberships( basename( $this->user_prop_current_user_principal() ), BeeHub_Sponsor::SET_ADMIN );
 
     // Sponsor created, redirect to the sponsor page
     DAV::redirect(

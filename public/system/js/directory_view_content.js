@@ -134,7 +134,7 @@
     
     // Move button click handler
     $('.bh-dir-content-move').unbind('click').click(handle_move_button_click);
-
+ 
     // All handlers that belong to a row
     setRowHandlers();
   };
@@ -205,6 +205,9 @@
    
     // View acl
     $('.bh-dir-content-acl').unbind( 'click' ).click(handle_acl_menu_click);
+    
+    // Sponsor
+    $('.bh-dir-sponsor').unbind( 'click' ).click(handle_sponsor_click);
     
   };
   
@@ -281,6 +284,9 @@
     // Owner
     row.push('<td class="owner" data-value="'+nl.sara.beehub.controller.htmlEscape(resource.owner)+'">'+nl.sara.beehub.controller.htmlEscape(nl.sara.beehub.controller.getDisplayName(resource.owner))+'</td>');
     
+    // Sponsor
+    row.push('<td class="bh-dir-sponsor" style="cursor: pointer" data-value="'+nl.sara.beehub.controller.htmlEscape(resource.sponsor)+'">'+nl.sara.beehub.controller.htmlEscape(nl.sara.beehub.controller.getDisplayName(resource.sponsor))+'</td>');
+
     // ACL on resource row
     row.push('<td class="bh-resource-specific-acl"></td>');
     // TODO Share link, not implemented yet
@@ -327,6 +333,11 @@
     // Owner
     if (resource.owner === undefined) {
       resource.owner = $("tr[id='"+resource.path+"']").find('.owner').attr('data-value');
+    }
+    
+    // Sponsor
+    if (resource.sponsor === undefined) {
+      resource.sponsor = $("tr[id='"+resource.path+"']").find('.bh-dir-sponsor').attr('data-value');
     }
     
     // Contentlenght
@@ -533,7 +544,7 @@
     nl.sara.beehub.controller.getAclFromServer(path);
   }; 
   
-  /*
+  /**
    * Onchange handler rename form in content view
    */
   var handle_rename_form_change = function(){
@@ -543,7 +554,28 @@
     nl.sara.beehub.controller.renameResource(resource, $(this).val(), nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
   };
   
-  /*
+  /**
+   * Handle sponsor click
+   * 
+   * @param {Event} e
+   */ 
+  var handle_sponsor_click = function(e){
+    var row = $(this).closest('tr');
+    var dropdown = '<option value="sponsor1"> Sponsor1 </option>';
+    dropdown += '<option value="sponsor2"> Sponsor2 </option>';
+    row.find('.bh-dir-sponsor').hide();
+    row.find('.bh-dir-sponsor-dropdown').show();
+    row.find('.bh-dir-sponsor-select').focus();
+    row.find('.bh-dir-sponsor-select').html(dropdown);
+    row.find('.bh-dir-sponsor-select').unbind( 'blur' ).blur(function(e){
+      row.find('.bh-dir-sponsor-dropdown').hide();
+      row.find('.bh-dir-sponsor').show();
+    });
+    // Get available sponsors
+    // Create dropdown
+  };
+  
+  /**
    * Onclick handler upload button content view
    */
   var handle_upload_button_click = function() {

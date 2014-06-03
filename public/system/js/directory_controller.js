@@ -20,7 +20,7 @@
 "use strict";
 
 /** 
- * Beehub Client Controller
+ * BeeHub Client Controller
  * 
  * The controller communicates with the webdav server and knows all views
  * 
@@ -76,7 +76,7 @@
     window.location.href=location;
   };
   
-  /*
+  /**
    * Clear all views
    * 
    * Public function
@@ -86,7 +86,7 @@
     nl.sara.beehub.view.clearAllViews();
   };
   
-  /*
+  /**
    * Set mask on view
    * 
    */
@@ -94,7 +94,7 @@
     nl.sara.beehub.view.maskView(type, boolean);
   };
   
-  /*
+  /**
    * Set input disable mask (transparant) on view
    * 
    */
@@ -111,7 +111,7 @@
     nl.sara.beehub.view.dialog.showError(error);
   };
   
-  /*
+  /**
    * Returns displayname from object
    * 
    * @param   {String}  name  object
@@ -130,9 +130,13 @@
       var displayName = nl.sara.beehub.principals.groups[name.replace(nl.sara.beehub.groups_path,'')];
       return displayName;
     };
+    if (name.indexOf(nl.sara.beehub.sponsors_path) !== -1){
+      var displayName = nl.sara.beehub.principals.sponsors[name.replace(nl.sara.beehub.sponsors_path,'')];
+      return displayName;
+    };
   };
   
-  /*
+  /**
    * Extract properties from webdav library response to resource object
    * 
    * @param   {nl.sara.webdav.Multistatus}     data  Webdav propfind response
@@ -156,9 +160,15 @@
     if (data.getResponse(path).getProperty('DAV:','displayname').getParsedValue() !== null) {
       resource.displayname = data.getResponse(path).getProperty('DAV:','displayname').getParsedValue();
     };
+    
     // Get owner
     if (data.getResponse(path).getProperty('DAV:','owner').getParsedValue() !== null) {
       resource.owner = data.getResponse(path).getProperty('DAV:','owner').getParsedValue();
+    };
+    
+    // Get sponsor
+    if (data.getResponse(path).getProperty('http://beehub.nl/','sponsor').getParsedValue() !== null) {
+      resource.sponsor = data.getResponse(path).getProperty('http://beehub.nl/','sponsor').getParsedValue();
     };
     
     // Get last modified date
@@ -173,7 +183,7 @@
     return resource;
   };
   
-  /*
+  /**
    * Collect resource details from server and call callback function 
    * after ajax call is finished
    * 
@@ -202,6 +212,11 @@
     ownerProp.tagname = 'owner';
     ownerProp.namespace='DAV:';
     
+    // Sponsor
+    var sponsorProp = new nl.sara.webdav.Property();
+    sponsorProp.tagname = 'sponsor';
+    sponsorProp.namespace='http://beehub.nl/';
+    
     // Last modified
     var getlastmodifiedProp = new nl.sara.webdav.Property();
     getlastmodifiedProp.tagname = 'getlastmodified';
@@ -213,9 +228,9 @@
     getcontentlengthProp.namespace='DAV:';
     
     // Put properties in array
-    var properties = [resourcetypeProp, getcontenttypeProp, displaynameProp, ownerProp, getlastmodifiedProp, getcontentlengthProp];
+    var properties = [resourcetypeProp, getcontenttypeProp, displaynameProp, ownerProp, sponsorProp, getlastmodifiedProp, getcontentlengthProp];
     
-    /*
+    /**
      * Create callback for property request
      */
     function createCallback(){
@@ -236,7 +251,7 @@
     webdav.propfind(resourcepath, createCallback() ,1,properties);
   };
   
-  /*
+  /**
    * Get tree node from server
    * 
    * Public function
@@ -275,7 +290,7 @@
   };
   
   // CREATE NEW FOLDER
-  /*
+  /**
    * Create new folder. When new foldername already exist add counter to the name
    * of the folder.
    * 
@@ -293,7 +308,7 @@
     webdav.mkcol(path+foldername, createNewFolderCallback(counter, foldername));
   };
   
-  /*
+  /**
    * Create callback for create new folder request
    * 
    * @param {Integer} counter     Used to make the new foldername
@@ -397,7 +412,7 @@
     };
   };
   
-  /*
+  /**
    * Make view copy or move ready
    * 
    * Public function
@@ -428,7 +443,7 @@
   };
   
   // COPY, MOVE, UPLOAD, DELETE
-  /*
+  /**
    * Initialize action Copy, Move, Upload or Delete
    * 
    * Public function
@@ -556,7 +571,7 @@
     }
   };
   
-  /*
+  /**
    * Return callback function for copy, move, delete requests
    * 
    * @params {Object} resource        Resource to create callback for
@@ -637,7 +652,7 @@
     };
   };
   
-  /*
+  /**
    * Start next action or end actions
    * 
    */
@@ -676,7 +691,7 @@
   };
 
   
-  /*
+  /**
    * Update view after a succesfull action (copy, move, delete)
    * 
    * @params {Object} resource Resource to create callback for
@@ -711,7 +726,7 @@
   };
   
   
-  /*
+  /**
    * Return callback function head request for uploading files to check if resource
    * exists on server
    * 
@@ -770,7 +785,7 @@
     };
   };
   
-  /*
+  /**
    * Return callback function upload empty file request for uploading files to check if upload
    * is allowed
    * 
@@ -838,7 +853,7 @@
     };
   };
   
-  /*
+  /**
    * Return callback function upload file
    * 
    * @param  Object   resource       Resource to upload
@@ -883,7 +898,7 @@
   };
   
   
-  /*
+  /**
   * Show rename, overwrite and cancel buttons and make handlers for this buttons
   * 
   * @param Object resource  Resource
@@ -950,7 +965,7 @@
   
   
   // ACL
-  /*
+  /**
    * Save acl on server
    * 
    */
@@ -977,7 +992,7 @@
     }, acl);
   };
   
-  /*
+  /**
    * Get acl from server
    * 
    */
@@ -1064,6 +1079,96 @@
         };
       };
     };
+  };
+  /**
+   * Create ace
+   */
+  var createAceObject = function(ace){
+    var aceObject = {};
+    if (ace.principal.tagname !== undefined) {
+      aceObject['principal'] =  "DAV: "+ ace.principal.tagname;
+    } else {
+      // Principal
+      switch ( ace.principal ) {
+        case nl.sara.webdav.Ace.ALL:
+          aceObject['principal'] = 'DAV: all';
+          break;
+        case nl.sara.webdav.Ace.AUTHENTICATED:
+          aceObject['principal'] = 'DAV: authenticated';
+          break;
+        case nl.sara.webdav.Ace.UNAUTHENTICATED:
+          aceObject['principal'] = 'DAV: unauthenticated';
+          break;
+        case nl.sara.webdav.Ace.SELF:
+          aceObject['principal'] = 'DAV: self';
+          break;
+        default:
+          aceObject['principal'] = ace.principal;
+        break;
+      }
+    }  
+    aceObject['invert'] = ace.invertprincipal;
+
+    aceObject['protected'] = ace.isprotected;
+    
+    if (ace.inherited) {
+      aceObject['inherited'] = ace.inherited;
+    };
+    aceObject['invertprincipal'] = ace.invertprincipal;
+
+    if (ace.getPrivilegeNames('DAV:').indexOf('unbind') !== -1) {
+      aceObject['unbind'] = true;
+    };
+    
+    // Make permissions string  
+    if ( ace.grantdeny === 2 ) {
+      aceObject['permissions'] = "deny ";
+      if ( ( ace.getPrivilegeNames('DAV:').length === 1 ) && 
+           ( ace.getPrivilegeNames('DAV:').indexOf('write-acl') !== -1) ) {
+        aceObject['permissions'] += "change acl";
+      } else if ( ( ace.getPrivilegeNames('DAV:').length === 2 ) && 
+                 ( ace.getPrivilegeNames('DAV:').indexOf('write') !== -1 ) && 
+                 ( ace.getPrivilegeNames('DAV:').indexOf('write-acl') !== -1  ) ) {
+        aceObject['permissions'] += "write, change acl";
+      } else if ( ( ( ace.getPrivilegeNames('DAV:').length === 3 ) && 
+                   ( ace.getPrivilegeNames('DAV:').indexOf('read') !== -1 ) && 
+                   ( ace.getPrivilegeNames('DAV:').indexOf('write') !== -1 ) && 
+                   ( ace.getPrivilegeNames('DAV:').indexOf('write-acl') !== -1  ) ) || 
+                 (ace.getPrivilegeNames('DAV:').indexOf('all') !== -1 ) ) {
+        aceObject['permissions'] += "read, write, change acl";
+      } else {
+        aceObject['permissions'] += "unknown privilege (combination)";
+        var array = [];
+        for (var key in ace.getPrivilegeNames('DAV:')) {
+          array.push("DAV: "+ace.getPrivilegeNames('DAV:')[key]);
+        };
+        aceObject['privileges'] = array.join(" ");
+      }
+    } else { 
+      aceObject['permissions'] = "allow ";
+      if ( ( ace.getPrivilegeNames('DAV:').length === 1 ) && 
+           ( ace.getPrivilegeNames('DAV:').indexOf('read') !== -1 ) ) {
+        aceObject['permissions'] += "read";
+      } else if ( ( ace.getPrivilegeNames('DAV:').length === 2 ) && 
+                 (ace.getPrivilegeNames('DAV:').indexOf('write') !== -1 ) && 
+                  ( ace.getPrivilegeNames('DAV:').indexOf('read') !== -1 ) ) {
+        aceObject['permissions'] += "read, write";
+      } else if ( ( ( ace.getPrivilegeNames('DAV:').length === 3 ) && 
+                   ( ace.getPrivilegeNames('DAV:').indexOf('write-acl') !== -1) && 
+                   ( ace.getPrivilegeNames('DAV:').indexOf('write') !== -1 ) && 
+                   ( ace.getPrivilegeNames('DAV:').indexOf('read') !== -1 ) ) || 
+                 (ace.getPrivilegeNames('DAV:').indexOf('all') !== -1 ) ) {
+        aceObject['permissions'] += "read, write, change acl";
+      } else {
+        aceObject['permissions'] += "unknown privilege (combination)";
+        var array = [];
+        for (var key in ace.getPrivilegeNames('DAV:')) {
+          array.push("DAV: "+ace.getPrivilegeNames('DAV:')[key]);
+        };
+        aceObject['privileges'] = array.join(" ");
+      }
+    }
+    return aceObject;
   };
 
   var createCloseAclDialogFunction = function(resourcePath) {
@@ -1159,7 +1264,7 @@
     }, nl.sara.beehub.view.acl.createHtmlAclForm("tab"));
   };
   
-  /*
+  /**
    * Change permissions of a row
    * 
    */
@@ -1182,7 +1287,7 @@
     }
   };
   
-  /*
+  /**
    * Delete acl rule
    * 
    */
@@ -1201,7 +1306,7 @@
     nl.sara.beehub.controller.saveAclOnServer(functionSaveAclOk, functionSaveAclError);
   };
   
-  /*
+  /**
    * Move down acl rule
    * 
    */
@@ -1220,7 +1325,7 @@
     nl.sara.beehub.controller.saveAclOnServer(functionSaveAclOk, functionSaveAclError);
   };
   
-  /*
+  /**
    * Move up acl rule
    * 
    */
