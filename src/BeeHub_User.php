@@ -296,7 +296,7 @@ If this link doesn\'t work, on your profile page go to the tab \'Verify e-mail a
 
 ' . $document['verification_code'] . '
 
-Note that you\'re verification code is only valid for 24 hours. Also, for new users, if you don\'t have a validated e-mail address, your account will automatically be removed after 24 hours.
+Note that your verification code is only valid for 24 hours. Also, for new users, if you don\'t have a validated e-mail address, your account will automatically be removed after 24 hours.
 
 If this was a mistake, or you do not want to add this e-mail address to this BeeHub account, you don\'t have to do anything.
 

@@ -286,7 +286,7 @@
         return;
       };
       nl.sara.beehub.view.tree.createTreeNode(data, url, parent, expander, callback);
-    } 
+    };
   };
   
   // CREATE NEW FOLDER
@@ -1007,25 +1007,23 @@
     webdav.propfind(resourcePath, createGetAclCallback(resourcePath) ,0,properties);
   };
   
-  var addAclRuleDialog = function(userInput){
-    var ace = {
-        principal :   userInput.principal, 
-        permissions:  userInput.permissions, 
-        info:         ""
-    };
-    // Add row in view
-    var row = nl.sara.beehub.view.acl.createRow(ace);
-    nl.sara.beehub.view.acl.addRow(row, nl.sara.beehub.view.acl.getIndexLastProtected());
-    
-    var functionSaveAclOk = function(){
-      // Do Nothing;
-    };
-    
-    var functionSaveAclError = function(){
-      // Update view
-      nl.sara.beehub.view.acl.deleteRowIndex(nl.sara.beehub.view.acl.getIndexLastProtected() + 1);
-    };
-    nl.sara.beehub.controller.saveAclOnServer(functionSaveAclOk, functionSaveAclError);
+  var addAclRuleDialog = function( ace ){
+    if ( checkHomeFolderPrivileges( ace ) ) {
+ 
+     // Add row in view
+     var row = nl.sara.beehub.view.acl.createRow(ace);
+     nl.sara.beehub.view.acl.addRow(row, nl.sara.beehub.view.acl.getIndexLastProtected());
+     
+     var functionSaveAclOk = function(){
+       // Do Nothing;
+     };
+     
+     var functionSaveAclError = function(){
+       // Update view
+       nl.sara.beehub.view.acl.deleteRowIndex(nl.sara.beehub.view.acl.getIndexLastProtected() + 1);
+     };
+     nl.sara.beehub.controller.saveAclOnServer(functionSaveAclOk, functionSaveAclError);
+    }
   };
   
   var createGetAclCallback = function(resourcePath){
@@ -1075,105 +1073,14 @@
           {
             continue;
           }
-          var aceObject = createAceObject(ace);
-          var row = nl.sara.beehub.view.acl.createRow(aceObject);
+          var row = nl.sara.beehub.view.acl.createRow( ace );
           nl.sara.beehub.view.acl.addRow(row, index);
           index++;
         };
       };
     };
   };
-  
-  /**
-   * Create ace
-   */
-  var createAceObject = function(ace){
-    var aceObject = {};
-    if (ace.principal.tagname !== undefined) {
-      aceObject['principal'] =  "DAV: "+ ace.principal.tagname;
-    } else {
-      // Principal
-      switch ( ace.principal ) {
-        case nl.sara.webdav.Ace.ALL:
-          aceObject['principal'] = 'DAV: all';
-          break;
-        case nl.sara.webdav.Ace.AUTHENTICATED:
-          aceObject['principal'] = 'DAV: authenticated';
-          break;
-        case nl.sara.webdav.Ace.UNAUTHENTICATED:
-          aceObject['principal'] = 'DAV: unauthenticated';
-          break;
-        case nl.sara.webdav.Ace.SELF:
-          aceObject['principal'] = 'DAV: self';
-          break;
-        default:
-          aceObject['principal'] = ace.principal;
-        break;
-      }
-    }  
-    aceObject['invert'] = ace.invertprincipal;
 
-    aceObject['protected'] = ace.isprotected;
-    
-    if (ace.inherited) {
-      aceObject['inherited'] = ace.inherited;
-    };
-    aceObject['invertprincipal'] = ace.invertprincipal;
-
-    if (ace.getPrivilegeNames('DAV:').indexOf('unbind') !== -1) {
-      aceObject['unbind'] = true;
-    };
-    
-    // Make permissions string  
-    if ( ace.grantdeny === 2 ) {
-      aceObject['permissions'] = "deny ";
-      if ( ( ace.getPrivilegeNames('DAV:').length === 1 ) && 
-           ( ace.getPrivilegeNames('DAV:').indexOf('write-acl') !== -1) ) {
-        aceObject['permissions'] += "change acl";
-      } else if ( ( ace.getPrivilegeNames('DAV:').length === 2 ) && 
-                 ( ace.getPrivilegeNames('DAV:').indexOf('write') !== -1 ) && 
-                 ( ace.getPrivilegeNames('DAV:').indexOf('write-acl') !== -1  ) ) {
-        aceObject['permissions'] += "write, change acl";
-      } else if ( ( ( ace.getPrivilegeNames('DAV:').length === 3 ) && 
-                   ( ace.getPrivilegeNames('DAV:').indexOf('read') !== -1 ) && 
-                   ( ace.getPrivilegeNames('DAV:').indexOf('write') !== -1 ) && 
-                   ( ace.getPrivilegeNames('DAV:').indexOf('write-acl') !== -1  ) ) || 
-                 (ace.getPrivilegeNames('DAV:').indexOf('all') !== -1 ) ) {
-        aceObject['permissions'] += "read, write, change acl";
-      } else {
-        aceObject['permissions'] += "unknown privilege (combination)";
-        var array = [];
-        for (var key in ace.getPrivilegeNames('DAV:')) {
-          array.push("DAV: "+ace.getPrivilegeNames('DAV:')[key]);
-        };
-        aceObject['privileges'] = array.join(" ");
-      }
-    } else { 
-      aceObject['permissions'] = "allow ";
-      if ( ( ace.getPrivilegeNames('DAV:').length === 1 ) && 
-           ( ace.getPrivilegeNames('DAV:').indexOf('read') !== -1 ) ) {
-        aceObject['permissions'] += "read";
-      } else if ( ( ace.getPrivilegeNames('DAV:').length === 2 ) && 
-                 (ace.getPrivilegeNames('DAV:').indexOf('write') !== -1 ) && 
-                  ( ace.getPrivilegeNames('DAV:').indexOf('read') !== -1 ) ) {
-        aceObject['permissions'] += "read, write";
-      } else if ( ( ( ace.getPrivilegeNames('DAV:').length === 3 ) && 
-                   ( ace.getPrivilegeNames('DAV:').indexOf('write-acl') !== -1) && 
-                   ( ace.getPrivilegeNames('DAV:').indexOf('write') !== -1 ) && 
-                   ( ace.getPrivilegeNames('DAV:').indexOf('read') !== -1 ) ) || 
-                 (ace.getPrivilegeNames('DAV:').indexOf('all') !== -1 ) ) {
-        aceObject['permissions'] += "read, write, change acl";
-      } else {
-        aceObject['permissions'] += "unknown privilege (combination)";
-        var array = [];
-        for (var key in ace.getPrivilegeNames('DAV:')) {
-          array.push("DAV: "+ace.getPrivilegeNames('DAV:')[key]);
-        };
-        aceObject['privileges'] = array.join(" ");
-      }
-    }
-    return aceObject;
-  };
 
   var createCloseAclDialogFunction = function(resourcePath) {
     return function(){
@@ -1184,9 +1091,13 @@
       aclProp.tagname = 'acl';
       webdavClient.propfind( resourcePath, function( status, data ) {
         if ( status === 207 ) {
+          
           var response = data.getResponse( resourcePath );
           if ( response === undefined ) {
-            response = data.getResponse( resourcePath + '/' );
+            if ( resourcePath.substr( -1 ) === '/' ) {
+              resourcePath = resourcePath.substr( 0, resourcePath.length -1 );
+            }
+            response = data.getResponse( resourcePath );
           }
           var aces = response.getProperty( 'DAV:', 'acl' ).getParsedValue().getAces();
           // Determine if there are non-inherited and non-protected ACE's
@@ -1208,31 +1119,59 @@
       nl.sara.beehub.view.dialog.clearView();
     };
   };
+
+
+  /**
+   * Warns the user before giving home folder privileges
+   *
+   * Checks whether you try to give 'the whole world' or 'all BeeHub users'
+   * privileges on your home folder and warns you.
+   *
+   * @param    {nl.sara.webdav.Ace}  ace  The ACE to check
+   * @returns  {Boolean}                  True if the user is warned but still wants to continue, or if no harmful privileges are being set.
+   */
+  function checkHomeFolderPrivileges( ace ) {
+    if ( nl.sara.beehub.view.acl.getViewPath() !== nl.sara.beehub.view.getHomePath() ) {
+      return true;
+    }
+    if (
+      ( ace.grantdeny === nl.sara.webdav.Ace.GRANT ) &&
+      (
+        ( ace.principal === nl.sara.webdav.Ace.ALL ) ||
+        ( ace.principal === nl.sara.webdav.Ace.AUTHENTICATED )
+      )
+    ) {
+      return confirm( 'You are about to give a large group access to your home folder. Are you sure that this is what you want to do?' );
+    }
+    
+    return true;
+  }
+
   
   /**
    * Show add acl rule dialog.
    * 
    */
   nl.sara.beehub.controller.addAclRule = function(){
-    nl.sara.beehub.view.dialog.showAddRuleDialog(function(userInput){
-      var ace = {
-          principal :   userInput.principal, 
-          permissions:  userInput.permissions, 
-          info:         ""
-      };
-      // Add row in view
-      var row = nl.sara.beehub.view.acl.createRow(ace);
-      nl.sara.beehub.view.acl.addRow(row, nl.sara.beehub.view.acl.getIndexLastProtected());
-      
-      var functionSaveAclOk = function(){
+    nl.sara.beehub.view.dialog.showAddRuleDialog( function( ace ){
+      if ( checkHomeFolderPrivileges( ace ) ) {
+        // Add row in view
+        var row = nl.sara.beehub.view.acl.createRow(ace);
+        nl.sara.beehub.view.acl.addRow(row, nl.sara.beehub.view.acl.getIndexLastProtected());
+
+        var functionSaveAclOk = function(){
+          nl.sara.beehub.view.dialog.clearView();
+        };
+
+        var functionSaveAclError = function(){
+          // Update view
+          nl.sara.beehub.view.dialog.clearView();
+          nl.sara.beehub.view.acl.deleteRowIndex(nl.sara.beehub.view.acl.getIndexLastProtected() + 1);
+        };
+        nl.sara.beehub.controller.saveAclOnServer(functionSaveAclOk, functionSaveAclError);
+      }else{
         nl.sara.beehub.view.dialog.clearView();
-      };
-      
-      var functionSaveAclError = function(){
-        // Update view
-        nl.sara.beehub.view.acl.deleteRowIndex(nl.sara.beehub.view.acl.getIndexLastProtected() + 1);
-      };
-      nl.sara.beehub.controller.saveAclOnServer(functionSaveAclOk, functionSaveAclError);
+      }
     }, nl.sara.beehub.view.acl.createHtmlAclForm("tab"));
   };
   
@@ -1241,16 +1180,22 @@
    * 
    */
   nl.sara.beehub.controller.changePermissions = function(row, oldVal){
-    var functionSaveAclOk = function(){
-      // Do nothing
-    };
-    
-    var functionSaveAclError = function(){
-      // Put back old value
+    if ( checkHomeFolderPrivileges( nl.sara.beehub.view.acl.getAceFromDOMRow( row ) ) ) {
+      var functionSaveAclOk = function(){
+        // Do nothing
+      };
+
+      var functionSaveAclError = function(){
+        // Put back old value
+        nl.sara.beehub.view.acl.changePermissions(row, oldVal);
+        nl.sara.beehub.view.acl.showChangePermissions( row, false );
+        // Do nothing
+      };
+      nl.sara.beehub.controller.saveAclOnServer(functionSaveAclOk, functionSaveAclError);
+    }else{
       nl.sara.beehub.view.acl.changePermissions(row, oldVal);
-      // Do nothing
-    };
-    nl.sara.beehub.controller.saveAclOnServer(functionSaveAclOk, functionSaveAclError);
+      nl.sara.beehub.view.acl.showChangePermissions( row, false );
+    }
   };
   
   /**

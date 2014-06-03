@@ -180,3 +180,12 @@ nl.sara.beehub.view.setCustomAclOnResource = function(ownACL, resourcePath){
   nl.sara.beehub.view.content.setCustomAclOnResource(ownACL, resourcePath);
 };
 
+
+/**
+ * Gets the path to the home dir of the user
+ *
+ * @returns  {String}  The path to the home dir of the current user, or undefined if this is not known (e.g. there is no user logged in)
+ */
+nl.sara.beehub.view.getHomePath = function() {
+  return nl.sara.beehub.view.content.getHomePath();
+};

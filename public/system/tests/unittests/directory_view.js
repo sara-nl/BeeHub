@@ -53,6 +53,7 @@
   var rememberTreeRemovePath =           nl.sara.beehub.view.tree.removePath;
   var rememberSetCustomAclOnResource =   nl.sara.beehub.view.content.setCustomAclOnResource;
   var rememberHideAllFixedButtons =      nl.sara.beehub.view.hideAllFixedButtons;
+  var rememberUpdateResource =           nl.sara.beehub.view.updateResource;
 
   /**
    * Back to original test environment
@@ -79,7 +80,8 @@
     nl.sara.beehub.view.tree.removePath =                   rememberTreeRemovePath;
     nl.sara.beehub.view.content.setCustomAclOnResource =    rememberSetCustomAclOnResource;
     nl.sara.beehub.view.hideAllFixedButtons =               rememberHideAllFixedButtons;
-  }
+    nl.sara.beehub.view.updateResource =                    rememberUpdateResource;
+  };
   
   /**
    * Test init
@@ -171,7 +173,7 @@
 
     nl.sara.beehub.view.maskView("loading", false);
     deepEqual($(maskLoading).is(":hidden"), true, "Loading mask should be hidden.");
-  })
+  });
   
   /**
    * Test
@@ -279,16 +281,16 @@
     // Setup environment
     var resource1 = new nl.sara.beehub.ClientResource("/test1/");
     var resource2 = new nl.sara.beehub.ClientResource("/test2/");
-    
+
     nl.sara.beehub.view.content.updateResource = function(resourceOrg, resourceNew){
       deepEqual(resourceOrg.path, "/test1/", "Content Update resource should be called.");
-      deepEqual(resourceNew.path, "/test2/", "Content Update resource should be called.")
-    }
+      deepEqual(resourceNew.path, "/test2/", "Content Update resource should be called.");
+    };
 
     nl.sara.beehub.view.tree.updateResource = function(resourceOrg, resourceNew){
       deepEqual(resourceOrg.path, "/test1/", "Tree Update resource should be called.");
-      deepEqual(resourceNew.path, "/test2/", "Tree Update resource should be called.")
-    }
+      deepEqual(resourceNew.path, "/test2/", "Tree Update resource should be called.");
+    };
     
     nl.sara.beehub.view.updateResource(resource1, resource2);
   });
@@ -304,11 +306,11 @@
     
     nl.sara.beehub.view.content.deleteResource = function(resource){
       deepEqual(resource.path, "/test/", "Content Delete resource should be called.");
-    }
+    };
 
     nl.sara.beehub.view.tree.removePath = function(path){
       deepEqual(path, "/test/", "Remove path resource should be called.");
-    }
+    };
     
     nl.sara.beehub.view.deleteResource(resource);
   });
@@ -324,6 +326,10 @@
     };
     
     nl.sara.beehub.view.setCustomAclOnResource("test","test"); 
+  });
+
+  test('nl.sara.beehub.view.getHomePath', function() {
+    deepEqual( nl.sara.beehub.view.getHomePath(), '/home/john/', 'John is logged in, so /home/john/ should be the home path' );
   });
   
 })();
