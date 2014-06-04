@@ -25,8 +25,61 @@
   var maskLoading     = "#bh-dir-mask-loading";
   var aclPanel        = "#bh-dir-panel-acl";
   var contentPanel    = "#bh-dir-panel-contents";
+  
+  module( "view", {
+    teardown: function() {
+      // clean up after each test
+      backToOriginalEnvironment();
+    }
+  });
+  
+  var rememberCookie =                   $.cookie( "beehub-showtree");
+  var rememberContentInit =              nl.sara.beehub.view.content.init;
+  var rememberTreeInit =                 nl.sara.beehub.view.tree.init;
+  var rememberAclInit =                  nl.sara.beehub.view.acl.init;
+  var rememberShowTree =                 nl.sara.beehub.view.tree.showTree;
+  var rememberCloseTree =                nl.sara.beehub.view.tree.closeTree;
+  var rememberShowFixedButtons =         nl.sara.beehub.view.showFixedButtons;
+  var rememberContentClearView =         nl.sara.beehub.view.content.clearView;
+  var rememberTreeClearView =            nl.sara.beehub.view.tree.clearView;
+  var rememberDialogClearView =          nl.sara.beehub.view.dialog.clearView;
+  var rememberContentAllFixedButtons =   nl.sara.beehub.view.content.allFixedButtons;
+  var rememberAclAllFixedButtons =       nl.sara.beehub.view.acl.allFixedButtons;
+  var rememberContentAddResource =       nl.sara.beehub.view.content.addResource;
+  var rememberTreeAddPath =              nl.sara.beehub.view.tree.addPath;
+  var rememberContentUpdateResource =    nl.sara.beehub.view.content.updateResource;
+  var rememberTreeUpdateResource =       nl.sara.beehub.view.tree.updateResource;
+  var rememberContentDeleteResource =    nl.sara.beehub.view.content.deleteResource;
+  var rememberTreeRemovePath =           nl.sara.beehub.view.tree.removePath;
+  var rememberSetCustomAclOnResource =   nl.sara.beehub.view.content.setCustomAclOnResource;
+  var rememberUpdateResource =           nl.sara.beehub.view.updateResource;
 
-  module("view");
+  /**
+   * Back to original test environment
+   */
+  var backToOriginalEnvironment = function(){
+    $.cookie( "beehub-showtree" , rememberCookie , { path: '/' } );
+
+    nl.sara.beehub.view.content.init =                      rememberContentInit;
+    nl.sara.beehub.view.tree.init =                         rememberTreeInit;
+    nl.sara.beehub.view.acl.init =                          rememberAclInit;
+    nl.sara.beehub.view.tree.showTree =                     rememberShowTree;
+    nl.sara.beehub.view.tree.closeTree =                    rememberCloseTree;
+    nl.sara.beehub.view.showFixedButtons =                  rememberShowFixedButtons;
+    nl.sara.beehub.view.content.clearView =                 rememberContentClearView;
+    nl.sara.beehub.view.tree.clearView =                    rememberTreeClearView;
+    nl.sara.beehub.view.dialog.clearView =                  rememberDialogClearView;
+    nl.sara.beehub.view.content.allFixedButtons =           rememberContentAllFixedButtons;
+    nl.sara.beehub.view.acl.allFixedButtons =               rememberAclAllFixedButtons;
+    nl.sara.beehub.view.content.addResource =               rememberContentAddResource;
+    nl.sara.beehub.view.tree.addPath =                      rememberTreeAddPath;
+    nl.sara.beehub.view.content.updateResource =            rememberContentUpdateResource;
+    nl.sara.beehub.view.tree.updateResource =               rememberTreeUpdateResource;
+    nl.sara.beehub.view.content.deleteResource =            rememberContentDeleteResource;
+    nl.sara.beehub.view.tree.removePath =                   rememberTreeRemovePath;
+    nl.sara.beehub.view.content.setCustomAclOnResource =    rememberSetCustomAclOnResource;
+    nl.sara.beehub.view.updateResource =                    rememberUpdateResource;
+  };
   
   /**
    * Test init
@@ -34,37 +87,30 @@
   test( 'nl.sara.beehub.view.init: Init', function() {
     expect(8);
     
-    var rememberContentInit = nl.sara.beehub.view.content.init;
     nl.sara.beehub.view.content.init = function(){
       ok(true, "Function content init is called.");
     };
     
-    var rememberTreeInit = nl.sara.beehub.view.tree.init;
     nl.sara.beehub.view.tree.init = function(){
       ok(true, "Function tree init is called.");
     };
     
-    var rememberAclInit = nl.sara.beehub.view.acl.init;
     nl.sara.beehub.view.acl.init = function(){
       ok(true, "Function acl init is called.");
     };
     
-    var rememberShowTree = nl.sara.beehub.view.tree.showTree;
     nl.sara.beehub.view.tree.showTree = function(){
       ok(true, "Function showTree is called.");
     };
     
-    var rememberCloseTree = nl.sara.beehub.view.tree.closeTree;
     nl.sara.beehub.view.tree.closeTree = function(){
       ok(true, "Function closeTree is called.");
     };
     
-    var rememberShowFixedButtons = nl.sara.beehub.view.showFixedButtons;
     nl.sara.beehub.view.showFixedButtons = function(value){
       deepEqual(value, fixedButton, "Function showFixedButton value should be "+fixedButton);
     };
     
-    var rememberCookie = $.cookie( "beehub-showtree");
     
     // Init
     nl.sara.beehub.view.init();
@@ -79,15 +125,6 @@
     // Showtree should not be called
     $.cookie( "beehub-showtree" ,"false", { path: '/' } );
     $('a[href="'+contentPanel+'"]').click();
-    
-    // Back to original environment
-    nl.sara.beehub.view.content.init = rememberContentInit;
-    nl.sara.beehub.view.tree.init = rememberTreeInit;
-    nl.sara.beehub.view.acl.init = rememberAclInit;
-    nl.sara.beehub.view.tree.showTree = rememberShowTree;
-    nl.sara.beehub.view.tree.closeTree = rememberCloseTree;
-    nl.sara.beehub.view.showFixedButtons = rememberShowFixedButtons;
-    $.cookie( "beehub-showtree" , rememberCookie , { path: '/' } );
   });
  
   /**
@@ -96,26 +133,19 @@
   test("nl.sara.beehub.view.clearAllViews", function(){
     expect(3);
     
-    var rememberContentClearView = nl.sara.beehub.view.content.clearView;
     nl.sara.beehub.view.content.clearView = function(){
       ok(true, "Content clearView is called.");
     };
     
-    var rememberTreeClearView = nl.sara.beehub.view.tree.clearView;
     nl.sara.beehub.view.tree.clearView = function(){
       ok(true, "Tree clearView is called.");
     };
     
-    var rememberDialogClearView = nl.sara.beehub.view.dialog.clearView;
     nl.sara.beehub.view.dialog.clearView = function(){
       ok(true, "Dialog clearView is called.");
     };
     
     nl.sara.beehub.view.clearAllViews();
-    
-    nl.sara.beehub.view.content.clearView = rememberContentClearView;
-    nl.sara.beehub.view.tree.clearView = rememberTreeClearView;
-    nl.sara.beehub.view.dialog.clearView = rememberDialogClearView;
   });
 
   /**
@@ -141,7 +171,7 @@
 
     nl.sara.beehub.view.maskView("loading", false);
     deepEqual($(maskLoading).is(":hidden"), true, "Loading mask should be hidden.");
-  })
+  });
   
   /**
    * Test
@@ -172,7 +202,6 @@
     expect(4);
     
     // Setup environment
-    var rememberContentAllFixedButtons = nl.sara.beehub.view.content.allFixedButtons;
     nl.sara.beehub.view.content.allFixedButtons = function(value){
       if (view === "content"){
        deepEqual(value, "show", "AllFixedButtons should be called with value shown.");
@@ -181,7 +210,6 @@
       }
     };
     
-    var rememberAclAllFixedButtons = nl.sara.beehub.view.acl.allFixedButtons;
     nl.sara.beehub.view.acl.allFixedButtons = function(value){
       if (view === "content"){
         deepEqual(value, "hide", "AllFixedButtons should be called with value hide.");
@@ -194,10 +222,6 @@
     nl.sara.beehub.view.showFixedButtons("acl");
     view = "content";
     nl.sara.beehub.view.showFixedButtons("content");
-    
-    // Back to original environment
-    nl.sara.beehub.view.content.allFixedButtons = rememberContentAllFixedButtons;
-    nl.sara.beehub.view.acl.allFixedButtons = rememberAclAllFixedButtons;
   });
   
   /**
@@ -207,12 +231,10 @@
     expect(3);
     
     // Setup environment
-    var rememberContentAddResource = nl.sara.beehub.view.content.addResource;
     nl.sara.beehub.view.content.addResource = function(resource) {
       deepEqual(resource.path, "/test/", "Addresource should be called with resource.path /test/.");
     };
     
-    var rememberTreeAddPath = nl.sara.beehub.view.tree.addPath;
     nl.sara.beehub.view.tree.addPath = function(path){
       deepEqual(path, "/test/", "AddPath should be called with resource.path /test/.");
     };
@@ -222,11 +244,8 @@
     
     var resource2 = new nl.sara.beehub.ClientResource("/test/");
     resource2.type = "collection";
-    nl.sara.beehub.view.addResource(resource2);
     
-    // Back to original environment
-    nl.sara.beehub.view.content.addResource = rememberContentAddResource;
-    nl.sara.beehub.view.tree.addPath = rememberTreeAddPath;
+    nl.sara.beehub.view.addResource(resource2);
   });
   
   /**
@@ -238,24 +257,18 @@
     // Setup environment
     var resource1 = new nl.sara.beehub.ClientResource("/test1/");
     var resource2 = new nl.sara.beehub.ClientResource("/test2/");
-    
-    var rememberContentUpdateResource = nl.sara.beehub.view.content.updateResource;
+
     nl.sara.beehub.view.content.updateResource = function(resourceOrg, resourceNew){
       deepEqual(resourceOrg.path, "/test1/", "Content Update resource should be called.");
-      deepEqual(resourceNew.path, "/test2/", "Content Update resource should be called.")
-    }
+      deepEqual(resourceNew.path, "/test2/", "Content Update resource should be called.");
+    };
 
-    var rememberTreeUpdateResource = nl.sara.beehub.view.tree.updateResource;
     nl.sara.beehub.view.tree.updateResource = function(resourceOrg, resourceNew){
       deepEqual(resourceOrg.path, "/test1/", "Tree Update resource should be called.");
-      deepEqual(resourceNew.path, "/test2/", "Tree Update resource should be called.")
-    }
+      deepEqual(resourceNew.path, "/test2/", "Tree Update resource should be called.");
+    };
     
     nl.sara.beehub.view.updateResource(resource1, resource2);
-    
-    // Back to original environment
-    nl.sara.beehub.view.content.updateResource = rememberContentUpdateResource;
-    nl.sara.beehub.view.tree.updateResource = rememberTreeUpdateResource;
   });
   
   /**
@@ -267,21 +280,15 @@
     // Setup environment
     var resource = new nl.sara.beehub.ClientResource("/test/");
     
-    var rememberContentDeleteResource = nl.sara.beehub.view.content.deleteResource;
     nl.sara.beehub.view.content.deleteResource = function(resource){
       deepEqual(resource.path, "/test/", "Content Delete resource should be called.");
-    }
+    };
 
-    var rememberTreeRemovePath = nl.sara.beehub.view.tree.removePath;
     nl.sara.beehub.view.tree.removePath = function(path){
       deepEqual(path, "/test/", "Remove path resource should be called.");
-    }
+    };
     
     nl.sara.beehub.view.deleteResource(resource);
-    
-    // Back to original environment
-    nl.sara.beehub.view.content.deleteResource = rememberContentDeleteResource;
-    nl.sara.beehub.view.tree.removePath = rememberTreeRemovePath;
   });
   
   /**
@@ -290,14 +297,15 @@
   test("nl.sara.beehub.view.setCustomAclOnResource", function(){
     expect(1);
     
-    var rememberSetCustomAclOnResource = nl.sara.beehub.view.content.setCustomAclOnResource;
     nl.sara.beehub.view.content.setCustomAclOnResource = function(value1, value2){
       ok(true, "SetCurtomAclOnResource is called");
     };
     
-    nl.sara.beehub.view.setCustomAclOnResource("test","test");
-    
-    nl.sara.beehub.view.content.setCustomAclOnResource = rememberSetCustomAclOnResource;
+    nl.sara.beehub.view.setCustomAclOnResource("test","test"); 
+  });
+
+  test('nl.sara.beehub.view.getHomePath', function() {
+    deepEqual( nl.sara.beehub.view.getHomePath(), '/home/john/', 'John is logged in, so /home/john/ should be the home path' );
   });
   
 })();

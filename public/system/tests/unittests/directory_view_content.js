@@ -57,8 +57,26 @@
     setup: function(){
       // Call init function
       nl.sara.beehub.view.content.init();
+    }, 
+    teardown: function() {
+      // clean up after each test
+      backToOriginalEnvironment();
     }
   });
+
+  var rememberGoToPage = nl.sara.beehub.controller.goToPage;
+  var rememberRenameResource = nl.sara.beehub.controller.renameResource;
+  var rememberInitAction = nl.sara.beehub.controller.initAction;
+  var rememberShowError = nl.sara.beehub.controller.showError;
+  var rememberCreateNewFolder = nl.sara.beehub.controller.createNewFolder;
+
+  var backToOriginalEnvironment = function(){
+    nl.sara.beehub.controller.goToPage = rememberGoToPage;
+    nl.sara.beehub.controller.renameResource = rememberRenameResource;
+    nl.sara.beehub.controller.initAction = rememberInitAction;
+    nl.sara.beehub.controller.showError = rememberShowError;
+    nl.sara.beehub.controller.createNewFolder = rememberCreateNewFolder;
+  };
   
   /**
    * Check if selecting checkboxes is working
@@ -102,7 +120,6 @@
    */
   var checkOpenSelected = function(check) {      
     // Rewrite controller goToPage
-    var rememberGoToPage = nl.sara.beehub.controller.goToPage;
     nl.sara.beehub.controller.goToPage = function(location){
       deepEqual(location, check, "Location should be "+ check );
     };
@@ -110,9 +127,6 @@
     var row = $("tr[id='"+check+"']");
     // Call click handlers
     row.find(selectDirIcon).click();
-    
-    // Original environment
-    nl.sara.beehub.controller.goToPage = rememberGoToPage;
   };
   
   /**
@@ -123,7 +137,6 @@
    * 
    */
   var checkEditMenu = function(check , displayname){      
-    var rememberRenameResource = nl.sara.beehub.controller.renameResource;
     nl.sara.beehub.controller.renameResource = function(resource, value, overwrite){
       deepEqual(resource.path, check , "Location should be "+check );
       deepEqual(value, "newFolderName", "Value should be newFolderName" );
@@ -138,7 +151,6 @@
     deepEqual(row.find(renameField).is(':hidden'), true, 'Name field should be hidden');
     deepEqual(row.find(renameColumn).is(':hidden'), false, 'Input field should be shown');
     deepEqual(row.find(renameColumn).find(':input').val(), displayname,'Input field value should be testfolder');
-    deepEqual(row.find(renameColumn).find(':input').is(':focus'), true, 'Mouse should be focused in input field');
   
     row.find(renameColumn).find(':input').val("newFolderName");
     
@@ -154,9 +166,6 @@
     row.find(renameForm).blur();
     deepEqual(row.find(renameField).is(':hidden'), false, 'Name field should be shown');
     deepEqual(row.find(renameColumn).is(':hidden'), true, 'Input field should be hidden');
-   
-    // Original environment
-    nl.sara.beehub.controller.renameResource = rememberRenameResource;
   };
   
   var checkSetRowHandlers = function(count, check , displayname){
@@ -172,7 +181,6 @@
     expect( 1 );   
 
     // Rewrite controller goToPage
-    var rememberGoToPage = nl.sara.beehub.controller.goToPage;
     nl.sara.beehub.controller.goToPage = function(location){
       deepEqual(location, home, "Home location should be "+home );
     };
@@ -180,9 +188,6 @@
     // Call click handlers
     // Buttons
     $(homeButton).click();
-    
-    // Original environment
-    nl.sara.beehub.controller.goToPage = rememberGoToPage;
   });
   
   /**
@@ -190,17 +195,12 @@
    */
   test( 'nl.sara.beehub.view.content.init: Up button click handler', function() {
     expect( 1 );   
-    // Rewrite controller goToPage
-    var rememberGoToPage = nl.sara.beehub.controller.goToPage;
     nl.sara.beehub.controller.goToPage = function(location){
       deepEqual(location, up, "Up location should be "+up );
     };
  
     // Call click handler
     $(upButton).click();
-    
-    // Original environment
-    nl.sara.beehub.controller.goToPage = rememberGoToPage;
   });
   
   /**
@@ -212,8 +212,6 @@
     // Select resources
     $("tr[id='"+directory1+"']").find(checkBoxes).prop('checked',true);
     $("tr[id='"+file1+"']").find(checkBoxes).prop('checked',true);
-
-    var rememberInitAction = nl.sara.beehub.controller.initAction;
     
     nl.sara.beehub.controller.initAction = function(resources, action){
       deepEqual(resources[0].path, directory1, action+": Name of first resource should be "+directory1);
@@ -227,9 +225,6 @@
     $(deleteButton).click();
     $(copyButton).click();
     $(moveButton).click();
-   
-    // Original environment
-    nl.sara.beehub.controller.initAction = rememberInitAction;
   });
   
   /**
@@ -237,15 +232,13 @@
    */
   test( 'nl.sara.beehub.view.content.init: Upload click and change handlers', function() {
     expect( 2 );      
-    var rememberInitAction = nl.sara.beehub.controller.initAction;
     nl.sara.beehub.controller.initAction = function(resources, action){
       // TODO klopt resources
       ok(true, "Upload click handler is set");
     };
     
-    var rememberShowError = nl.sara.beehub.controller.showError;
     nl.sara.beehub.controller.showError = function(){
-      ok(true, "IE should show an error when uploading files is clicked")
+      ok(true, "IE should show an error when uploading files is clicked");
     }; 
     
     // First test change before changing the field
@@ -257,10 +250,6 @@
       ok(true, "Upload hidden file field is clicked");
     });
     $(uploadButton).click();
-        
-    // Original environment
-    nl.sara.beehub.controller.initAction = rememberInitAction;
-    nl.sara.beehub.controller.showError = rememberShowError;
   });
   
   /**
@@ -269,15 +258,11 @@
   test( 'nl.sara.beehub.view.content.init: New folder button click handler', function() {
     expect( 1 );
    
-    var rememberCreateNewFolder = nl.sara.beehub.controller.createNewFolder;
     nl.sara.beehub.controller.createNewFolder = function(){
       ok(true, "Click handler new folder button is set");
     };
     
     $(newFolderButton).click();
-    
-    // Original environment
-    nl.sara.beehub.controller.createNewFolder = rememberCreateNewFolder;
   });
   
   /**
@@ -300,7 +285,7 @@
    * Test edit icon
    */
   test( 'nl.sara.beehub.view.content.init: Edit menu', function() {
-    expect( 20 );
+    expect( 18 );
     checkEditMenu(directory1, directory1Displayname);
     checkEditMenu(file1, file1Displayname);
   });
@@ -351,7 +336,7 @@
     
     $(menuRename).unbind('click').click(function(){
       ok(true, "Rename handler click should be triggered.");
-    })
+    });
     
     var resource = new nl.sara.beehub.ClientResource(directory1);
     nl.sara.beehub.view.content.triggerRenameClick(resource);
@@ -377,14 +362,14 @@
    * Test add resource
    */
   test('nl.sara.beehub.view.content.addResource', function(){
-    expect( 39 );
+    expect( 38 );
     
     var resource = new nl.sara.beehub.ClientResource( location.pathname+"newfolder");
     resource.displayname = "newfolder";
     resource.type = "collection";
     resource.contentlength = "undefined";
     resource.lastmodified = "Thu Nov 21 2013 14:27:03 GMT+0100 (CET)";
-    resource.owner = 'Test User'
+    resource.owner = 'Test User';
 
     var testresource1 = new nl.sara.beehub.ClientResource(location.pathname+"newfolder");
     testresource1 = nl.sara.beehub.view.content.getUnknownResourceValues(testresource1);
@@ -410,7 +395,7 @@
     deepEqual($("tr[id='"+directory1+"']").find('td').length, $("tr[id='"+testresource2.path+"']").find('td').length, "Count of total columns is ok");
 
     checkSetRowHandlers( 5, resource.path , resource.displayname );
-  })
+  });
   
    /**
    * Test delete resource
@@ -439,13 +424,13 @@
     deepEqual(testresource2.contentlength, undefined, "Contentlength should be undefined");
     deepEqual(testresource2.lastmodified, undefined, "Lastmodified should be undefined");
     deepEqual(testresource2.owner, undefined, "Owner should be undefined");
-  })
+  });
   
    /**
    * Test delete resource
    */
   test('nl.sara.beehub.view.content.updateResource', function(){
-    expect( 46 );
+    expect( 45 );
     
     var testresource1 = new nl.sara.beehub.ClientResource(file1);
     testresource1 = nl.sara.beehub.view.content.getUnknownResourceValues(testresource1);
@@ -466,7 +451,7 @@
     deepEqual(resourcenew.owner, undefined, "Owner should be undefined");
     
     resourcenew.displayname = "testfile2";
-    resourcenew.type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+    resourcenew.type = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
     resourcenew.contentlength = "40000";
     resourcenew.lastmodified = "Thu Nov 22 2013 14:27:03 GMT+0100 (CET)";
     resourcenew.owner = "/system/users/testuser2";
@@ -492,9 +477,11 @@
     deepEqual(testresource3.owner, "/system/users/testuser2", "Owner should be /system/users/testuser2");
     
     checkSetRowHandlers( 4, resourcenew.path , resourcenew.displayname );
-  }) 
-  
-  
+  });
+
+  test('nl.sara.beehub.view.content.getHomePath', function() {
+    deepEqual( nl.sara.beehub.view.content.getHomePath(), '/home/john/', 'John is logged in, so /home/john/ should be the home path' );
+  });
 
 })();
 // End of file

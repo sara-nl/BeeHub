@@ -60,8 +60,8 @@
   font-family: inherit;
   font-weight: bold;
   margin: 9px 0 18px 0 !important;
-  text-rendering: optimizelegibility;
-}
+/*   text-rendering: optimizelegibility;
+ */}
 
 /* Prevent scrolling for fixed divs*/
 .bh-dir-fixed-path {
@@ -69,7 +69,7 @@
     top: 40px;
     padding-top: 15px;
     width: 100%;
-    height:55;
+    height:55px;
     background-color: white; 
     z-index: 100;
 }

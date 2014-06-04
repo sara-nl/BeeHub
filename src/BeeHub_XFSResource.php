@@ -119,9 +119,7 @@ class BeeHub_XFSResource extends BeeHub_Resource {
       );
 
     // Only the resource owner (or an administrator) can change the sponsor
-    if ( $this->user_prop_owner() !==
-           $this->user_prop_current_user_principal() &&
-         ! DAV::$ACLPROVIDER->wheel() )
+    if ( $this->user_prop_owner() !== $this->user_prop_current_user_principal() )
       throw DAV::forbidden( 'Only the owner can change the sponsor of a resource.' );
 
     // And I can only change the sponsor into a sponsor that sponsors me

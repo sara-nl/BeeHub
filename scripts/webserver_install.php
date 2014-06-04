@@ -20,6 +20,8 @@ namespace nl\surfsara\beehub\install;
 \define( 'nl\surfsara\beehub\install\DEFAULT_SPONSOR_NAME', 'e-infra' );
 \define( 'nl\surfsara\beehub\install\DEFAULT_SPONSOR_DISPLAYNAME', 'e-Infra' );
 \define( 'nl\surfsara\beehub\install\DEFAULT_SPONSOR_DESCRIPTION', 'e-Infra supports the development and hosting of BeeHub. For now, all BeeHub users are sponsored by e-Infra' );
+\define( 'nl\surfsara\beehub\install\ADMIN_GROUP_DISPLAYNAME', 'Administrators' );
+\define( 'nl\surfsara\beehub\install\ADMIN_GROUP_DESCRIPTION', 'Administrators can manage BeeHub' );
 
 if ( $_SERVER['REQUEST_METHOD'] !== 'POST' ) {
   exit();
@@ -92,22 +94,13 @@ if ( $hasChildren ) {
   print( "The data directory already has content. Skipping initialisation of data directory.\n" );
 }else{
   print( "Initialising data directory..." );
-  if (
+  if ( ! (
     \mkdir( $config['environment']['datadir'] . 'home', 0770, true ) &&
     \mkdir( $config['environment']['datadir'] . 'system', 0770, true ) &&
     \mkdir( $config['environment']['datadir'] . \BeeHub::GROUPS_PATH, 0770, true ) &&
     \mkdir( $config['environment']['datadir'] . \BeeHub::SPONSORS_PATH, 0770, true ) &&
     \mkdir( $config['environment']['datadir'] . \BeeHub::USERS_PATH, 0770, true )
-  ){
-    $prop = rawurlencode( \DAV::PROP_OWNER );
-    $value = $config['namespace']['wheel_path'];
-    \xattr_set( $config['environment']['datadir'], $prop, $value );
-    \xattr_set( $config['environment']['datadir'] . 'home', $prop, $value );
-    \xattr_set( $config['environment']['datadir'] . 'system', $prop, $value );
-    \xattr_set( $config['environment']['datadir'] . \BeeHub::GROUPS_PATH, $prop, $value );
-    \xattr_set( $config['environment']['datadir'] . \BeeHub::SPONSORS_PATH, $prop, $value );
-    \xattr_set( $config['environment']['datadir'] . \BeeHub::USERS_PATH, $prop, $value );
-  }else{
+  ) ) {
     \header( 'HTTP/1.1 500 Internal Server Error' );
     \ob_end_flush();
     print( "\nUnable to create the system directories\n" );
@@ -138,20 +131,15 @@ if ( $result->num_rows > 0 ) {
   }
   print( "ok\n" );
 
-  // Then add the administrator user
-  $config = \BeeHub::config();
-  $wheelStatement = $mysql->prepare( 'INSERT INTO `beehub_users` ( `user_name`, `displayname`, `email` ) VALUES ( ?, \'Administrator\', ? );' );
-  $wheel = \basename( $config['namespace']['wheel_path'] );
-  $email = $config['email']['sender_address'];
-  $wheelStatement->bind_param( 'ss', $wheel, $email );
-  $wheelStatement->execute();
-  $wheelStatement->close();
-
   // And for now; the e-infra sponsor
   $mysql->real_query( 'INSERT INTO `beehub_sponsors` ( `sponsor_name`, `displayname`, `description` ) VALUES ( \'' . DEFAULT_SPONSOR_NAME . '\', \'' . DEFAULT_SPONSOR_DISPLAYNAME . '\', \'' . DEFAULT_SPONSOR_DESCRIPTION . '\' );' );
 
+  // Add the administrator group
+  $config = \BeeHub::config();
+  $mysql->real_query( 'INSERT INTO `beehub_groups` ( `group_name`, `displayname`, `description` ) VALUES ( \'' . \basename( $config['namespace']['admin_group'] ) . '\', \'' . ADMIN_GROUP_DISPLAYNAME . '\', \'' . ADMIN_GROUP_DESCRIPTION . '\' );' );
+
   // Add a real user
-  $userStatement = $mysql->prepare( 'INSERT INTO `beehub_users` ( `user_name`, `displayname`, `email`, `password`, `sponsor_name` ) VALUES ( ?, ?, ?, ?, \'' . DEFAULT_SPONSOR_NAME . '\' );' );
+  $userStatement = $mysql->prepare( 'INSERT INTO `beehub_users` ( `user_name`, `displayname`, `email`, `password` ) VALUES ( ?, ?, ?, ? );' );
   $username = $_SERVER['PHP_AUTH_USER'];
   $email = $_POST['email'];
   $password = \crypt( $_SERVER['PHP_AUTH_PW'], '$6$rounds=5000$' . md5(time() . rand(0, 99999)) . '$');
@@ -160,6 +148,8 @@ if ( $result->num_rows > 0 ) {
   $userStatement->close();
   $sponsor = new \BeeHub_Sponsor( \BeeHub::SPONSORS_PATH . DEFAULT_SPONSOR_NAME );
   $sponsor->change_memberships( array( $username ), true, true );
+  $adminGroup = new \BeeHub_Group( $config['namespace']['admin_group'] );
+  $adminGroup->change_memberships( array( $username ), true, true, true );
   $userdir = $config['environment']['datadir'] . 'home' . \DIRECTORY_SEPARATOR . $username;
   \mkdir( $userdir, 0770 );
   \xattr_set( $userdir, \rawurlencode( \DAV::PROP_OWNER ), \BeeHub::USERS_PATH . \rawurlencode( $username ) );

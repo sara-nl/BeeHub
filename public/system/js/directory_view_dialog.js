@@ -148,29 +148,69 @@
    * @return {Object} Principal and permissions
    */
   nl.sara.beehub.view.dialog.getFormAce = function(){
-    var principal = '';
     var aclForm = nl.sara.beehub.view.acl.getFormView();
-    switch(aclForm.find('input[name = "bh-dir-view-acl-optionRadio"]:checked').val())
-    {
-    // all
-    case "all":
-      principal="DAV: all";
+
+    var ace = new nl.sara.webdav.Ace();
+    ace.inherited = false;
+    ace.invertprincipal = false;
+    ace.isprotected = false;
+    switch ( aclForm.find( 'input[name = "bh-dir-view-acl-optionRadio"]:checked' ).val() ) {
+      case 'all':
+        ace.principal = nl.sara.webdav.Ace.ALL;
+        break;
+      case 'authenticated':
+        ace.principal = nl.sara.webdav.Ace.AUTHENTICATED;
+        break;
+      // User or group
+      case "user_or_group":
+        ace.principal = aclForm.find(".bh-dir-acl-table-search").attr('data-value');
+        break;
+      default:
+        alert( 'Unexpected error!' );
       break;
-    // Everybody
-    case "authenticated":
-      principal="DAV: authenticated";
-      break;
-    // User or group
-    case "user_or_group":
-      principal=aclForm.find(".bh-dir-acl-table-search").attr('name');
-      break;
-    default:
-      // This should never happen
     }
-    var ace = {
-        "principal": principal,
-        "permissions": aclForm.find(".bh-dir-acl-table-permisions option:selected").val()
-    };
+    var readPrivilege = new nl.sara.webdav.Privilege();
+    readPrivilege.namespace = 'DAV:';
+    readPrivilege.tagname = 'read';
+    var writePrivilege = new nl.sara.webdav.Privilege();
+    writePrivilege.namespace = 'DAV:';
+    writePrivilege.tagname = 'write';
+    var writeAclPrivilege = new nl.sara.webdav.Privilege();
+    writeAclPrivilege.namespace = 'DAV:';
+    writeAclPrivilege.tagname = 'write-acl';
+    switch( aclForm.find(".bh-dir-acl-table-permisions option:selected").val() ) {
+      case 'allow read':
+        ace.grantdeny = nl.sara.webdav.Ace.GRANT;
+        ace.addPrivilege( readPrivilege );
+        break;
+      case 'allow read, write':
+        ace.grantdeny = nl.sara.webdav.Ace.GRANT;
+        ace.addPrivilege( readPrivilege );
+        ace.addPrivilege( writePrivilege );
+        break;
+      case 'allow read, write, change acl':
+        ace.grantdeny = nl.sara.webdav.Ace.GRANT;
+        ace.addPrivilege( readPrivilege );
+        ace.addPrivilege( writePrivilege );
+        ace.addPrivilege( writeAclPrivilege );
+        break;
+      case 'deny read, write, change acl':
+        ace.grantdeny = nl.sara.webdav.Ace.DENY;
+        ace.addPrivilege( readPrivilege );
+        ace.addPrivilege( writePrivilege );
+        ace.addPrivilege( writeAclPrivilege );
+        break;
+      case 'deny write, change acl':
+        ace.grantdeny = nl.sara.webdav.Ace.DENY;
+        ace.addPrivilege( writePrivilege );
+        ace.addPrivilege( writeAclPrivilege );
+        break;
+      case 'deny change acl':
+        ace.grantdeny = nl.sara.webdav.Ace.DENY;
+        ace.addPrivilege( writeAclPrivilege );
+        break;
+    }
+
     return ace;
   };
   
@@ -407,7 +447,7 @@
       source:searchList,
       select: function( event, ui ) {
         formView.find(".bh-dir-acl-table-search").val(ui.item.label);
-        formView.find(".bh-dir-acl-table-search").attr('name' ,ui.item.name);
+        formView.find(".bh-dir-acl-table-search").attr('data-value' ,ui.item.name);
         // jquery and bootstrap buttons act different
         if (nl.sara.beehub.view.acl.getView() === "directory") {
           nl.sara.beehub.view.acl.getAddAclButton().button('enable');

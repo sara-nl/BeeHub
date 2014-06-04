@@ -98,7 +98,7 @@ require 'views/header.php';
 
   <!--	CONTENT: Home button-->
   <button
-    <?= ( ! BeeHub_Auth::inst()->is_authenticated() || ( $this->path === '/home/' . BeeHub_Auth::inst()->current_user()->name . '/' ) ) ? 'disabled="disabled"' : 'id="' . DAV::xmlescape( preg_replace('@^' . BeeHub::USERS_PATH . '(.*)@', '/home/\1/', BeeHub_Auth::inst()->current_user()->path) ) . '"' ?>
+    <?= ( ( ! BeeHub_Auth::inst()->is_authenticated() || ( $this->path === '/home/' . BeeHub_Auth::inst()->current_user()->name . '/' ) ) ? 'disabled="disabled"' : '' ) . 'id="' . DAV::xmlescape( preg_replace('@^' . BeeHub::USERS_PATH . '(.*)@', '/home/\1/', BeeHub_Auth::inst()->current_user()->path) ) . '"' ?>
     class="btn btn-small bh-dir-content-gohome" data-toggle="tooltip"
     title="Go to home folder">
     <i class="icon-home"></i> Home
@@ -142,7 +142,7 @@ require 'views/header.php';
 
   <!-- 	ACL VIEW -->
   <!-- ACL: Add button-->
-  <button id="bh-dir-acl-directory-button" data-toggle="tooltip" title="Add rule" class="btn btn-small bh-dir-acl-add hide" >
+  <button id="bh-dir-acl-addrule-button" data-toggle="tooltip" title="Add rule" class="btn btn-small bh-dir-acl-add hide" >
     <i class="icon-plus"></i> Add rule
   </button> 
 </div>
@@ -312,8 +312,8 @@ require 'views/header.php';
           <tr id="<?= DAV::xmlescape( DAV::unslashify($member->path) ) ?>">
             <td>
             	<div class="dropdown">
-    						<a class="dropdown-toggle bh-dir-content-menu" data-toggle="dropdown" href="#"><i class="icon-align-justify" style="cursor: pointer"></i></a>
-    						<ul class="dropdown-menu bh-dir-contents-menu" role="menu" aria-labelledby="dLabel">
+         						<a class="dropdown-toggle bh-dir-content-menu" data-toggle="dropdown" href="#"><i class="icon-align-justify" style="cursor: pointer"></i></a>
+         						<ul class="dropdown-menu bh-dir-contents-menu" role="menu" aria-labelledby="<?= DAV::xmlescape( DAV::unslashify($member->path) ) ?>">
                   <?php if ( in_array( DAVACL::PRIV_WRITE, $member->user_prop_current_user_privilege_set() ) && in_array( DAVACL::PRIV_UNBIND, $current_user_privilege_set_collection ) ) : ?>
                     <li><a class="bh-dir-content-edit" href="#">Rename</a></li>
                   <?php endif; ?>
@@ -329,12 +329,12 @@ require 'views/header.php';
             <td class="bh-dir-small-column"><input type="checkbox" class="bh-dir-content-checkbox" name="<?= DAV::xmlescape( DAV::unslashify( $member->path ) ) ?>" value="<?= DAV::xmlescape( $member->user_prop_displayname() ) ?>"></td>   
             <!-- Name -->
             <?php if (substr($member->path, -1) === '/'): ?>
-              <td class="bh-dir-content-name displayname" name="<?= DAV::xmlescape( $member->user_prop_displayname() ) ?>">
+              <td class="bh-dir-content-name displayname" data-value="<?= DAV::xmlescape( $member->user_prop_displayname() ) ?>">
                 <a href="<?= DAV::xmlescape( DAV::unslashify( $member->path ) ) ?>"><span style="font-weight: bold"><?= DAV::xmlescape( $member->user_prop_displayname() ) ?>/</span></a>
               </td>
               <!-- File -->
             <?php else : ?>
-              <td class="bh-dir-content-name displayname" name="<?= DAV::xmlescape( $member->user_prop_displayname() ) ?>">
+              <td class="bh-dir-content-name displayname" data-value="<?= DAV::xmlescape( $member->user_prop_displayname() ) ?>">
                 <a href="<?= DAV::xmlescape( DAV::unslashify( $member->path ) ) ?>"><?= DAV::xmlescape( $member->user_prop_displayname() ) ?></a>
               </td>
             <?php endif; ?>
@@ -343,7 +343,7 @@ require 'views/header.php';
               <input class="bh-dir-content-rename-form" name="<?= DAV::xmlescape( $member->user_prop_displayname() ) ?>" value="<?= DAV::xmlescape( $member->user_prop_displayname() ) ?>" />
             </td>
             <!--             Size -->
-            <td class="contentlength" name="<?= DAV::xmlescape( $member->user_prop_getcontentlength() ) ?>">
+            <td class="contentlength" data-value="<?= DAV::xmlescape( $member->user_prop_getcontentlength() ) ?>">
               <?php
               // Calculate size
               $size = $member->user_prop_getcontentlength();
@@ -365,22 +365,22 @@ require 'views/header.php';
               ?>
             </td>
             <?php if ( $member->prop_resourcetype() === DAV_Collection::RESOURCETYPE ) : ?>
-              <td class="type" name="collection">
-                <i name="<?= DAV::xmlescape( DAV::unslashify($member->path) ) ?>" class="icon-folder-close bh-dir-content-openselected" style="cursor: pointer"></i>
+              <td class="type" data-value="collection">
+                <i data-value="<?= DAV::xmlescape( DAV::unslashify($member->path) ) ?>" class="icon-folder-close bh-dir-content-openselected" style="cursor: pointer"></i>
               </td> 
             <?php else : ?>
-              <td class="type" name="<?= DAV::xmlescape( $member->user_prop_getcontenttype() ) ?>">
+              <td class="type" data-value="<?= DAV::xmlescape( $member->user_prop_getcontenttype() ) ?>">
                 <?= DAV::xmlescape( $member->user_prop_getcontenttype() ) ?>
               </td>
             <?php endif; ?> 
       
             <!-- Date, has to be the same as shown with javascript -->
-            <td class="lastmodified" name="<?= DAV::xmlescape( date( 'r', $member->user_prop_getlastmodified() ) ) ?>">
+            <td class="lastmodified" data-value="<?= DAV::xmlescape( date( 'r', $member->user_prop_getlastmodified() ) ) ?>">
               <?= DAV::xmlescape( date('j-n-Y G:i', $member->user_prop_getlastmodified() ) ) ?>
             </td>
       
             <!-- Owner -->
-            <td class="owner" name="<?= DAV::xmlescape( $owner->path ) ?>">
+            <td class="owner" data-value="<?= DAV::xmlescape( $owner->path ) ?>">
               <?= DAV::xmlescape( $owner->user_prop_displayname() ) ?>
             </td>
             <?php if ( count( $member->user_prop_acl_internal() ) > 0 ) : ?>
@@ -417,7 +417,7 @@ require 'views/header.php';
 	          <th class="bh-dir-small-column"></th>
 	        </tr>
 	      </thead>
-	      <tbody class="bh-dir-acl-contents" name="<?= DAV::xmlescape( DAV::unslashify($this->path) ) ?>">
+	      <tbody class="bh-dir-acl-contents" data-value="<?= DAV::xmlescape( DAV::unslashify($this->path) ) ?>">
 	        <?php
 	        $acl = $this->user_prop_acl();
 	        $acl_length = count( $acl );
@@ -461,6 +461,7 @@ require 'views/header.php';
 	                  $displayname = DAV::xmlescape($principal->user_prop( DAV::PROP_DISPLAYNAME ));
 	                }else{
 	                  $displayname = '<span style="font-weight: bold">Unrecognized principal!</span>';
+//                   $displayname = $principal;
 	                }
 	              break;
 	            }
@@ -469,7 +470,7 @@ require 'views/header.php';
 	              $icon= '<i class="icon-user"></i>';
 	            }
 	            ?>
-	            <td class="bh-dir-acl-principal" name="<?= DAV::xmlescape($ace->principal) ?>" data-invert="<?= $ace->invert?>" data-toggle="tooltip" title="<?= DAV::xmlescape($ace->principal)?>" >
+	            <td class="bh-dir-acl-principal" data-value="<?= DAV::xmlescape($ace->principal) ?>" data-invert="<?= $ace->invert?>" data-toggle="tooltip" title="<?= DAV::xmlescape($ace->principal)?>" >
 	              <span style="font-weight: bold"><?= ( $ace->invert ? 'Everybody except ' : '' ) . $displayname ?> </span>(<?= $icon?>)
 	            </td>
 	            				
@@ -550,7 +551,7 @@ require 'views/header.php';
 	              $class ='bh-dir-acl-inherited';
 	            }
 	            ?>
-	            <td class="bh-dir-acl-comment <?= $class ?>" name="<?= $info ?>" ><?= $message ?></td>
+	            <td class="bh-dir-acl-comment <?= $class ?>" data-value="<?= $info ?>" ><?= $message ?></td>
 	            <!-- When ace is not protected, inherited and previous ace exists and is not protected  -->
 	            <?php if ( ! $ace->protected &&
 	                       ( is_null( $ace->inherited ) ) &&
@@ -630,7 +631,7 @@ try {
         $( function() {
           $( \'.bh-dir-content-upload\' )
             .unbind( \'click\' )
-            .removeClass( \'bh-dir-content-upload\' )
+//            .removeClass( \'bh-dir-content-upload\' )
             .attr( \'disabled\', \'disabled\' );
         } );
       </script>
@@ -640,13 +641,13 @@ try {
 
 if ( RUN_CLIENT_TESTS ) {
   $footer .= '
-    <script src="/system/tests/unittests/directory_controller.js"></script> ';
-//     <script src="/system/tests/unittests/directory_view.js"></script>   		
-//     <script src="/system/tests/unittests/directory_view_tree.js"></script>
-//     <script src="/system/tests/unittests/directory_view_content.js"></script>
-//     <script src="/system/tests/unittests/directory_view_acl.js"></script>
-//     <script src="/system/tests/unittests/directory_view_dialog.js"></script>
-//   ';
+    <script src="/system/tests/unittests/directory_view_tree.js"></script>
+    <script src="/system/tests/unittests/directory_view.js"></script> 	
+    <script src="/system/tests/unittests/directory_controller.js"></script>
+    <script src="/system/tests/unittests/directory_view_content.js"></script>
+    <script src="/system/tests/unittests/directory_view_dialog.js"></script>
+    <script src="/system/tests/unittests/directory_view_acl.js"></script>
+   ';
 }
 
 require 'views/footer.php';

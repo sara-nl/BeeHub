@@ -192,47 +192,57 @@ $(function() {
 	 */
 	 $('#bh-gs-filter-by-name').keyup(filterByName);
 
-	var groupNameListener = function(groupNameField){
+	var gsNameListener = function(gsNameField){
 		 var showError = function(error){
-			 groupNameField.parent().parent().addClass('error');
+			 gsNameField.parent().parent().addClass('error');
 			 var errorSpan = $( '<span class="help-inline"></span>' );
        errorSpan.text( error );
-			 groupNameField.parent().append( errorSpan );
+			 gsNameField.parent().append( errorSpan );
 		 };
 
 		 // TODO make tooltip with field specifications
 		 // This is included in bootstrap with patern
 
 		 // clear error
-		 groupNameField.next().remove();
-		 groupNameField.parent().parent().removeClass('error');
+		 gsNameField.next().remove();
+		 gsNameField.parent().parent().removeClass('error');
 
 		 // value not system
-		 if ( nl.sara.beehub.forbidden_group_names.indexOf( groupNameField.val() ) > -1 ) {
-			showError(groupNameField.val()+' is not a valid groupname.');
-			return false;
-		 }
+		 if (group_or_sponsor === "group") {
+ 		 if ( nl.sara.beehub.forbidden_group_names.indexOf( gsNameField.val() ) > -1 ) {
+ 			showError(gsNameField.val()+' is not a valid groupname.');
+ 			return false;
+ 		 }
+		 };
 
 		// Seperate regular expressions to make the errors more specific.
 		// value starts with a-zA-Z0-9, else return
-		 if (!RegExp('^[a-zA-Z0-9]{1}.*$').test(groupNameField.val())) {
+		 if (!RegExp('^[a-zA-Z0-9]{1}.*$').test(gsNameField.val())) {
 			 showError('First character must be a alphanumeric character.');
 			 return false;
 		 }
 		// value only contain a-zA-Z0-9_-., else return
-		 if (!RegExp('^[a-zA-Z0-9]{1}[a-zA-Z0-9_\\-\\.]*$').test(groupNameField.val())) {
+		 if (!RegExp('^[a-zA-Z0-9]{1}[a-zA-Z0-9_\\-\\.]*$').test(gsNameField.val())) {
 			 showError('This field can contain aphanumeric characters, numbers, "-", "_" and ".".');
 			 return false;
 		 }
 		// value contain 1-255 characters, else return
-		 if (!RegExp('^[a-zA-Z0-9]{1}[a-zA-Z0-9_\\-\\.]{0,255}$').test(groupNameField.val())) {
+		 if (!RegExp('^[a-zA-Z0-9]{1}[a-zA-Z0-9_\\-\\.]{0,255}$').test(gsNameField.val())) {
 			showError('This field can contain maximal 255 characters.');
 			return false;
 		 }
-		 if (nl.sara.beehub.principals.groups[groupNameField.val()] !== undefined) {
-			 showError('This groupname is already in use.');
-			 return false;
-		 };
+   if (group_or_sponsor === "group") {
+ 		 if (nl.sara.beehub.principals.groups[gsNameField.val()] !== undefined) {
+ 			 showError('This groupname is already in use.');
+ 			 return false;
+ 		 };
+   };
+   if (group_or_sponsor === "sponsor") {
+     if (nl.sara.beehub.principals.sponsors[gsNameField.val()] !== undefined) {
+      showError('This sponsorname is already in use.');
+      return false;
+     };
+   };
 
 		 return true;
 	};
@@ -240,14 +250,14 @@ $(function() {
 	/*
 	 * Action when the groupsname field will change
 	 */
-	 $('#bh-gs-group-name').change(function () {
-		 groupNameListener($(this));
+	 $('#bh-gs-name').change(function () {
+		 gsNameListener($(this));
 	 });
 	 /*
 	 * Action when the Create group button is clicked
 	 */
-	 $('#bh-gs-create-group-form').submit(function (e) {
-		 if (!groupNameListener($('#bh-gs-group-name'))) {
+	 $('#bh-gs-create-form').submit(function (e) {
+		 if (!gsNameListener($('#bh-gs-name'))) {
 			 e.preventDefault();
 		 }
 	 });
