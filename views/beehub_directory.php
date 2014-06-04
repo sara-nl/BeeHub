@@ -98,7 +98,7 @@ require 'views/header.php';
 
   <!--	CONTENT: Home button-->
   <button
-    <?= ( ! BeeHub_Auth::inst()->is_authenticated() || ( $this->path === '/home/' . BeeHub_Auth::inst()->current_user()->name . '/' ) ) ? 'disabled="disabled"' : 'id="' . DAV::xmlescape( preg_replace('@^' . BeeHub::USERS_PATH . '(.*)@', '/home/\1/', BeeHub_Auth::inst()->current_user()->path) ) . '"' ?>
+    <?= ( ( ! BeeHub_Auth::inst()->is_authenticated() || ( $this->path === '/home/' . BeeHub_Auth::inst()->current_user()->name . '/' ) ) ? 'disabled="disabled"' : '' ) . 'id="' . DAV::xmlescape( preg_replace('@^' . BeeHub::USERS_PATH . '(.*)@', '/home/\1/', BeeHub_Auth::inst()->current_user()->path) ) . '"' ?>
     class="btn btn-small bh-dir-content-gohome" data-toggle="tooltip"
     title="Go to home folder">
     <i class="icon-home"></i> Home
@@ -142,7 +142,7 @@ require 'views/header.php';
 
   <!-- 	ACL VIEW -->
   <!-- ACL: Add button-->
-  <button id="bh-dir-acl-directory-button" data-toggle="tooltip" title="Add rule" class="btn btn-small bh-dir-acl-add hide" >
+  <button id="bh-dir-acl-addrule-button" data-toggle="tooltip" title="Add rule" class="btn btn-small bh-dir-acl-add hide" >
     <i class="icon-plus"></i> Add rule
   </button> 
 </div>
@@ -461,6 +461,7 @@ require 'views/header.php';
 	                  $displayname = DAV::xmlescape($principal->user_prop( DAV::PROP_DISPLAYNAME ));
 	                }else{
 	                  $displayname = '<span style="font-weight: bold">Unrecognized principal!</span>';
+//                   $displayname = $principal;
 	                }
 	              break;
 	            }
@@ -630,7 +631,7 @@ try {
         $( function() {
           $( \'.bh-dir-content-upload\' )
             .unbind( \'click\' )
-            .removeClass( \'bh-dir-content-upload\' )
+//            .removeClass( \'bh-dir-content-upload\' )
             .attr( \'disabled\', \'disabled\' );
         } );
       </script>
