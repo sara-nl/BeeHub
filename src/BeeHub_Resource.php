@@ -87,6 +87,22 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
 
 
   /**
+   * Get a property in XML format
+   *
+   * @see     DAV_Resource::prop()
+   * @see     DAVACL_Resource::prop()
+   * @param   string  $propname  The name of the property to be returned, eg. "mynamespace: myprop"
+   * @return  string             XML or NULL if the property is not defined.
+   */
+  public function prop( $propname ) {
+    if ( $method = @BeeHub::$BEEHUB_PROPERTIES[ $propname ] ) {
+      return call_user_func( array( $this, 'prop_' . $method ) );
+    }
+    return parent::prop( $propname );
+  }
+
+
+  /**
    * Gets a (webDAV) property
    *
    * @param   string  $name  The name of the property
@@ -241,6 +257,27 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
    */
   public function user_prop_getcontenttype() {
     return BeeHub::best_xhtml_type() . '; charset="utf-8"';
+  }
+
+
+  /**
+   * Returns the http://beehub.nl/ sponsor-membership property as a DAV_Element_href instance
+   *
+   * @return  DAV_Element_href
+   */
+  final public function prop_sponsor_membership() {
+    $retval = $this->user_prop_sponsor_membership();
+    return $retval ? new DAV_Element_href( $retval ) : '';
+  }
+
+
+  /**
+   * Gets the http://beehub.nl/ sponsor-membership property in a PHP native format (instead of XML for webDAV)
+   *
+   * @return  array  Strings with the paths to the sponsors or null when this property is not set on this resource
+   */
+  public function user_prop_sponsor_membership() {
+    return null;
   }
 
 

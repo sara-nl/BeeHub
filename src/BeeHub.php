@@ -47,6 +47,15 @@ class BeeHub {
   public static $SPONSOR_PROPS = array(
     self::PROP_DESCRIPTION     => true,
   );
+
+  /**
+   * @var  array  Properties that can be used within BeeHub
+   */
+  public static $BEEHUB_PROPERTIES = array(
+    self::PROP_SPONSOR_MEMBERSHIP => 'sponsor_membership',
+    self::PROP_SPONSOR => 'sponsor'
+  );
+
   // For the next values: check if you also need to change them in /system/js/beehub.js
   public static $FORBIDDEN_GROUP_NAMES = array(
     'home',
@@ -306,7 +315,7 @@ class BeeHub {
       }
 
       // If the user doesn't have a sponsor, he can't do anything.
-      if ( count( $currentUser->prop( BeeHub::PROP_SPONSOR_MEMBERSHIP ) ) === 0 ) {
+      if ( count( $currentUser->user_prop_sponsor_membership() ) === 0 ) {
         $notifications[] = array( 'type'=>'no_sponsor', 'data'=>array() );
       }else{
         // Fetch all sponsor membership requests
@@ -327,7 +336,7 @@ class BeeHub {
             );
           }
         }
-      } // end else for if ( count( $user->prop( BeeHub::PROP_SPONSOR_MEMBERSHIP ) ) === 0 )
+      } // end else for if ( count( $user->user_prop_sponsor_membership() ) === 0 )
     } // end if ($auth->is_authenticated())
     return $notifications;
   }

@@ -86,6 +86,11 @@ abstract class BeeHub_Principal extends BeeHub_Resource implements DAVACL_Princi
   }
 
 
+  public function user_prop_sponsor_membership() {
+    return array();
+  }
+
+
   /**
   * The user has write privileges on all properties if he is the administrator of this principal
   * @param array $properties

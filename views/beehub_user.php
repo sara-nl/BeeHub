@@ -83,7 +83,7 @@ require 'views/header.php';
           <select id="sponsor" name="sponsor" <?= ( DAV::determine_client() & DAV::CLIENT_IE ) ? 'disabled="disabled"' : '' ?> >
             <?php
             $registry = BeeHub_Registry::inst();
-            foreach($this->user_prop(BeeHub::PROP_SPONSOR_MEMBERSHIP) as $sponsor_path) : ?>
+            foreach($this->user_prop_sponsor_membership() as $sponsor_path) : ?>
               <option value="<?= DAV::xmlescape($sponsor_path) ?>" <?= ( $this->user_prop(BeeHub::PROP_SPONSOR) === $sponsor_path ) ? 'selected="selected"' : '' ?>>
                 <?= DAV::xmlescape( BeeHub::sponsor($sponsor_path)->user_prop( DAV::PROP_DISPLAYNAME ) ) ?>
               </option>
