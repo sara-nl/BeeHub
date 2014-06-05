@@ -399,7 +399,7 @@ BeeHub';
    *
    * @return  array  An array of paths of the user's sponsors
    */
-  final public function current_user_sponsors() {
+  public function user_prop_sponsor_membership() {
     $this->init_props();
     return $this->stored_props[BeeHub::PROP_SPONSOR_MEMBERSHIP];
   }
@@ -412,7 +412,7 @@ BeeHub';
 
 
   public function user_set_sponsor($sponsor) {
-    if ( is_null( $sponsor ) || in_array( $sponsor, $this->current_user_sponsors() ) ) {
+    if ( is_null( $sponsor ) || in_array( $sponsor, $this->user_prop_sponsor_membership() ) ) {
       $this->user_set(BeeHub::PROP_SPONSOR, $sponsor);
     }else{
       throw new DAV_Status( DAV::HTTP_CONFLICT, 'You can not make a sponsor your default sponsor if you are not sponsored by it yet' );

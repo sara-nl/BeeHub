@@ -50,7 +50,7 @@ class BeeHub_UserTest extends BeeHub_Tests_Db_Test_Case {
   public function testCurrent_user_sponsors() {
     $user = new \BeeHub_User( '/system/users/john' );
     $expected = array( '/system/sponsors/sponsor_a', '/system/sponsors/sponsor_b' );
-    $this->assertSame( $expected, $user->current_user_sponsors() );
+    $this->assertSame( $expected, $user->user_prop_sponsor_membership() );
   }
 
 

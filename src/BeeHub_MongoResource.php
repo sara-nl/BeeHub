@@ -139,7 +139,7 @@ class BeeHub_MongoResource extends BeeHub_Resource {
       throw DAV::forbidden( 'Only the owner can change the sponsor of a resource.' );
 
     // And I can only change the sponsor into a sponsor that sponsors me
-    if ( !in_array( $sponsor->path, BeeHub::getAuth()->current_user()->current_user_sponsors() ) )
+    if ( !in_array( $sponsor->path, BeeHub::getAuth()->current_user()->user_prop_sponsor_membership() ) )
       throw DAV::forbidden( "You're not sponsored by {$sponsor->path}" );
 
     return $this->user_set( BeeHub::PROP_SPONSOR, $sponsor->path);
@@ -190,12 +190,12 @@ class BeeHub_MongoResource extends BeeHub_Resource {
       // If the user is not sponsored by the resource sponsor, we have to change
       // the resource sponsor
       if ( !in_array( $this->user_prop_sponsor(),
-                      BeeHub::getAuth()->current_user()->current_user_sponsors() ) ) {
+                      BeeHub::getAuth()->current_user()->user_prop_sponsor_membership() ) ) {
 
         // If the user is sponsored by the collection sponsor, then let's take
         // that sponsor
         if ( !in_array( $this->collection()->user_prop_sponsor(),
-                        BeeHub::getAuth()->current_user()->current_user_sponsors() ) ) {
+                        BeeHub::getAuth()->current_user()->user_prop_sponsor_membership() ) ) {
 
           // Else take the default sponsor of the user
           if ( !$cup->user_prop_sponsor() ) {
