@@ -254,9 +254,10 @@
   /**
    * Get sponsors from server
    */
-  nl.sara.beehub.controller.getSponsors = function(path){
+  nl.sara.beehub.controller.getSponsors = function(owner, path){
     
-    function callback(status){
+    function callback(status, data){
+      console.log(data); 
       var sponsors = [];
       var sponsor = {};
       sponsor.name = "test1";
@@ -275,7 +276,27 @@
     resourcetypeProp.tagname = 'sponsor-membership';
     resourcetypeProp.namespace='http://beehub.nl/';
     var properties = [resourcetypeProp];
-    webdav.propfind(path, callback ,1,properties);
+    webdav.propfind(owner, callback ,1,properties);
+  };
+  
+  /**
+   * Set sponsor on resource
+   * 
+   * @param {String} path       Path of resource
+   * @param {Object} sponsor    Sponsor object with name and displayname
+   */
+  nl.sara.beehub.controller.setSponsor = function(path, sponsor){
+    function callback(status){
+      nl.sara.beehub.view.content.setNewSponsor(status, path, sponsor);
+    };
+    
+    // TODO make set sponsor request
+    var webdav = new nl.sara.webdav.Client();
+    var resourcetypeProp = new nl.sara.webdav.Property();
+    resourcetypeProp.tagname = 'sponsor-membership';
+    resourcetypeProp.namespace='http://beehub.nl/';
+    var properties = [resourcetypeProp];
+    webdav.propfind("onzin", callback ,1,properties);
   };
   
   /**

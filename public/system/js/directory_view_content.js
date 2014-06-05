@@ -562,8 +562,9 @@
   var handle_sponsor_click = function(e){
  // create resource object
     var owner = $(e.target).closest('tr').find('.owner').attr('data-value');
+    var path = $(e.target).closest('tr').attr('id');
     nl.sara.beehub.view.maskView("transparant", true);
-    nl.sara.beehub.controller.getSponsors(owner);
+    nl.sara.beehub.controller.getSponsors(owner, path);
   };
   
   /**
@@ -573,32 +574,49 @@
    * @param {Object} sponsors Sponsors object with name and displayname
    */
   nl.sara.beehub.view.content.setSponsorDropdown = function(status, path, sponsors){
+    var row = $("tr[id='"+path+"']");
+    console.log(row.find('.bh-dir-sponsor').attr('data-value'));
+    var selected = row.find('.bh-dir-sponsor').attr('data-value');
+    console.log(selected);
     var dropdown = "";
     for (var sponsor in sponsors){
-      dropdown += '<option value="'+sponsors[sponsor].name+'"> '+sponsors[sponsor].displayname+' </option>';
+      if (sponsors[sponsor].name === selected) {
+        dropdown += '<option value="'+sponsors[sponsor].name+'"> '+sponsors[sponsor].displayname+' </option>';
+      } else {
+        dropdown += '<option value="'+sponsors[sponsor].name+'" selected> '+sponsors[sponsor].displayname+' </option>';
+      }
     };
-    var row = $("tr[id='"+path+"']");
     row.find('.bh-dir-sponsor').hide();
     row.find('.bh-dir-sponsor-dropdown').show();
     row.find('.bh-dir-sponsor-select').focus();
     row.find('.bh-dir-sponsor-select').html(dropdown);
     row.find('.bh-dir-sponsor-select').unbind( 'blur' ).blur(function(e){
       row.find('.bh-dir-sponsor-dropdown').hide();
+      row.find('.bh-dir-sponsor-select').html("");
       row.find('.bh-dir-sponsor').show();
     });
-//    row.find('.bh-dir-sponsor-dropdown').unbind('change').on('change', function(e){
-//      var name = $(e.target).val();
-//      var displayname = $(e.target).find(":selected").text());
-//      var sponsor = {
-//          "name":        name,
-//          "displayname": displayname
-//      }
-//      nl.sara.beehub.controller.getSponsors(path);
-//    });
+    row.find('.bh-dir-sponsor-dropdown').unbind('change').on('change', function(e){
+      var name = $(e.target).val();
+      var displayname = $(e.target).find(":selected").text();
+      var sponsor = {
+          "name":        name,
+          "displayname": displayname
+      }
+      nl.sara.beehub.controller.setSponsor(path, sponsor);
+    });
+    console.log("mask nog regelen");
+    console.log("foutafhandeling regelen");
     nl.sara.beehub.view.maskView("transparant", false);
-    // Get available sponsors
-    // Create dropdown
   }
+  
+  nl.sara.beehub.view.content.setNewSponsor = function(status, path, sponsor){
+    var row = $("tr[id='"+path+"']");
+    row.find('.bh-dir-sponsor-dropdown').hide();
+    row.find('.bh-dir-sponsor-select').html("");
+    row.find('.bh-dir-sponsor').attr('data-value', sponsor.name);
+    row.find('.bh-dir-sponsor').text(sponsor.displayname);
+    row.find('.bh-dir-sponsor').show();
+  };
   
   /**
    * Onclick handler upload button content view
