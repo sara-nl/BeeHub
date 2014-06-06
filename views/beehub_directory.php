@@ -649,6 +649,7 @@ try {
 
 if ( RUN_CLIENT_TESTS ) {
   $footer .= '
+    <script src="/system/tests/unittests/beehub.js"></script>
     <script src="/system/tests/unittests/directory_view_tree.js"></script>
     <script src="/system/tests/unittests/directory_view.js"></script> 	
     <script src="/system/tests/unittests/directory_controller.js"></script>

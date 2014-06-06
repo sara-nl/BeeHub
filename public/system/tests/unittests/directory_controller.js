@@ -434,21 +434,6 @@
   } );
   
   /**
-   * Test bytesToSize
-   * 
-   */
-  test('nl.sara.beehub.controller.bytesToSize', function(){
-    expect(6);
-    
-    deepEqual( nl.sara.beehub.controller.bytesToSize(0, 2), "0 B", "0 bytes, precision 2");
-    deepEqual( nl.sara.beehub.controller.bytesToSize(500, 2), "500 B", "500 bytes, precision 2");
-    deepEqual( nl.sara.beehub.controller.bytesToSize(1500, 2), "1.46 KB", "1500 bytes, precision 2");
-    deepEqual( nl.sara.beehub.controller.bytesToSize(15000000, 2), "14.31 MB", "15000000 bytes, precision 2");
-    deepEqual( nl.sara.beehub.controller.bytesToSize(15000000000, 1), "14.0 GB", "15000000000 bytes, precision 1");
-    deepEqual( nl.sara.beehub.controller.bytesToSize(15000000000000, 0), "14 TB", "15000000000000 bytes, precision 0");
-  });
-  
-  /**
    * Test getTreeNode
    */
   test("nl.sara.beehub.controller.getTreeNode", function(){
@@ -513,7 +498,7 @@
    * 
    */
   test("nl.sara.beehub.controller.createNewFolder", function(){
-    expect(78);
+    expect(90);
     
     // Set up environment
     var tested405 = false;
@@ -540,7 +525,7 @@
       this.propfind = function(resourcepath, callback ,val , properties){
         deepEqual(resourcepath, "/test", "Resource path should be test");
         deepEqual(val, 1, "Val should be 1.");
-        deepEqual(properties.length, 6, "Properties");
+        deepEqual(properties.length, 7, "Properties");
         deepEqual(properties[0].tagname, "resourcetype", "Tagname should be resourcetype");
         deepEqual(properties[0].namespace, "DAV:", "Namespace should be DAV: ");
         deepEqual(properties[1].tagname, "getcontenttype", "Tagname should be getcontenttype");
@@ -549,10 +534,12 @@
         deepEqual(properties[2].namespace, "DAV:", "Namespace should be DAV:");
         deepEqual(properties[3].tagname, "owner", "Tagname should be owner");
         deepEqual(properties[3].namespace, "DAV:", "Namespace should be DAV:");
-        deepEqual(properties[4].tagname, "getlastmodified", "Tagname should be getlastmodified");
-        deepEqual(properties[4].namespace, "DAV:", "Namespace should be DAV:");
-        deepEqual(properties[5].tagname, "getcontentlength", "Tagname should be getcontentlength");
+        deepEqual(properties[4].tagname, "sponsor", "Tagname should be sponsor");
+        deepEqual(properties[4].namespace, "http://beehub.nl/", "Namespace should be DAV:");
+        deepEqual(properties[5].tagname, "getlastmodified", "Tagname should be getlastmodified");
         deepEqual(properties[5].namespace, "DAV:", "Namespace should be DAV:");
+        deepEqual(properties[6].tagname, "getcontentlength", "Tagname should be getcontentlength");
+        deepEqual(properties[6].namespace, "DAV:", "Namespace should be DAV:");
         
         
         var testType = nl.sara.webdav.codec.ResourcetypeCodec.COLLECTION;
@@ -575,6 +562,7 @@
       deepEqual(resource.displayname, "displayname", "Resource displayname should be displayname.");
       deepEqual(resource.lastmodified, "getlastmodified", "Resource lastmodified should be getlastmodified.");
       deepEqual(resource.owner, "owner", "Resource owner should be owner.");
+      deepEqual(resource.sponsor, "sponsor", "Resource sponsor should be sponsor.");
     };
     
     nl.sara.beehub.view.content.triggerRenameClick = function(resource){
@@ -583,6 +571,7 @@
       deepEqual(resource.displayname, "displayname", "Resource displayname should be displayname.");
       deepEqual(resource.lastmodified, "getlastmodified", "Resource lastmodified should be getlastmodified.");
       deepEqual(resource.owner, "owner", "Resource owner should be owner.");
+      deepEqual(resource.sponsor, "sponsor", "Resource sponsor should be sponsor.");
     };
     
     nl.sara.beehub.view.dialog.showError = function(error){
@@ -607,7 +596,7 @@
    * This function also tests createRenameCallback
    */
   test("nl.sara.beehub.controller.renameResource", function(){
-    expect(28);
+    expect(32);
    
     var testOverwrite = 3; 
     var testCallback = false;
@@ -649,6 +638,7 @@
       resource.contentlength = "contentlength";
       resource.lastmodified  = "lastmodified";
       resource.owner         = "owner";
+      resource.sponsor       = "sponsor";
       return resource;
     };
     
@@ -658,12 +648,14 @@
       deepEqual(resource.displayname, "displayname", "Resource displayname should be displayname.");
       deepEqual(resource.lastmodified, "lastmodified", "Resource lastmodified should be getlastmodified.");
       deepEqual(resource.owner, "owner", "Resource owner should be owner.");
+      deepEqual(resource.sponsor, "sponsor", "Resource sponsor should be sponsor.");
       
       deepEqual(resourceNew.path, currentDirectory+"/new", "Resource path should be "+ currentDirectory+"/new");
       deepEqual(resourceNew.type, "type", "Resource type should be type.");
       deepEqual(resourceNew.displayname, "new", "Resource displayname should be new.");
       deepEqual(resourceNew.lastmodified, "lastmodified", "Resource lastmodified should be getlastmodified.");
       deepEqual(resourceNew.owner, "owner", "Resource owner should be owner.");
+      deepEqual(resourceNew.sponsor, "sponsor", "Resource sponsor should be sponsor.");
     };
     
     nl.sara.beehub.view.deleteResource = function(resource) {

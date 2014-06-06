@@ -273,7 +273,11 @@
         sponsor.displayname = nl.sara.beehub.controller.getDisplayName(sponsors[i]);
         sponsorObjects.push(sponsor);
       }
-      nl.sara.beehub.view.content.setSponsorDropdown(status, path, sponsorObjects);
+      if (status !== 207) {
+        nl.sara.beehub.view.content.errorGetSponsors(status);
+      } else {
+        nl.sara.beehub.view.content.setSponsorDropdown(status, path, sponsorObjects);
+      }
     }
   
     // Property request
@@ -300,7 +304,6 @@
       };
     };
     
-    // TODO make set sponsor request
     var webdav = new nl.sara.webdav.Client();
     var resourcetypeProp = new nl.sara.webdav.Property();
     resourcetypeProp.tagname = 'sponsor';
@@ -452,6 +455,7 @@
         resourceNew.contentlength = resource.contentlength;
         resourceNew.lastmodified  = resource.lastmodified;
         resourceNew.owner         = resource.owner;
+        resourceNew.sponsor       = resource.sponsor;
     
         // Update view
         // When resource is renamed
