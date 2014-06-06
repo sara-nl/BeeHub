@@ -153,7 +153,7 @@ if (nl.sara.beehub.codec.Sponsor !== undefined) {
 }
 
 /**
- * @class Adds a codec that converts DAV: getlastmodified to a Date object
+ * @class Adds a codec that converts DAV: sponsor to String
  * @augments nl.sara.webdav.Codec
  */
 nl.sara.beehub.codec.Sponsor = new nl.sara.webdav.Codec();
@@ -189,6 +189,43 @@ nl.sara.beehub.codec.Sponsor.toXML = function(value, xmlDoc){
 };
 
 nl.sara.webdav.Property.addCodec(nl.sara.beehub.codec.Sponsor);
+
+/**
+* @class Adds a codec that converts http://beehub.nl/: sponsor-membership to an array with the uri's object
+* @augments nl.sara.webdav.Codec
+*/
+nl.sara.beehub.codec.Sponsor_membership_Codec = new nl.sara.webdav.Codec();
+nl.sara.beehub.codec.Sponsor_membership_Codec.namespace = 'http://beehub.nl/';
+nl.sara.beehub.codec.Sponsor_membership_Codec.tagname = 'sponsor-membership';
+
+nl.sara.beehub.codec.Sponsor_membership_Codec.fromXML = function(nodelist) {
+  var collections = [];
+  for ( var key = 0; key < nodelist.length; key++ ) {
+    var node = nodelist.item( key );
+    if ( ( node.nodeType === 1 ) && ( node.localName === 'href' ) && ( node.namespaceURI === 'DAV:' ) ) { // Only extract data from DAV: href nodes
+      var href = '';
+      for ( var subkey = 0; subkey < node.childNodes.length; subkey++ ) {
+        var childNode = node.childNodes.item( subkey );
+        if ( ( childNode.nodeType === 3 ) || ( childNode.nodeType === 4 ) ) { // Make sure text and CDATA content is stored
+          href += childNode.nodeValue;
+        }
+      }
+      collections.push( href );
+    }
+  }
+  return collections;
+};
+
+nl.sara.beehub.codec.Sponsor_membership_Codec.toXML = function(value, xmlDoc){
+  for ( var key in value ) {
+    var href = xmlDoc.createElementNS( 'DAV:', 'href' );
+    href.appendChild( xmlDoc.createCDATASection( value[ key ] ) );
+    xmlDoc.documentElement.appendChild( href );
+  }
+  return xmlDoc;
+};
+
+nl.sara.webdav.Property.addCodec(nl.sara.beehub.codec.Sponsor_membership_Codec);
 
 /**
  * Calculate size from bytes to readable size
