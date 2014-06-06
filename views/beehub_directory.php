@@ -385,7 +385,7 @@ require 'views/header.php';
             <td class="owner" data-value="<?= DAV::xmlescape( $owner->path ) ?>">
               <?= DAV::xmlescape( $owner->user_prop_displayname() ) ?>
             </td>
-            <td class="bh-dir-sponsor" data-value="<?= DAV::xmlescape( $owner->user_prop_sponsor() ) ?>" style="cursor: pointer">
+            <td class="bh-dir-sponsor" data-value="<?= DAV::xmlescape( $sponsor->path ) ?>" style="cursor: pointer">
             <?= DAV::xmlescape( $sponsor->user_prop_displayname() ) ?>
           </td>
           <td class="bh-dir-sponsor-dropdown" hidden="hidden">

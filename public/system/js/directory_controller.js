@@ -28,6 +28,9 @@
  */
 
 (function() {
+  
+  nl.sara.beehub.controller.STATUS_NOT_ALLOWED = 403;
+  
   /*
    * Add slash to the end of the path
    */
@@ -265,7 +268,6 @@
       
       var sponsorObjects = [];
       for (var i in sponsors) {
-        console.log(sponsors[i]);
         var sponsor = {};
         sponsor.name = sponsors[i];
         sponsor.displayname = nl.sara.beehub.controller.getDisplayName(sponsors[i]);
@@ -289,18 +291,23 @@
    * @param {String} path       Path of resource
    * @param {Object} sponsor    Sponsor object with name and displayname
    */
-  nl.sara.beehub.controller.setSponsor = function(path, sponsor){
+  nl.sara.beehub.controller.setSponsor = function(owner, sponsor){
     function callback(status){
-      nl.sara.beehub.view.content.setNewSponsor(status, path, sponsor);
+      if (status !== 207) {
+        nl.sara.beehub.view.content.errorNewSponsor(status);
+      } else {
+        nl.sara.beehub.view.content.setNewSponsor(owner, sponsor);
+      };
     };
     
     // TODO make set sponsor request
     var webdav = new nl.sara.webdav.Client();
     var resourcetypeProp = new nl.sara.webdav.Property();
-    resourcetypeProp.tagname = 'sponsor-membership';
+    resourcetypeProp.tagname = 'sponsor';
     resourcetypeProp.namespace='http://beehub.nl/';
+    resourcetypeProp.setValueAndRebuildXml(sponsor.name);
     var properties = [resourcetypeProp];
-    webdav.propfind("onzin", callback ,1,properties);
+    webdav.proppatch(owner, callback, properties);
   };
   
   /**

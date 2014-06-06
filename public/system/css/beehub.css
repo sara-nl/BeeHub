@@ -192,6 +192,10 @@ ul.dynatree-container{
     padding-left:25px;
 }
 
+.bh-dir-sponsor{
+	 color: #459C64 !important;
+}
+
 /* Changes in bootstrap defaults for groups and sponsors*/
 .accordion-group:hover {
   background-color: #D1E2D3 !important;

@@ -287,6 +287,9 @@
     // Sponsor
     row.push('<td class="bh-dir-sponsor" style="cursor: pointer" data-value="'+nl.sara.beehub.controller.htmlEscape(resource.sponsor)+'">'+nl.sara.beehub.controller.htmlEscape(nl.sara.beehub.controller.getDisplayName(resource.sponsor))+'</td>');
 
+    // Select sponsor
+    row.push('<td class="bh-dir-sponsor-dropdown" hidden="hidden"><select class="bh-dir-sponsor-select"> </select></td>');
+   
     // ACL on resource row
     row.push('<td class="bh-resource-specific-acl"></td>');
     // TODO Share link, not implemented yet
@@ -574,16 +577,15 @@
    * @param {Object} sponsors Sponsors object with name and displayname
    */
   nl.sara.beehub.view.content.setSponsorDropdown = function(status, path, sponsors){
+    nl.sara.beehub.view.maskView("transparant", false);
     var row = $("tr[id='"+path+"']");
-    console.log(row.find('.bh-dir-sponsor').attr('data-value'));
     var selected = row.find('.bh-dir-sponsor').attr('data-value');
-    console.log(selected);
     var dropdown = "";
-    for (var sponsor in sponsors){
-      if (sponsors[sponsor].name === selected) {
-        dropdown += '<option value="'+sponsors[sponsor].name+'"> '+sponsors[sponsor].displayname+' </option>';
+    for (var i in sponsors){
+      if (sponsors[i].name === selected) {
+        dropdown += '<option value="'+sponsors[i].name+'" selected> '+sponsors[i].displayname+' </option>';
       } else {
-        dropdown += '<option value="'+sponsors[sponsor].name+'" selected> '+sponsors[sponsor].displayname+' </option>';
+        dropdown += '<option value="'+sponsors[i].name+'"> '+sponsors[i].displayname+' </option>';
       }
     };
     row.find('.bh-dir-sponsor').hide();
@@ -596,6 +598,7 @@
       row.find('.bh-dir-sponsor').show();
     });
     row.find('.bh-dir-sponsor-dropdown').unbind('change').on('change', function(e){
+      nl.sara.beehub.view.maskView("transparant", true);
       var name = $(e.target).val();
       var displayname = $(e.target).find(":selected").text();
       var sponsor = {
@@ -604,18 +607,36 @@
       }
       nl.sara.beehub.controller.setSponsor(path, sponsor);
     });
-    console.log("mask nog regelen");
-    console.log("foutafhandeling regelen");
-    nl.sara.beehub.view.maskView("transparant", false);
   }
   
-  nl.sara.beehub.view.content.setNewSponsor = function(status, path, sponsor){
+  /**
+   * Set new sponsor
+   * 
+   * @param {String} path       Path from resource
+   * @param {Object} sponsor    Sponsor object with name and displayname of the sponsor
+   */
+  nl.sara.beehub.view.content.setNewSponsor = function(path, sponsor){
     var row = $("tr[id='"+path+"']");
     row.find('.bh-dir-sponsor-dropdown').hide();
     row.find('.bh-dir-sponsor-select').html("");
     row.find('.bh-dir-sponsor').attr('data-value', sponsor.name);
     row.find('.bh-dir-sponsor').text(sponsor.displayname);
     row.find('.bh-dir-sponsor').show();
+    nl.sara.beehub.view.maskView("transparant", false);
+  };
+  
+  /**
+   * Show error when sponsor change failed
+   * 
+   * @param {Integer} status  Status code of failure
+   */
+  nl.sara.beehub.view.content.errorNewSponsor = function(status){  
+    if (status === nl.sara.beehub.controller.STATUS_NOT_ALLOWED ){
+      nl.sara.beehub.view.dialog.showError( 'You are not allowed to perform this action!' );
+    } else {
+      nl.sara.beehub.view.dialog.showError( 'Something went wrong on the server. No changes were made.' );
+    };
+    nl.sara.beehub.view.maskView("transparant", false);
   };
   
   /**
