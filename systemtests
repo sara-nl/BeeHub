@@ -1,0 +1,140 @@
+// *** ACTION GET/HEAD request ***
+// ** Create GET/HEAD environment **
+// * Create directoryGET1 with acl: deny read, deny write, deny write-acl *
+// * Create resource directoryGET1/resourceGET11 with acl: allow read, deny write, deny write-acl *
+// * Create resource directoryGET1/resourceGET12 with acl: deny read, allow write, allow write-acl *
+// GET request to directoryGET1/resourceGET11 should be successful
+// HEAD request to directoryGET1/resourceGET11 should be successful
+// GET request to directoryGET1/resourceGET12 should fail
+// HEAD request to directoryGET1/resourceGET12 should fail
+
+// *** ACTION POST request ***
+// ** Create POST environment **
+// * Create directoryPOST1 with acl: deny read, deny write, deny write-acl *
+// * Create resource directoryPOST1/resourcePOST11 with acl: allow read, allow write, deny write-acl *
+// * Create resource directoryPOST1/resourcePOST12 with acl: deny read, allow write, allow write-acl *
+// * Create resource directoryPOST1/resourcePOST13 with acl: allow read, deny write, allow write-acl *
+// POST request to directoryPOST1/resourcePOST11 should be successful
+// POST request to directoryPOST1/resourcePOST12 should fail
+// POST request to directoryPOST1/resourcePOST13 should fail
+
+// *** ACTION PUT request ***
+// ** Create PUT environment **
+// * Create directoryPUT1 with acl: deny read, deny write, deny write-acl *
+// * Create resource directoryPUT1/resourcePUT11 with acl: allow read, deny write, deny write-acl *
+// * Create resource directoryPUT1/resourcePUT12 with acl: deny read, allow write, allow write-acl *
+// * Create resource directoryPUT1/resourcePUT13 with acl: allow read, deny write, allow write-acl *
+// * Create directoryPUT2 with acl: allow read, deny write, deny write-acl *
+// * Create directoryPUT3 with acl: deny read, allow write, deny write-acl *
+// * Create directoryPUT4 with acl: allow read, allow write, deny write-acl *
+// PUT request to directoryPUT1/resourcePUT11 should be successful
+// PUT request to directoryPUT1/resourcePUT12 should fail
+// PUT request to directoryPUT1/resourcePUT13 should fail
+// PUT request to directoryPUT1/resourcePUT14 should fail (does not exist)
+// PUT request to directoryPUT2/resourcePUT14 should fail (does not exist)
+// PUT request to directoryPUT3/resourcePUT14 should be successful (does not exist)
+
+// *** ACTION OPTIONS request ***
+// ** Create OPTIONS environment **
+// * Create directoryOPTIONS1 with acl: deny read, deny write, deny write-acl *
+// * Create resource directoryOPTIONS1/resourceOPTIONS11 with acl: allow read, deny write, deny write-acl *
+// * Create resource directoryOPTIONS1/resourceOPTIONS12 with acl: deny read, allow write, allow write-acl *
+// OPTIONS request to directoryOPTIONS1/resourceOPTIONS11 should be successful
+// OPTIONS request to directoryOPTIONS1/resourceOPTIONS12 should fail
+
+// *** ACTION PROPFIND request ***
+// ** Create PROPFIND environment **
+// * Create directoryPROPFIND1 with acl: deny read, deny write, deny write-acl *
+// * Create resource directoryPROPFIND1/resourcePROPFIND11 with acl: allow read, deny write, deny write-acl *
+// * Create resource directoryPROPFIND1/resourcePROPFIND12 with acl: deny read, allow write, allow write-acl *
+// PROPFIND request to directoryPROPFIND1/resourcePROPFIND11 should be successful
+// PROPFIND request to directoryPROPFIND1/resourcePROPFIND12 should fail
+
+// *** ACTION PROPPATCH request ***
+// ** Create PROPPATCH environment **
+// * Create directoryPROPPATCH1 with acl: deny read, deny write, deny write-acl *
+// * Create resource directoryPROPPATCH1/resourcePROPPATCH11 with acl: allow read, allow write, deny write-acl *
+// * Create resource directoryPROPPATCH1/resourcePROPPATCH12 with acl: deny read, allow write, allow write-acl *
+// * Create resource directoryPROPPATCH1/resourcePROPPATCH13 with acl: allow read, deny write, allow write-acl *
+// PROPPATCH request to directoryPROPPATCH1/resourcePROPPATCH11 should be successful
+// PROPPATCH request to directoryPROPPATCH1/resourcePROPPATCH12 should fail
+// PROPPATCH request to directoryPROPPATCH1/resourcePROPPATCH13 should fail
+
+// *** ACTION MKCOL request ***
+// ** Create MKCOL environment **
+// * Create directoryMKCOL1 with acl: allow read, allow write, deny write-acl *
+// * Create resource directoryMKCOL1/resourceMKCOL11 with acl: allow read, allow write, deny write-acl *
+// * Create resource directoryMKCOL1/resourceMKCOL12 with acl: deny read, allow write, deny write-acl *
+// * Create resource directoryMKCOL1/resourceMKCOL13 with acl: allow read, deny write, deny write-acl *
+// * Create directoryMKCOL2 with acl: allow read, deny write, deny write-acl *
+// * Create resource directoryMKCOL1/resourceMKCOL21 with acl: allow read, allow write, deny write-acl *
+// * Create directoryMKCOL3 with acl: deny read, allow write, deny write-acl *
+// * Create resource directoryMKCOL1/resourceMKCOL31 with acl: allow read, allow write, deny write-acl *
+// MKCOL request to directoryMKCOL1/resourceMKCOL11 should be successful
+// MKCOL request to directoryMKCOL1/resourceMKCOL12 should fail
+// MKCOL request to directoryMKCOL1/resourceMKCOL13 should fail
+// MKCOL request to directoryMKCOL2/resourceMKCOL21 should fail 
+// MKCOL request to directoryMKCOL3/resourceMKCOL31 should fail
+
+// *** ACTION DELETE request ***
+// ** Create DELETE environment **
+// * Create directoryDELETE1 with acl: deny read, deny write, deny write-acl *
+// * Create resource directoryDELETE1/resourceDELETE11 with acl: allow read, allow write, deny write-acl *
+// * Create resource directoryDELETE1/resourceDELETE12 with acl: deny read, allow write, allow write-acl *
+// * Create resource directoryDELETE1/resourceDELETE13 with acl: allow read, deny write, allow write-acl *
+// DELETE request to directoryDELETE1/resourceDELETE11 should be successful
+// DELETE request to directoryDELETE1/resourceDELETE12 should fail
+// DELETE request to directoryDELETE1/resourceDELETE13 should fail
+
+// *** ACTION COPY request ***
+// ** Create COPY environment **
+// * Create directoryCOPY1 with acl: deny read, deny write, deny write-acl *
+// * Create resource directoryCOPY1/resourceCOPY11 with acl: allow read, deny write, deny write-acl *
+// * Create resource directoryCOPY1/resourceCOPY12 with acl: deny read, allow write, allow write-acl *
+// * Create directoryCOPY2 with acl: allow read, allow write, deny write-acl *
+// * Create directoryCOPY3 with acl: deny read, allow write, deny write-acl *
+// * Create directoryCOPY4 with acl: allow read, deny write, deny write-acl *
+// COPY request to directoryCOPY1/resourceCOPY11 to directoryCOPY2 should be successful
+// COPY request to directoryCOPY1/resourceCOPY12 to directoryCOPY2 should fail
+// COPY request to directoryCOPY1/resourceCOPY12 to directoryCOPY3 should fail
+// COPY request to directoryCOPY1/resourceCOPY12 to directoryCOPY4 should fail
+
+// *** ACTION MOVE request ***
+// ** Create MOVE environment **
+// * Create directoryMOVE1 with acl: allow read, deny write, deny write-acl *
+// * Create resource directoryMOVE1/resourceMOVE11 with acl: allow read, deny write, deny write-acl *
+// MOVE request to directoryMOVE1/resourceMOVE11 to directoryMOVE2 should be successful
+
+// *** ACTION LOCK request ***
+// ** Create LOCK environment **
+// * Create directoryLOCK1 with acl: deny read, deny write, deny write-acl *
+// * Create resource directoryLOCK1/resourceLOCK11 with acl: allow read, deny write, deny write-acl *
+// * Create resource directoryLOCK1/resourceLOCK12 with acl: deny read, allow write, allow write-acl *
+// LOCK request to directoryLOCK1/resourceLOCK11 should be successful
+// LOCK request to directoryLOCK1/resourceLOCK12 should fail
+
+// *** ACTION UNLOCK request ***
+// ** Create UNLOCK environment **
+// * Create directoryUNLOCK1 with acl: deny read, deny write, deny write-acl *
+// * Create resource directoryUNLOCK1/resourceUNLOCK11 with acl: allow read, deny write, deny write-acl *
+// * Create resource directoryUNLOCK1/resourceUNLOCK12 with acl: deny read, allow write, allow write-acl *
+// UNLOCK request to directoryUNLOCK1/resourceUNLOCK11 should be successful
+// UNLOCK request to directoryUNLOCK1/resourceUNLOCK12 should fail
+
+// *** ACTION ACL request ***
+// ** Create ACL environment **
+// * Create directoryACL1 with acl: deny read, deny write, deny write-acl *
+// * Create resource directoryACL1/resourceACL11 with acl: allow read, deny write, allow write-acl *
+// * Create resource directoryACL1/resourceACL12 with acl: deny read, allow write, allow write-acl *
+// * Create resource directoryACL1/resourceACL13 with acl: allow read, allow write, deny write-acl *
+// Change ACL request to directoryACL1/resourceACL11 should be successful
+// Change ACL request to directoryACL1/resourceACL12 should fail
+// Change ACL request to directoryACL1/resourceACL13 should fail
+
+// *** ACTION REPORT request ***
+// ** Create REPORT environment **
+// * Create directoryREPORT1 with acl: deny read, deny write, deny write-acl *
+// * Create resource directoryREPORT1/resourceREPORT11 with acl: allow read, deny write, deny write-acl *
+// * Create resource directoryREPORT1/resourceREPORT12 with acl: deny read, allow write, allow write-acl *
+// REPORT request to directoryREPORT1/resourceREPORT11 should be successful
+// REPORT request to directoryREPORT1/resourceREPORT12 should fail
