@@ -1,98 +1,163 @@
 //********** SERVER test environment ***********
 
-/denyAll/                   (deny read, deny write, deny write-acl)
-/denyAll/allowRead          (allow read, deny write, deny write-acl)
-/denyAll/denyRead           (deny read, allow write, allow write-acl)
-/denyAll/denyWrite          (allow read, deny write, allow write-acl)
-/denyAll/denyWriteAcl       (allow read, allow write, deny write-acl)
+/denyAll/                               (deny  read, deny  write, deny  write-acl)
+/denyAll/denyAll                        (deny  read, deny  write, deny  write-acl)
+/denyAll/allowRead                      (allow read, deny  write, deny  write-acl)
+/denyAll/allowWrite                     (deny  read, allow write, deny  write-acl)
+/denyAll/allowWriteAcl                  (deny  read, deny  write, allow write-acl)
+/denyAll/allowReadWrite                 (allow read, allow write, deny  write-acl)
+/denyAll/allowReadWriteAcl              (allow read, deny  write, allow write-acl)
+/denyAll/allowReadDir/                  (allow read, deny  write, deny  write-acl)
+/denyAll/allowReadDir/resource          (allow read, deny  write, deny  write-acl)
+/denyAll/allowReadDir/allowWrite        (allow read, allow write, deny  write-acl)
+/denyAll/allowWriteDir/                 (deny  read, allow write, deny  write-acl)
+/denyAll/allowWriteDir/resource         (deny  read, allow write, deny  write-acl)
+/denyAll/allowWriteDir/allowRead        (allow read, allow write, deny  write-acl)
+/denyAll/allowReadWriteDir/             (allow read, allow write, deny  write-acl)
+/denyAll/allowReadWriteDir/resource     (allow read, allow write, deny  write-acl)
+/denyAll/allowReadWriteDir/denyRead     (deny  read, allow write, deny  write-acl)
+/denyAll/allowReadWriteDir/denyWrite    (allow read, deny  write, deny  write-acl)
+/denyAll/allowReadWriteAclDir/          (allow read, deny  write, allow write-acl)
+/denyAll/allowReadWriteAclDir/resource  (allow read, deny  write, allow write-acl)
 
-/allowRead/                 (allow read, deny write, deny write-acl)
-/allowRead/denyWriteAcl     (allow read, allow write, deny write-acl)
-/allowRead/allowWrite       (deny read, allow write, deny write-acl)
+/allowAll/                              (allow read, allow write, allow write-acl)
+/allowAll/allowAll                      (allow read, allow write, allow write-acl)
+/allowAll/denyRead                      (deny  read, allow write, allow write-acl)
+/allowAll/denyWrite                     (allow read, deny  write, allow write-acl)
+/allowAll/denyWriteAcl                  (allow read, allow write, deny  write-acl)
+/allowAll/denyReadDir/                  (deny  read, allow write, allow write-acl)
+/allowAll/denyReadDir/resource          (deny  read, allow write, allow write-acl)
+/allowAll/denyWriteDir/                 (allow read, deny  write, allow write-acl)
+/allowAll/denyWriteAclDir/              (allow read, allow write, deny  write-acl)
 
-/allowWrite/                (deny read, allow write, deny write-acl)
 
-/denyWriteAcl/              (allow read, allow write, deny write-acl)
-/denyWriteAcl/denyWriteAcl  (allow read, allow write, deny write-acl)
-/denyWriteAcl/allowWrite    (deny read, allow write, deny write-acl)
-/denyWriteAcl/denyWrite     (allow read, deny write, allow write-acl)
-
-
-// *** ACTION GET/HEAD request ***
+// *** ACTION GET request ***
 // GET request to /denyAll/allowRead should be successful
+// GET request to /denyAll/allowReadDir/resource should be successful
+// GET request to /allowAll/denyRead should fail
+// GET request to /allowAll/denyReadDir/resource should fail
+
+// *** ACTION HEAD request ***
 // HEAD request to /denyAll/allowRead should be successful
-// GET request to /denyAll/denyRead should fail
-// HEAD request to /denyAll/denyRead should fail
+// HEAD request to /denyAll/allowReadDir/resource should be successful
+// HEAD request to /allowAll/denyRead should fail
+// HEAD request to /allowAll/denyReadDir/resource should fail
 
 // *** ACTION POST request ***
-// POST request to /denyAll/allowRead should be successful
-// POST request to /denyAll/denyRead should fail
-// POST request to /denyAll/denyWrite should fail
+// TODO deze wordt nog niet gebruikt
+// POST request to /denyAll/allowReadWrite should be successful
+// POST request to /denyAll/allowReadWriteDir/resource should be successful
+// POST request to /allowAll/denyRead should fail
+// POST request to /allowAll/denyReadDir/resource should fail
+// POST request to /allowAll/denyWrite should fail
+// POST request to /allowAll/denyWriteDir/resource should fail
 
 // *** ACTION PUT request ***
-// TODO deze wordt nog niet gebruikt
-// * Create directory /denyWriteAcl *
-// PUT request to /denyAll/allowRead should be successful
-// PUT request to /denyAll/denyRead should fail
-// PUT request to /denyAll/denyWrite should fail
-// PUT request to /denyAll/newResource should fail (does not exist)
-// PUT request to /allowRead/newResource should fail (does not exist)
-// PUT request to /allowWrite/newResource should be successful (does not exist)
+// PUT request to /denyAll/allowReadWrite should be successful
+// PUT request to /denyAll/allowReadWriteDir/resource should be successful
+// PUT request to /allowAll/denyRead should fail
+// PUT request to /allowAll/denyReadDir/resource should fail
+// PUT request to /allowAll/denyWrite should fail
+// PUT request to /allowAll/denyWriteDir/resource should fail
+// PUT request to /denyAll/allowReadWriteDir/newResource should successful (does not exist)
+// PUT request to /allowAll/denyReadDir/newResource should fail (does not exist)
+// PUT request to /allowAll/denyWriteDir/newResource should be fail (does not exist)
 
 // *** ACTION OPTIONS request ***
 // OPTIONS request to /denyAll/allowRead should be successful
-// OPTIONS request to /denyAll/denyRead should fail
+// OPTIONS request to /denyAll/allowReadDir/resource should be successful
+// OPTIONS request to /allowAll/denyRead should fail
+// OPTIONS request to /allowAll/denyReadDir/resource should fail
 
 // *** ACTION PROPFIND request ***
 // PROPFIND request to /denyAll/allowRead should be successful
-// PROPFIND request to /denyAll/denyRead should fail
+// PROPFIND request to /denyAll/allowReadDir/resource should be successful
+// PROPFIND request to /allowAll/denyRead should fail
+// PROPFIND request to /allowAll/denyReadDir/resource should fail
 
 // *** ACTION PROPPATCH request ***
-// PROPPATCH request to /denyAll/denyWriteAcl should be successful
-// PROPPATCH request to /denyAll/denyRead should fail
-// PROPPATCH request to /denyAll/denyWrite should fail
+// PROPPATCH request to /denyAll/allowReadWrite should be successful
+// PROPPATCH request to /denyAll/allowReadWriteDir/resource should be successful
+// PROPPATCH request to /allowAll/denyRead should fail
+// PROPPATCH request to /allowAll/denyReadDir/resource should fail
+// PROPPATCH request to /allowAll/denyWrite should fail
+// PROPPATCH request to /allowAll/denyWriteDir/resource should fail
 
 // *** ACTION MKCOL request ***
-// MKCOL request to /denyWriteAcl/denyWriteAcl should be successful
-// MKCOL request to /denyWriteAcl/allowWrite should fail
-// MKCOL request to /denyWriteAcl/allowRead should fail
-// MKCOL request to /allowRead/denyWriteAcl should fail 
-// MKCOL request to /allowWrite/denyWriteAcl should fail
+// MKCOL request to /denyAll/allowReadWriteDir/newResource should successful (does not exist)
+// MKCOL request to /allowAll/denyReadDir/newResource should fail (does not exist)
+// MKCOL request to /allowAll/denyWriteDir/newResource should be fail (does not exist)
 
 // *** ACTION DELETE request ***
-// DELETE request to /denyAll/denyWriteAcl should be successful
-// DELETE request to /denyAll/denyRead should fail
-// DELETE request to /denyAll/denyWrite should fail
+// PROPPATCH request to /denyAll/allowReadWrite should be successful
+// PROPPATCH request to /denyAll/allowReadWriteDir/resource should be successful
+// PROPPATCH request to /allowAll/denyRead should fail
+// PROPPATCH request to /allowAll/denyReadDir/resource should fail
+// PROPPATCH request to /allowAll/denyWrite should fail
+// PROPPATCH request to /allowAll/denyWriteDir/resource should fail
 
 // *** ACTION COPY request ***
-// Nog testen, klopt niet helemaal
-// COPY request to /denyAll/allowRead to /denyWriteAcl/ should be successful
-// COPY request to /denyAll/denyRead to /denyWriteAcl/ should fail
-// COPY request to /denyAll/denyRead to /allowWrite/ should fail
-// COPY request to /denyAll/denyRead to /allowRead/ should fail
-// COPY request to /denyAll/allowRead to /allowRead/ should be successful(overwrite)
-// COPY request to /denyAll/denyRead to /allowRead/ should fail (overwrite)
+// COPY request to /denyAll/allowRead to /denyAll/allowReadWriteDir/newResource should be successful
+// COPY request to /denyAll/allowReadDir/resource to /denyAll/allowReadWriteDir/newResource should be successful
+// COPY request to /denyAll/allowRead to /denyAll/allowReadWrite should be successful (overwrite)
+// COPY request to /allowAll/denyRead to /denyAll/allowReadWriteDir/newResource should fail
+// COPY request to /allowAll/denyReadDir/resource to /denyAll/allowReadWriteDir/newResource should fail
+// COPY request to /denyAll/allowRead to /denyAll/allowReadDir/newResource should fail
+// COPY request to /denyAll/allowRead to /denyAll/allowWriteDir/newResource should fail
+// COPY request to /denyAll/allowRead to /denyAll/allowRead should fail (overwrite)
+// COPY request to /denyAll/allowRead to /denyAll/allowReadWriteDir/denyRead should fail (overwrite)
+// COPY request to /denyAll/allowRead to /denyAll/allowWrite should fail (overwrite)
+// COPY request to /denyAll/allowRead to /denyAll/allowReadWriteDir/denyWrite should fail (overwrite)
 
 // *** ACTION MOVE request ***
-// MOVE request to /denyAll/denyWriteAcl to /allowWrite/ should be successful
-// MOVE request to /denyAll/denyRead to /allowWrite/ should fail
-// MOVE request to /denyAll/denyWrite to /allowWrite/ should fail
-// MOVE request to /allowWrite/denyWriteAcl to /denyWriteAcl/ should be successful(overwrite)
-// MOVE request to /denyWriteAcl/allowWrite to /denyWriteAcl/denyWrite should fail(overwrite)
+// MOVE request to /denyAll/allowReadWrite to /denyAll/allowReadWriteDir/newResource should be successful
+// MOVE request to /denyAll/allowReadWriteDir/resource to /denyAll/allowReadWriteDir/newResource should be successful
+// MOVE request to /denyAll/allowReadWrite to /denyAll/allowReadWrite should be successful (overwrite)
+// MOVE request to /allowAll/denyRead to /denyAll/allowReadWriteDir/newResource should fail
+// MOVE request to /allowAll/denyReadDir/resource to /denyAll/allowReadWriteDir/newResource should fail
+// MOVE request to /allowAll/denyWrite to /denyAll/allowReadWriteDir/newResource should fail
+// MOVE request to /allowAll/denyWriteDir/resource to /denyAll/allowReadWriteDir/newResource should fail
+// MOVE request to /denyAll/allowReadWrite to /denyAll/allowReadDir/newResource should fail
+// MOVE request to /denyAll/allowReadWrite to /denyAll/allowWriteDir/newResource should fail
+// MOVE request to /denyAll/allowReadWrite to /denyAll/allowRead should fail (overwrite)
+// MOVE request to /denyAll/allowReadWrite to /denyAll/allowReadWriteDir/denyRead should fail (overwrite)
+// MOVE request to /denyAll/allowReadWrite to /denyAll/allowWrite should fail (overwrite)
+// MOVE request to /denyAll/allowReadWrite to /denyAll/allowReadWriteDir/denyWrite should fail (overwrite)
 
 // *** ACTION LOCK request ***
-// LOCK request to /denyAll/allowRead should be successful
-// LOCK request to /denyAll/denyRead should fail
+// LOCK request to /denyAll/allowReadWrite should be successful
+// LOCK request to /denyAll/allowReadWrite/resource should be successful
+// LOCK request to /allowAll/denyRead should fail
+// LOCK request to /allowAll/denyReadDir/resource should fail
+// LOCK request to /allowAll/denyWrite should fail
+// LOCK request to /allowAll/denyWriteDir/resource should fail
 
 // *** ACTION UNLOCK request ***
-// UNLOCK request to /denyAll/allowRead should be successful
-// UNLOCK request to /denyAll/denyRead should fail
+// No need to test UNLOCK: UNLOCK is always allowed, as long as you have LOCKed the resource. This is already tested by Litmus I think.
 
 // *** ACTION ACL request ***
-// Change ACL request to /denyAll/denyWrite should be successful
-// Change ACL request to /denyAll/denyRead should fail
-// Change ACL request to /denyAll/denyWriteAcl should fail
+// ACL request to /denyAll/allowReadWriteAcl should be successful
+// ACL request to /denyAll/allowReadWriteAclDir/resource should be successful
+// ACL request to /allowAll/denyRead should fail
+// ACL request to /allowAll/denyReadDir/resource should fail
+// ACL request to /allowAll/denyWriteAcl should fail
+// ACL request to /allowAll/denyWriteAclDir/resource should fail
 
 // *** ACTION REPORT request ***
+// TODO deze wordt misschien nog niet gebruikt?
 // REPORT request to /denyAll/allowRead should be successful
-// REPORT request to /denyAll/denyRead should fail
+// REPORT request to /denyAll/allowReadDir/resource should be successful
+// REPORT request to /allowAll/denyRead should fail
+// REPORT request to /allowAll/denyReadDir/resource should fail
+
+// *** Become owner ***
+// Become owner of /denyAll/allowReadWriteDir/resource should be successful
+// Become owner of /denyAll/allowReadDir/allowWrite should fail
+// Become owner of /denyAll/allowWriteDir/allowRead should fail
+// Become owner of /denyAll/allowReadWriteDir/denyRead should fail
+// Become owner of /denyAll/allowReadWriteDir/denyWrite should fail
+
+// *** Change sponsor ***
+// Change sponsor of /foo/file.txt (by John --> owner) to sponsor_b should be successful
+// Change sponsor of /foo/file.txt (by John) to sponsor_c (does not sponsor John) should fail
+// Change sponsor of /foo/file.txt (by Jane --> not owner) to sponsor_c should fail

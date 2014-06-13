@@ -181,6 +181,55 @@ function setUpStorageBackend() {
   \mkdir( $basePath . 'system' . \DIRECTORY_SEPARATOR . 'sponsors' );
   \mkdir( $basePath . 'system' . \DIRECTORY_SEPARATOR . 'users' );
 
+  // Environment for system tests
+  \mkdir( $basePath . 'denyAll' );
+  \xattr_set( $basePath . 'denyAll', \rawurlencode( \DAV::PROP_ACL ), "[[\"DAV: all\",false,[\"DAV: all\"],true]]" );
+  \touch( $basePath . 'denyAll' . \DIRECTORY_SEPARATOR . 'allowRead' );
+  \xattr_set( $basePath . 'denyAll' . \DIRECTORY_SEPARATOR . 'allowRead', \rawurlencode( \DAV::PROP_ACL ), "[[\"DAV: all\",false,[\"DAV: read\"],false]]" );
+  \touch( $basePath . 'denyAll' . \DIRECTORY_SEPARATOR . 'allowWrite' );
+  \xattr_set( $basePath . 'denyAll' . \DIRECTORY_SEPARATOR . 'allowWrite', \rawurlencode( \DAV::PROP_ACL ), "[[\"DAV: all\",false,[\"DAV: write\"],false]]" );
+  \touch( $basePath . 'denyAll' . \DIRECTORY_SEPARATOR . 'allowWriteAcl' );
+  \xattr_set( $basePath . 'denyAll' . \DIRECTORY_SEPARATOR . 'allowWriteAcl', \rawurlencode( \DAV::PROP_ACL ), "[[\"DAV: all\",false,[\"DAV: write-acl\"],false]]" );
+  \touch( $basePath . 'denyAll' . \DIRECTORY_SEPARATOR . 'allowReadWrite' );
+  \xattr_set( $basePath . 'denyAll' . \DIRECTORY_SEPARATOR . 'allowReadWrite', \rawurlencode( \DAV::PROP_ACL ), "[[\"DAV: all\",false,[\"DAV: read\",\"DAV: write\"],false]]" );
+  \touch( $basePath . 'denyAll' . \DIRECTORY_SEPARATOR . 'allowReadWriteAcl' );
+  \xattr_set( $basePath . 'denyAll' . \DIRECTORY_SEPARATOR . 'allowReadWriteAcl', \rawurlencode( \DAV::PROP_ACL ), "[[\"DAV: all\",false,[\"DAV: read\",\"DAV: write-acl\"],false]]" );
+  \mkdir( $basePath . 'denyAll' . \DIRECTORY_SEPARATOR . 'allowReadDir' );
+  \xattr_set( $basePath . 'denyAll' . \DIRECTORY_SEPARATOR . 'allowReadDir', \rawurlencode( \DAV::PROP_ACL ), "[[\"DAV: all\",false,[\"DAV: read\"],false]]" );
+  \touch( $basePath . 'denyAll' . \DIRECTORY_SEPARATOR . 'allowReadDir' . \DIRECTORY_SEPARATOR . 'resource' );
+  \touch( $basePath . 'denyAll' . \DIRECTORY_SEPARATOR . 'allowReadDir' . \DIRECTORY_SEPARATOR . 'allowWrite' );
+  \xattr_set( $basePath . 'denyAll' . \DIRECTORY_SEPARATOR . 'allowReadDir' . \DIRECTORY_SEPARATOR . 'allowWrite', \rawurlencode( \DAV::PROP_ACL ), "[[\"DAV: all\",false,[\"DAV: write\"],false]]" );
+  \mkdir( $basePath . 'denyAll' . \DIRECTORY_SEPARATOR . 'allowWriteDir' );
+  \xattr_set( $basePath . 'denyAll' . \DIRECTORY_SEPARATOR . 'allowWriteDir', \rawurlencode( \DAV::PROP_ACL ), "[[\"DAV: all\",false,[\"DAV: write\"],false]]" );
+  \touch( $basePath . 'denyAll' . \DIRECTORY_SEPARATOR . 'allowWriteDir' . \DIRECTORY_SEPARATOR . 'resource' );
+  \touch( $basePath . 'denyAll' . \DIRECTORY_SEPARATOR . 'allowWriteDir' . \DIRECTORY_SEPARATOR . 'allowRead' );
+  \xattr_set( $basePath . 'denyAll' . \DIRECTORY_SEPARATOR . 'allowWriteDir' . \DIRECTORY_SEPARATOR . 'allowRead', \rawurlencode( \DAV::PROP_ACL ), "[[\"DAV: all\",false,[\"DAV: read\"],false]]" );
+  \mkdir( $basePath . 'denyAll' . \DIRECTORY_SEPARATOR . 'allowReadWriteDir' );
+  \xattr_set( $basePath . 'denyAll' . \DIRECTORY_SEPARATOR . 'allowReadWriteDir', \rawurlencode( \DAV::PROP_ACL ), "[[\"DAV: all\",false,[\"DAV: read\",\"DAV: write\"],false]]" );
+  \touch( $basePath . 'denyAll' . \DIRECTORY_SEPARATOR . 'allowReadWriteDir' . \DIRECTORY_SEPARATOR . 'resource' );
+  \touch( $basePath . 'denyAll' . \DIRECTORY_SEPARATOR . 'allowReadWriteDir' . \DIRECTORY_SEPARATOR . 'denyRead' );
+  \xattr_set( $basePath . 'denyAll' . \DIRECTORY_SEPARATOR . 'allowReadWriteDir' . \DIRECTORY_SEPARATOR . 'denyRead', \rawurlencode( \DAV::PROP_ACL ), "[[\"DAV: all\",false,[\"DAV: read\"],true]]" );
+  \touch( $basePath . 'denyAll' . \DIRECTORY_SEPARATOR . 'allowReadWriteDir' . \DIRECTORY_SEPARATOR . 'denyWrite' );
+  \xattr_set( $basePath . 'denyAll' . \DIRECTORY_SEPARATOR . 'allowReadWriteDir' . \DIRECTORY_SEPARATOR . 'denyWrite', \rawurlencode( \DAV::PROP_ACL ), "[[\"DAV: all\",false,[\"DAV: write\"],true]]" );
+  \mkdir( $basePath . 'denyAll' . \DIRECTORY_SEPARATOR . 'allowReadWriteAclDir' );
+  \xattr_set( $basePath . 'denyAll' . \DIRECTORY_SEPARATOR . 'allowReadWriteAclDir', \rawurlencode( \DAV::PROP_ACL ), "[[\"DAV: all\",false,[\"DAV: read\",\"DAV: write-acl\"],false]]" );
+  \touch( $basePath . 'denyAll' . \DIRECTORY_SEPARATOR . 'allowReadWriteAclDir' . \DIRECTORY_SEPARATOR . 'resource' );
+  \mkdir( $basePath . 'allowAll' );
+  \xattr_set( $basePath . 'allowAll', \rawurlencode( \DAV::PROP_ACL ), "[[\"DAV: all\",false,[\"DAV: all\"],false]]" );
+  \touch( $basePath . 'allowAll' . \DIRECTORY_SEPARATOR . 'denyRead' );
+  \xattr_set( $basePath . 'allowAll' . \DIRECTORY_SEPARATOR . 'denyRead', \rawurlencode( \DAV::PROP_ACL ), "[[\"DAV: all\",false,[\"DAV: read\"],true]]" );
+  \touch( $basePath . 'allowAll' . \DIRECTORY_SEPARATOR . 'denyWrite' );
+  \xattr_set( $basePath . 'allowAll' . \DIRECTORY_SEPARATOR . 'denyWrite', \rawurlencode( \DAV::PROP_ACL ), "[[\"DAV: all\",false,[\"DAV: write\"],true]]" );
+  \touch( $basePath . 'allowAll' . \DIRECTORY_SEPARATOR . 'denyWriteAcl' );
+  \xattr_set( $basePath . 'allowAll' . \DIRECTORY_SEPARATOR . 'denyWriteAcl', \rawurlencode( \DAV::PROP_ACL ), "[[\"DAV: all\",false,[\"DAV: write-acl\"],true]]" );
+  \mkdir( $basePath . 'allowAll' . \DIRECTORY_SEPARATOR . 'denyReadDir' );
+  \xattr_set( $basePath . 'allowAll' . \DIRECTORY_SEPARATOR . 'denyReadDir', \rawurlencode( \DAV::PROP_ACL ), "[[\"DAV: all\",false,[\"DAV: read\"],true]]" );
+  \touch( $basePath . 'allowAll' . \DIRECTORY_SEPARATOR . 'denyReadDir' . \DIRECTORY_SEPARATOR . 'resource' );
+  \mkdir( $basePath . 'allowAll' . \DIRECTORY_SEPARATOR . 'denyWriteDir' );
+  \xattr_set( $basePath . 'allowAll' . \DIRECTORY_SEPARATOR . 'denyWriteDir', \rawurlencode( \DAV::PROP_ACL ), "[[\"DAV: all\",false,[\"DAV: write\"],true]]" );
+  \mkdir( $basePath . 'allowAll' . \DIRECTORY_SEPARATOR . 'denyWriteAclDir' );
+  \xattr_set( $basePath . 'allowAll' . \DIRECTORY_SEPARATOR . 'denyWriteAclDir', \rawurlencode( \DAV::PROP_ACL ), "[[\"DAV: all\",false,[\"DAV: write-acl\"],true]]" );
+
   // Return true to indicate everything went well
   return true;
 }
