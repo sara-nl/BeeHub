@@ -647,6 +647,7 @@ if ( RUN_CLIENT_TESTS ) {
     <script src="/system/tests/unittests/directory_view_content.js"></script>
     <script src="/system/tests/unittests/directory_view_dialog.js"></script>
     <script src="/system/tests/unittests/directory_view_acl.js"></script>
+    <script src="/system/tests/unittests/systemtests.js"></script>
    ';
 }
 
