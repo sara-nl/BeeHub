@@ -114,7 +114,7 @@ require 'views/header.php';
 
   <?php
   try {
-    $this->assert( DAVACL::PRIV_WRITE );
+    $this->assert( DAVACL::PRIV_WRITE_CONTENT );
     $mkcolButtonDisabled = false;
   } catch ( DAV_Status $e) {
     $mkcolButtonDisabled = true;
@@ -304,7 +304,7 @@ require 'views/header.php';
           // Determine if it is a file and is writable. If so, we'll want to keep the upload button enabled
           if ( ! $writableFiles && ( $member->prop_resourcetype() !== DAV_Collection::RESOURCETYPE ) ) {
             try {
-              $member->assert( DAVACL::PRIV_WRITE );
+              $member->assert( DAVACL::PRIV_WRITE_CONTENT );
               $writableFiles = true;
             }catch ( DAV_Status $e ) {}
           }
@@ -623,7 +623,7 @@ $footer = '
 // If the directory ($this) is not writable nor any of the files in it, then you
 // won't be able to upload anything to this directory. So disable the button.
 try {
-  $this->assert( DAVACL::PRIV_WRITE );
+  $this->assert( DAVACL::PRIV_WRITE_CONTENT );
 }catch ( DAV_Status $e ) {
   if ( ! $writableFiles ) {
     $footer .= '
