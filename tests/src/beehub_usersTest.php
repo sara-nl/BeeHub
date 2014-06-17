@@ -119,8 +119,10 @@ class BeeHub_UsersTest extends BeeHub_Tests_Db_Test_Case {
 
 
   public function testReport_principal_property_search() {
-    $expected = array( '/system/users/jane' );
+    $expected = array( '/system/users/jane', '/system/users/janine' );
+    \sort( $expected );
     $results = $this->obj->report_principal_property_search( array( \DAV::PROP_DISPLAYNAME => array( 'ja' ) ) );
+    \sort( $results );
     $this->assertSame( $expected, $results );
   }
 

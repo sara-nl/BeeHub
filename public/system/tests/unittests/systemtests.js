@@ -349,7 +349,7 @@
 //   //*** Change sponsor ***
 //   //Change sponsor of /foo/file.txt (by John --> owner) to sponsor_b should be successful
 //   //Change sponsor of /foo/file.txt (by John) to sponsor_c (does not sponsor John) should fail
-//   //Change sponsor of /foo/file.txt (by Jane --> not owner) to sponsor_c should fail
+//   //Change sponsor of /foo/file.txt (by Janine --> not owner) to sponsor_c should fail
 // });
 
 })();

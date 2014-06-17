@@ -23,13 +23,14 @@ INSERT INTO `beehub_sponsor_members` (`sponsor_name`, `user_name`, `is_admin`, `
      VALUES ('sponsor_a', 'john', 1, 1),
             ('sponsor_b', 'john', 1, 1),
             ('sponsor_b', 'jane', 0, 0),
-            ('sponsor_c', 'jane', 1, 1);
+            ('sponsor_c', 'janine', 1, 1);
 
 TRUNCATE TABLE `beehub_users`;
 INSERT INTO `beehub_users` (`user_name`, `displayname`, `email`, `unverified_email`, `password`, `surfconext_id`, `surfconext_description`, `x509`, `sponsor_name`, `verification_code`, `verification_expiration`, `password_reset_code`, `password_reset_expiration`)
      VALUES ('john' , 'John Doe' , 'john.doe@mailservice.com' , NULL                   , '$6$rounds=5000$126b519331f5189c$cvGKahLo6.q/TSTeLMxGC8qpwHC6QIA37NCdn6xKpBJVCU3vBzwJkK3HS7.d4RwJcCG.oXMHBiv06oMnZCwjM0', NULL        , NULL                                              , NULL         , 'sponsor_a', NULL            , NULL                 , NULL                 , NULL),
             ('jane' , 'Jane Doe' , 'jane.doe@mailservice.com' , 'j.doe@mailservice.com', '$6$rounds=5000$cvGKahLo6.q/TSTe$20dAPKtCcskhKC7SJ0ObfQodGu8dKhj5Eb4ipm09NK7RRJzTONJTsZgxASn3I1PtV6Yrwi186Xw9mn2mOxqKc.', 'qwertyuiop', 'Account at the top row of letters on my keyboard', 'CN=Jane Doe', NULL       , 'somesecretcode', '2038-01-19 03:14:07', 'someothersecretcode', '2038-01-19 03:14:07'),
-            ('johny', 'Johny Doe', 'johny.doe@mailservice.com', NULL                   , '$6$rounds=5000$126b519331f5189c$cvGKahLo6.q/TSTeLMxGC8qpwHC6QIA37NCdn6xKpBJVCU3vBzwJkK3HS7.d4RwJcCG.oXMHBiv06oMnZCwjM0', NULL        , NULL                                              , NULL         , 'sponsor_a', NULL            , NULL                 , NULL                 , NULL);
+            ('johny', 'Johny Doe', 'johny.doe@mailservice.com', NULL                   , '$6$rounds=5000$126b519331f5189c$cvGKahLo6.q/TSTeLMxGC8qpwHC6QIA37NCdn6xKpBJVCU3vBzwJkK3HS7.d4RwJcCG.oXMHBiv06oMnZCwjM0', NULL        , NULL                                              , NULL         , 'sponsor_a', NULL            , NULL                 , NULL                 , NULL),
+            ('janine', 'Janine Doe', 'janine.doe@mailservice.com', NULL                , '$6$rounds=5000$cvGKahLo6.q/TSTe$20dAPKtCcskhKC7SJ0ObfQodGu8dKhj5Eb4ipm09NK7RRJzTONJTsZgxASn3I1PtV6Yrwi186Xw9mn2mOxqKc.', NULL        , NULL                                              , NULL         , NULL       , NULL            , NULL                 , NULL                 , NULL);
 
 TRUNCATE TABLE `Locks`;
 INSERT INTO `Locks` (`lock_token`, `lock_root`, `lock_owner`, `lock_depth`, `lock_timeout`)

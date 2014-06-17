@@ -289,7 +289,7 @@ class BeeHub_XFSResourceTest extends BeeHub_Tests_Db_Test_Case {
   public function testChangeSponsorToUnexisting() {
     $this->setCurrentUser( '/system/users/john' );
     $this->setExpectedException( 'DAV_Status', null, \DAV::HTTP_BAD_REQUEST );
-    $this->obj->method_PROPPATCH( \BeeHub::PROP_SPONSOR, '<D:href>/system/sponsors/sponsor_c</D:href>' );
+    $this->obj->method_PROPPATCH( \BeeHub::PROP_SPONSOR, '<D:href>/system/sponsors/unexisting_sponsor</D:href>' );
   }
 
 
