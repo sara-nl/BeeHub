@@ -21,123 +21,110 @@
 (function(){
   module("systemtests",{
     setup: function(){
-      setupEnvironmentOnServer();
     },
     teardown: function(){
     }
   });
   
-  
-  // directory with acl deny read, deny write, deny write-acl
-  var denyAll =                        '/denyAll/';     
-  // resource with acl allow read, deny write, deny write-acl
-  var denyAll_allowRead =              '/denyAll/allowRead';
-  // resource with acl deny read, allow write, allow write-acl
-  var denyAll_denyRead =               '/denyAll/denyRead';
-  // resource with acl allow read, deny write, allow write-acl
-  var denyAll_denyWrite =              '/denyAll/denyWrite';
-  // resource with acl allow read, allow write, deny write-acl
-  var denyAll_denyWriteAcl =           '/denyAll/denyWriteAcl';
-
-  // directory with acl allow read, deny write, deny write-acl
-  var allowRead =                      '/allowRead/';
-  // resource with acl allow read, allow write, deny write-acl
-  var allowRead_denyWriteAcl =         '/allowRead/denyWriteAcl';
-  // resource with acl deny read, allow write, deny write-acl
-  var allowRead_allowWrite =           '/allowRead/allowWrite';
-
-  // directory with acl deny read, allow write, deny write-acl
-  var allowWrite =                     '/allowWrite/';
-
-  // directory with acl allow read, allow write, deny write-acl
-  var denyWriteAcl =                   '/denyWriteAcl/';
-  // resource with acl allow read, allow write, deny write-acl
-  var denyWriteAcl_denyWriteAcl =      '/denyWriteAcl/denyWriteAcl';
-  // resource with acl deny read, allow write, deny write-acl
-  var denyWriteAcl_allowWrite =        '/denyWriteAcl/allowWrite';
-  // resource with acl allow read, deny write, allow write-acl
-  var denyWriteAcl_denyWrite =         '/denyWriteAcl/denyWrite';
-
-  function setupEnvironmentOnServer(){
-    
-  };
-  
   /**
    * Test GET request
    */
   test( 'GET request', function() { 
-    expect(2);
+    expect(4);
     ok(false, "Not implemented");
-    // GET request to /denyAll/allowRead should be successful
-    // GET request to /denyAll/denyRead should fail
+  //*** ACTION GET request ***
+  //GET request to /denyAll/allowRead should be successful
+  //GET request to /denyAll/allowReadDir/resource should be successful
+  //GET request to /allowAll/denyRead should fail
+  //GET request to /allowAll/denyReadDir/resource should fail
   });
 
   /**
    * Test HEAD request
    */
   test( 'HEAD request', function() { 
-    expect(2);
+    expect(4);
     ok(false, "Not implemented");
-    // HEAD request to /denyAll/allowRead should be successful
-    // HEAD request to /denyAll/denyRead should fail
+  //*** ACTION HEAD request ***
+  //HEAD request to /denyAll/allowRead should be successful
+  //HEAD request to /denyAll/allowReadDir/resource should be successful
+  //HEAD request to /allowAll/denyRead should fail
+  //HEAD request to /allowAll/denyReadDir/resource should fail
   });
 
   /**
    * Test POST request
    */
   test( 'POST request', function() { 
-    expect(3);
+    expect(6);
     ok(false, "Not implemented");
-    // POST request to /denyAll/allowRead should be successful
-    // POST request to /denyAll/denyRead should fail
-    // POST request to /denyAll/denyWrite should fail
+  //*** ACTION POST request ***
+  //TODO deze wordt nog niet gebruikt
+  //POST request to /denyAll/allowReadWrite should be successful
+  //POST request to /denyAll/allowReadWriteDir/resource should be successful
+  //POST request to /allowAll/denyRead should fail
+  //POST request to /allowAll/denyReadDir/resource should fail
+  //POST request to /allowAll/denyWrite should fail
+  //POST request to /allowAll/denyWriteDir/resource should fail
   });
   
   /**
    * Test PUT request
    */
   test( 'PUT request', function() { 
-    expect(6);
+    expect(9);
     ok(false, "Not implemented");
-    // TODO deze wordt nog niet gebruikt
-    // * Create directory /denyWriteAcl *
-    // PUT request to /denyAll/allowRead should be successful
-    // PUT request to /denyAll/denyRead should fail
-    // PUT request to /denyAll/denyWrite should fail
-    // PUT request to /denyAll/newResource should fail (does not exist)
-    // PUT request to /allowRead/newResource should fail (does not exist)
-    // PUT request to /allowWrite/newResource should be successful (does not exist)
+  //*** ACTION PUT request ***
+  //PUT request to /denyAll/allowReadWrite should be successful
+  //PUT request to /denyAll/allowReadWriteDir/resource should be successful
+  //PUT request to /allowAll/denyRead should fail
+  //PUT request to /allowAll/denyReadDir/resource should fail
+  //PUT request to /allowAll/denyWrite should fail
+  //PUT request to /allowAll/denyWriteDir/resource should fail
+  //PUT request to /denyAll/allowReadWriteDir/newResource should successful (does not exist)
+  //PUT request to /allowAll/denyReadDir/newResource should fail (does not exist)
+  //PUT request to /allowAll/denyWriteDir/newResource should be fail (does not exist)
   });
 
   /**
    * Test OPTIONS request
    */
   test( 'OPTIONS request', function() { 
-    expect(2);
+    expect(4);
     ok(false, "Not implemented");
-    // OPTIONS request to /denyAll/allowRead should be successful
-    // OPTIONS request to /denyAll/denyRead should fail
+  //*** ACTION OPTIONS request ***
+  //OPTIONS request to /denyAll/allowRead should be successful
+  //OPTIONS request to /denyAll/allowReadDir/resource should be successful
+  //OPTIONS request to /allowAll/denyRead should fail
+  //OPTIONS request to /allowAll/denyReadDir/resource should fail
   });
   
   /**
    * Test PROPFIND request
    */
   test( 'PROPFIND request', function() { 
-    expect(2);
+    expect(4);
     ok(false, "Not implemented");
-    // PROPFIND request to /denyAll/allowRead should be successful
-    // PROPFIND request to /denyAll/denyRead should fail
+  //*** ACTION PROPFIND request ***
+  //PROPFIND request to /denyAll/allowRead should be successful
+  //PROPFIND request to /denyAll/allowReadDir/resource should be successful
+  //PROPFIND request to /allowAll/denyRead should fail
+  //PROPFIND request to /allowAll/denyReadDir/resource should fail
   });
  
   /**
    * Test PROPPATCH request
    */
   test( 'PROPPATCH request', function() { 
-    expect(3);
+    expect(6);
     ok(false, "Not implemented");
-    // PROPPATCH request to /denyAll/denyWriteAcl should be successful
-    // PROPPATCH request to /denyAll/denyRead should fail
-    // PROPPATCH request to /denyAll/denyWrite should fail
+  //*** ACTION PROPPATCH request ***
+  //PROPPATCH request to /denyAll/allowReadWrite should be successful
+  //PROPPATCH request to /denyAll/allowReadWriteDir/resource should be successful
+  //PROPPATCH request to /allowAll/denyRead should fail
+  //PROPPATCH request to /allowAll/denyReadDir/resource should fail
+  //PROPPATCH request to /allowAll/denyWrite should fail
+  //PROPPATCH request to /allowAll/denyWriteDir/resource should fail
   });
 
   /**
@@ -159,49 +146,138 @@
   test( 'DELETE request', function() { 
     expect(3);
     ok(false, "Not implemented");
-    // DELETE request to /denyAll/denyWriteAcl should be successful
-    // DELETE request to /denyAll/denyRead should fail
-    // DELETE request to /denyAll/denyWrite should fail
+  //*** ACTION DELETE request ***
+  //DELETE request to /denyAll/allowReadWrite should be successful
+  //DELETE request to /denyAll/allowReadWriteDir/resource should be successful
+  //DELETE request to /allowAll/denyRead should fail
+  //DELETE request to /allowAll/denyReadDir/resource should fail
+  //DELETE request to /allowAll/denyWrite should fail
+  //DELETE request to /allowAll/denyWriteDir/resource should fail
   });
 
-  // *** ACTION DELETE request ***
+  /**
+   * Test COPY request
+   */
+  test( 'COPY request', function() { 
+    expect(11);
+    ok(false, "Not implemented");
+   //*** ACTION COPY request ***
+   //COPY request to /denyAll/allowRead to /denyAll/allowReadWriteDir/newResource should be successful
+   //COPY request to /denyAll/allowReadDir/resource to /denyAll/allowReadWriteDir/newResource should be successful
+   //COPY request to /denyAll/allowRead to /denyAll/allowReadWrite should be successful (overwrite)
+   //COPY request to /allowAll/denyRead to /denyAll/allowReadWriteDir/newResource should fail
+   //COPY request to /allowAll/denyReadDir/resource to /denyAll/allowReadWriteDir/newResource should fail
+   //COPY request to /denyAll/allowRead to /denyAll/allowReadDir/newResource should fail
+   //COPY request to /denyAll/allowRead to /denyAll/allowWriteDir/newResource should fail
+   //COPY request to /denyAll/allowRead to /denyAll/allowRead should fail (overwrite)
+   //COPY request to /denyAll/allowRead to /denyAll/allowReadWriteDir/denyRead should fail (overwrite)
+   //COPY request to /denyAll/allowRead to /denyAll/allowWrite should fail (overwrite)
+   //COPY request to /denyAll/allowRead to /denyAll/allowReadWriteDir/denyWrite should fail (overwrite)
+  });
 
+   /**
+    * Test MOVE request
+    */
+   test( 'MOVE request', function() { 
+     expect(13);
+     ok(false, "Not implemented");
+     //*** ACTION MOVE request ***
+     //MOVE request to /denyAll/allowReadWrite to /denyAll/allowReadWriteDir/newResource should be successful
+     //MOVE request to /denyAll/allowReadWriteDir/resource to /denyAll/allowReadWriteDir/newResource should be successful
+     //MOVE request to /denyAll/allowReadWrite to /denyAll/allowReadWrite should be successful (overwrite)
+     //MOVE request to /allowAll/denyRead to /denyAll/allowReadWriteDir/newResource should fail
+     //MOVE request to /allowAll/denyReadDir/resource to /denyAll/allowReadWriteDir/newResource should fail
+     //MOVE request to /allowAll/denyWrite to /denyAll/allowReadWriteDir/newResource should fail
+     //MOVE request to /allowAll/denyWriteDir/resource to /denyAll/allowReadWriteDir/newResource should fail
+     //MOVE request to /denyAll/allowReadWrite to /denyAll/allowReadDir/newResource should fail
+     //MOVE request to /denyAll/allowReadWrite to /denyAll/allowWriteDir/newResource should fail
+     //MOVE request to /denyAll/allowReadWrite to /denyAll/allowRead should fail (overwrite)
+     //MOVE request to /denyAll/allowReadWrite to /denyAll/allowReadWriteDir/denyRead should fail (overwrite)
+     //MOVE request to /denyAll/allowReadWrite to /denyAll/allowWrite should fail (overwrite)
+     //MOVE request to /denyAll/allowReadWrite to /denyAll/allowReadWriteDir/denyWrite should fail (overwrite)
+  });
 
-  // *** ACTION COPY request ***
-  // Nog testen, klopt niet helemaal
-  // COPY request to /denyAll/allowRead to /denyWriteAcl/ should be successful
-  // COPY request to /denyAll/denyRead to /denyWriteAcl/ should fail
-  // COPY request to /denyAll/denyRead to /allowWrite/ should fail
-  // COPY request to /denyAll/denyRead to /allowRead/ should fail
-  // COPY request to /denyAll/allowRead to /allowRead/ should be successful(overwrite)
-  // COPY request to /denyAll/denyRead to /allowRead/ should fail (overwrite)
+  /**
+   * Test LOCK request
+   */
+  test( 'LOCK request', function() { 
+    expect(6);
+    ok(false, "Not implemented");
+    //*** ACTION LOCK request ***
+    //LOCK request to /denyAll/allowReadWrite should be successful
+    //LOCK request to /denyAll/allowReadWrite/resource should be successful
+    //LOCK request to /allowAll/denyRead should fail
+    //LOCK request to /allowAll/denyReadDir/resource should fail
+    //LOCK request to /allowAll/denyWrite should fail
+    //LOCK request to /allowAll/denyWriteDir/resource should fail
+  });
 
-  // *** ACTION MOVE request ***
-  // MOVE request to /denyAll/denyWriteAcl to /allowWrite/ should be successful
-  // MOVE request to /denyAll/denyRead to /allowWrite/ should fail
-  // MOVE request to /denyAll/denyWrite to /allowWrite/ should fail
-  // MOVE request to /allowWrite/denyWriteAcl to /denyWriteAcl/ should be successful(overwrite)
-  // MOVE request to /denyWriteAcl/allowWrite to /denyWriteAcl/denyWrite should fail(overwrite)
+  /**
+   * Test UNLOCK request
+   */
+  test( 'UNLOCK request', function() { 
+    expect(3);
+    ok(false, "Not implemented");
+    //*** ACTION UNLOCK request ***
+    //No need to test UNLOCK: UNLOCK is always allowed, as long as you have LOCKed the resource. This is already tested by Litmus I think.
+  });
 
-  // *** ACTION LOCK request ***
-  // LOCK request to /denyAll/allowRead should be successful
-  // LOCK request to /denyAll/denyRead should fail
+  /**
+   * Test ACL request
+   */
+  test( 'ACL request', function() { 
+    expect(6);
+    ok(false, "Not implemented");
+    //*** ACTION ACL request ***
+    //ACL request to /denyAll/allowReadWriteAcl should be successful
+    //ACL request to /denyAll/allowReadWriteAclDir/resource should be successful
+    //ACL request to /allowAll/denyRead should fail
+    //ACL request to /allowAll/denyReadDir/resource should fail
+    //ACL request to /allowAll/denyWriteAcl should fail
+    //ACL request to /allowAll/denyWriteAclDir/resource should fail
+  });
 
-  // *** ACTION UNLOCK request ***
-  // UNLOCK request to /denyAll/allowRead should be successful
-  // UNLOCK request to /denyAll/denyRead should fail
+  /**
+   * Test REPORT request
+   */
+  test( 'REPORT request', function() { 
+    expect(4);
+    ok(false, "Not implemented");
+    //*** ACTION REPORT request ***
+    //TODO deze wordt misschien nog niet gebruikt?
+    //REPORT request to /denyAll/allowRead should be successful
+    //REPORT request to /denyAll/allowReadDir/resource should be successful
+    //REPORT request to /allowAll/denyRead should fail
+    //REPORT request to /allowAll/denyReadDir/resource should fail
+  });
 
-  // *** ACTION ACL request ***
-  // Change ACL request to /denyAll/denyWrite should be successful
-  // Change ACL request to /denyAll/denyRead should fail
-  // Change ACL request to /denyAll/denyWriteAcl should fail
+  /**
+   * Test Become owner request
+   */
+  test( 'Become owner request', function() { 
+    expect(5);
+    ok(false, "Not implemented");
+    //*** Become owner ***
+    //Become owner of /denyAll/allowReadWriteDir/resource should be successful
+    //Become owner of /denyAll/allowReadDir/allowWrite should fail
+    //Become owner of /denyAll/allowWriteDir/allowRead should fail
+    //Become owner of /denyAll/allowReadWriteDir/denyRead should fail
+    //Become owner of /denyAll/allowReadWriteDir/denyWrite should fail
+ });
 
-  // *** ACTION REPORT request ***
-  // REPORT request to /denyAll/allowRead should be successful
-  // REPORT request to /denyAll/denyRead should fail
-
-  // TODO Become owner, Change sponsor, wisbaarheid ofzo
+ /**
+  * Test Change sponsor request
+  */
+ test( 'Change sponsor request', function() { 
+   expect(3);
+   ok(false, "Not implemented");
+   //*** Change sponsor ***
+   //Change sponsor of /foo/file.txt (by John --> owner) to sponsor_b should be successful
+   //Change sponsor of /foo/file.txt (by John) to sponsor_c (does not sponsor John) should fail
+   //Change sponsor of /foo/file.txt (by Jane --> not owner) to sponsor_c should fail
+ });
 
 })();
 //End of file
+
 
