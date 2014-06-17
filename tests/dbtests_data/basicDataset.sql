@@ -15,13 +15,15 @@ INSERT INTO `beehub_group_members` (`group_name`, `user_name`, `is_admin`, `is_i
 TRUNCATE TABLE `beehub_sponsors`;
 INSERT INTO `beehub_sponsors` (`sponsor_name`, `displayname`, `description`)
      VALUES ('sponsor_a', 'Company A', 'Company A has paid for some storage'),
-            ('sponsor_b', 'Company B', 'Company B has paid for even more storage');
+            ('sponsor_b', 'Company B', 'Company B has paid for even more storage'),
+            ('sponsor_c', 'Company C', 'Company C does not sponsor anybody');
 
 TRUNCATE TABLE `beehub_sponsor_members`;
 INSERT INTO `beehub_sponsor_members` (`sponsor_name`, `user_name`, `is_admin`, `is_accepted`)
      VALUES ('sponsor_a', 'john', 1, 1),
             ('sponsor_b', 'john', 1, 1),
-            ('sponsor_b', 'jane', 0, 0);
+            ('sponsor_b', 'jane', 0, 0),
+            ('sponsor_c', 'jane', 1, 1);
 
 TRUNCATE TABLE `beehub_users`;
 INSERT INTO `beehub_users` (`user_name`, `displayname`, `email`, `unverified_email`, `password`, `surfconext_id`, `surfconext_description`, `x509`, `sponsor_name`, `verification_code`, `verification_expiration`, `password_reset_code`, `password_reset_expiration`)
