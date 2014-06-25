@@ -227,6 +227,7 @@ function setUpStorageBackend() {
   \touch( $basePath . 'allowAll' . \DIRECTORY_SEPARATOR . 'denyReadDir' . \DIRECTORY_SEPARATOR . 'resource' );
   \mkdir( $basePath . 'allowAll' . \DIRECTORY_SEPARATOR . 'denyWriteDir' );
   \xattr_set( $basePath . 'allowAll' . \DIRECTORY_SEPARATOR . 'denyWriteDir', \rawurlencode( \DAV::PROP_ACL ), "[[\"DAV: all\",false,[\"DAV: write\"],true]]" );
+  \touch( $basePath . 'allowAll' . \DIRECTORY_SEPARATOR . 'denyWriteDir' . \DIRECTORY_SEPARATOR . 'resource' );
   \mkdir( $basePath . 'allowAll' . \DIRECTORY_SEPARATOR . 'denyWriteAclDir' );
   \xattr_set( $basePath . 'allowAll' . \DIRECTORY_SEPARATOR . 'denyWriteAclDir', \rawurlencode( \DAV::PROP_ACL ), "[[\"DAV: all\",false,[\"DAV: write-acl\"],true]]" );
 
