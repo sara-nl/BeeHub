@@ -32,6 +32,13 @@
     }
   });
   
+  /**
+   * Create callback for requests
+   * 
+   * @param {Object} assert Test
+   * @param {String} result Expected result
+   * 
+   */
   function createRequestCallback(assert, result){
     return function(status, data){
       expect(1);
@@ -40,6 +47,15 @@
     };
   };
   
+  /**
+   * Create callback for requests
+   * 
+   * @param {Object}  assert      Test
+   * @param {String}  result      Expected result
+   * @param {String}  path        Path of request
+   * @param {Integer} multistatus Multistatus status
+   * 
+   */
   function createMultistatusRequestCallback(assert, result, path, multistatus){
     return function(status, data){
       if (status === multistatus) {
@@ -59,7 +75,6 @@
       start();
     };
   };
-
 
   /**
    * Test GET requests
@@ -148,11 +163,11 @@
   });
   asyncTest( 'PUT request /allowAll/denyRead', function(assert) { 
     //PUT request to /allowAll/denyRead should fail
-    this.webdav.put('/allowAll/denyRead', createRequestCallback(assert, this.statusNotAllowed),"Test");
+    this.webdav.put('/allowAll/denyRead', createRequestCallback(assert, this.statusSuccessNoContent),"Test");
   });
   asyncTest( 'PUT request /allowAll/denyReadDir/resource', function(assert) { 
     //PUT request to /allowAll/denyReadDir/resource should fail
-    this.webdav.put('/allowAll/denyReadDir/resource', createRequestCallback(assert, this.statusNotAllowed),"Test");
+    this.webdav.put('/allowAll/denyReadDir/resource', createRequestCallback(assert, this.statusSuccessNoContent),"Test");
   });
   asyncTest( 'PUT request /allowAll/denyWrite', function(assert) { 
     //PUT request to /allowAll/denyWrite should fail
