@@ -379,7 +379,7 @@
    */
   nl.sara.beehub.controller.renameResource = function(resource, fileNameNew, overwriteMode){
     var webdav = new nl.sara.webdav.Client();
-    webdav.move(resource.path, createRenameCallback(resource, fileNameNew, overwriteMode), path +fileNameNew,  overwriteMode);
+    webdav.move(resource.path, createRenameCallback(resource, fileNameNew, overwriteMode), encodeURI(path + fileNameNew),  overwriteMode);
   };
   
   /**
