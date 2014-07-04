@@ -53,24 +53,23 @@
    * @param {Object}  assert      Test
    * @param {String}  result      Expected result
    * @param {String}  path        Path of request
-   * @param {Integer} multistatus Multistatus status
    * 
    */
-  function createMultistatusRequestCallback(assert, result, path, multistatus){
+  function createMultistatusRequestCallback(assert, result, path){
     return function(status, data){
-      if (status === multistatus) {
+      if (status === 207) {
        expect(1);
        var response = data.getResponse(path);
        if (response !== undefined) {
         var namespaces = response.getNamespaceNames();
         var properties = response.getPropertyNames(namespaces[0]);
         var propStatus = response.getProperty(namespaces[0],properties[0]).status;
-        assert.deepEqual(propStatus, result, "Response status should be "+result);
+        assert.deepEqual(propStatus, result, "Multistatus response element's status should be "+result);
        } else {
          assert.ok(false, "Response is undefined");
        }
       } else {
-        assert.ok(false, "Status should be 207");
+        assert.deepEqual( status, 207, "Response header status should be 207");
       };
       start();
     };
@@ -89,11 +88,11 @@
   });
   asyncTest( 'GET request /allowAll/denyRead', function(assert) { 
     //GET request to /allowAll/denyRead should fail
-    this.webdav.get('/allowAll/denyRead' , createRequestCallback(assert, this.statusNotFound));
+    this.webdav.get('/allowAll/denyRead' , createRequestCallback(assert, this.statusNotAllowed));
   }); 
   asyncTest( 'GET request /allowAll/denyReadDir/resource', function(assert) { 
     //GET request to /allowAll/denyReadDir/resource should fail
-    this.webdav.get('/allowAll/denyReadDir/resource' , createRequestCallback(assert, this.statusNotFound));
+    this.webdav.get('/allowAll/denyReadDir/resource' , createRequestCallback(assert, this.statusNotAllowed));
   });
 
 
@@ -110,11 +109,11 @@
   });
   asyncTest( 'HEAD request /allowAll/denyRead', function(assert) {
     //HEAD request to /allowAll/denyRead should fail
-    this.webdav.head('/allowAll/denyRead' , createRequestCallback(assert, this.statusNotFound));
+    this.webdav.head('/allowAll/denyRead' , createRequestCallback(assert, this.statusNotAllowed));
   });
   asyncTest( 'HEAD request /allowAll/denyReadDir/resource', function(assert) {
     //HEAD request to /allowAll/denyReadDir/resource should fail
-    this.webdav.head('/allowAll/denyReadDir/resource' , createRequestCallback(assert, this.statusNotFound));
+    this.webdav.head('/allowAll/denyReadDir/resource' , createRequestCallback(assert, this.statusNotAllowed));
   });
 
   /**
@@ -124,21 +123,13 @@
    * currently not yet implemented. Therefore, most test should just check for
    * a Not Implemented response from the server.
    */
-  asyncTest( 'POST request /denyAll/allowReadWrite', function(assert) { 
-    //POST request to /denyAll/allowReadWrite should be successful
-    this.webdav.post('/denyAll/allowReadWrite', createRequestCallback(assert, this.statusNotImplemented));
+  asyncTest( 'POST request /denyAll/allowWrite', function(assert) { 
+    //POST request to /denyAll/allowWrite should be successful
+    this.webdav.post('/denyAll/allowWrite', createRequestCallback(assert, this.statusNotImplemented));
   });
-  asyncTest( 'POST request /denyAll/allowReadWriteDir/resource', function(assert) { 
-    //POST request to /denyAll/allowReadWriteDir/resource should be successful
-    this.webdav.post('/denyAll/allowReadWriteDir/resource', createRequestCallback(assert, this.statusNotImplemented));
-  });
-  asyncTest( 'POST request /allowAll/denyRead', function(assert) { 
-    //POST request to /allowAll/denyRead should fail
-    this.webdav.post('/allowAll/denyRead', createRequestCallback(assert, this.statusNotFound));
-  });
-  asyncTest( 'POST request /allowAll/denyReadDir/', function(assert) { 
-    //POST request to /allowAll/denyReadDir/resource should fail
-    this.webdav.post('/allowAll/denyReadDir/resource', createRequestCallback(assert, this.statusNotFound));
+  asyncTest( 'POST request /denyAll/allowWriteDir/resource', function(assert) { 
+    //POST request to /denyAll/allowWriteDir/resource should be successful
+    this.webdav.post('/denyAll/allowWriteDir/resource', createRequestCallback(assert, this.statusNotImplemented));
   });
   asyncTest( 'POST request /allowAll/denyWrite', function(assert) { 
     //POST request to /allowAll/denyWrite should fail
@@ -153,21 +144,13 @@
   /**
    * Test PUT requests
    */
-  asyncTest( 'PUT request /denyAll/allowReadWrite', function(assert) { 
-    //PUT request to /denyAll/allowReadWrite should be successful
-    this.webdav.put('/denyAll/allowReadWrite', createRequestCallback(assert, this.statusSuccessNoContent),"Test");
+  asyncTest( 'PUT request /denyAll/allowWrite', function(assert) { 
+    //PUT request to /denyAll/allowWrite should be successful
+    this.webdav.put('/denyAll/allowWrite', createRequestCallback(assert, this.statusSuccessNoContent),"Test");
   });
-  asyncTest( 'PUT request /denyAll/allowReadWriteDir/resource', function(assert) { 
-    //PUT request to /denyAll/allowReadWriteDir/resource should be successful
-    this.webdav.put('/denyAll/allowReadWriteDir/resource', createRequestCallback(assert, this.statusSuccessNoContent),"Test");
-  });
-  asyncTest( 'PUT request /allowAll/denyRead', function(assert) { 
-    //PUT request to /allowAll/denyRead should fail
-    this.webdav.put('/allowAll/denyRead', createRequestCallback(assert, this.statusSuccessNoContent),"Test");
-  });
-  asyncTest( 'PUT request /allowAll/denyReadDir/resource', function(assert) { 
-    //PUT request to /allowAll/denyReadDir/resource should fail
-    this.webdav.put('/allowAll/denyReadDir/resource', createRequestCallback(assert, this.statusSuccessNoContent),"Test");
+  asyncTest( 'PUT request /denyAll/allowWriteDir/resource', function(assert) { 
+    //PUT request to /denyAll/allowWriteDir/resource should be successful
+    this.webdav.put('/denyAll/allowWriteDir/resource', createRequestCallback(assert, this.statusSuccessNoContent),"Test");
   });
   asyncTest( 'PUT request /allowAll/denyWrite', function(assert) { 
     //PUT request to /allowAll/denyWrite should fail
@@ -177,13 +160,9 @@
     //PUT request to /allowAll/denyWriteDir/resource should fail
     this.webdav.put('/allowAll/denyWriteDir/resource', createRequestCallback(assert, this.statusNotAllowed),"Test");
   });
-  asyncTest( 'PUT request /denyAll/allowReadWriteDir/newResource', function(assert) { 
-    //PUT request to /denyAll/allowReadWriteDir/newResource should successful (does not exist)
-    this.webdav.put('/denyAll/allowReadWriteDir/newResource', createRequestCallback(assert, this.statusSuccessCreated),"Test");
-  });
-  asyncTest( 'PUT request /allowAll/denyReadDir/newResource', function(assert) { 
-    //PUT request to /allowAll/denyReadDir/newResource should fail (does not exist)
-    this.webdav.put('/allowAll/denyReadDir/newResource', createRequestCallback(assert, this.statusNotAllowed),"Test");
+  asyncTest( 'PUT request /denyAll/allowWriteDir/newResource', function(assert) { 
+    //PUT request to /denyAll/allowWriteDir/newResource should successful (does not exist)
+    this.webdav.put('/denyAll/allowWriteDir/newResource', createRequestCallback(assert, this.statusSuccessCreated),"Test");
   });
   asyncTest( 'PUT request /allowAll/denyWriteDir/newResource', function(assert) { 
     //PUT request to /allowAll/denyWriteDir/newResource should be fail (does not exist)
@@ -194,91 +173,92 @@
   /**
    * Test OPTIONS requests
    */
-  asyncTest( 'OPTIONS request /denyAll/allowRead', function(assert) { 
+  asyncTest( 'OPTIONS request *', function(assert) {
+    //OPTIONS request to * should be successful
+    this.webdav.options('*' , createRequestCallback(assert, this.statusSuccessOK));
+  });
+  asyncTest( 'OPTIONS request /denyAll/allowRead', function(assert) {
     //OPTIONS request to /denyAll/allowRead should be successful
     this.webdav.options('/denyAll/allowRead' , createRequestCallback(assert, this.statusSuccessOK));
   });
-  asyncTest( 'OPTIONS request /denyAll/allowReadDir/resource', function(assert) {
-    //OPTIONS request to /denyAll/allowReadDir/resource should be successful
-    this.webdav.options('/denyAll/allowReadDir/resource' , createRequestCallback(assert, this.statusSuccessOK));
+  asyncTest( 'OPTIONS request /denyAll/allowWrite', function(assert) {
+    //OPTIONS request to /denyAll/allowWrite should be successful
+    this.webdav.options('/denyAll/allowWrite' , createRequestCallback(assert, this.statusSuccessOK));
   });
-  asyncTest( 'OPTIONS request /allowAll/denyRead', function(assert) {
-    //OPTIONS request to /allowAll/denyRead should fail
-    this.webdav.options('/allowAll/denyRead' , createRequestCallback(assert, this.statusNotFound));
+  asyncTest( 'OPTIONS request /denyAll/allowWriteAcl', function(assert) {
+    //OPTIONS request to /denyAll/allowWriteAcl should be successful
+    this.webdav.options('/denyAll/allowWriteAcl' , createRequestCallback(assert, this.statusSuccessOK));
   });
-  asyncTest( 'OPTIONS request /allowAll/denyReadDir/resource', function(assert) {
-    //OPTIONS request to /allowAll/denyReadDir/resource should fail
-    this.webdav.options('/allowAll/denyReadDir/resource' , createRequestCallback(assert, this.statusNotFound));
+  asyncTest( 'OPTIONS request /denyAll/', function(assert) {
+    //OPTIONS request to /denyAll should fail
+    this.webdav.options('/denyAll' , createRequestCallback(assert, this.statusNotFound));
   });
 
 
   /**
    * Test PROPFIND requests
    */
-  asyncTest( 'PROPFIND request /denyAll/allowRead', function(assert) { 
+  asyncTest( 'PROPFIND request /denyAll/allowRead', function(assert) {
     //PROPFIND request to /denyAll/allowRead should be successful
-    this.webdav.propfind('/denyAll/allowRead' , createMultistatusRequestCallback(assert, this.statusSuccessOK, '/denyAll/allowRead', this.statusSuccessMultistatus));
+    this.webdav.propfind('/denyAll/allowRead' , createMultistatusRequestCallback(assert, this.statusSuccessOK, '/denyAll/allowRead'));
   });
   asyncTest( 'PROPFIND request /denyAll/allowReadDir/resource', function(assert) {
     //PROPFIND request to /denyAll/allowReadDir/resource should be successful
-    this.webdav.propfind('/denyAll/allowReadDir/resource' , createMultistatusRequestCallback(assert, this.statusSuccessOK, '/denyAll/allowReadDir/resource', this.statusSuccessMultistatus));
+    this.webdav.propfind('/denyAll/allowReadDir/resource' , createMultistatusRequestCallback(assert, this.statusSuccessOK, '/denyAll/allowReadDir/resource'));
   });
   asyncTest( 'PROPFIND request /allowAll/denyRead', function(assert) {
     //PROPFIND request to /allowAll/denyRead should fail
-    this.webdav.propfind('/allowAll/denyRead' , createRequestCallback(assert, this.statusNotFound));
+    this.webdav.propfind('/allowAll/denyRead' , createMultistatusRequestCallback(assert, this.statusNotAllowed, '/allowAll/denyRead' ) );
   });
   asyncTest( 'PROPFIND request /allowAll/denyReadDir/resource', function(assert) {
     //PROPFIND request to /allowAll/denyReadDir/resource should fail
-    this.webdav.propfind('/allowAll/denyReadDir/resource' , createRequestCallback(assert, this.statusNotFound));
+    this.webdav.propfind('/allowAll/denyReadDir/resource' , createMultistatusRequestCallback(assert, this.statusNotAllowed, '/allowAll/denyReadDir/resource' ) );
   });
 
 
   /**
    * Test PROPPATCH requests
    */
-  (function() {
+  asyncTest( 'PROPPATCH request /denyAll/allowWrite', function(assert) {
     var newProperty = new nl.sara.webdav.Property();
     newProperty.namespace = 'http://tests.beehub.nl/';
     newProperty.tagname = 'testproperty';
     newProperty.setValueAndRebuildXml( 'test value' );
-
-    asyncTest( 'PROPPATCH request /denyAll/allowReadWrite', function(assert) { 
-      //PROPPATCH request to /denyAll/allowReadWrite should be successful
-      this.webdav.proppatch('/denyAll/allowReadWrite' , createMultistatusRequestCallback(assert, this.statusSuccessOK, '/denyAll/allowReadWrite', this.statusSuccessMultistatus), [ newProperty ] );
-    });
-    asyncTest( 'PROPPATCH request /denyAll/allowReadWriteDir/resource', function(assert) {
-      //PROPPATCH request to /denyAll/allowReadWriteDir/resource should be successful
-      this.webdav.proppatch('/denyAll/allowReadWriteDir/resource' , createMultistatusRequestCallback(assert, this.statusSuccessOK, '/denyAll/allowReadWriteDir/resource', this.statusSuccessMultistatus), [ newProperty ]);
-    });
-    asyncTest( 'PROPPATCH request /allowAll/denyRead', function(assert) {
-      //PROPPATCH request to /allowAll/denyRead should fail
-      this.webdav.proppatch('/allowAll/denyRead' , createRequestCallback(assert, this.statusNotFound), [ newProperty ]);
-    });
-    asyncTest( 'PROPPATCH request /allowAll/denyReadDir/resource', function(assert) {
-      //PROPPATCH request to /allowAll/denyReadDir/resource should fail
-      this.webdav.proppatch('/allowAll/denyReadDir/resource' , createRequestCallback(assert, this.statusNotFound), [ newProperty ]);
-    });
-    asyncTest( 'PROPPATCH request /allowAll/denyWrite', function(assert) {
-      //PROPPATCH request to /allowAll/denyWrite should fail
-      this.webdav.proppatch('/allowAll/denyWrite' , createMultistatusRequestCallback(assert, this.statusNotAllowed, '/allowAll/denyWrite', this.statusSuccessMultistatus), [ newProperty ]);
-    });
-    asyncTest( 'PROPPATCH request /allowAll/denyWriteDir/resource', function(assert) {
-      //PROPPATCH request to /allowAll/denyWriteDir/resource should fail
-      this.webdav.proppatch('/allowAll/denyWriteDir/resource' , createMultistatusRequestCallback(assert, this.statusNotAllowed, '/allowAll/denyWriteDir/resource', this.statusSuccessMultistatus), [ newProperty ]);
-    });
-  })();
+    //PROPPATCH request to /denyAll/allowWrite should be successful
+    this.webdav.proppatch('/denyAll/allowWrite' , createMultistatusRequestCallback(assert, this.statusSuccessOK, '/denyAll/allowWrite'), [ newProperty ] );
+  });
+  asyncTest( 'PROPPATCH request /denyAll/allowWriteDir/resource', function(assert) {
+    var newProperty = new nl.sara.webdav.Property();
+    newProperty.namespace = 'http://tests.beehub.nl/';
+    newProperty.tagname = 'testproperty';
+    newProperty.setValueAndRebuildXml( 'test value' );
+    //PROPPATCH request to /denyAll/allowWriteDir/resource should be successful
+    this.webdav.proppatch('/denyAll/allowWriteDir/resource' , createMultistatusRequestCallback(assert, this.statusSuccessOK, '/denyAll/allowWriteDir/resource'), [ newProperty ]);
+  });
+  asyncTest( 'PROPPATCH request /allowAll/denyWrite', function(assert) {
+    var newProperty = new nl.sara.webdav.Property();
+    newProperty.namespace = 'http://tests.beehub.nl/';
+    newProperty.tagname = 'testproperty';
+    newProperty.setValueAndRebuildXml( 'test value' );
+    //PROPPATCH request to /allowAll/denyWrite should fail
+    this.webdav.proppatch('/allowAll/denyWrite' , createMultistatusRequestCallback(assert, this.statusNotAllowed, '/allowAll/denyWrite'), [ newProperty ]);
+  });
+  asyncTest( 'PROPPATCH request /allowAll/denyWriteDir/resource', function(assert) {
+    var newProperty = new nl.sara.webdav.Property();
+    newProperty.namespace = 'http://tests.beehub.nl/';
+    newProperty.tagname = 'testproperty';
+    newProperty.setValueAndRebuildXml( 'test value' );
+    //PROPPATCH request to /allowAll/denyWriteDir/resource should fail
+    this.webdav.proppatch('/allowAll/denyWriteDir/resource' , createMultistatusRequestCallback(assert, this.statusNotAllowed, '/allowAll/denyWriteDir/resource'), [ newProperty ]);
+  });
 
 
   /**
    * Test MKCOL request
    */
-  asyncTest( 'MKCOL request /denyAll/allowReadWriteDir/newResource', function(assert) {
-    //MKCOL request to /denyAll/allowReadWriteDir/newResource should successful
-    this.webdav.mkcol('/denyAll/allowReadWriteDir/newResource' , createRequestCallback(assert, this.statusSuccessCreated));
-  });
-  asyncTest( 'MKCOL request /allowAll/denyReadDir/newResource', function(assert) {
-    //MKCOL request to /allowAll/denyReadDir/newResource should fail
-    this.webdav.mkcol('/allowAll/denyReadDir/newResource' , createRequestCallback(assert, this.statusConflict));
+  asyncTest( 'MKCOL request /denyAll/allowWriteDir/newResource', function(assert) {
+    //MKCOL request to /denyAll/allowWriteDir/newResource should successful
+    this.webdav.mkcol('/denyAll/allowWriteDir/newResource' , createRequestCallback(assert, this.statusSuccessCreated));
   });
   asyncTest( 'MKCOL request /allowAll/denyWriteDir/newResource', function(assert) {
     //MKCOL request to /allowAll/denyWriteDir/newResource should be fail
@@ -289,21 +269,13 @@
   /**
    * Test DELETE request
    */
-  asyncTest( 'DELETE request /denyAll/allowReadWrite', function(assert) { 
-    //DELETE request to /denyAll/allowReadWrite should be successful
-    this.webdav.remove('/denyAll/allowReadWrite' , createRequestCallback(assert, this.statusSuccessNoContent ) );
+  asyncTest( 'DELETE request /denyAll/allowWrite', function(assert) { 
+    //DELETE request to /denyAll/allowWrite should be successful
+    this.webdav.remove('/denyAll/allowWrite' , createRequestCallback(assert, this.statusSuccessNoContent ) );
   });
-  asyncTest( 'DELETE request /denyAll/allowReadWriteDir/resource', function(assert) {
-    //DELETE request to /denyAll/allowReadWriteDir/resource should be successful
-    this.webdav.remove('/denyAll/allowReadWriteDir/resource' , createRequestCallback(assert, this.statusSuccessNoContent ) );
-  });
-  asyncTest( 'DELETE request /allowAll/denyRead', function(assert) {
-    //DELETE request to /allowAll/denyRead should fail
-    this.webdav.remove('/allowAll/denyRead' , createRequestCallback(assert, this.statusNotFound ) );
-  });
-  asyncTest( 'DELETE request /allowAll/denyReadDir/resource', function(assert) {
-    //DELETE request to /allowAll/denyReadDir/resource should fail
-    this.webdav.remove('/allowAll/denyReadDir/resource' , createRequestCallback(assert, this.statusNotFound ) );
+  asyncTest( 'DELETE request /denyAll/allowWriteDir/resource', function(assert) {
+    //DELETE request to /denyAll/allowWriteDir/resource should be successful
+    this.webdav.remove('/denyAll/allowWriteDir/resource' , createRequestCallback(assert, this.statusSuccessNoContent ) );
   });
   asyncTest( 'DELETE request /allowAll/denyWrite', function(assert) {
     //DELETE request to /allowAll/denyWrite should fail
@@ -318,106 +290,54 @@
   /**
    * Test COPY request
    */
-  asyncTest( 'COPY request to /denyAll/allowRead to /denyAll/allowReadWriteDir/newResource', function(assert) { 
-    //COPY request to /denyAll/allowRead to /denyAll/allowReadWriteDir/newResource should be successful
-    this.webdav.copy('/denyAll/allowRead' , createRequestCallback(assert, this.statusSuccessCreated ), '/denyAll/allowReadWriteDir/newResource', nl.sara.webdav.Client.FAIL_ON_OVERWRITE );
+  asyncTest( 'COPY request to /denyAll/allowRead to /denyAll/allowWriteDir/newResource', function(assert) { 
+    //COPY request to /denyAll/allowRead to /denyAll/allowWriteDir/newResource should be successful
+    this.webdav.copy('/denyAll/allowRead' , createRequestCallback(assert, this.statusSuccessCreated ), '/denyAll/allowWriteDir/newResource', nl.sara.webdav.Client.FAIL_ON_OVERWRITE );
   });
-  asyncTest( 'COPY request to /denyAll/allowReadDir/resource to /denyAll/allowReadWriteDir/newResource', function(assert) { 
-    //COPY request to /denyAll/allowReadDir/resource to /denyAll/allowReadWriteDir/newResource should be successful
-    this.webdav.copy('/denyAll/allowReadDir/resource' , createRequestCallback(assert, this.statusSuccessCreated ), '/denyAll/allowReadWriteDir/newResource', nl.sara.webdav.Client.FAIL_ON_OVERWRITE );
+  asyncTest( 'COPY request to /allowAll/denyRead to /denyAll/allowWriteDir/newResource', function(assert) {
+    //COPY request to /allowAll/denyRead to /denyAll/allowWriteDir/newResource should fail
+    this.webdav.copy('/allowAll/denyRead' , createRequestCallback(assert, this.statusNotAllowed ) , '/denyAll/allowWriteDir/newResource', nl.sara.webdav.Client.FAIL_ON_OVERWRITE );
   });
-  asyncTest( 'COPY request to /denyAll/allowRead to /denyAll/allowReadWrite', function(assert) {
-    //COPY request to /denyAll/allowRead to /denyAll/allowReadWrite should be successful (overwrite)
-    this.webdav.copy('/denyAll/allowRead' , createRequestCallback(assert, this.statusSuccessCreated ), '/denyAll/allowReadWrite', nl.sara.webdav.Client.SILENT_OVERWRITE );
-  });
-  asyncTest( 'COPY request to /allowAll/denyRead to /denyAll/allowReadWriteDir/newResource', function(assert) {
-    //COPY request to /allowAll/denyRead to /denyAll/allowReadWriteDir/newResource should fail
-    this.webdav.copy('/allowAll/denyRead' , createRequestCallback(assert, this.statusNotFound ), '/denyAll/allowReadWriteDir/newResource', nl.sara.webdav.Client.FAIL_ON_OVERWRITE );
-  });
-  asyncTest( 'COPY request to /allowAll/denyReadDir/resource to /denyAll/allowReadWriteDir/newResource', function(assert) {
-    //COPY request to /allowAll/denyReadDir/resource to /denyAll/allowReadWriteDir/newResource should fail
-    this.webdav.copy('/allowAll/denyReadDir/resource' , createRequestCallback(assert, this.statusNotFound ), '/denyAll/allowReadWriteDir/newResource', nl.sara.webdav.Client.FAIL_ON_OVERWRITE );
-  });
-  asyncTest( 'COPY request to /denyAll/allowRead to /denyAll/allowReadDir/newResource', function(assert) {
-    //COPY request to /denyAll/allowRead to /denyAll/allowReadDir/newResource should fail
-    this.webdav.copy('/denyAll/allowRead' , createRequestCallback(assert, this.statusNotAllowed ), '/denyAll/allowReadDir/newResource', nl.sara.webdav.Client.FAIL_ON_OVERWRITE );
-  });
-  asyncTest( 'COPY request to /denyAll/allowRead to /denyAll/allowWriteDir/newResource', function(assert) {
-    //COPY request to /denyAll/allowRead to /denyAll/allowWriteDir/newResource should fail
-    this.webdav.copy('/denyAll/allowRead' , createRequestCallback(assert, this.statusNotAllowed ), '/denyAll/allowWriteDir/newResource', nl.sara.webdav.Client.FAIL_ON_OVERWRITE );
-  });
-  asyncTest( 'COPY request to /denyAll/allowRead to /denyAll/allowRead2', function(assert) {
-    //COPY request to /denyAll/allowRead to /denyAll/allowRead2 should fail (overwrite)
-    this.webdav.copy('/denyAll/allowRead' , createRequestCallback(assert, this.statusNotAllowed ), '/denyAll/allowRead2', nl.sara.webdav.Client.SILENT_OVERWRITE );
-  });
-  asyncTest( 'COPY request to /denyAll/allowRead to /denyAll/allowReadWriteDir/denyRead', function(assert) {
-    //COPY request to /denyAll/allowRead to /denyAll/allowReadWriteDir/denyRead should fail (overwrite)
-    this.webdav.copy('/denyAll/allowRead' , createRequestCallback(assert, this.statusNotAllowed ), '/denyAll/allowReadWriteDir/denyRead', nl.sara.webdav.Client.SILENT_OVERWRITE );
+  asyncTest( 'COPY request to /denyAll/allowRead to /allowAll/denyWriteDir/newResource', function(assert) {
+    //COPY request to /denyAll/allowRead to /allowAll/denyWriteDir/newResource should fail
+    this.webdav.copy('/denyAll/allowRead' , createRequestCallback(assert, this.statusNotAllowed ), '/allowAll/denyWriteDir/newResource', nl.sara.webdav.Client.FAIL_ON_OVERWRITE );
   });
   asyncTest( 'COPY request to /denyAll/allowRead to /denyAll/allowWrite', function(assert) {
+    //COPY request to /denyAll/allowRead to /denyAll/allowWrite should be successful (overwrite)
+    this.webdav.copy('/denyAll/allowRead' , createRequestCallback(assert, this.statusSuccessCreated ), '/denyAll/allowWrite', nl.sara.webdav.Client.SILENT_OVERWRITE );
+  });
+  asyncTest( 'COPY request to /denyAll/allowRead to /allowAll/denyWrite', function(assert) {
     //COPY request to /denyAll/allowRead to /denyAll/allowWrite should fail (overwrite)
     this.webdav.copy('/denyAll/allowRead' , createRequestCallback(assert, this.statusNotAllowed ), '/denyAll/allowWrite', nl.sara.webdav.Client.SILENT_OVERWRITE );
-  });
-  asyncTest( 'COPY request to /denyAll/allowRead to /denyAll/allowReadWriteDir/denyWrite', function(assert) {
-    //COPY request to /denyAll/allowRead to /denyAll/allowReadWriteDir/denyWrite should fail (overwrite)
-    this.webdav.copy('/denyAll/allowRead' , createRequestCallback(assert, this.statusNotAllowed ), '/denyAll/allowReadWriteDir/denyWrite', nl.sara.webdav.Client.SILENT_OVERWRITE );
   });
 
 
   /**
    * Test MOVE request
    */
-  asyncTest( 'MOVE request to /denyAll/allowReadWrite to /denyAll/allowReadWriteDir/newResource', function(assert) { 
-    //MOVE request to /denyAll/allowReadWrite to /denyAll/allowReadWriteDir/newResource should be successful
-    this.webdav.move('/denyAll/allowReadWrite' , createRequestCallback(assert, this.statusSuccessCreated ), '/denyAll/allowReadWriteDir/newResource', nl.sara.webdav.Client.FAIL_ON_OVERWRITE );
+  asyncTest( 'MOVE request to /denyAll/allowReadWrite to /denyAll/allowWriteDir/newResource', function(assert) { 
+    //MOVE request to /denyAll/allowReadWrite to /denyAll/allowWriteDir/newResource should be successful
+    this.webdav.move('/denyAll/allowReadWrite' , createRequestCallback(assert, this.statusSuccessCreated ), '/denyAll/allowWriteDir/newResource', nl.sara.webdav.Client.FAIL_ON_OVERWRITE );
   });
-  asyncTest( 'MOVE request to /denyAll/allowReadWriteDir/resource to /denyAll/allowReadWriteDir/newResource', function(assert) { 
-    //MOVE request to /denyAll/allowReadWriteDir/resource to /denyAll/allowReadWriteDir/newResource should be successful
-    this.webdav.move('/denyAll/allowReadWriteDir/resource' , createRequestCallback(assert, this.statusSuccessCreated ), '/denyAll/allowReadWriteDir/newResource', nl.sara.webdav.Client.FAIL_ON_OVERWRITE );
+  asyncTest( 'MOVE request to /allowAll/denyRead to /denyAll/allowWriteDir/newResource', function(assert) {
+    //MOVE request to /allowAll/denyRead to /denyAll/allowWriteDir/newResource should fail
+    this.webdav.move('/allowAll/denyRead' , createRequestCallback(assert, this.statusNotAllowed ), '/denyAll/allowWriteDir/newResource', nl.sara.webdav.Client.FAIL_ON_OVERWRITE );
   });
-  asyncTest( 'MOVE request to /denyAll/allowReadWrite to /denyAll/allowReadWrite2', function(assert) {
-    //MOVE request to /denyAll/allowReadWrite to /denyAll/allowReadWrite2 should be successful (overwrite)
-    this.webdav.move('/denyAll/allowReadWrite' , createRequestCallback(assert, this.statusSuccessCreated ), '/denyAll/allowReadWrite2', nl.sara.webdav.Client.SILENT_OVERWRITE );
+  asyncTest( 'MOVE request to /allowAll/denyWrite to /denyAll/allowWriteDir/newResource', function(assert) {
+    //MOVE request to /allowAll/denyWrite to /denyAll/allowWriteDir/newResource should fail
+    this.webdav.move('/allowAll/denyWrite' , createRequestCallback(assert, this.statusNotAllowed ), '/denyAll/allowWriteDir/newResource', nl.sara.webdav.Client.FAIL_ON_OVERWRITE );
   });
-  asyncTest( 'MOVE request to /allowAll/denyRead to /denyAll/allowReadWriteDir/newResource', function(assert) {
-    //MOVE request to /allowAll/denyRead to /denyAll/allowReadWriteDir/newResource should fail
-    this.webdav.move('/allowAll/denyRead' , createRequestCallback(assert, this.statusNotFound ), '/denyAll/allowReadWriteDir/newResource', nl.sara.webdav.Client.FAIL_ON_OVERWRITE );
-  });
-  asyncTest( 'MOVE request to /allowAll/denyReadDir/resource to /denyAll/allowReadWriteDir/newResource', function(assert) {
-    //MOVE request to /allowAll/denyReadDir/resource to /denyAll/allowReadWriteDir/newResource should fail
-    this.webdav.move('/allowAll/denyReadDir/resource' , createRequestCallback(assert, this.statusNotFound ), '/denyAll/allowReadWriteDir/newResource', nl.sara.webdav.Client.FAIL_ON_OVERWRITE );
-  });
-  asyncTest( 'MOVE request to /allowAll/denyWrite to /denyAll/allowReadWriteDir/newResource', function(assert) {
-    //MOVE request to /allowAll/denyWrite to /denyAll/allowReadWriteDir/newResource should fail
-    this.webdav.move('/allowAll/denyWrite' , createRequestCallback(assert, this.statusNotAllowed ), '/denyAll/allowReadWriteDir/newResource', nl.sara.webdav.Client.FAIL_ON_OVERWRITE );
-  });
-  asyncTest( 'MOVE request to /allowAll/denyWriteDir/resource to /denyAll/allowReadWriteDir/newResource', function(assert) {
-    //MOVE request to /allowAll/denyWriteDir/resource to /denyAll/allowReadWriteDir/newResource should fail
-    this.webdav.move('/allowAll/denyWriteDir/resource' , createRequestCallback(assert, this.statusNotAllowed ), '/denyAll/allowReadWriteDir/newResource', nl.sara.webdav.Client.FAIL_ON_OVERWRITE );
-  });
-  asyncTest( 'MOVE request to /denyAll/allowReadWrite to /denyAll/allowReadDir/newResource', function(assert) {
-    //MOVE request to /denyAll/allowReadWrite to /denyAll/allowReadDir/newResource should fail
-    this.webdav.move('/denyAll/allowReadWrite' , createRequestCallback(assert, this.statusNotAllowed ), '/denyAll/allowReadDir/newResource', nl.sara.webdav.Client.FAIL_ON_OVERWRITE );
-  });
-  asyncTest( 'MOVE request to /denyAll/allowReadWrite to /denyAll/allowWriteDir/newResource', function(assert) {
-    //MOVE request to /denyAll/allowReadWrite to /denyAll/allowWriteDir/newResource should fail
-    this.webdav.move('/denyAll/allowReadWrite' , createRequestCallback(assert, this.statusNotAllowed ), '/denyAll/allowWriteDir/newResource', nl.sara.webdav.Client.FAIL_ON_OVERWRITE );
-  });
-  asyncTest( 'MOVE request to /denyAll/allowReadWrite to /denyAll/allowRead', function(assert) {
-    //MOVE request to /denyAll/allowReadWrite to /denyAll/allowRead should fail (overwrite)
-    this.webdav.move('/denyAll/allowReadWrite' , createRequestCallback(assert, this.statusNotAllowed ), '/denyAll/allowRead', nl.sara.webdav.Client.SILENT_OVERWRITE );
-  });
-  asyncTest( 'MOVE request to /denyAll/allowReadWrite to /denyAll/allowReadWriteDir/denyRead', function(assert) {
-    //MOVE request to /denyAll/allowReadWrite to /denyAll/allowReadWriteDir/denyRead should fail (overwrite)
-    this.webdav.move('/denyAll/allowReadWrite' , createRequestCallback(assert, this.statusNotAllowed ), '/denyAll/allowReadWriteDir/denyRead', nl.sara.webdav.Client.SILENT_OVERWRITE );
+  asyncTest( 'MOVE request to /denyAll/allowReadWrite to /allowAll/denyWriteDir/newResource', function(assert) {
+    //MOVE request to /denyAll/allowReadWrite to /allowAll/denyWriteDir/newResource should fail
+    this.webdav.move('/denyAll/allowReadWrite' , createRequestCallback(assert, this.statusNotAllowed ), '/allowAll/denyWriteDir/newResource', nl.sara.webdav.Client.FAIL_ON_OVERWRITE );
   });
   asyncTest( 'MOVE request to /denyAll/allowReadWrite to /denyAll/allowWrite', function(assert) {
-    //MOVE request to /denyAll/allowReadWrite to /denyAll/allowWrite should fail (overwrite)
-    this.webdav.move('/denyAll/allowReadWrite' , createRequestCallback(assert, this.statusNotAllowed ), '/denyAll/allowWrite', nl.sara.webdav.Client.SILENT_OVERWRITE );
+    //MOVE request to /denyAll/allowReadWrite to /denyAll/allowWrite should be successful (overwrite)
+    this.webdav.move('/denyAll/allowReadWrite' , createRequestCallback(assert, this.statusSuccessCreated ), '/denyAll/allowWrite', nl.sara.webdav.Client.SILENT_OVERWRITE );
   });
-  asyncTest( 'MOVE request to /denyAll/allowReadWrite to /denyAll/allowReadWriteDir/denyWrite', function(assert) {
-    //MOVE request to /denyAll/allowReadWrite to /denyAll/allowReadWriteDir/denyWrite should fail (overwrite)
-    this.webdav.move('/denyAll/allowReadWrite' , createRequestCallback(assert, this.statusNotAllowed ), '/denyAll/allowReadWriteDir/denyWrite', nl.sara.webdav.Client.SILENT_OVERWRITE );
+  asyncTest( 'MOVE request to /denyAll/allowReadWrite to /allowAll/denyWrite', function(assert) {
+    //MOVE request to /denyAll/allowReadWrite to /allowAll/denyWrite should fail (overwrite)
+    this.webdav.move('/denyAll/allowReadWrite' , createRequestCallback(assert, this.statusNotAllowed ), '/allowAll/denyWrite', nl.sara.webdav.Client.SILENT_OVERWRITE );
   });
 
 
@@ -451,11 +371,11 @@
     });
     asyncTest( 'LOCK request /allowAll/denyRead', function(assert) {
       //LOCK request to /allowAll/denyRead should fail
-      this.webdav.lock('/allowAll/denyRead', createRequestCallback(assert, this.statusNotFound ), lockBody );
+      this.webdav.lock('/allowAll/denyRead', createRequestCallback(assert, this.statusNotAllowed ), lockBody );
     });
     asyncTest( 'LOCK request /allowAll/denyReadDir/resource', function(assert) {
       //LOCK request to /allowAll/denyReadDir/resource should fail
-      this.webdav.lock('/allowAll/denyReadDir/resource', createRequestCallback(assert, this.statusNotFound ), lockBody );
+      this.webdav.lock('/allowAll/denyReadDir/resource', createRequestCallback(assert, this.statusNotAllowed ), lockBody );
     });
     asyncTest( 'LOCK request /allowAll/denyWrite', function(assert) {
       //LOCK request to /allowAll/denyWrite should fail
@@ -478,21 +398,13 @@
     // Create an empty ACL to use for the ACL tests
     var emptyAcl = new nl.sara.webdav.Acl();
     
-    asyncTest( 'ACL request /denyAll/allowReadWriteAcl', function(assert) { 
-      //ACL request to /denyAll/allowReadWriteAcl should be successful
-      this.webdav.acl('/denyAll/allowReadWriteAcl' , createRequestCallback(assert, this.statusSuccessOK ), emptyAcl );
+    asyncTest( 'ACL request /denyAll/allowWriteAcl', function(assert) { 
+      //ACL request to /denyAll/allowWriteAcl should be successful
+      this.webdav.acl('/denyAll/allowWriteAcl' , createRequestCallback(assert, this.statusSuccessOK ), emptyAcl );
     });
-    asyncTest( 'ACL request /denyAll/allowReadWriteAclDir/resource', function(assert) {
-      //ACL request to /denyAll/allowReadWriteAclDir/resource should be successful
-      this.webdav.acl('/denyAll/allowReadWriteAclDir/resource' , createRequestCallback(assert, this.statusSuccessOK ), emptyAcl );
-    });
-    asyncTest( 'ACL request /allowAll/denyRead', function(assert) {
-      //ACL request to /allowAll/denyRead should fail
-      this.webdav.acl('/allowAll/denyRead' , createRequestCallback(assert, this.statusNotFound ), emptyAcl );
-    });
-    asyncTest( 'ACL request /allowAll/denyReadDir/resource', function(assert) {
-      //ACL request to /allowAll/denyReadDir/resource should fail
-      this.webdav.acl('/allowAll/denyReadDir/resource' , createRequestCallback(assert, this.statusNotFound ), emptyAcl );
+    asyncTest( 'ACL request /denyAll/allowWriteAclDir/resource', function(assert) {
+      //ACL request to /denyAll/allowWriteAclDir/resource should be successful
+      this.webdav.acl('/denyAll/allowWriteAclDir/resource' , createRequestCallback(assert, this.statusSuccessOK ), emptyAcl );
     });
     asyncTest( 'ACL request /allowAll/denyWriteAcl', function(assert) {
       //ACL request to /allowAll/denyWriteAcl should fail
@@ -518,19 +430,19 @@
     
     asyncTest( 'REPORT request /denyAll/allowRead', function(assert) { 
       //REPORT request to /denyAll/allowRead should be successful
-      this.webdav.report( '/denyAll/allowRead', createMultistatusRequestCallback( assert, this.statusSuccessMultistatus, '/denyAll/allowRead', this.statusSuccessMultistatus), reportBody );
+      this.webdav.report( '/denyAll/allowRead', createMultistatusRequestCallback( assert, this.statusSuccessMultistatus, '/denyAll/allowRead'), reportBody );
     });
     asyncTest( 'REPORT request /denyAll/allowReadDir/resource', function(assert) { 
       //REPORT request to /denyAll/allowReadDir/resource should be successful
-      this.webdav.report( '/denyAll/allowReadDir/resource', createMultistatusRequestCallback( assert, this.statusSuccessOK, '/denyAll/allowReadDir/resource', this.statusSuccessMultistatus ), reportBody );
+      this.webdav.report( '/denyAll/allowReadDir/resource', createMultistatusRequestCallback( assert, this.statusSuccessOK, '/denyAll/allowReadDir/resource'), reportBody );
     });
     asyncTest( 'REPORT request /allowAll/denyRead', function(assert) { 
       //REPORT request to /allowAll/denyRead should fail
-      this.webdav.report( '/allowAll/denyRead', createRequestCallback(assert, this.statusNotFound), reportBody );
+      this.webdav.report( '/allowAll/denyRead', createRequestCallback(assert, this.statusNotAllowed), reportBody );
     }); 
     asyncTest( 'REPORT request /allowAll/denyReadDir/resource', function(assert) { 
       //REPORT request to /allowAll/denyReadDir/resource should fail
-      this.webdav.report( '/allowAll/denyReadDir/resource', createRequestCallback(assert, this.statusNotFound), reportBody );
+      this.webdav.report( '/allowAll/denyReadDir/resource', createRequestCallback(assert, this.statusNotAllowed), reportBody );
     });
   })();
 
@@ -538,34 +450,42 @@
   /**
    * Test Become owner request
    */
-  (function() {
+  asyncTest( 'Become owner of /denyAll/allowWriteDir/allowRead', function(assert) {
     // Who should become owner?
     var newOwner = new nl.sara.webdav.Property();
     newOwner.namespace = 'DAV:';
     newOwner.tagname = 'owner';
     newOwner.setValueAndRebuildXml( '/system/users/janine' );
-    
-    asyncTest( 'Become owner of /denyAll/allowReadWriteDir/resource', function(assert) { 
-      //Become owner of /denyAll/allowReadWriteDir/resource should be successful
-      this.webdav.proppatch( '/denyAll/allowReadWriteDir/resource', createMultistatusRequestCallback( assert, this.statusSuccessOK, '/denyAll/allowReadWriteDir/resource', this.statusSuccessMultistatus ), [ newOwner ] );
-    });
-    asyncTest( 'Become owner of /denyAll/allowReadDir/allowWrite', function(assert) { 
-      //Become owner of /denyAll/allowReadDir/allowWrite should fail
-      this.webdav.proppatch( '/denyAll/allowReadDir/allowWrite', createMultistatusRequestCallback( assert, this.statusNotAllowed, '/denyAll/allowReadDir/allowWrite', this.statusSuccessMultistatus ), [ newOwner ] );
-    });
-    asyncTest( 'Become owner of /denyAll/allowWriteDir/allowRead', function(assert) { 
-      //Become owner of /denyAll/allowWriteDir/allowRead should fail
-      this.webdav.proppatch( '/denyAll/allowWriteDir/allowRead', createMultistatusRequestCallback(assert, this.statusNotAllowed, '/denyAll/allowWriteDir/allowRead', this.statusSuccessMultistatus), [ newOwner ] );
-    });
-    asyncTest( 'Become owner of /denyAll/allowReadWriteDir/denyRead', function(assert) { 
-      //Become owner of /denyAll/allowReadWriteDir/denyRead should fail
-      this.webdav.proppatch( '/denyAll/allowReadWriteDir/denyRead', createRequestCallback(assert, this.statusNotFound), [ newOwner ] );
-    });
-    asyncTest( 'Become owner of /denyAll/allowReadWriteDir/denyWrite', function(assert) { 
-      //Become owner of /denyAll/allowReadWriteDir/denyWrite should fail
-      this.webdav.proppatch( '/denyAll/allowReadWriteDir/denyWrite', createMultistatusRequestCallback(assert, this.statusNotAllowed, '/denyAll/allowReadWriteDir/denyWrite', this.statusSuccessMultistatus), [ newOwner ] );
-    });
-  })();
+    //Become owner of /denyAll/allowWriteDir/allowRead should be successful
+    this.webdav.proppatch( '/denyAll/allowWriteDir/allowRead', createMultistatusRequestCallback(assert, this.statusSuccessOK, '/denyAll/allowWriteDir/allowRead'), [ newOwner ] );
+  });
+  asyncTest( 'Become owner of /allowAll/denyWriteDir/allowWrite', function(assert) {
+    // Who should become owner?
+    var newOwner = new nl.sara.webdav.Property();
+    newOwner.namespace = 'DAV:';
+    newOwner.tagname = 'owner';
+    newOwner.setValueAndRebuildXml( '/system/users/janine' );
+    //Become owner of /allowAll/denyWriteDir/allowWrite should fail
+    this.webdav.proppatch( '/allowAll/denyWriteDir/allowWrite', createMultistatusRequestCallback( assert, this.statusNotAllowed, '/allowAll/denyWriteDir/allowWrite' ), [ newOwner ] );
+  });
+  asyncTest( 'Become owner of /allowAll/denyRead', function(assert) {
+    // Who should become owner?
+    var newOwner = new nl.sara.webdav.Property();
+    newOwner.namespace = 'DAV:';
+    newOwner.tagname = 'owner';
+    newOwner.setValueAndRebuildXml( '/system/users/janine' );
+    //Become owner of /allowAll/denyRead should fail
+    this.webdav.proppatch( '/allowAll/denyRead', createMultistatusRequestCallback( assert, this.statusNotAllowed, '/allowAll/denyRead' ), [ newOwner ] );
+  });
+  asyncTest( 'Become owner of /allowAll/denyWrite', function(assert) {
+    // Who should become owner?
+    var newOwner = new nl.sara.webdav.Property();
+    newOwner.namespace = 'DAV:';
+    newOwner.tagname = 'owner';
+    newOwner.setValueAndRebuildXml( '/system/users/janine' );
+    //Become owner of /allowAll/denyWrite should fail
+    this.webdav.proppatch( '/allowAll/denyWrite', createMultistatusRequestCallback( assert, this.statusNotAllowed, '/allowAll/denyWrite' ), [ newOwner ] );
+  });
 
 
  /**
@@ -580,12 +500,12 @@
     asyncTest( 'Change sponsor of /foo/file.txt (by John --> owner) to sponsor_b', function(assert) { 
       //Change sponsor of /foo/file.txt (by John --> owner) to sponsor_b should be successful
       newSponsor.setValueAndRebuildXml( '/system/sponsors/sponsor_b' );
-      this.webdav.proppatch( '/foo/file.txt', createMultistatusRequestCallback( assert, this.statusSuccessOK, '/foo/file.txt' , this.statusSuccessMultistatus), [ newSponsor ] );
+      this.webdav.proppatch( '/foo/file.txt', createMultistatusRequestCallback( assert, this.statusSuccessOK, '/foo/file.txt' ), [ newSponsor ] );
     });
     asyncTest( 'Change sponsor of /foo/file.txt (by John --> owner) to sponsor_c', function(assert) { 
       //Change sponsor of /foo/file.txt (by John --> owner) to sponsor_c (does not sponsor John) should fail
       newSponsor.setValueAndRebuildXml( '/system/sponsors/sponsor_c' );
-      this.webdav.proppatch( '/foo/file.txt', createMultistatusRequestCallback( assert, this.statusNotAllowed , '/foo/file.txt', this.statusSuccessMultistatus), [ newSponsor ] );
+      this.webdav.proppatch( '/foo/file.txt', createMultistatusRequestCallback( assert, this.statusNotAllowed , '/foo/file.txt' ), [ newSponsor ] );
     });
     asyncTest( 'Change sponsor of /foo/file.txt (by Janine --> not owner) to sponsor_c', function(assert) { 
       //Change sponsor of /foo/file.txt (by Janine --> not owner) to sponsor_c should fail
@@ -595,7 +515,7 @@
         'password' : 'password_of_janine'
       };
       var webdav = new nl.sara.webdav.Client( clientConfig );
-      webdav.proppatch( '/foo/file.txt', createMultistatusRequestCallback(assert, this.statusNotAllowed, '/foo/file.txt', this.statusSuccessMultistatus), [ newSponsor ] );
+      webdav.proppatch( '/foo/file.txt', createMultistatusRequestCallback(assert, this.statusNotAllowed, '/foo/file.txt' ), [ newSponsor ] );
     });
   })();
 // });

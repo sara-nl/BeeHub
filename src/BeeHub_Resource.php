@@ -79,14 +79,25 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
   public function isVisible() {
     try {
       $this->assert( BeeHub::PRIV_READ_CONTENT );
-    } catch (DAV_Status $e) {
-      try {
-        $this->assert( DAVACL::PRIV_READ_ACL );
-      } catch (DAV_Status $e) {
-        return false;
-      }
-    }
-    return true;
+      return true;
+    } catch (DAV_Status $e) {}
+    try {
+      $this->assert( DAVACL::PRIV_READ_ACL );
+      return true;
+    } catch (DAV_Status $e) {}
+    try {
+      $this->assert( DAVACL::PRIV_WRITE_ACL );
+      return true;
+    } catch (DAV_Status $e) {}
+    try {
+      $this->assert( DAVACL::PRIV_WRITE_CONTENT );
+      return true;
+    } catch (DAV_Status $e) {}
+    try {
+      $this->assert( DAVACL::PRIV_WRITE_PROPERTIES );
+      return true;
+    } catch (DAV_Status $e) {}
+    return false;
   }
 
 
