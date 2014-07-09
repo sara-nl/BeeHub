@@ -257,25 +257,24 @@
   /**
    * Get sponsors from server
    */
-  nl.sara.beehub.controller.getSponsors = function(owner, path){
-    
+  nl.sara.beehub.controller.getSponsors = function(owner, path){  
     function callback(status, data){
-      var sponsors = [];
-      // Get sponsor
-      if (data.getResponse(owner).getProperty('http://beehub.nl/','sponsor-membership').getParsedValue() !== null) {
-        sponsors = data.getResponse(owner).getProperty('http://beehub.nl/','sponsor-membership').getParsedValue();
-      };
-      
-      var sponsorObjects = [];
-      for (var i in sponsors) {
-        var sponsor = {};
-        sponsor.name = sponsors[i];
-        sponsor.displayname = nl.sara.beehub.controller.getDisplayName(sponsors[i]);
-        sponsorObjects.push(sponsor);
-      }
       if (status !== 207) {
         nl.sara.beehub.view.content.errorGetSponsors(status);
       } else {
+        var sponsors = [];
+        // Get sponsor
+        if (data.getResponse(owner).getProperty('http://beehub.nl/','sponsor-membership').getParsedValue() !== null) {
+          sponsors = data.getResponse(owner).getProperty('http://beehub.nl/','sponsor-membership').getParsedValue();
+        };
+        
+        var sponsorObjects = [];
+        for (var i in sponsors) {
+          var sponsor = {};
+          sponsor.name = sponsors[i];
+          sponsor.displayname = nl.sara.beehub.controller.getDisplayName(sponsors[i]);
+          sponsorObjects.push(sponsor);
+        }
         nl.sara.beehub.view.content.setSponsorDropdown(status, path, sponsorObjects);
       }
     }

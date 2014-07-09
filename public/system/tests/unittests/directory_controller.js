@@ -29,8 +29,13 @@
   var currentDirectory = "/foo/client_tests";
   var parentDirectory = "/foo";
   var treeNode = $( "#bh-dir-tree ul.dynatree-container" );
+  var owner = "foo";
+  var sponsorPath = "/system/sponsors/";
+  var sponsor1 = "sponsor_a";
+  var sponsor1DisplayName = "Company A";
+  var sponsor2 = "sponsor_b";
   
-  var rememberPrincipals =                           deepCopy(nl.sara.beehub.principals);
+  var rememberPrincipals =                          deepCopy(nl.sara.beehub.principals);
   var rememberConfirm =                             window.confirm;
   var rememberClearAllViews =                       nl.sara.beehub.view.clearAllViews;
   var rememberClearDialogView =                     nl.sara.beehub.view.dialog.clearView;
@@ -49,18 +54,18 @@
   var rememberDeleteResource =                      nl.sara.beehub.view.deleteResource;
   var rememberCloseDialog =                         nl.sara.beehub.view.dialog.closeDialog;
   var rememberCancelButton =                        nl.sara.beehub.view.tree.cancelButton;
-  var rememberMaskView =                            nl.sara.beehub.view.maskView;
   var rememberNoMask =                              nl.sara.beehub.view.tree.noMask;
   var rememberSlideTrigger =                        nl.sara.beehub.view.tree.slideTrigger;   
   var rememberShowResourceDialog =                  nl.sara.beehub.view.dialog.showResourcesDialog;
   var rememberSetAlreadyExist =                     nl.sara.beehub.view.dialog.setAlreadyExist;
   var rememberResource =                            nl.sara.beehub.view.addResource;
-  var rememberUpdateResource =                      nl.sara.beehub.view.dialog.updateResourceInfo;
+  var rememberUpdateDialogResource =                nl.sara.beehub.view.dialog.updateResourceInfo;
   var rememberSetCopyMoveView =                     nl.sara.beehub.controller.setCopyMoveView;
   var rememberClearView =                           nl.sara.beehub.view.tree.clearView;
   var rememberSetModal =                            nl.sara.beehub.view.tree.setModal;
   var rememberUsersPath =                           nl.sara.beehub.users_path;
   var rememberGroupsPath =                          nl.sara.beehub.groups_path;
+  var rememberSponsorsPath =                        nl.sara.beehub.sponsors_path;
   var rememberFailOnOverwrite =                     nl.sara.webdav.Client.FAIL_ON_OVERWRITE;
   var rememberSilelentOverwrite =                   nl.sara.webdav.Client.SILENT_OVERWRITE;
   var rememberGetAcl =                              nl.sara.beehub.view.acl.getAcl;
@@ -77,7 +82,9 @@
   var rememberChangePermissions =                   nl.sara.beehub.view.acl.changePermissions;
   var rememberMoveDownAclRule =                     nl.sara.beehub.view.acl.moveDownAclRule;
   var rememberMoveUpAclRule =                       nl.sara.beehub.view.acl.moveUpAclRule; 
-  var rememberSetAddAclRuleDialogClickHandler =     nl.sara.beehub.view.acl.setAddAclRuleDialogClickHandler;
+  var rememberGetSponsors =                         nl.sara.beehub.controller.getSponsors;
+  var rememberErrorGetSponsors =                    nl.sara.beehub.view.content.errorGetSponsors;
+  var rememberSetSponsorDropdown =                  nl.sara.beehub.view.content.setSponsorDropdown;
   
   var backToOriginalEnvironment = function(){
     nl.sara.beehub.view.clearAllViews =                     rememberClearAllViews;
@@ -96,18 +103,18 @@
     nl.sara.beehub.view.deleteResource =                    rememberDeleteResource;
     nl.sara.beehub.view.dialog.closeDialog =                rememberCloseDialog;
     nl.sara.beehub.view.tree.cancelButton =                 rememberCancelButton;
-    nl.sara.beehub.view.maskView =                          rememberMaskView;
     nl.sara.beehub.view.tree.noMask =                       rememberNoMask;
     nl.sara.beehub.view.tree.slideTrigger =                 rememberSlideTrigger; 
     nl.sara.beehub.view.dialog.showResourcesDialog =        rememberShowResourceDialog;
     nl.sara.beehub.view.dialog.setAlreadyExist =            rememberSetAlreadyExist;
     nl.sara.beehub.view.addResource =                       rememberResource;
-    nl.sara.beehub.view.dialog.updateResourceInfo =         rememberUpdateResource;
+    nl.sara.beehub.view.dialog.updateResourceInfo =         rememberUpdateDialogResource;
     nl.sara.beehub.controller.setCopyMoveView =             rememberSetCopyMoveView;
     nl.sara.beehub.view.tree.setModal =                     rememberSetModal;
     nl.sara.beehub.view.tree.clearView =                    rememberClearView;
     nl.sara.beehub.users_path =                             rememberUsersPath;
     nl.sara.beehub.groups_path =                            rememberGroupsPath;
+    nl.sara.beehub.sponsors_path =                          rememberSponsorsPath;
     nl.sara.webdav.Client.FAIL_ON_OVERWRITE =               rememberFailOnOverwrite;
     nl.sara.webdav.Client.SILENT_OVERWRITE =                rememberSilelentOverwrite;
     nl.sara.beehub.view.acl.getAcl =                        rememberGetAcl;
@@ -115,7 +122,7 @@
     nl.sara.beehub.view.acl.setView =                       rememberSetView;
     nl.sara.beehub.view.dialog.showAcl =                    rememberShowAcl;
     nl.sara.beehub.view.acl.setAddAclRuleDialogClickHandler=rememberSetAddAclRuleDialogClickHandler;  
-    nl.sara.beehub.controller.saveAclOnServer =             rememberSaveAclOnServer;                     ;
+    nl.sara.beehub.controller.saveAclOnServer =             rememberSaveAclOnServer;
     nl.sara.beehub.view.acl.addRow =                        rememberAddRow;
     nl.sara.beehub.view.acl.deleteRowIndex =                rememberDeleteRowIndex;
     nl.sara.beehub.view.dialog.clearView =                  rememberClearDialogView;   
@@ -125,9 +132,11 @@
     nl.sara.beehub.view.acl.changePermissions =             rememberChangePermissions;     
     nl.sara.beehub.view.acl.moveDownAclRule =               rememberMoveDownAclRule;   
     nl.sara.beehub.view.acl.moveUpAclRule =                 rememberMoveUpAclRule;  
+    nl.sara.beehub.controller.getSponsors =                 rememberGetSponsors;
+    nl.sara.beehub.view.content.errorGetSponsors =          rememberErrorGetSponsors;
+    nl.sara.beehub.view.content.setSponsorDropdown =        rememberSetSponsorDropdown;
     nl.sara.beehub.principals  =                            deepCopy(rememberPrincipals);
-    nl.sara.beehub.view.acl.setAddAclRuleDialogClickHandler= rememberSetAddAclRuleDialogClickHandler; 
-    window.confirm =                                         rememberConfirm;                            ;
+    window.confirm =                                         rememberConfirm; 
 
   };
   
@@ -162,6 +171,10 @@
           }
         };
       }
+      if (this.property === "sponsor-membership"){
+       return [sponsorPath+sponsor1, sponsorPath+sponsor2]; 
+      };
+      
       if (this.property === "resourcetype") {
         return testType;
       } else {
@@ -416,7 +429,7 @@
    * Test getDisplayName
    */
   test( 'nl.sara.beehub.controller.getDisplayName', function() {
-    expect(3);
+    expect(4);
     
     nl.sara.beehub.users_path = "/home/users/";
     var username = nl.sara.beehub.users_path + "laura";
@@ -426,10 +439,15 @@
     var groupname = nl.sara.beehub.groups_path + "group";
     nl.sara.beehub.principals.groups["group"] = "Test group";
     
+    nl.sara.beehub.sponsors_path = "/home/sponsors/";
+    var sponsorname = nl.sara.beehub.groups_path + "sponsor";
+    nl.sara.beehub.principals.groups["sponsor"] = "Test sponsor";
+    
     var name = undefined;
     
     deepEqual( nl.sara.beehub.controller.getDisplayName(username), "Laura Leistikow", "User laura" );
     deepEqual( nl.sara.beehub.controller.getDisplayName(groupname), "Test group", "Group group" );
+    deepEqual( nl.sara.beehub.controller.getDisplayName(sponsorname), "Test sponsor", "Group sponsor" );
     deepEqual( nl.sara.beehub.controller.getDisplayName(name), "", "Name undefined" );
   } );
   
@@ -589,6 +607,41 @@
 //    var webdav = new nl.sara.webdav.Client();
 //    webdav.move(resource.path, createRenameCallback(resource, fileNameNew, overwriteMode), path +fileNameNew,  overwriteMode);
 //  };
+  
+  /**
+   * Test getSponsors from server
+   * 
+   */
+  test("nl.sara.beehub.controller.getSponsors", function(){
+    expect(5);
+    
+    nl.sara.beehub.view.content.errorGetSponsors = function(status){
+      ok(true, "ErrorGetSponsors should be called.");
+    };
+    
+    var dir = currentDirectory;
+    var spon1 = sponsor1;
+    var spon1Disp = sponsor1DisplayName;
+    var sponPath = sponsorPath; 
+    
+    nl.sara.beehub.view.content.setSponsorDropdown = function(status, path, sponsorObjects){
+      deepEqual(status, 207, "Status should be 207");
+      deepEqual(path, dir, "Path should be /foo/client_tests");
+      deepEqual(sponsorObjects[0].name, sponPath+spon1, "Sponsor name should be "+sponPath+spon1);
+      deepEqual(sponsorObjects[0].displayname, spon1Disp, "Sponsor displayname should be "+spon1Disp);
+    };
+    
+    nl.sara.webdav.Client = function(){
+      this.propfind = function(owner, callback ,depth,properties){
+        var status = 1;
+        callback(status, null);
+        var data = getDataObject(currentDirectory,null);
+        status = 207;
+        callback(status, data);
+      };
+    };
+    nl.sara.beehub.controller.getSponsors(owner,currentDirectory);  
+  });
   
   /**
    * Test renameResource
