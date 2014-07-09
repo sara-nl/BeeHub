@@ -275,7 +275,7 @@
           sponsor.displayname = nl.sara.beehub.controller.getDisplayName(sponsors[i]);
           sponsorObjects.push(sponsor);
         }
-        nl.sara.beehub.view.content.setSponsorDropdown(status, path, sponsorObjects);
+        nl.sara.beehub.view.content.setSponsorDropdown(path, sponsorObjects);
       }
     }
   

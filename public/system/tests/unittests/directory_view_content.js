@@ -53,6 +53,12 @@
   var uploadHiddenField = '.bh-dir-content-upload-hidden';
   var resourceSpecificAcl = '.bh-resource-specific-acl';
   
+  var sponsorPath = "/system/sponsors/";
+  var sponsor1 = "sponsor_a";
+  var sponsor1DisplayName = "Company A";
+  var sponsor2 = "sponsor_b";
+  var sponsor2DisplayName = "Company A";
+  
   module("content view",{
     setup: function(){
       // Call init function
@@ -69,6 +75,8 @@
   var rememberInitAction = nl.sara.beehub.controller.initAction;
   var rememberShowError = nl.sara.beehub.controller.showError;
   var rememberCreateNewFolder = nl.sara.beehub.controller.createNewFolder;
+  var rememberMaskView =    nl.sara.beehub.view.maskView;
+  var rememberSetSponsor = nl.sara.beehub.controller.setSponsor;
 
   var backToOriginalEnvironment = function(){
     nl.sara.beehub.controller.goToPage = rememberGoToPage;
@@ -76,6 +84,8 @@
     nl.sara.beehub.controller.initAction = rememberInitAction;
     nl.sara.beehub.controller.showError = rememberShowError;
     nl.sara.beehub.controller.createNewFolder = rememberCreateNewFolder;
+    nl.sara.beehub.view.maskView = rememberMaskView;
+    nl.sara.beehub.controller.setSponsor = rememberSetSponsor;
   };
   
   /**
@@ -481,6 +491,53 @@
 
   test('nl.sara.beehub.view.content.getHomePath', function() {
     deepEqual( nl.sara.beehub.view.content.getHomePath(), '/home/john/', 'John is logged in, so /home/john/ should be the home path' );
+  });
+  
+  /*
+   * Test setSponsorDropdown
+   */
+  test("nl.sara.beehub.view.content.setSponsorDropdown", function(){
+    expect(13);
+    
+    nl.sara.beehub.view.maskView = function(what, bool){
+      deepEqual(what, "transparant","Mask should be set to transparant");
+      deepEqual(bool, true, "Mask should be set.");
+    };
+    
+    nl.sara.beehub.controller.setSponsor = function(path, sponsor){
+      deepEqual(path, directory1, "Path should be "+directory1);
+      deepEqual(sponsor.name, sponsor1, "Sponsor should be "+sponsor1);
+      deepEqual(sponsor.displayname, sponsor1DisplayName, "Sponsor should be "+sponsor1DisplayName);
+      nl.sara.beehub.view.maskView = function(what, bool){
+        deepEqual(what, "transparant","Mask should be set to transparant");
+        deepEqual(bool, false, "Mask should be unset.");
+      };
+      nl.sara.beehub.view.content.setNewSponsor(path, sponsor);
+    };
+    
+    var sponsors = [{
+        "name": sponsor1,
+        "displayname" : sponsor1DisplayName
+      },{
+        "name": sponsor2,
+        "displayname" : sponsor2DisplayName
+      }
+    ];
+    var row = $("tr[id='"+directory1+"']");
+    nl.sara.beehub.view.content.setSponsorDropdown(directory1, sponsors);
+    deepEqual(row.find('.bh-dir-sponsor').is(":visible"), false, "Should be hidden.");
+    deepEqual(row.find('.bh-dir-sponsor-dropdown').is(":visible"), true, "Should be shown.");
+    deepEqual(row.find('.bh-dir-sponsor-select').html(), '<option value="sponsor_a">Company A</option><option value="sponsor_b">Company A</option>',"Should not be empty");
+ 
+    // Test blur
+    row.find('.bh-dir-sponsor-select').blur();
+    deepEqual(row.find('.bh-dir-sponsor').is(":visible"), true, "Should be shown.");
+    deepEqual(row.find('.bh-dir-sponsor-dropdown').is(":visible"), false, "Should be hidden.");
+    deepEqual(row.find('.bh-dir-sponsor-select').html(), '',"Should be empty");
+
+//    // Test change
+    nl.sara.beehub.view.content.setSponsorDropdown(directory1, sponsors);
+    row.find('.bh-dir-sponsor-dropdown').change();   
   });
 
 })();

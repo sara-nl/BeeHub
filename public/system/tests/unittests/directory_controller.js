@@ -617,7 +617,7 @@
    * 
    */
   test("nl.sara.beehub.controller.getSponsors", function(){
-    expect(5);
+    expect(4);
     
     nl.sara.beehub.view.content.errorGetSponsors = function(status){
       ok(true, "ErrorGetSponsors should be called.");
@@ -628,8 +628,7 @@
     var spon1Disp = sponsor1DisplayName;
     var sponPath = sponsorPath; 
     
-    nl.sara.beehub.view.content.setSponsorDropdown = function(status, path, sponsorObjects){
-      deepEqual(status, 207, "Status should be 207");
+    nl.sara.beehub.view.content.setSponsorDropdown = function(path, sponsorObjects){
       deepEqual(path, dir, "Path should be /foo/client_tests");
       deepEqual(sponsorObjects[0].name, sponPath+spon1, "Sponsor name should be "+sponPath+spon1);
       deepEqual(sponsorObjects[0].displayname, spon1Disp, "Sponsor displayname should be "+spon1Disp);
