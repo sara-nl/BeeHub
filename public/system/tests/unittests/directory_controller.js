@@ -85,6 +85,8 @@
   var rememberGetSponsors =                         nl.sara.beehub.controller.getSponsors;
   var rememberErrorGetSponsors =                    nl.sara.beehub.view.content.errorGetSponsors;
   var rememberSetSponsorDropdown =                  nl.sara.beehub.view.content.setSponsorDropdown;
+  var rememberErrorNewSponsor =                     nl.sara.beehub.view.content.errorNewSponsor;
+  var rememberSetNewSponsor =                       nl.sara.beehub.view.content.setNewSponsor;
   
   var backToOriginalEnvironment = function(){
     nl.sara.beehub.view.clearAllViews =                     rememberClearAllViews;
@@ -135,6 +137,8 @@
     nl.sara.beehub.controller.getSponsors =                 rememberGetSponsors;
     nl.sara.beehub.view.content.errorGetSponsors =          rememberErrorGetSponsors;
     nl.sara.beehub.view.content.setSponsorDropdown =        rememberSetSponsorDropdown;
+    nl.sara.beehub.view.content.errorNewSponsor =           rememberErrorNewSponsor;
+    nl.sara.beehub.view.content.setNewSponsor =             rememberSetNewSponsor;
     nl.sara.beehub.principals  =                            deepCopy(rememberPrincipals);
     window.confirm =                                         rememberConfirm; 
 
@@ -641,6 +645,38 @@
       };
     };
     nl.sara.beehub.controller.getSponsors(owner,currentDirectory);  
+  });
+  
+  /**
+   * Test getSponsors from server
+   * 
+   */
+  test("nl.sara.beehub.controller.setSponsor", function(){
+    expect(3);
+    
+    nl.sara.beehub.view.content.errorNewSponsor = function(status){
+      ok(true, "ErrorNewSponsor should be called.");
+    };
+    
+    var own = owner;
+    var sponPath = sponsorPath;
+    var spon = sponsor2;
+    
+    nl.sara.beehub.view.content.setNewSponsor = function(owner, sponsor){
+      deepEqual(owner, own, "Owner should be "+owner);
+      deepEqual(sponsor, sponsorPath+spon, "Sponsor should be "+sponPath+spon);
+    };
+    
+    nl.sara.webdav.Client = function(){
+      this.proppatch = function(owner, callback, properties){
+        var status = 1;
+        callback(status);
+        status = 207;
+        callback(status);
+      };
+    };
+    
+    nl.sara.beehub.controller.setSponsor(owner,sponsorPath+sponsor2);  
   });
   
   /**
