@@ -93,10 +93,6 @@ abstract class BeeHub_Resource extends DAVACL_Resource {
       $this->assert( DAVACL::PRIV_WRITE_CONTENT );
       return true;
     } catch (DAV_Status $e) {}
-    try {
-      $this->assert( DAVACL::PRIV_WRITE_PROPERTIES );
-      return true;
-    } catch (DAV_Status $e) {}
     return false;
   }
 

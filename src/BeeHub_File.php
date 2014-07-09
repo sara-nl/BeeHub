@@ -88,9 +88,19 @@ public function user_prop_getetag() {
 public function method_COPY( $path ) {
   $this->assert( BeeHub::PRIV_READ_CONTENT );
   $this->assert( DAVACL::PRIV_READ_ACL );
-  
+  $destinationResource = DAV::$REGISTRY->resource( $path );
   $parent = DAV::$REGISTRY->resource( dirname( $path ) );
-  $parent->assert( DAVACL::PRIV_WRITE_CONTENT );
+  if (!$parent)
+    throw new DAV_Status(DAV::HTTP_CONFLICT, 'Unable to COPY to unexisting collection');
+  if (!$parent instanceof BeeHub_Directory)
+    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
+  if ( $destinationResource instanceof DAVACL_Resource ) {
+    $destinationResource->assert( DAVACL::PRIV_WRITE_CONTENT );
+    $destinationResource->assert( DAVACL::PRIV_WRITE_ACL );
+    $parent->method_DELETE( basename( $path ) );
+  }else{
+    $parent->assert( DAVACL::PRIV_WRITE_CONTENT );
+  }
 
   // Determine the sponsor
   $user = BeeHub::getAuth()->current_user();

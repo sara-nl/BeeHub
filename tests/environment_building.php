@@ -194,6 +194,8 @@ function setUpStorageBackend() {
   \xattr_set( $basePath . 'denyAll' . \DIRECTORY_SEPARATOR . 'allowReadWrite', \rawurlencode( \DAV::PROP_ACL ), "[[\"DAV: all\",false,[\"DAV: read\",\"DAV: write\"],false]]" );
   \touch( $basePath . 'denyAll' . \DIRECTORY_SEPARATOR . 'allowReadWriteAcl' );
   \xattr_set( $basePath . 'denyAll' . \DIRECTORY_SEPARATOR . 'allowReadWriteAcl', \rawurlencode( \DAV::PROP_ACL ), "[[\"DAV: all\",false,[\"DAV: read\",\"DAV: write-acl\"],false]]" );
+  \touch( $basePath . 'denyAll' . \DIRECTORY_SEPARATOR . 'allowWriteWriteAcl' );
+  \xattr_set( $basePath . 'denyAll' . \DIRECTORY_SEPARATOR . 'allowWriteWriteAcl', \rawurlencode( \DAV::PROP_ACL ), "[[\"DAV: all\",false,[\"DAV: write\",\"DAV: write-acl\"],false]]" );
   \mkdir( $basePath . 'denyAll' . \DIRECTORY_SEPARATOR . 'allowReadDir' );
   \xattr_set( $basePath . 'denyAll' . \DIRECTORY_SEPARATOR . 'allowReadDir', \rawurlencode( \DAV::PROP_ACL ), "[[\"DAV: all\",false,[\"DAV: read\"],false]]" );
   \touch( $basePath . 'denyAll' . \DIRECTORY_SEPARATOR . 'allowReadDir' . \DIRECTORY_SEPARATOR . 'resource' );

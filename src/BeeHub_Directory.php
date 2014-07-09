@@ -80,12 +80,20 @@ private function internal_create_member( $name, $collection = false ) {
 public function method_COPY( $path ) {
   $this->assert( BeeHub::PRIV_READ_CONTENT );
   $this->assert( DAVACL::PRIV_READ_ACL );
-
+  $destinationResource = DAV::$REGISTRY->resource( $path );
   $parent = DAV::$REGISTRY->resource( dirname( $path ) );
   if (!$parent)
     throw new DAV_Status(DAV::HTTP_CONFLICT, 'Unable to COPY to unexisting collection');
   if (!$parent instanceof BeeHub_Directory)
     throw new DAV_Status(DAV::HTTP_FORBIDDEN);
+  if ( $destinationResource instanceof DAVACL_Resource ) {
+    $destinationResource->assert( DAVACL::PRIV_WRITE_CONTENT );
+    $destinationResource->assert( DAVACL::PRIV_WRITE_ACL );
+    $parent->method_DELETE( basename( $path ) );
+  }else{
+    $parent->assert( DAVACL::PRIV_WRITE_CONTENT );
+  }
+
   $newResource = $parent->internal_create_member(basename($path), true);
   // TODO: Should we check here if the xattr to be copied is in the 'user.' realm?
   foreach(xattr_list($this->localPath) as $xattr)
@@ -153,7 +161,16 @@ public function method_MOVE( $member, $destination ) {
 
   // Determine if moving is allowed and if so, move the object
   DAV::$REGISTRY->resource( $this->path . $member )->assert( DAVACL::PRIV_WRITE_CONTENT );
-  DAV::$REGISTRY->resource( dirname($destination) )->assert( DAVACL::PRIV_WRITE_CONTENT );
+  DAV::$REGISTRY->resource( $this->path . $member )->assert( BeeHub::PRIV_READ_CONTENT );
+  DAV::$REGISTRY->resource( $this->path . $member )->assert( DAVACL::PRIV_READ_ACL );
+  $destinationResource = DAV::$REGISTRY->resource( $destination );
+  if ( $destinationResource instanceof DAVACL_Resource ) {
+    $destinationResource->assert( DAVACL::PRIV_WRITE_CONTENT );
+    $destinationResource->assert( DAVACL::PRIV_WRITE_ACL );
+    $destinationResource->collection()->method_DELETE( basename( $destination ) );
+  }else{
+    DAV::$REGISTRY->resource( dirname( $destination ) )->assert( DAVACL::PRIV_WRITE_CONTENT );
+  }
   $localDest = BeeHub::localPath($destination);
   rename(
     BeeHub::localPath( $this->path . $member ),

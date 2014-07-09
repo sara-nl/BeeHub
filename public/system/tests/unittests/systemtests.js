@@ -173,10 +173,6 @@
   /**
    * Test OPTIONS requests
    */
-  asyncTest( 'OPTIONS request *', function(assert) {
-    //OPTIONS request to * should be successful
-    this.webdav.options('*' , createRequestCallback(assert, this.statusSuccessOK));
-  });
   asyncTest( 'OPTIONS request /denyAll/allowRead', function(assert) {
     //OPTIONS request to /denyAll/allowRead should be successful
     this.webdav.options('/denyAll/allowRead' , createRequestCallback(assert, this.statusSuccessOK));
@@ -302,13 +298,17 @@
     //COPY request to /denyAll/allowRead to /allowAll/denyWriteDir/newResource should fail
     this.webdav.copy('/denyAll/allowRead' , createRequestCallback(assert, this.statusNotAllowed ), '/allowAll/denyWriteDir/newResource', nl.sara.webdav.Client.FAIL_ON_OVERWRITE );
   });
-  asyncTest( 'COPY request to /denyAll/allowRead to /denyAll/allowWrite', function(assert) {
-    //COPY request to /denyAll/allowRead to /denyAll/allowWrite should be successful (overwrite)
-    this.webdav.copy('/denyAll/allowRead' , createRequestCallback(assert, this.statusSuccessCreated ), '/denyAll/allowWrite', nl.sara.webdav.Client.SILENT_OVERWRITE );
+  asyncTest( 'COPY request to /denyAll/allowRead to /denyAll/allowWriteWriteAcl', function(assert) {
+    //COPY request to /denyAll/allowRead to /denyAll/allowWriteWriteAcl should be successful (overwrite)
+    this.webdav.copy('/denyAll/allowRead' , createRequestCallback(assert, this.statusSuccessNoContent ), '/denyAll/allowWriteWriteAcl', nl.sara.webdav.Client.SILENT_OVERWRITE );
   });
   asyncTest( 'COPY request to /denyAll/allowRead to /allowAll/denyWrite', function(assert) {
-    //COPY request to /denyAll/allowRead to /denyAll/allowWrite should fail (overwrite)
-    this.webdav.copy('/denyAll/allowRead' , createRequestCallback(assert, this.statusNotAllowed ), '/denyAll/allowWrite', nl.sara.webdav.Client.SILENT_OVERWRITE );
+    //COPY request to /denyAll/allowRead to /allowAll/denyWrite should fail (overwrite)
+    this.webdav.copy('/denyAll/allowRead' , createRequestCallback(assert, this.statusNotAllowed ), '/allowAll/denyWrite', nl.sara.webdav.Client.SILENT_OVERWRITE );
+  });
+  asyncTest( 'COPY request to /denyAll/allowRead to /allowAll/denyWriteAcl', function(assert) {
+    //COPY request to /denyAll/allowRead to /allowAll/denyWriteAcl should fail (overwrite)
+    this.webdav.copy('/denyAll/allowRead' , createRequestCallback(assert, this.statusNotAllowed ), '/allowAll/denyWriteAcl', nl.sara.webdav.Client.SILENT_OVERWRITE );
   });
 
 
@@ -331,13 +331,17 @@
     //MOVE request to /denyAll/allowReadWrite to /allowAll/denyWriteDir/newResource should fail
     this.webdav.move('/denyAll/allowReadWrite' , createRequestCallback(assert, this.statusNotAllowed ), '/allowAll/denyWriteDir/newResource', nl.sara.webdav.Client.FAIL_ON_OVERWRITE );
   });
-  asyncTest( 'MOVE request to /denyAll/allowReadWrite to /denyAll/allowWrite', function(assert) {
-    //MOVE request to /denyAll/allowReadWrite to /denyAll/allowWrite should be successful (overwrite)
-    this.webdav.move('/denyAll/allowReadWrite' , createRequestCallback(assert, this.statusSuccessCreated ), '/denyAll/allowWrite', nl.sara.webdav.Client.SILENT_OVERWRITE );
+  asyncTest( 'MOVE request to /denyAll/allowReadWrite to /denyAll/allowWriteWriteAcl', function(assert) {
+    //MOVE request to /denyAll/allowReadWrite to /denyAll/allowWriteWriteAcl should be successful (overwrite)
+    this.webdav.move('/denyAll/allowReadWrite' , createRequestCallback(assert, this.statusSuccessNoContent ), '/denyAll/allowWriteWriteAcl', nl.sara.webdav.Client.SILENT_OVERWRITE );
   });
   asyncTest( 'MOVE request to /denyAll/allowReadWrite to /allowAll/denyWrite', function(assert) {
     //MOVE request to /denyAll/allowReadWrite to /allowAll/denyWrite should fail (overwrite)
     this.webdav.move('/denyAll/allowReadWrite' , createRequestCallback(assert, this.statusNotAllowed ), '/allowAll/denyWrite', nl.sara.webdav.Client.SILENT_OVERWRITE );
+  });
+  asyncTest( 'MOVE request to /denyAll/allowReadWrite to /allowAll/denyWriteAcl', function(assert) {
+    //MOVE request to /denyAll/allowReadWrite to /allowAll/denyWriteAcl should fail (overwrite)
+    this.webdav.move('/denyAll/allowReadWrite' , createRequestCallback(assert, this.statusNotAllowed ), '/allowAll/denyWriteAcl', nl.sara.webdav.Client.SILENT_OVERWRITE );
   });
 
 
@@ -455,7 +459,7 @@
     var newOwner = new nl.sara.webdav.Property();
     newOwner.namespace = 'DAV:';
     newOwner.tagname = 'owner';
-    newOwner.setValueAndRebuildXml( '/system/users/janine' );
+    newOwner.setValueAndRebuildXml( '/system/users/john' );
     //Become owner of /denyAll/allowWriteDir/allowRead should be successful
     this.webdav.proppatch( '/denyAll/allowWriteDir/allowRead', createMultistatusRequestCallback(assert, this.statusSuccessOK, '/denyAll/allowWriteDir/allowRead'), [ newOwner ] );
   });
@@ -464,7 +468,7 @@
     var newOwner = new nl.sara.webdav.Property();
     newOwner.namespace = 'DAV:';
     newOwner.tagname = 'owner';
-    newOwner.setValueAndRebuildXml( '/system/users/janine' );
+    newOwner.setValueAndRebuildXml( '/system/users/john' );
     //Become owner of /allowAll/denyWriteDir/allowWrite should fail
     this.webdav.proppatch( '/allowAll/denyWriteDir/allowWrite', createMultistatusRequestCallback( assert, this.statusNotAllowed, '/allowAll/denyWriteDir/allowWrite' ), [ newOwner ] );
   });
@@ -473,7 +477,7 @@
     var newOwner = new nl.sara.webdav.Property();
     newOwner.namespace = 'DAV:';
     newOwner.tagname = 'owner';
-    newOwner.setValueAndRebuildXml( '/system/users/janine' );
+    newOwner.setValueAndRebuildXml( '/system/users/john' );
     //Become owner of /allowAll/denyRead should fail
     this.webdav.proppatch( '/allowAll/denyRead', createMultistatusRequestCallback( assert, this.statusNotAllowed, '/allowAll/denyRead' ), [ newOwner ] );
   });
@@ -482,7 +486,7 @@
     var newOwner = new nl.sara.webdav.Property();
     newOwner.namespace = 'DAV:';
     newOwner.tagname = 'owner';
-    newOwner.setValueAndRebuildXml( '/system/users/janine' );
+    newOwner.setValueAndRebuildXml( '/system/users/john' );
     //Become owner of /allowAll/denyWrite should fail
     this.webdav.proppatch( '/allowAll/denyWrite', createMultistatusRequestCallback( assert, this.statusNotAllowed, '/allowAll/denyWrite' ), [ newOwner ] );
   });

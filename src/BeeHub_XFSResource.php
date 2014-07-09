@@ -159,9 +159,11 @@ class BeeHub_XFSResource extends BeeHub_Resource {
     // privileges on both the resource itself as its parent collection
     if ( $this->user_prop_owner() !== $cup->path &&
          $owner->path === $cup->path &&
-         ( $this->assert( DAVACL::PRIV_WRITE_CONTENT ) &&
-           $this->collection() &&
-           $this->collection()->assert( DAVACL::PRIV_WRITE_CONTENT ) ) ) {
+         $this->collection() instanceof BeeHub_Directory ) {
+      $this->assert( BeeHub::PRIV_READ_CONTENT );
+      $this->assert( DAVACL::PRIV_READ_ACL );
+      $this->assert( DAVACL::PRIV_WRITE_CONTENT );
+      $this->collection()->assert( DAVACL::PRIV_WRITE_CONTENT );
 
       // If the user is not sponsored by the resource sponsor, we have to change
       // the resource sponsor
