@@ -47,8 +47,6 @@
   test('TODO-write tests for BeeHub File', function(){
     ok(false,"TODO-write tests for beehub.js");
     ok(false,"TODO-write tests for Content view: handle_sponsor_click");
-    ok(false,"TODO-write tests for nl.sara.beehub.view.content.setSponsorDropdown");
-    ok(false,"TODO-write tests for nl.sara.beehub.view.content.errorGetSponsors");
     ok(false,"TODO-write tests for nl.sara.beehub.view.content.setNewSponsor");
     ok(false,"TODO-write tests for nl.sara.beehub.view.content.errorNewSponsor");
   });

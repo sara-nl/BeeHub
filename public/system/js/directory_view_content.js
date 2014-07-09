@@ -616,7 +616,7 @@
   nl.sara.beehub.view.content.errorGetSponsors = function(status){
     nl.sara.beehub.view.dialog.showError( 'Something went wrong with retrieving available sponsors.' );
     nl.sara.beehub.view.maskView("transparant", false);
-  }
+  };
   
   /**
    * Set new sponsor

@@ -535,9 +535,28 @@
     deepEqual(row.find('.bh-dir-sponsor-dropdown').is(":visible"), false, "Should be hidden.");
     deepEqual(row.find('.bh-dir-sponsor-select').html(), '',"Should be empty");
 
-//    // Test change
+    // Test change
     nl.sara.beehub.view.content.setSponsorDropdown(directory1, sponsors);
     row.find('.bh-dir-sponsor-dropdown').change();   
+  });
+  
+  /**
+   * Test errorGetSponsors
+   * 
+   */
+  test("nl.sara.beehub.view.content.errorGetSponsors", function(){
+    expect(3);
+    
+    nl.sara.beehub.view.dialog.showError = function(error){
+      ok(true, "Showerror should be called");
+    };
+    
+    nl.sara.beehub.view.maskView = function(what, bool){
+      deepEqual(what, "transparant","Mask should be set to transparant");
+      deepEqual(bool, false, "Mask should be unset.");
+    };
+    
+    nl.sara.beehub.view.content.errorGetSponsors();
   });
 
 })();
