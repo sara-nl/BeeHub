@@ -30,7 +30,8 @@
 (function() {
   
   nl.sara.beehub.controller.STATUS_NOT_ALLOWED = 403;
-  
+  nl.sara.beehub.controller.ERROR_STATUS_NOT_ALLOWED = 'You are not allowed to perform this action!';
+  nl.sara.beehub.controller.ERROR_UNKNOWN = 'Something went wrong on the server. No changes were made.';
   /*
    * Add slash to the end of the path
    */

@@ -558,19 +558,6 @@
   };
   
   /**
-   * Handle sponsor click
-   * 
-   * @param {Event} e
-   */ 
-  var handle_sponsor_click = function(e){
- // create resource object
-    var owner = $(e.target).closest('tr').find('.owner').attr('data-value');
-    var path = $(e.target).closest('tr').attr('id');
-    nl.sara.beehub.view.maskView("transparant", true);
-    nl.sara.beehub.controller.getSponsors(owner, path);
-  };
-  
-  /**
    * Set sponsor dropdown
    * 
    * @param {Object} resource Resource object
@@ -641,11 +628,24 @@
    */
   nl.sara.beehub.view.content.errorNewSponsor = function(status){  
     if (status === nl.sara.beehub.controller.STATUS_NOT_ALLOWED ){
-      nl.sara.beehub.view.dialog.showError( 'You are not allowed to perform this action!' );
+      nl.sara.beehub.view.dialog.showError( nl.sara.beehub.controller.ERROR_STATUS_NOT_ALLOWED );
     } else {
-      nl.sara.beehub.view.dialog.showError( 'Something went wrong on the server. No changes were made.' );
+      nl.sara.beehub.view.dialog.showError( nl.sara.beehub.controller.ERROR_UNKNOWN );
     };
     nl.sara.beehub.view.maskView("transparant", false);
+  };
+  
+  /**
+   * Handle sponsor click
+   * 
+   * @param {Event} e
+   */ 
+  var handle_sponsor_click = function(e){
+ // create resource object
+    var owner = $(e.target).closest('tr').find('.owner').attr('data-value');
+    var path = $(e.target).closest('tr').attr('id');
+    nl.sara.beehub.view.maskView("transparant", true);
+    nl.sara.beehub.controller.getSponsors(owner, path);
   };
   
   /**

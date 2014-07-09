@@ -58,6 +58,7 @@
   var sponsor1DisplayName = "Company A";
   var sponsor2 = "sponsor_b";
   var sponsor2DisplayName = "Company A";
+  var dropDownSponsor = '.bh-dir-sponsor';
   
   module("content view",{
     setup: function(){
@@ -74,9 +75,11 @@
   var rememberRenameResource = nl.sara.beehub.controller.renameResource;
   var rememberInitAction = nl.sara.beehub.controller.initAction;
   var rememberShowError = nl.sara.beehub.controller.showError;
+  var rememberShowErrorDialog = nl.sara.beehub.view.dialog.showError;
   var rememberCreateNewFolder = nl.sara.beehub.controller.createNewFolder;
   var rememberMaskView =    nl.sara.beehub.view.maskView;
   var rememberSetSponsor = nl.sara.beehub.controller.setSponsor;
+  var rememberGetSponsors = nl.sara.beehub.controller.getSponsors;
 
   var backToOriginalEnvironment = function(){
     nl.sara.beehub.controller.goToPage = rememberGoToPage;
@@ -86,6 +89,8 @@
     nl.sara.beehub.controller.createNewFolder = rememberCreateNewFolder;
     nl.sara.beehub.view.maskView = rememberMaskView;
     nl.sara.beehub.controller.setSponsor = rememberSetSponsor;
+    nl.sara.beehub.view.dialog.showError = rememberShowErrorDialog;
+    nl.sara.beehub.controller.getSponsors = rememberGetSponsors;
   };
   
   /**
@@ -178,10 +183,39 @@
     deepEqual(row.find(renameColumn).is(':hidden'), true, 'Input field should be hidden');
   };
   
+  /**
+   * Check sponsor dropdownHandler
+   * 
+   * @param {String} check        Resource to check
+   * 
+   */
+  var checkSponsorDropDown = function(check){    
+    var testOwner = "";
+    var testPath = "";
+    nl.sara.beehub.view.maskView = function(what, bool){
+      deepEqual(what, "transparant", "Should be transparant");
+      deepEqual(bool, true, "Should be true");
+    };
+    
+    nl.sara.beehub.controller.getSponsors = function(owner, path){
+      deepEqual(owner,testOwner, "Should be "+testOwner);
+      deepEqual(path,testPath,"Should be "+testPath);
+    };
+    
+    var row = $("tr[id='"+check+"']");
+    testOwner = row.closest('tr').find('.owner').attr('data-value');
+    testPath = row.closest('tr').attr('id');
+    
+    // Call events
+    // Check click event 
+    row.find(dropDownSponsor).click();
+  };
+  
   var checkSetRowHandlers = function(count, check , displayname){
     checkCheckboxes( count );
     checkOpenSelected( check );
     checkEditMenu( check, displayname );
+    checkSponsorDropDown( check );
   };
   
   /**
@@ -372,7 +406,7 @@
    * Test add resource
    */
   test('nl.sara.beehub.view.content.addResource', function(){
-    expect( 38 );
+    expect( 42 );
     
     var resource = new nl.sara.beehub.ClientResource( location.pathname+"newfolder");
     resource.displayname = "newfolder";
@@ -440,7 +474,7 @@
    * Test delete resource
    */
   test('nl.sara.beehub.view.content.updateResource', function(){
-    expect( 45 );
+    expect( 49 );
     
     var testresource1 = new nl.sara.beehub.ClientResource(file1);
     testresource1 = nl.sara.beehub.view.content.getUnknownResourceValues(testresource1);
@@ -582,6 +616,25 @@
     deepEqual(row.find('.bh-dir-sponsor-select').html(), '',"Should be empty");
     deepEqual(row.find('.bh-dir-sponsor').attr('data-value'),sponsor1, "Should be "+sponsor1);
     deepEqual(row.find('.bh-dir-sponsor').text(), sponsor1DisplayName, "Should be "+sponsor1DisplayName);
+  });
+  
+  /**
+   * Test errorNewSponsor
+   * 
+   */
+  test("nl.sara.beehub.view.content.errorNewSponsor", function(){
+    expect(2);
+    
+    var testError="";
+    
+    nl.sara.beehub.view.dialog.showError = function(error){
+      deepEqual(error, testError, "Error should be "+testError );
+    };
+    
+    testError = nl.sara.beehub.controller.ERROR_STATUS_NOT_ALLOWED;
+    nl.sara.beehub.view.content.errorNewSponsor(nl.sara.beehub.controller.STATUS_NOT_ALLOWED);
+    testError = nl.sara.beehub.controller.ERROR_UNKNOWN;
+    nl.sara.beehub.view.content.errorNewSponsor(1);
   });
   
 })();
