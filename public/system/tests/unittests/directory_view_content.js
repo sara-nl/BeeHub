@@ -559,5 +559,30 @@
     nl.sara.beehub.view.content.errorGetSponsors();
   });
 
+  /**
+   * Test setNewSponsor
+   */
+  test("nl.sara.beehub.view.content.setNewSponsor", function(){ 
+    expect(7);
+    
+    nl.sara.beehub.view.maskView = function(what, bool){
+      deepEqual(what, "transparant","Mask should be set to transparant");
+      deepEqual(bool, false, "Mask should be unset.");
+    };
+    
+    var sponsor = {
+      "name": sponsor1,
+      "displayname" : sponsor1DisplayName
+    };
+    
+    nl.sara.beehub.view.content.setNewSponsor(directory1,sponsor);
+    var row = $("tr[id='"+directory1+"']");
+    deepEqual(row.find('.bh-dir-sponsor').is(":visible"), true, "Should be shown.");
+    deepEqual(row.find('.bh-dir-sponsor-dropdown').is(":visible"), false, "Should be hidden.");
+    deepEqual(row.find('.bh-dir-sponsor-select').html(), '',"Should be empty");
+    deepEqual(row.find('.bh-dir-sponsor').attr('data-value'),sponsor1, "Should be "+sponsor1);
+    deepEqual(row.find('.bh-dir-sponsor').text(), sponsor1DisplayName, "Should be "+sponsor1DisplayName);
+  });
+  
 })();
 // End of file
