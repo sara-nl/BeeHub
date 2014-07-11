@@ -31,6 +31,7 @@ class BeeHub {
   const PROP_DESCRIPTION            = 'http://beehub.nl/ description';
   const PROP_SPONSOR                = 'http://beehub.nl/ sponsor';
   const PROP_SPONSOR_MEMBERSHIP     = 'http://beehub.nl/ sponsor-membership';
+  const PROP_LAST_ACTIVITY          = 'http://beehub.nl/ last-activity';
 
 
   public static $USER_PROPS = array(
@@ -40,6 +41,7 @@ class BeeHub {
     self::PROP_X509                   => true,
     self::PROP_SPONSOR                => true,
     self::PROP_SPONSOR_MEMBERSHIP     => true,
+    self::PROP_LAST_ACTIVITY          => true
   );
   public static $GROUP_PROPS = array(
     self::PROP_DESCRIPTION     => true,

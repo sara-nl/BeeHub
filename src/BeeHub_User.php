@@ -409,6 +409,7 @@ BeeHub';
     $retval[BeeHub::PROP_X509]                   = $is_admin;
     $retval[BeeHub::PROP_SPONSOR]                = $is_admin;
     $retval[DAV::PROP_GROUP_MEMBERSHIP]          = $is_admin;
+    $retval[BeeHub::PROP_LAST_ACTIVITY]          = $is_admin;
     return $retval;
   }
 
@@ -428,6 +429,7 @@ BeeHub';
     $retval[BeeHub::PROP_SPONSOR]                = $is_admin;
     $retval[DAV::PROP_GROUP_MEMBERSHIP]          = false;
     $retval[BeeHub::PROP_SPONSOR_MEMBERSHIP]     = false;
+    $retval[BeeHub::PROP_LAST_ACTIVITY]          = false;
     return $retval;
   }
 
