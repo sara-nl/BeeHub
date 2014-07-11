@@ -364,30 +364,22 @@
     lockBody.documentElement.appendChild( lockscope );
     lockBody.documentElement.appendChild( locktype );
     lockBody.documentElement.appendChild( owner );
-  
-    asyncTest( 'LOCK request /denyAll/allowReadWrite', function(assert) { 
-      //LOCK request to /denyAll/allowReadWrite should be successful
-      this.webdav.lock('/denyAll/allowReadWrite', createRequestCallback(assert, this.statusSuccessOK ), lockBody );
+
+    asyncTest( 'LOCK request /denyAll/allowWrite', function(assert) {
+      //LOCK request to /denyAll/allowWrite should be successful
+      this.webdav.lock('/denyAll/allowWrite', createRequestCallback(assert, this.statusSuccessOK ), lockBody );
     });
-    asyncTest( 'LOCK request /denyAll/allowReadWriteDir/resource', function(assert) {
-      //LOCK request to /denyAll/allowReadWriteDir/resource should be successful
-      this.webdav.lock('/denyAll/allowReadWriteDir/resource', createRequestCallback(assert, this.statusSuccessOK ), lockBody );
-    });
-    asyncTest( 'LOCK request /allowAll/denyRead', function(assert) {
-      //LOCK request to /allowAll/denyRead should fail
-      this.webdav.lock('/allowAll/denyRead', createRequestCallback(assert, this.statusNotAllowed ), lockBody );
-    });
-    asyncTest( 'LOCK request /allowAll/denyReadDir/resource', function(assert) {
-      //LOCK request to /allowAll/denyReadDir/resource should fail
-      this.webdav.lock('/allowAll/denyReadDir/resource', createRequestCallback(assert, this.statusNotAllowed ), lockBody );
+    asyncTest( 'LOCK request /denyAll/allowWriteDir/', function(assert) {
+      //LOCK request to /denyAll/allowWriteDir/ should be successful
+      this.webdav.lock('/denyAll/allowWriteDir/', createRequestCallback(assert, this.statusSuccessOK ), lockBody, { 'Depth': '0' } );
     });
     asyncTest( 'LOCK request /allowAll/denyWrite', function(assert) {
       //LOCK request to /allowAll/denyWrite should fail
       this.webdav.lock('/allowAll/denyWrite', createRequestCallback(assert, this.statusNotAllowed ), lockBody );
     });
-    asyncTest( 'LOCK request /allowAll/denyWriteDir/resource', function(assert) {
-      //LOCK request to /allowAll/denyWriteDir/resource should fail
-      this.webdav.lock('/allowAll/denyWriteDir/resource', createRequestCallback(assert, this.statusNotAllowed ), lockBody );
+    asyncTest( 'LOCK request /allowAll/denyWriteDir/', function(assert) {
+      //LOCK request to /allowAll/denyWriteDir/ should fail
+      this.webdav.lock('/allowAll/denyWriteDir/', createRequestCallback(assert, this.statusNotAllowed ), lockBody, { 'Depth': '0' } );
     });
   })();
 

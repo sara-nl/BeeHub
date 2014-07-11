@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "pieterb/webdav-php",
-            "version": "1.1.1",
+            "version": "1.1.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pieterb/webdav-php.git",
-                "reference": "cacd51cb693d5f770f4413587acc08867c189ab5"
+                "reference": "eafec7bd25c5cf0f2cb5a146f202bcf55de4258a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pieterb/webdav-php/zipball/cacd51cb693d5f770f4413587acc08867c189ab5",
-                "reference": "cacd51cb693d5f770f4413587acc08867c189ab5",
+                "url": "https://api.github.com/repos/pieterb/webdav-php/zipball/eafec7bd25c5cf0f2cb5a146f202bcf55de4258a",
+                "reference": "eafec7bd25c5cf0f2cb5a146f202bcf55de4258a",
                 "shasum": ""
             },
             "require": {
@@ -52,7 +52,7 @@
             "keywords": [
                 "WebDAV"
             ],
-            "time": "2014-07-09 10:49:26"
+            "time": "2014-07-11 12:02:55"
         }
     ],
     "packages-dev": [
@@ -882,16 +882,16 @@
         },
         {
             "name": "phpdocumentor/phpdocumentor",
-            "version": "v2.6.0",
+            "version": "v2.6.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/phpDocumentor/phpDocumentor2.git",
-                "reference": "f6bba74275b3be0779cd4d80501250243b80548c"
+                "reference": "7850691067f2bce17c75ef401069f7b90204d939"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpDocumentor/phpDocumentor2/zipball/f6bba74275b3be0779cd4d80501250243b80548c",
-                "reference": "f6bba74275b3be0779cd4d80501250243b80548c",
+                "url": "https://api.github.com/repos/phpDocumentor/phpDocumentor2/zipball/7850691067f2bce17c75ef401069f7b90204d939",
+                "reference": "7850691067f2bce17c75ef401069f7b90204d939",
                 "shasum": ""
             },
             "require": {
@@ -977,7 +977,7 @@
                 "documentation",
                 "phpdoc"
             ],
-            "time": "2014-06-27 10:53:56"
+            "time": "2014-07-09 19:38:37"
         },
         {
             "name": "phpdocumentor/reflection",
