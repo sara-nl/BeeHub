@@ -426,11 +426,11 @@
     
     asyncTest( 'REPORT request /denyAll/allowRead', function(assert) { 
       //REPORT request to /denyAll/allowRead should be successful
-      this.webdav.report( '/denyAll/allowRead', createMultistatusRequestCallback( assert, this.statusSuccessMultistatus, '/denyAll/allowRead'), reportBody );
+      this.webdav.report( '/denyAll/allowRead', createMultistatusRequestCallback( assert, this.statusSuccessOK, '/system/users/john'), reportBody );
     });
     asyncTest( 'REPORT request /denyAll/allowReadDir/resource', function(assert) { 
       //REPORT request to /denyAll/allowReadDir/resource should be successful
-      this.webdav.report( '/denyAll/allowReadDir/resource', createMultistatusRequestCallback( assert, this.statusSuccessOK, '/denyAll/allowReadDir/resource'), reportBody );
+      this.webdav.report( '/denyAll/allowReadDir/resource', createMultistatusRequestCallback( assert, this.statusSuccessOK, '/system/users/john'), reportBody );
     });
     asyncTest( 'REPORT request /allowAll/denyRead', function(assert) { 
       //REPORT request to /allowAll/denyRead should fail
