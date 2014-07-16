@@ -45,7 +45,7 @@
   var dialogRenameCancelButton=     "#bh-dir-rename-cancel-button";
 
   // Needed for testing autocomplete 
-  var autocompleteLength = 6;
+  var autocompleteLength = 7;
   var ui = {
       item: {
         displayname:    "Bar",

@@ -81,16 +81,12 @@
    * @param {DOM object}    expander  Expander icon
    * @param {Boolean}       expanded  Expanded value before click
    */
-  var testTreeExpandHandler = function(expander, expanded){    
-    nl.sara.beehub.controller.getTreeNode = function(url, callback){
-     ok(true, "Gettree node is called with "+url);
-    };
-    
+  var testTreeExpandHandler = function(expander, expanded){      
     var parent = expander.parent();
     if (expanded){
       $(parent).siblings( 'ul' ).each(function(key, value){
         deepEqual($(value).attr('style'), "display: none;", "Ul should be hidden");
-      })
+      });
       deepEqual($(parent).hasClass( 'dynatree-exp-el' ), false, "dynatree-exp-el should be removed");
       deepEqual($(parent).hasClass( 'dynatree-exp-e' ), false, "dynatree-exp-e should be removed");
       deepEqual($(parent).hasClass( 'dynatree-ico-ef' ), false, "dynatree-ico-ef should be removed");
@@ -137,11 +133,11 @@
     
     nl.sara.beehub.view.tree.closeTree = function(){
       ok(true, "CloseTree is called.");
-    }
+    };
     
     nl.sara.beehub.view.tree.showTree = function(){
       ok(true, "ShowTree is called.");
-    }
+    };
     
     nl.sara.beehub.view.tree.init();
     
@@ -159,36 +155,43 @@
    * Test setOnActivate, attachEvents
    */
   test('nl.sara.beehub.view.tree.setOnActivate, attachEvents', function(){
-    expect(42);
+    expect(45);
     
     var testHref = "";
     
     var testActivateFunction = function(href){
       deepEqual(href, testHref, "Activate function should be called with href "+testHref);
-    }
-    
+    };
+
     nl.sara.beehub.view.tree.setOnActivate("Test header", testActivateFunction);
     
     nl.sara.beehub.view.tree.attachEvents(treeNode);
     
+    nl.sara.beehub.controller.getTreeNode = function(url, callback){
+      ok(true, "Gettree node is called with "+url);
+     };
+
     var expanders = $( '.dynatree-expander', treeNode );
     expanders.each(function(key, value){
       // Test click event on expanders
+
       var expanded = $(value).parent().hasClass( 'dynatree-expanded' );
       $(value).click();
       testTreeExpandHandler($(value), expanded);
+
       expanded = $(value).parent().hasClass( 'dynatree-expanded' );
       $(value).click();
       testTreeExpandHandler($(value), expanded);
     });
     
+
     var links = $( 'a', treeNode );
     links.each(function(key, value){
       // Test click event on links
       testHref = $(value).attr('href');
       value.click();
-    })
-  })
+    });
+  });
   
   /**
    * Test slideTrigger
