@@ -30,6 +30,14 @@
       "email": "johny.doe@mailservice.com",
       "password": "$6$rounds=5000$126b519331f5189c$cvGKahLo6.q/TSTeLMxGC8qpwHC6QIA37NCdn6xKpBJVCU3vBzwJkK3HS7.d4RwJcCG.oXMHBiv06oMnZCwjM0",
       "default_sponsor": "sponsor_a"
+    },
+    {
+      "name": "janine",
+      "displayname": "Janine Doe",
+      "email": "janine.doe@mailservice.com",
+      "unverified_email": "j.doe@mailservice.com",
+      "password": "$6$rounds=5000$cvGKahLo6.q/TSTe$eOp/Y3juTlj4LVZLzWbZpcral6qSJRG6ira8gaPCnklpuybtxXsc70BOMa5A7mcvhx.zdLFPJPziy4CBb5kVh/",
+      "sponsors": [ "sponsor_c" ]
     }
   ],
   "groups":
@@ -75,6 +83,12 @@
       "description": "Company B has paid for even more storage",
       "admins": [ "john" ],
       "user_accepted_memberships": [ "jane" ]
+    },
+    {
+      "name": "sponsor_c",
+      "displayname": "Company C",
+      "description": "Company C has paid for even more storage",
+      "admins": [ "janine" ]
     }
   ],
   "beehub_system":
@@ -251,6 +265,239 @@
       "path": "system/users",
       "props" :
       {
+      }
+    },
+    {
+      "path": "denyAll",
+      "props" :
+      {
+        "http://beehub%2Enl/ sponsor": "sponsor_a",
+        "DAV: acl": "[[\"DAV: all\",false,[\"DAV: all\"],true]]"
+      }
+    },
+    {
+      "path": "denyAll/allowRead",
+      "props" :
+      {
+        "http://beehub%2Enl/ sponsor": "sponsor_a",
+        "DAV: acl": "[[\"/system/users/john\",false,[\"DAV: read\"],false]]"
+      }
+    },
+    {
+      "path": "denyAll/allowWrite",
+      "props" :
+      {
+        "http://beehub%2Enl/ sponsor": "sponsor_a",
+        "DAV: acl": "[[\"/system/users/john\",false,[\"DAV: write\"],false]]"
+      }
+    },
+    {
+      "path": "denyAll/allowWriteAcl",
+      "props" :
+      {
+        "http://beehub%2Enl/ sponsor": "sponsor_a",
+        "DAV: acl": "[[\"/system/users/john\",false,[\"DAV: write-acl\"],false]]"
+      }
+    },
+    {
+      "path": "denyAll/allowReadWrite",
+      "props" :
+      {
+        "http://beehub%2Enl/ sponsor": "sponsor_a",
+        "DAV: acl": "[[\"/system/users/john\",false,[\"DAV: read\",\"DAV: write\"],false]]"
+      }
+    },
+    {
+      "path": "denyAll/allowReadWriteAcl",
+      "props" :
+      {
+        "http://beehub%2Enl/ sponsor": "sponsor_a",
+        "DAV: acl": "[[\"/system/users/john\",false,[\"DAV: read\",\"DAV: write-acl\"],false]]"
+      }
+    },
+    {
+      "path": "denyAll/allowWriteWriteAcl",
+      "props" :
+      {
+        "http://beehub%2Enl/ sponsor": "sponsor_a",
+        "DAV: acl": "[[\"/system/users/john\",false,[\"DAV: write\",\"DAV: write-acl\"],false]]"
+      }
+    },
+    {
+      "path": "denyAll/allowReadDir",
+      "props" :
+      {
+        "http://beehub%2Enl/ sponsor": "sponsor_a",
+        "DAV: acl": "[[\"/system/users/john\",false,[\"DAV: read\"],false]]"
+      }
+    },
+    {
+      "path": "denyAll/allowReadDir/resource",
+      "props" :
+      {
+        "http://beehub%2Enl/ sponsor": "sponsor_a"
+      }
+    },
+    {
+      "path": "denyAll/allowReadDir/allowWrite",
+      "props" :
+      {
+        "http://beehub%2Enl/ sponsor": "sponsor_a",
+        "DAV: acl": "[[\"/system/users/john\",false,[\"DAV: write\"],false]]"
+      }
+    },
+    {
+      "path": "denyAll/allowWriteDir",
+      "props" :
+      {
+        "http://beehub%2Enl/ sponsor": "sponsor_a",
+        "DAV: acl": "[[\"/system/users/john\",false,[\"DAV: write\"],false]]"
+      }
+    },
+    {
+      "path": "denyAll/allowWriteDir/resource",
+      "props" :
+      {
+        "http://beehub%2Enl/ sponsor": "sponsor_a"
+      }
+    },
+    {
+      "path": "denyAll/allowWriteDir/allowRead",
+      "props" :
+      {
+        "http://beehub%2Enl/ sponsor": "sponsor_a",
+        "DAV: acl": "[[\"/system/users/john\",false,[\"DAV: read\"],false]]"
+      }
+    },
+    {
+      "path": "denyAll/allowReadWriteDir",
+      "props" :
+      {
+        "http://beehub%2Enl/ sponsor": "sponsor_a",
+        "DAV: acl": "[[\"/system/users/john\",false,[\"DAV: read\",\"DAV: write\"],false]]"
+      }
+    },
+    {
+      "path": "denyAll/allowReadWriteDir/resource",
+      "props" :
+      {
+        "http://beehub%2Enl/ sponsor": "sponsor_a"
+      }
+    },
+    {
+      "path": "denyAll/allowReadWriteDir/denyRead",
+      "props" :
+      {
+        "http://beehub%2Enl/ sponsor": "sponsor_a",
+        "DAV: acl": "[[\"/system/users/john\",false,[\"DAV: read\"],true]]"
+      }
+    },
+    {
+      "path": "denyAll/allowReadWriteDir/denyWrite",
+      "props" :
+      {
+        "http://beehub%2Enl/ sponsor": "sponsor_a",
+        "DAV: acl": "[[\"/system/users/john\",false,[\"DAV: write\"],true]]"
+      }
+    },
+    {
+      "path": "denyAll/allowWriteAclDir",
+      "props" :
+      {
+        "http://beehub%2Enl/ sponsor": "sponsor_a",
+        "DAV: acl": "[[\"/system/users/john\",false,[\"DAV: write-acl\"],false]]"
+      }
+    },
+    {
+      "path": "denyAll/allowWriteAclDir/resource",
+      "props" :
+      {
+        "http://beehub%2Enl/ sponsor": "sponsor_a"
+      }
+    },
+    {
+      "path": "allowAll",
+      "props" :
+      {
+        "http://beehub%2Enl/ sponsor": "sponsor_a",
+        "DAV: acl": "[[\"/system/users/john\",false,[\"DAV: all\"],false]]"
+      }
+    },
+    {
+      "path": "allowAll/denyRead",
+      "props" :
+      {
+        "http://beehub%2Enl/ sponsor": "sponsor_a",
+        "DAV: acl": "[[\"/system/users/john\",false,[\"DAV: read\"],true]]"
+      }
+    },
+    {
+      "path": "allowAll/denyWrite",
+      "props" :
+      {
+        "http://beehub%2Enl/ sponsor": "sponsor_a",
+        "DAV: acl": "[[\"/system/users/john\",false,[\"DAV: write\"],true]]"
+      }
+    },
+    {
+      "path": "allowAll/denyWriteAcl",
+      "props" :
+      {
+        "http://beehub%2Enl/ sponsor": "sponsor_a",
+        "DAV: acl": "[[\"/system/users/john\",false,[\"DAV: write-acl\"],true]]"
+      }
+    },
+    {
+      "path": "allowAll/denyReadDir",
+      "props" :
+      {
+        "http://beehub%2Enl/ sponsor": "sponsor_a",
+        "DAV: acl": "[[\"/system/users/john\",false,[\"DAV: read\"],true]]"
+      }
+    },
+    {
+      "path": "allowAll/denyReadDir/resource",
+      "props" :
+      {
+        "http://beehub%2Enl/ sponsor": "sponsor_a"
+      }
+    },
+    {
+      "path": "allowAll/denyWriteDir",
+      "props" :
+      {
+        "http://beehub%2Enl/ sponsor": "sponsor_a",
+        "DAV: acl": "[[\"/system/users/john\",false,[\"DAV: write\"],true]]"
+      }
+    },
+    {
+      "path": "allowAll/denyWriteDir/resource",
+      "props" :
+      {
+        "http://beehub%2Enl/ sponsor": "sponsor_a"
+      }
+    },
+    {
+      "path": "allowAll/denyWriteDir/allowWrite",
+      "props" :
+      {
+        "http://beehub%2Enl/ sponsor": "sponsor_a",
+        "DAV: acl": "[[\"/system/users/john\",false,[\"DAV: write\"],false]]"
+      }
+    },
+    {
+      "path": "allowAll/denyWriteAclDir",
+      "props" :
+      {
+        "http://beehub%2Enl/ sponsor": "sponsor_a",
+        "DAV: acl": "[[\"/system/users/john\",false,[\"DAV: write-acl\"],true]]"
+      }
+    },
+    {
+      "path": "allowAll/denyWriteAclDir/resource",
+      "props" :
+      {
+        "http://beehub%2Enl/ sponsor": "sponsor_a"
       }
     }
   ]

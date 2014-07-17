@@ -62,12 +62,18 @@ public function user_prop_supported_privilege_set() {
   static $retval = null;
   if (!is_null($retval)) return $retval;
 
+  $read_content = new DAVACL_Element_supported_privilege(
+    BeeHub::PRIV_READ_CONTENT, true, 'Read the content'
+  );
   $read_acl    = new DAVACL_Element_supported_privilege(
     DAVACL::PRIV_READ_ACL, true, 'Read ACL'
   );
   $read_cups   = new DAVACL_Element_supported_privilege(
     DAVACL::PRIV_READ_CURRENT_USER_PRIVILEGE_SET,
     true, 'Read current user privilege set'
+  );
+  $write_content = new DAVACL_Element_supported_privilege(
+    DAVACL::PRIV_WRITE_CONTENT, true, 'Write the content'
   );
 
   $unbind    = new DAVACL_Element_supported_privilege(
@@ -80,20 +86,20 @@ public function user_prop_supported_privilege_set() {
     DAVACL::PRIV_WRITE, false, 'Write'
   );
   $write_acl   = new DAVACL_Element_supported_privilege(
-    DAVACL::PRIV_WRITE_ACL, false, 'Manage'
+    DAVACL::PRIV_WRITE_ACL, false, 'Manage the ACL'
   );
-
-
+  
   $retval      = new DAVACL_Element_supported_privilege(
     DAVACL::PRIV_ALL, false, 'All'
   );
 
+  $read->add_supported_privilege($read_content);
   $read->add_supported_privilege($read_acl);
   $read->add_supported_privilege($read_cups);
+  $write->add_supported_privilege($write_content);
   $write->add_supported_privilege($unbind);
   $retval->add_supported_privilege($read)
          ->add_supported_privilege($write)
-         ->add_supported_privilege($read_acl)
          ->add_supported_privilege($write_acl);
   $retval = array($retval);
   return $retval;

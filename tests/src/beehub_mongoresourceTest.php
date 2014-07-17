@@ -118,7 +118,7 @@ class BeeHub_MongoResourceTest extends BeeHub_Tests_Db_Test_Case {
     $this->setCurrentUser( '/system/users/jane' );
     $file = new \BeeHub_MongoResource( '/foo/file.txt' );
     $this->setExpectedException( 'DAV_Status', null, \DAV::HTTP_FORBIDDEN );
-    $file->user_set_acl( $acl );
+    $file->set_acl( $acl );
   }
 
 
@@ -136,7 +136,7 @@ class BeeHub_MongoResourceTest extends BeeHub_Tests_Db_Test_Case {
 
 
   public function testChangeOwnerUnauthenticated() {
-    $this->setExpectedException( 'DAV_Status', null, \DAV::HTTP_FORBIDDEN );
+    $this->setExpectedException( 'DAV_Status', null, \DAV::HTTP_BAD_REQUEST );
     $this->obj->method_PROPPATCH( \DAV::PROP_OWNER, '<D:href>/system/users/jane</D:href>' );
   }
 
@@ -298,7 +298,7 @@ class BeeHub_MongoResourceTest extends BeeHub_Tests_Db_Test_Case {
   public function testChangeSponsorToUnexisting() {
     $this->setCurrentUser( '/system/users/john' );
     $this->setExpectedException( 'DAV_Status', null, \DAV::HTTP_BAD_REQUEST );
-    $this->obj->method_PROPPATCH( \BeeHub::PROP_SPONSOR, '<D:href>/system/sponsors/sponsor_c</D:href>' );
+    $this->obj->method_PROPPATCH( \BeeHub::PROP_SPONSOR, '<D:href>/system/sponsors/unexisting_sponsor</D:href>' );
   }
 
 

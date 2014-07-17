@@ -166,6 +166,7 @@ class BeeHub_GroupTest extends BeeHub_Tests_Db_Test_Case {
     $foo->expects( $this->once() )
         ->method( 'include_view' )
         ->with( $this->equalTo( null ), $this->equalTo( $expected ) );
+    $this->setCurrentUser('/system/users/john');
     $foo->method_GET();
   }
 

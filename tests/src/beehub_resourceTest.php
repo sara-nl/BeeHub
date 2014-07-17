@@ -38,15 +38,14 @@ class BeeHub_ResourceTest extends \PHPUnit_Framework_TestCase {
     $resourceVisible = $this->getMock( '\BeeHub_Resource', array( 'init_props', 'user_prop_acl_internal', 'assert' ), array( $_SERVER['REQUEST_URI'] ) );
     $resourceVisible->expects( $this->once() )
                     ->method( 'assert' )
-                    ->with( $this->equalTo( \DAVACL::PRIV_READ ) );
-    $this->assertTrue( $resourceVisible->isVisible(), 'If you have read privileges, the resource should be visible to you' );
+                    ->with( $this->equalTo( \BeeHub::PRIV_READ_CONTENT ) );
+    $this->assertTrue( $resourceVisible->isVisible(), 'If you have read-content privileges, the resource should be visible to you' );
 
     $resourceInvisible = $this->getMock( '\BeeHub_Resource', array( 'init_props', 'user_prop_acl_internal', 'assert' ), array( $_SERVER['REQUEST_URI'] ) );
-    $resourceInvisible->expects( $this->once() )
+    $resourceInvisible->expects( $this->any() )
                       ->method( 'assert' )
-                      ->with( $this->equalTo( \DAVACL::PRIV_READ ) )
                       ->will( $this->throwException( new \DAV_Status( \DAV::HTTP_FORBIDDEN ) ) );
-    $this->assertFalse( $resourceInvisible->isVisible(), 'If you don\'t have read privileges, the resource should be invisible to you' );
+    $this->assertFalse( $resourceInvisible->isVisible(), 'If you don\'t have read-content and read-acl privileges, the resource should be invisible to you' );
   }
 
 

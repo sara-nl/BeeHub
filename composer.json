@@ -7,7 +7,7 @@
         "ext-mbstring": "*",
         "ext-mongo": "*",
         "ext-session": "*",
-        "pieterb/webdav-php": "1.0.*"
+        "pieterb/webdav-php": "1.1.*"
     },
     "require-dev": {
         "ext-pcntl": "*",

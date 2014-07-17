@@ -57,8 +57,8 @@ class BeeHub_User extends BeeHub_Principal {
     }
     
     // Else prepare the profile page
+    $this->assert( BeeHub::PRIV_READ_CONTENT );
     $this->init_props();
-    
     if ($this->is_admin()) {
       if ( is_null( $this->unverified_address ) && isset( $_GET['verification_code'] ) ) {
         unset($_GET['verification_code']);
@@ -438,6 +438,7 @@ BeeHub';
     $retval[BeeHub::PROP_X509]                   = $is_admin;
     $retval[BeeHub::PROP_SPONSOR]                = $is_admin;
     $retval[DAV::PROP_GROUP_MEMBERSHIP]          = $is_admin;
+    $retval[BeeHub::PROP_LAST_ACTIVITY]          = $is_admin;
     return $retval;
   }
 
@@ -457,6 +458,7 @@ BeeHub';
     $retval[BeeHub::PROP_SPONSOR]                = $is_admin;
     $retval[DAV::PROP_GROUP_MEMBERSHIP]          = false;
     $retval[BeeHub::PROP_SPONSOR_MEMBERSHIP]     = false;
+    $retval[BeeHub::PROP_LAST_ACTIVITY]          = false;
     return $retval;
   }
 

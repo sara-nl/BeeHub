@@ -34,6 +34,8 @@ class BeeHub_Lock_ProviderTest extends BeeHub_Tests_Db_Test_Case {
       $this->markTestSkipped( 'No storage backend specified; all tests depending on the storage backend are skipped' );
       return;
     }
+
+    $this->setCurrentUser( '/system/users/john' );
   }
   
   

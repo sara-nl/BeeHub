@@ -57,6 +57,7 @@ class BeeHub_Sponsor extends BeeHub_Principal {
     }
     
     // Else prepare the sponsor administration page
+    $this->assert( BeeHub::PRIV_READ_CONTENT );
     $members = array();
     if ( $this->is_member() ) {
       $this->init_props();

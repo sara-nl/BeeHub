@@ -51,6 +51,10 @@ DAV::$ACLPROVIDER  = BeeHub_ACL_Provider::inst();
 DAV::$UNAUTHORIZED = array( BeeHub::getAuth(), 'unauthorized' );
 
 if ( ( APPLICATION_ENV === BeeHub::ENVIRONMENT_TEST ) && isset( $_GET['test'] ) ) {
+  if ( $_SERVER['SCRIPT_URL'] !== '/foo/client_tests/' ) {
+    header( 'Location: /foo/client_tests/?' . $_SERVER['QUERY_STRING'] );
+    die();
+  }
   define( 'RUN_CLIENT_TESTS', true );
 }else{
   define( 'RUN_CLIENT_TESTS', false );

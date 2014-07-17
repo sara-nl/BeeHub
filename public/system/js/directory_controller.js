@@ -419,7 +419,7 @@
    */
   nl.sara.beehub.controller.renameResource = function(resource, fileNameNew, overwriteMode){
     var webdav = new nl.sara.webdav.Client();
-    webdav.move(resource.path, createRenameCallback(resource, fileNameNew, overwriteMode), path +fileNameNew,  overwriteMode);
+    webdav.move(resource.path, createRenameCallback(resource, fileNameNew, overwriteMode), encodeURI(path + fileNameNew),  overwriteMode);
   };
   
   /**
@@ -827,10 +827,11 @@
         break;
       // File does not exist
       case 404:
+        var destination = '';
         if (0 === renameCounter) {
-          var destination = resource.path;
+          destination = resource.path;
         } else {
-          var destination = resource.path+"_"+renameCounter;
+          destination = resource.path+"_"+renameCounter;
         }
         // Put empty file on server to check if upload is allowed. This prevent waiting for a long time (large files) 
         // while the upload is forbidden

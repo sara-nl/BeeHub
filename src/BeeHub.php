@@ -31,6 +31,7 @@ class BeeHub {
   const PROP_DESCRIPTION            = 'http://beehub.nl/ description';
   const PROP_SPONSOR                = 'http://beehub.nl/ sponsor';
   const PROP_SPONSOR_MEMBERSHIP     = 'http://beehub.nl/ sponsor-membership';
+  const PROP_LAST_ACTIVITY          = 'http://beehub.nl/ last-activity';
 
 
   public static $USER_PROPS = array(
@@ -40,6 +41,7 @@ class BeeHub {
     self::PROP_X509                   => true,
     self::PROP_SPONSOR                => true,
     self::PROP_SPONSOR_MEMBERSHIP     => true,
+    self::PROP_LAST_ACTIVITY          => true
   );
   public static $GROUP_PROPS = array(
     self::PROP_DESCRIPTION     => true,
@@ -55,6 +57,12 @@ class BeeHub {
     self::PROP_SPONSOR_MEMBERSHIP => 'sponsor_membership',
     self::PROP_SPONSOR => 'sponsor'
   );
+
+  /**#@+
+   * These are extra privileges specific for BeeHub
+   */
+  const PRIV_READ_CONTENT = 'http://beehub.nl/ read-content';
+  /**#@-*/
 
   // For the next values: check if you also need to change them in /system/js/beehub.js
   public static $FORBIDDEN_GROUP_NAMES = array(
@@ -508,7 +516,6 @@ class BeeHub {
     ) );
     
     if ( $result['ok'] != 1 ) {
-trigger_error(print_r($result, true));
       throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR );
     }
     $etag = $result['value']['counter'];
