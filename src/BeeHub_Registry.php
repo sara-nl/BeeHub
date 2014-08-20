@@ -60,7 +60,9 @@ class BeeHub_Registry implements DAV_Registry {
     }
     $localPath = BeeHub::localPath($path);
     $retval = null;
-    if ($path === $systemPath) {
+    if ( $path === '/' ) {
+      $retval = new BeeHub_Directory($path);
+    }elseif ($path === $systemPath) {
       $retval = new BeeHub_System_Collection($path);
     } elseif ( substr( $path, 0, strlen( $usersPath ) ) === $usersPath ) {
       if ( $path === $usersPath )
@@ -86,10 +88,19 @@ class BeeHub_Registry implements DAV_Registry {
           $retval = new BeeHub_Sponsor($path);
         }catch(Exception $e){}
       }
-    }elseif (is_dir($localPath)) {
-      $retval = new BeeHub_Directory($path);
-    }elseif (file_exists($localPath)) {
-      $retval = new BeeHub_File($path);
+    }else{$unslashifiedPath = $path;
+      if ( substr( $unslashifiedPath, 0, 1 ) === '/' ) {
+        $unslashifiedPath = substr( $unslashifiedPath, 1 );
+      }
+      $collection = BeeHub::getNoSQL()->files;
+      $document = $collection->findOne( array( 'path' => $unslashifiedPath ));
+      if ( ! is_null( $document ) ) {
+        if ( isset( $document['collection'] ) && $document['collection'] ) {
+          $retval = new BeeHub_Directory($path);
+        }else {
+          $retval = new BeeHub_File($path);
+        }
+      }
     }
     return ( $this->resourceCache[$path] = $retval );
   }

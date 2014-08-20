@@ -106,7 +106,7 @@ class BeeHub_DirectoryTest extends BeeHub_Tests_Db_Test_Case {
     $jane->storeProperties();
 
     $this->setCurrentUser( '/system/users/jane' );
-    $this->obj->create_member( 'nextfile.txt', true );
+    $this->obj->create_member( 'nextfile.txt' );
     $file = \DAV::$REGISTRY->resource( $this->obj->path . 'nextfile.txt' );
 
     $this->assertSame( '/system/sponsors/sponsor_a', $file->user_prop_sponsor() );

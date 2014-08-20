@@ -6,20 +6,20 @@
 1000   gebruikers
 500    groepen
 
-// Diepe directory structuur
-200 gebruikers met: (0 - 200)
-- /home/userXX/:                   10 bestanden van 10 Mb
-- /home/userXX/dir1:               10 bestanden van 10 Mb
-- /home/userXX/dir2:               100 bestanden van 1 Gb
-- /home/userXX/dir2/dir3:          150 bestanden van 20 Mb
-- /home/userXX/dir2/dir3/../dir50/ Verschillende bestanden in tussenliggende dirs.
-- /home/userXX/dir3/dir3/../dir20/ Verschillende bestanden in tussenliggende dirs.
+// Groepen
+1 gebruiker met: (1)
+- /home/userXX/                    200 bestanden van 500 Mb
+- groepXX                          1000 bestanden van 5 Mb, 500 bestanden van 100Gb
+
+// enkele directory
+199 gebruiker met: (2 - 200)
+- /home/userXX/                    200 bestanden van 500 Mb
 
 // Veel kleine bestanden
 200 gebruikers met: (201 - 400)
 - /home/userXX/                    10.000 bestanden van 1 Mb
 - /home/userXX/dir1                1.000 bestanden van 1Gb
-- /home/userXX/dir2/dir3           10 bestanden van 1 Tb
+- /home/userXX/dir2/dir1           10 bestanden van 1 Tb
 
 // Grote bestanden
 200 gebruikers met: (401 - 600)
@@ -31,19 +31,23 @@
 - /home/userXX/                    10 bestanden van 1 Tb, 10000 bestanden van 1Kb
 - /home/userXX/dir1                200 bestanden van 500 Gb, 1000 bestanden van 1 Mb
 
-// Groepen 
+// Diepe directory structuur
 200 gebruikers met: (801 - 1000)
-- /home/userXX/                    200 bestanden van 500 Mb
-- groepXX                          1000 bestanden van 5 Mb, 500 bestanden van 100Gb
+- /home/userXX/                    10 bestanden van 10 Mb
+- /home/userXX/dir1                10 bestanden van 10 Mb
+- /home/userXX/dir2                100 bestanden van 1 Gb
+- /home/userXX/dir2/dir3           150 bestanden van 20 Mb
+- /home/userXX/dir2/dir3/../dir50/ 150 bestanden van 20 Mb in tussenliggende dirs
+- /home/userXX/dir3/dir3/../dir20/ 150 bestanden van 20 Mb in tussenliggende dirs
 
 Checken:
 - Hoe ziet de sponsor grafiek eruit:
   - Veel gebruikers - overzichtelijk, sortering
   - Index (ik kom even niet op het woord, beschrijving van aantal Gb)
   - Snelheid
-- Gebruiker 1:
+- Gebruiker 801:
   - Hoe ziet diepe directory structuur eruit
-- Gebruiker 201, 401, 601, 801
+- Gebruiker 1, 2, 201, 401, 601, 801:
   - Snelheid
   - Ziet goed uit?
 

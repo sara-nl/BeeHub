@@ -88,6 +88,11 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
     if (!mkdir($groupdir)) {
       throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
     }
+    // And create the directory in the database
+    $document = array( 'path' => $group_name, 'collection' => true );
+    $filesCollection = BeeHub::getNoSQL()->files;
+    $filesCollection->save( $document );
+
     $groupdir_resource = DAV::$REGISTRY->resource( '/' . $group_name );
     $groupdir_resource->user_set( BeeHub::PROP_SPONSOR, $user_sponsor );
     $groupdir_resource->user_set( DAV::PROP_ACL, '[["' . BeeHub::GROUPS_PATH . rawurlencode($group->name) . '",false,["DAV: read", "DAV: write"],false]]' );
