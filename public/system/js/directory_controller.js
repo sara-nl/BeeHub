@@ -30,7 +30,8 @@
 (function() {
   
   nl.sara.beehub.controller.STATUS_NOT_ALLOWED = 403;
-  
+  nl.sara.beehub.controller.ERROR_STATUS_NOT_ALLOWED = 'You are not allowed to perform this action!';
+  nl.sara.beehub.controller.ERROR_UNKNOWN = 'Something went wrong on the server. No changes were made.';
   /*
    * Add slash to the end of the path
    */
@@ -257,26 +258,25 @@
   /**
    * Get sponsors from server
    */
-  nl.sara.beehub.controller.getSponsors = function(owner, path){
-    
+  nl.sara.beehub.controller.getSponsors = function(owner, path){  
     function callback(status, data){
-      var sponsors = [];
-      // Get sponsor
-      if (data.getResponse(owner).getProperty('http://beehub.nl/','sponsor-membership').getParsedValue() !== null) {
-        sponsors = data.getResponse(owner).getProperty('http://beehub.nl/','sponsor-membership').getParsedValue();
-      };
-      
-      var sponsorObjects = [];
-      for (var i in sponsors) {
-        var sponsor = {};
-        sponsor.name = sponsors[i];
-        sponsor.displayname = nl.sara.beehub.controller.getDisplayName(sponsors[i]);
-        sponsorObjects.push(sponsor);
-      }
       if (status !== 207) {
         nl.sara.beehub.view.content.errorGetSponsors(status);
       } else {
-        nl.sara.beehub.view.content.setSponsorDropdown(status, path, sponsorObjects);
+        var sponsors = [];
+        // Get sponsor
+        if (data.getResponse(owner).getProperty('http://beehub.nl/','sponsor-membership').getParsedValue() !== null) {
+          sponsors = data.getResponse(owner).getProperty('http://beehub.nl/','sponsor-membership').getParsedValue();
+        };
+        
+        var sponsorObjects = [];
+        for (var i in sponsors) {
+          var sponsor = {};
+          sponsor.name = sponsors[i];
+          sponsor.displayname = nl.sara.beehub.controller.getDisplayName(sponsors[i]);
+          sponsorObjects.push(sponsor);
+        }
+        nl.sara.beehub.view.content.setSponsorDropdown(path, sponsorObjects);
       }
     }
   
@@ -419,7 +419,7 @@
    */
   nl.sara.beehub.controller.renameResource = function(resource, fileNameNew, overwriteMode){
     var webdav = new nl.sara.webdav.Client();
-    webdav.move(resource.path, createRenameCallback(resource, fileNameNew, overwriteMode), path +fileNameNew,  overwriteMode);
+    webdav.move(resource.path, createRenameCallback(resource, fileNameNew, overwriteMode), encodeURI(path + fileNameNew),  overwriteMode);
   };
   
   /**
@@ -827,10 +827,11 @@
         break;
       // File does not exist
       case 404:
+        var destination = '';
         if (0 === renameCounter) {
-          var destination = resource.path;
+          destination = resource.path;
         } else {
-          var destination = resource.path+"_"+renameCounter;
+          destination = resource.path+"_"+renameCounter;
         }
         // Put empty file on server to check if upload is allowed. This prevent waiting for a long time (large files) 
         // while the upload is forbidden

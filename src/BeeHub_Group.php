@@ -51,6 +51,7 @@ class BeeHub_Group extends BeeHub_Principal {
    * @see DAV_Resource::method_GET()
    */
   public function method_GET() {
+    $this->assert( BeeHub::PRIV_READ_CONTENT );
     $members = array();
     if ( $this->is_member() ) {
       $this->init_props();

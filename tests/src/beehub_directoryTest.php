@@ -50,7 +50,7 @@ class BeeHub_DirectoryTest extends BeeHub_Tests_Db_Test_Case {
     
     $directory = new \BeeHub_Directory( '/foo/directory/' );
     $this->setCurrentUser( '/system/users/john' );
-    $directory->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_WRITE ), false ) ) );
+    $directory->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
     // I need to reload the directory to avoid cache polution
     $this->obj = new \BeeHub_Directory( '/foo/directory/' );
   }
@@ -162,7 +162,7 @@ class BeeHub_DirectoryTest extends BeeHub_Tests_Db_Test_Case {
 
   public function testMethod_COPYWithoutCollectionSponsor() {
     $bar = new \BeeHub_Directory( '/bar/' );
-    $bar->user_set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
+    $bar->set_acl( array( new \DAVACL_Element_ace( '/system/users/jane', false, array( \DAVACL::PRIV_READ, \DAVACL::PRIV_WRITE ), false ) ) );
     $this->setCurrentUser( '/system/users/jane' );
     $this->obj->method_COPY( '/bar/directory/' );
 

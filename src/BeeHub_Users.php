@@ -30,6 +30,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
    * @see DAV_Resource::method_GET
    */
   public function method_GET() {
+    $this->assert( BeeHub::PRIV_READ_CONTENT );
     if ( empty($_SERVER['HTTPS']) &&
          APPLICATION_ENV !== BeeHub::ENVIRONMENT_DEVELOPMENT ) {
       throw new DAV_Status(

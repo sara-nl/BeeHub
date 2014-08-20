@@ -558,34 +558,20 @@
   };
   
   /**
-   * Handle sponsor click
-   * 
-   * @param {Event} e
-   */ 
-  var handle_sponsor_click = function(e){
- // create resource object
-    var owner = $(e.target).closest('tr').find('.owner').attr('data-value');
-    var path = $(e.target).closest('tr').attr('id');
-    nl.sara.beehub.view.maskView("transparant", true);
-    nl.sara.beehub.controller.getSponsors(owner, path);
-  };
-  
-  /**
    * Set sponsor dropdown
    * 
    * @param {Object} resource Resource object
    * @param {Object} sponsors Sponsors object with name and displayname
    */
-  nl.sara.beehub.view.content.setSponsorDropdown = function(status, path, sponsors){
-    nl.sara.beehub.view.maskView("transparant", false);
+  nl.sara.beehub.view.content.setSponsorDropdown = function(path, sponsors){
     var row = $("tr[id='"+path+"']");
     var selected = row.find('.bh-dir-sponsor').attr('data-value');
     var dropdown = "";
     for (var i in sponsors){
       if (sponsors[i].name === selected) {
-        dropdown += '<option value="'+sponsors[i].name+'" selected> '+sponsors[i].displayname+' </option>';
+        dropdown += '<option value="'+sponsors[i].name+'" selected>'+sponsors[i].displayname+'</option>';
       } else {
-        dropdown += '<option value="'+sponsors[i].name+'"> '+sponsors[i].displayname+' </option>';
+        dropdown += '<option value="'+sponsors[i].name+'">'+sponsors[i].displayname+'</option>';
       }
     };
     row.find('.bh-dir-sponsor').hide();
@@ -599,12 +585,12 @@
     });
     row.find('.bh-dir-sponsor-dropdown').unbind('change').on('change', function(e){
       nl.sara.beehub.view.maskView("transparant", true);
-      var name = $(e.target).val();
+      var name = $(e.target).find(":selected").val();
       var displayname = $(e.target).find(":selected").text();
       var sponsor = {
           "name":        name,
           "displayname": displayname
-      }
+      };
       nl.sara.beehub.controller.setSponsor(path, sponsor);
     });
   };
@@ -617,7 +603,7 @@
   nl.sara.beehub.view.content.errorGetSponsors = function(status){
     nl.sara.beehub.view.dialog.showError( 'Something went wrong with retrieving available sponsors.' );
     nl.sara.beehub.view.maskView("transparant", false);
-  }
+  };
   
   /**
    * Set new sponsor
@@ -642,11 +628,24 @@
    */
   nl.sara.beehub.view.content.errorNewSponsor = function(status){  
     if (status === nl.sara.beehub.controller.STATUS_NOT_ALLOWED ){
-      nl.sara.beehub.view.dialog.showError( 'You are not allowed to perform this action!' );
+      nl.sara.beehub.view.dialog.showError( nl.sara.beehub.controller.ERROR_STATUS_NOT_ALLOWED );
     } else {
-      nl.sara.beehub.view.dialog.showError( 'Something went wrong on the server. No changes were made.' );
+      nl.sara.beehub.view.dialog.showError( nl.sara.beehub.controller.ERROR_UNKNOWN );
     };
     nl.sara.beehub.view.maskView("transparant", false);
+  };
+  
+  /**
+   * Handle sponsor click
+   * 
+   * @param {Event} e
+   */ 
+  var handle_sponsor_click = function(e){
+ // create resource object
+    var owner = $(e.target).closest('tr').find('.owner').attr('data-value');
+    var path = $(e.target).closest('tr').attr('id');
+    nl.sara.beehub.view.maskView("transparant", true);
+    nl.sara.beehub.controller.getSponsors(owner, path);
   };
   
   /**

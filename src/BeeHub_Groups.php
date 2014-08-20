@@ -32,6 +32,7 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
    * @see DAV_Resource::method_GET()
    */
   public function method_GET() {
+    $this->assert( BeeHub::PRIV_READ_CONTENT );
     $groups = array();
     foreach ($this as $group_name)
       $groups[$group_name] = DAV::$REGISTRY->resource( $this->path . $group_name );

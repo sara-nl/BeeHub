@@ -27,12 +27,7 @@ declare( encoding = 'UTF-8' );
 */
 
 // Load the default page header
-if ( RUN_CLIENT_TESTS ) {
-  if ( $_SERVER['REQUEST_URI'] !== '/foo/client_tests/?test' ) {
-    header( 'Location: /foo/client_tests/?test' );
-    die();
-  }
-}else{
+if ( ! RUN_CLIENT_TESTS ) {
   $header = '<link href="/system/css/dynatree/ui.dynatree.css" rel="stylesheet" type="text/css" />';
 }
 require 'views/header.php';
@@ -98,7 +93,16 @@ require 'views/header.php';
 
   <!--	CONTENT: Home button-->
   <button
-    <?= ( ( ! BeeHub_Auth::inst()->is_authenticated() || ( $this->path === '/home/' . BeeHub_Auth::inst()->current_user()->name . '/' ) ) ? 'disabled="disabled"' : '' ) . 'id="' . DAV::xmlescape( preg_replace('@^' . BeeHub::USERS_PATH . '(.*)@', '/home/\1/', BeeHub_Auth::inst()->current_user()->path) ) . '"' ?>
+    <?= (
+          ( ! BeeHub_Auth::inst()->is_authenticated() ||
+            ( ( BeeHub_Auth::inst()->current_user() instanceof BeeHub_User ) &&
+              ( $this->path === '/home/' . BeeHub_Auth::inst()->current_user()->name . '/' )
+            )
+          ) ?
+            'disabled="disabled"'
+          :
+            ''
+        ) . 'id="' . DAV::xmlescape( preg_replace('@^' . BeeHub::USERS_PATH . '(.*)@', '/home/\1/', ( ( BeeHub_Auth::inst()->current_user() instanceof BeeHub_User ) ? BeeHub_Auth::inst()->current_user()->path : '' ) ) ) . '"' ?>
     class="btn btn-small bh-dir-content-gohome" data-toggle="tooltip"
     title="Go to home folder">
     <i class="icon-home"></i> Home
@@ -114,7 +118,7 @@ require 'views/header.php';
 
   <?php
   try {
-    $this->assert( DAVACL::PRIV_WRITE );
+    $this->assert( DAVACL::PRIV_WRITE_CONTENT );
     $mkcolButtonDisabled = false;
   } catch ( DAV_Status $e) {
     $mkcolButtonDisabled = true;
@@ -306,7 +310,7 @@ require 'views/header.php';
           // Determine if it is a file and is writable. If so, we'll want to keep the upload button enabled
           if ( ! $writableFiles && ( $member->prop_resourcetype() !== DAV_Collection::RESOURCETYPE ) ) {
             try {
-              $member->assert( DAVACL::PRIV_WRITE );
+              $member->assert( DAVACL::PRIV_WRITE_CONTENT );
               $writableFiles = true;
             }catch ( DAV_Status $e ) {}
           }
@@ -316,7 +320,7 @@ require 'views/header.php';
             	<div class="dropdown">
          						<a class="dropdown-toggle bh-dir-content-menu" data-toggle="dropdown" href="#"><i class="icon-align-justify" style="cursor: pointer"></i></a>
          						<ul class="dropdown-menu bh-dir-contents-menu" role="menu" aria-labelledby="<?= DAV::xmlescape( DAV::unslashify($member->path) ) ?>">
-                  <?php if ( in_array( DAVACL::PRIV_WRITE, $member->user_prop_current_user_privilege_set() ) && in_array( DAVACL::PRIV_UNBIND, $current_user_privilege_set_collection ) ) : ?>
+                  <?php if ( in_array( DAVACL::PRIV_WRITE_CONTENT, $member->user_prop_current_user_privilege_set() ) && in_array( DAVACL::PRIV_UNBIND, $current_user_privilege_set_collection ) ) : ?>
                     <li><a class="bh-dir-content-edit" href="#">Rename</a></li>
                   <?php endif; ?>
                   <li>
@@ -631,7 +635,7 @@ $footer = '
 // If the directory ($this) is not writable nor any of the files in it, then you
 // won't be able to upload anything to this directory. So disable the button.
 try {
-  $this->assert( DAVACL::PRIV_WRITE );
+  $this->assert( DAVACL::PRIV_WRITE_CONTENT );
 }catch ( DAV_Status $e ) {
   if ( ! $writableFiles ) {
     $footer .= '
@@ -651,11 +655,12 @@ if ( RUN_CLIENT_TESTS ) {
   $footer .= '
     <script src="/system/tests/unittests/beehub.js"></script>
     <script src="/system/tests/unittests/directory_view_tree.js"></script>
-    <script src="/system/tests/unittests/directory_view.js"></script> 	
+    <script src="/system/tests/unittests/directory_view.js"></script>
     <script src="/system/tests/unittests/directory_controller.js"></script>
     <script src="/system/tests/unittests/directory_view_content.js"></script>
     <script src="/system/tests/unittests/directory_view_dialog.js"></script>
     <script src="/system/tests/unittests/directory_view_acl.js"></script>
+    <script src="/system/tests/unittests/systemtests.js"></script>
    ';
 }
 

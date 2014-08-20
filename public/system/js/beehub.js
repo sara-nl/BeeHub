@@ -283,7 +283,7 @@ nl.sara.beehub.utils.getGroupOrSponsor = function() {
     group_or_sponsor = "sponsor";
   }
   return group_or_sponsor;
-}
+};
 
 /*
  * Returns displayname from object

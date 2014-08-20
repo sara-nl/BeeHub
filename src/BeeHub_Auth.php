@@ -143,6 +143,11 @@ class BeeHub_Auth {
     // is allowed)
     $user = $this->current_user();
     if (!is_null($user)) {
+
+      // Update the http://beehub.nl/ last-activity property
+      $user->user_set( BeeHub::PROP_LAST_ACTIVITY, date( 'Y-m-d\TH:i:sP') );
+      $user->storeProperties();
+      
       $email = $user->prop(BeeHub::PROP_EMAIL);
       if ( empty($email) &&
            DAV::unslashify( DAV::getPath() ) != DAV::unslashify($user->path) ) {

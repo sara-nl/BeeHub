@@ -30,7 +30,7 @@ class BeeHub_System_Collection extends BeeHub_Directory {
     return array(
       new DAVACL_Element_ace(
         DAVACL::PRINCIPAL_ALL, false, array(
-          DAVACL::PRIV_READ, DAVACL::PRIV_READ_ACL
+          DAVACL::PRIV_READ
         ), false, true
       )
     );
@@ -38,7 +38,7 @@ class BeeHub_System_Collection extends BeeHub_Directory {
 
 
   public function method_GET() {
-    $this->assert(DAVACL::PRIV_READ);
+    $this->assert( BeeHub::PRIV_READ_CONTENT );
     $this->include_view();
   }
 

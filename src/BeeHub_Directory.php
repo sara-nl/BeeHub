@@ -44,7 +44,7 @@ public function create_member( $name ) {
 
 
 private function internal_create_member( $name, $collection = false ) {
-  $this->assert(DAVACL::PRIV_WRITE);
+  $this->assert( DAVACL::PRIV_WRITE_CONTENT );
   $path = $this->path . $name;
   $localPath = BeeHub::localPath( $path );
   $cups = $this->current_user_principals();
@@ -93,11 +93,21 @@ private function internal_create_member( $name, $collection = false ) {
 
 public function method_COPY( $path ) {
   $this->init_props();
+  $this->assert( BeeHub::PRIV_READ_CONTENT );
+  $this->assert( DAVACL::PRIV_READ_ACL );
+  $destinationResource = DAV::$REGISTRY->resource( $path );
   $parent = DAV::$REGISTRY->resource( dirname( $path ) );
   if (!$parent)
     throw new DAV_Status(DAV::HTTP_CONFLICT, 'Unable to COPY to unexisting collection');
   if (!$parent instanceof BeeHub_Directory)
     throw new DAV_Status(DAV::HTTP_FORBIDDEN);
+  if ( $destinationResource instanceof DAVACL_Resource ) {
+    $destinationResource->assert( DAVACL::PRIV_WRITE_CONTENT );
+    $destinationResource->assert( DAVACL::PRIV_WRITE_ACL );
+    $parent->method_DELETE( basename( $path ) );
+  }else{
+    $parent->assert( DAVACL::PRIV_WRITE_CONTENT );
+  }
   
   // And copy the attributes
   $newResource = $parent->internal_create_member( basename( $path ), true );
@@ -116,12 +126,13 @@ public function method_COPY( $path ) {
 }
 
 
-public function method_DELETE( $name )
-{
+public function method_DELETE( $name ) {
+  $this->assert( DAVACL::PRIV_UNBIND );
+
   $path = $this->path . $name;
   
   $resource = DAV::$REGISTRY->resource( $path );
-  $resource->assert(DAVACL::PRIV_WRITE);
+  $resource->assert( DAVACL::PRIV_WRITE_CONTENT );
   
   // Remove the entry from mongoDB too
   $filesCollection = BeeHub::getNoSQL()->selectCollection( 'files' );
@@ -152,7 +163,7 @@ public function method_DELETE( $name )
  * @see DAV_Resource::method_GET()
  */
 public function method_GET() {
-  $this->assert(DAVACL::PRIV_READ);
+  $this->assert( BeeHub::PRIV_READ_CONTENT );
   $this->include_view();
 }
 
@@ -173,12 +184,23 @@ public function method_MKCOL( $name ) {
 
 
 public function method_MOVE( $member, $destination ) {
+  $this->assert( DAVACL::PRIV_UNBIND );
+
   // Get the ACL of the source (including inherited ACE's)
   $sourceAcl = DAV::$REGISTRY->resource( $this->path . $member )->user_prop_acl();
 
   // Determine if moving is allowed and if so, move the object
-  DAV::$REGISTRY->resource( $this->path . $member )->assert( DAVACL::PRIV_WRITE );
-  DAV::$REGISTRY->resource( dirname($destination) )->assert( DAVACL::PRIV_WRITE );
+  DAV::$REGISTRY->resource( $this->path . $member )->assert( DAVACL::PRIV_WRITE_CONTENT );
+  DAV::$REGISTRY->resource( $this->path . $member )->assert( BeeHub::PRIV_READ_CONTENT );
+  DAV::$REGISTRY->resource( $this->path . $member )->assert( DAVACL::PRIV_READ_ACL );
+  $destinationResource = DAV::$REGISTRY->resource( $destination );
+  if ( $destinationResource instanceof DAVACL_Resource ) {
+    $destinationResource->assert( DAVACL::PRIV_WRITE_CONTENT );
+    $destinationResource->assert( DAVACL::PRIV_WRITE_ACL );
+    $destinationResource->collection()->method_DELETE( basename( $destination ) );
+  }else{
+    DAV::$REGISTRY->resource( dirname( $destination ) )->assert( DAVACL::PRIV_WRITE_CONTENT );
+  }
   $localDest = BeeHub::localPath($destination);
   rename(
     BeeHub::localPath( $this->path . $member ),
@@ -195,10 +217,19 @@ public function method_MOVE( $member, $destination ) {
   if ( substr( $newPath, 0, 1 ) === '/' ) {
     $newPath = substr( $newPath, 1 );
   }
-  $filesCollection->findAndModify(
-    array( 'path' => $path ),
-    array( '$set' => array( 'path' => $newPath ) )
-  );
+  $mongoDocument = $filesCollection->findOne( array( 'path' => $path ) );
+  $mongoDocument['path'] = $newPath;
+  $destinationMongoDocument = $filesCollection->findOne( array( 'path' => $newPath ) );
+  if ( ! is_null( $destinationMongoDocument ) ) {
+    if ( isset( $destinationMongoDocument[ 'shallowReadLock' ] ) ) {
+      $mongoDocument[ 'shallowReadLock' ] = $destinationMongoDocument[ 'shallowReadLock' ];
+    }
+    if ( isset( $destinationMongoDocument[ 'shallowWriteLock' ] ) ) {
+      $mongoDocument[ 'shallowWriteLock' ] = $destinationMongoDocument[ 'shallowWriteLock' ];
+    }
+    $filesCollection->remove( array( 'path' => $newPath ) );
+  }
+  $filesCollection->save( $mongoDocument );
 
   // We need to make sure that the effective ACL at the destination is the same as at the resource
   $destinationAcl = array();

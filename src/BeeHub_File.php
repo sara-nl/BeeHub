@@ -83,18 +83,27 @@ public function user_prop_getetag() {
 }
 
 
-/**
- * @TODO set owner and sponsor correctly!
- */
 public function method_COPY( $path ) {
-  $this->assert(DAVACL::PRIV_READ);
+  $this->assert( BeeHub::PRIV_READ_CONTENT );
+  $this->assert( DAVACL::PRIV_READ_ACL );
+  $destinationResource = DAV::$REGISTRY->resource( $path );
   $parent = DAV::$REGISTRY->resource( dirname( $path ) );
-  $parent->assert( DAVACL::PRIV_WRITE );
-  $new_resource = $parent->create_member( basename( $path ) );
+  if (!$parent)
+    throw new DAV_Status(DAV::HTTP_CONFLICT, 'Unable to COPY to unexisting collection');
+  if (!$parent instanceof BeeHub_Directory)
+    throw new DAV_Status(DAV::HTTP_FORBIDDEN);
+  if ( $destinationResource instanceof DAVACL_Resource ) {
+    $destinationResource->assert( DAVACL::PRIV_WRITE_CONTENT );
+    $destinationResource->assert( DAVACL::PRIV_WRITE_ACL );
+    $parent->method_DELETE( basename( $path ) );
+  }else{
+    $parent->assert( DAVACL::PRIV_WRITE_CONTENT );
+  }
   $localPath = BeeHub::localPath( $path );
   exec( 'cp ' . BeeHub::escapeshellarg( $this->localPath ) . ' ' . BeeHub::escapeshellarg( $localPath ) );
   
   // And copy the attributes
+  $new_resource = DAV::$REGISTRY->resource( $path );
   foreach( $this->stored_props as $prop => $value ) {
     if ( !in_array( $prop, array(
           DAV::PROP_OWNER,
@@ -128,6 +137,7 @@ public function method_COPY( $path ) {
 
 
 public function method_GET() {
+  $this->assert( BeeHub::PRIV_READ_CONTENT );
   return fopen( $this->localPath , 'r' );
 }
 
@@ -135,7 +145,7 @@ public function method_GET() {
 public function method_PUT($stream) {
   // Assert the privileges of the current user
   if ( DAV::getPath() === $this->path ) {
-    $this->assert(DAVACL::PRIV_WRITE);
+    $this->assert( DAVACL::PRIV_WRITE_CONTENT );
   }
 
   // Try to open the (local) file for writing
@@ -241,7 +251,7 @@ public function method_PUT($stream) {
 
 public function method_PUT_range($stream, $start, $end, $total) {
   // Assert the privileges of the current user
-  $this->assert(DAVACL::PRIV_WRITE);
+  $this->assert( DAVACL::PRIV_WRITE_CONTENT );
 
   // Open file for reading and writing
   if ( !( $resource = fopen( $this->localPath, 'r+' ) ) ) {

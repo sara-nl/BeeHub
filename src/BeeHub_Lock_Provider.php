@@ -110,6 +110,8 @@ public function getlock($path) {
  */
 public function setlock($lockroot, $depth, $owner, $timeout) {
   $resource = DAV::$REGISTRY->resource( $lockroot );
+  $resource->assert( DAVACL::PRIV_WRITE_CONTENT );
+
   if ( ( $resource->prop_resourcetype() === DAV_Collection::RESOURCETYPE ) && ( DAV::DEPTH_0 !== $depth ) ) {
     throw new DAV_Status(
       DAV::HTTP_NOT_IMPLEMENTED,
