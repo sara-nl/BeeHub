@@ -103,7 +103,8 @@ public function method_COPY( $path ) {
   exec( 'cp ' . BeeHub::escapeshellarg( $this->localPath ) . ' ' . BeeHub::escapeshellarg( $localPath ) );
   
   // And copy the attributes
-  $new_resource = DAV::$REGISTRY->resource( $path );
+  $new_resource = new BeeHub_File( $path );
+
   foreach( $this->stored_props as $prop => $value ) {
     if ( !in_array( $prop, array(
           DAV::PROP_OWNER,
