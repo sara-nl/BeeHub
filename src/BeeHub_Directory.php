@@ -205,10 +205,19 @@ public function method_MOVE( $member, $destination ) {
   if ( substr( $newPath, 0, 1 ) === '/' ) {
     $newPath = substr( $newPath, 1 );
   }
-  $filesCollection->findAndModify(
-    array( 'path' => $path ),
-    array( '$set' => array( 'path' => $newPath ) )
-  );
+  $mongoDocument = $filesCollection->findOne( array( 'path' => $path ) );
+  $mongoDocument['path'] = $newPath;
+  $destinationMongoDocument = $filesCollection->findOne( array( 'path' => $newPath ) );
+  if ( ! is_null( $destinationMongoDocument ) ) {
+    if ( isset( $destinationMongoDocument[ 'shallowReadLock' ] ) ) {
+      $mongoDocument[ 'shallowReadLock' ] = $destinationMongoDocument[ 'shallowReadLock' ];
+    }
+    if ( isset( $destinationMongoDocument[ 'shallowWriteLock' ] ) ) {
+      $mongoDocument[ 'shallowWriteLock' ] = $destinationMongoDocument[ 'shallowWriteLock' ];
+    }
+    $filesCollection->remove( array( 'path' => $newPath ) );
+  }
+  $filesCollection->save( $mongoDocument );
 
   // We need to make sure that the effective ACL at the destination is the same as at the resource
   $destinationAcl = array();

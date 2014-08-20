@@ -78,7 +78,9 @@ A complete document in the 'files' collection could look like this:
     "DAV: getcontenttype": "text/plain; charset=UTF-8",
     "DAV: getetag": "\"EA\"",
     "test_namespace test_property": "this is a random dead property"
-  }
+  },
+  "shallowWriteLock" : { "lockerId" : "beehub-devel53f49ae091feb6.35129299", "time" : NumberLong(1408539360) },
+  "shallowReadLock" : { "counter" : 1, "latest_lock" : NumberLong(1408539360) }
 }
 ```
 This describes the properties for the file 'foo/file.txt'. This path should NOT have leading or trailing slashes.
