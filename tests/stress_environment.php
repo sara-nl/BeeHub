@@ -113,7 +113,7 @@ function setUpDatabase() {
     $files[] = array(
       'path' => 'home/user' . $counter,
       'props' => array(
-        'DAV: owner' => 'user1',
+        'DAV: owner' => 'user' . $counter,
         'http://beehub%2Enl/ sponsor' => 'sponsor1'
       ),
       'collection' => true
@@ -152,7 +152,7 @@ function setUpDatabase() {
     $files[] = array(
       'path' => 'home/user' . $counter,
       'props' => array(
-        'DAV: owner' => 'user1',
+        'DAV: owner' => 'user' . $counter,
         'http://beehub%2Enl/ sponsor' => 'sponsor1'
       ),
       'collection' => true
@@ -160,7 +160,7 @@ function setUpDatabase() {
     $files[] = array(
       'path' => 'home/user' . $counter . '/dir1',
       'props' => array(
-        'DAV: owner' => 'user1',
+        'DAV: owner' => 'user' . $counter,
         'http://beehub%2Enl/ sponsor' => 'sponsor1'
       ),
       'collection' => true
@@ -168,7 +168,7 @@ function setUpDatabase() {
     $files[] = array(
       'path' => 'home/user' . $counter . '/dir2',
       'props' => array(
-        'DAV: owner' => 'user1',
+        'DAV: owner' => 'user' . $counter,
         'http://beehub%2Enl/ sponsor' => 'sponsor1'
       ),
       'collection' => true
@@ -176,7 +176,7 @@ function setUpDatabase() {
     $files[] = array(
       'path' => 'home/user' . $counter . '/dir2/dir1',
       'props' => array(
-        'DAV: owner' => 'user1',
+        'DAV: owner' => 'user' . $counter,
         'http://beehub%2Enl/ sponsor' => 'sponsor1'
       ),
       'collection' => true
@@ -235,7 +235,7 @@ function setUpDatabase() {
     $files[] = array(
       'path' => 'home/user' . $counter,
       'props' => array(
-        'DAV: owner' => 'user1',
+        'DAV: owner' => 'user' . $counter,
         'http://beehub%2Enl/ sponsor' => 'sponsor1'
       ),
       'collection' => true
@@ -243,7 +243,7 @@ function setUpDatabase() {
     $files[] = array(
       'path' => 'home/user' . $counter . '/dir1',
       'props' => array(
-        'DAV: owner' => 'user1',
+        'DAV: owner' => 'user' . $counter,
         'http://beehub%2Enl/ sponsor' => 'sponsor1'
       ),
       'collection' => true
@@ -290,7 +290,7 @@ function setUpDatabase() {
     $files[] = array(
       'path' => 'home/user' . $counter,
       'props' => array(
-        'DAV: owner' => 'user1',
+        'DAV: owner' => 'user' . $counter,
         'http://beehub%2Enl/ sponsor' => 'sponsor1'
       ),
       'collection' => true
@@ -298,7 +298,7 @@ function setUpDatabase() {
     $files[] = array(
       'path' => 'home/user' . $counter . '/dir1',
       'props' => array(
-        'DAV: owner' => 'user1',
+        'DAV: owner' => 'user' . $counter,
         'http://beehub%2Enl/ sponsor' => 'sponsor1'
       ),
       'collection' => true
@@ -373,7 +373,7 @@ function setUpDatabase() {
     $files[] = array(
       'path' => 'home/user' . $counter,
       'props' => array(
-        'DAV: owner' => 'user1',
+        'DAV: owner' => 'user' . $counter,
         'http://beehub%2Enl/ sponsor' => 'sponsor1'
       ),
       'collection' => true
@@ -393,7 +393,7 @@ function setUpDatabase() {
     $files[] = array(
       'path' => 'home/user' . $counter . '/dir1',
       'props' => array(
-        'DAV: owner' => 'user1',
+        'DAV: owner' => 'user' . $counter,
         'http://beehub%2Enl/ sponsor' => 'sponsor1'
       ),
       'collection' => true
@@ -413,7 +413,7 @@ function setUpDatabase() {
     $files[] = array(
       'path' => 'home/user' . $counter . '/dir2',
       'props' => array(
-        'DAV: owner' => 'user1',
+        'DAV: owner' => 'user' . $counter,
         'http://beehub%2Enl/ sponsor' => 'sponsor1'
       ),
       'collection' => true
@@ -436,7 +436,7 @@ function setUpDatabase() {
       $files[] = array(
         'path' => $path,
         'props' => array(
-          'DAV: owner' => 'user1',
+          'DAV: owner' => 'user' . $counter,
           'http://beehub%2Enl/ sponsor' => 'sponsor1'
         ),
         'collection' => true
@@ -457,7 +457,7 @@ function setUpDatabase() {
     $files[] = array(
       'path' => 'home/user' . $counter . '/dir3',
       'props' => array(
-        'DAV: owner' => 'user1',
+        'DAV: owner' => 'user' . $counter,
         'http://beehub%2Enl/ sponsor' => 'sponsor1'
       ),
       'collection' => true
@@ -468,7 +468,7 @@ function setUpDatabase() {
       $files[] = array(
         'path' => $path,
         'props' => array(
-          'DAV: owner' => 'user1',
+          'DAV: owner' => 'user' . $counter,
           'http://beehub%2Enl/ sponsor' => 'sponsor1'
         ),
         'collection' => true
