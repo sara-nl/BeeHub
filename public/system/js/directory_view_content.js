@@ -578,6 +578,7 @@
     row.find('.bh-dir-sponsor-dropdown').show();
     row.find('.bh-dir-sponsor-select').focus();
     row.find('.bh-dir-sponsor-select').html(dropdown);
+    
     row.find('.bh-dir-sponsor-select').unbind( 'blur' ).blur(function(e){
       row.find('.bh-dir-sponsor-dropdown').hide();
       row.find('.bh-dir-sponsor-select').html("");
@@ -593,6 +594,7 @@
       };
       nl.sara.beehub.controller.setSponsor(path, sponsor);
     });
+    nl.sara.beehub.view.maskView("transparant", false);
   };
   
   /**
