@@ -99,6 +99,14 @@ public function method_COPY( $path ) {
   }else{
     $parent->assert( DAVACL::PRIV_WRITE_CONTENT );
   }
+
+  // Determine the sponsor
+  $user = BeeHub::getAuth()->current_user();
+  $user_sponsors = $user->user_prop_sponsor_membership();
+  if ( count( $user_sponsors ) === 0 ) { // If the user doesn't have any sponsors, he/she can't create files and directories
+    throw DAV::forbidden();
+  }
+
   $localPath = BeeHub::localPath( $path );
   exec( 'cp ' . BeeHub::escapeshellarg( $this->localPath ) . ' ' . BeeHub::escapeshellarg( $localPath ) );
   
@@ -116,12 +124,6 @@ public function method_COPY( $path ) {
     }
   }
 
-  // Determine the sponsor
-  $user = BeeHub::getAuth()->current_user();
-  $user_sponsors = $user->user_prop_sponsor_membership();
-  if ( count( $user_sponsors ) === 0 ) { // If the user doesn't have any sponsors, he/she can't create files and directories
-    throw DAV::forbidden();
-  }
   $sponsor = $parent->user_prop_sponsor(); // The default is the directory sponsor
   if ( ! in_array( $sponsor, $user_sponsors ) ) { //But a user can only create files sponsored by his own sponsors
     $sponsor = $user->user_prop( BeeHub::PROP_SPONSOR );
