@@ -285,7 +285,7 @@
     row.push('<td class="owner" data-value="'+nl.sara.beehub.controller.htmlEscape(resource.owner)+'">'+nl.sara.beehub.controller.htmlEscape(nl.sara.beehub.controller.getDisplayName(resource.owner))+'</td>');
     
     // Sponsor
-    row.push('<td class="bh-dir-sponsor" style="cursor: pointer" data-value="'+nl.sara.beehub.controller.htmlEscape(resource.sponsor)+'">'+nl.sara.beehub.controller.htmlEscape(nl.sara.beehub.controller.getDisplayName(resource.sponsor))+'</td>');
+    row.push('<td class="bh-dir-sponsor" style="cursor: pointer" data-value="'+nl.sara.beehub.controller.htmlEscape(resource.sponsor)+'">'+nl.sara.beehub.controller.htmlEscape(nl.sara.beehub.controller.getDisplayName(resource.sponsor))+' <span class="caret"style="margin-top: 8px;"></span></td>');
 
     // Select sponsor
     row.push('<td class="bh-dir-sponsor-dropdown" hidden="hidden"><select class="bh-dir-sponsor-select"> </select></td>');
@@ -618,7 +618,7 @@
     row.find('.bh-dir-sponsor-dropdown').hide();
     row.find('.bh-dir-sponsor-select').html("");
     row.find('.bh-dir-sponsor').attr('data-value', sponsor.name);
-    row.find('.bh-dir-sponsor').text(sponsor.displayname);
+    row.find('.bh-dir-sponsor').html(sponsor.displayname+' <span class="caret" style="margin-top: 8px;"></span>');
     row.find('.bh-dir-sponsor').show();
     nl.sara.beehub.view.maskView("transparant", false);
   };

@@ -873,7 +873,8 @@
           };
           
           // To have more control (progressbar) the webdav library is not used here
-          var ajax = nl.sara.webdav.Client.getAjax( 
+          var client = new nl.sara.webdav.Client();
+          var ajax = client.getAjax( 
           "PUT",
               destination,
               createUploadCallback(resource, destination, renameCounter, overwrite, single),
