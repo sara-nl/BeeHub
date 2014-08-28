@@ -28,7 +28,7 @@ $(function (){
    var old_sponsor_value = $('#sponsor').val();
 	 $('#myprofile_form').submit(function(event) {
 		event.preventDefault();
-	   
+	 		
 		var setProps = new Array();
 		
 		var email = new nl.sara.webdav.Property();
@@ -171,7 +171,9 @@ $(function (){
 	
  // Usage tab
  $('a[href="#bh-profile-panel-usage"]').unbind('click').click(function(e){
-   createUsageView(); 
+   if ($("#bh-dir-loading").css('display') === "none" && $("#bh-profile-usage-graph").html() === "" ){ 
+     createUsageView(); 
+   };
  });
   
  /**
@@ -179,9 +181,6 @@ $(function (){
   * 
   */
  var createUsageView = function(){
-   // Clear previous graphics
-   $("#bh-profile-usage-graph").html("");
-   
    var totalSize = 0;
    
    var width = 640,
@@ -200,7 +199,7 @@ $(function (){
        .attr("width", width)
        .attr("height", height)
        .append("g")
-       .attr("transform", "translate(" + width / 2 + "," + (height / 2 + 10) + ")")
+       .attr("transform", "translate(" + width / 2 + "," + (height / 2) + ")");
    
    var partition = d3.layout.partition()
        .value(function(d) { return d.size; });
@@ -216,8 +215,16 @@ $(function (){
     .attr("class", "bh-user-usage-tooltip")               
     .style("opacity", 0);
    
+   $("#bh-dir-loading").show();
    // Read data from server
    d3.json(location.href+"?usage", function(error, response) {
+     if (error) {
+       alert("Something went wrong with retrieving data from the server.");
+       $("#bh-dir-loading").hide();
+       return;
+     };
+     
+     $("#bh-dir-loading").hide();
      // Get data from response
      var root = rewriteUsageResponse(response[0].usage);
      
@@ -240,12 +247,23 @@ $(function (){
      // Click handler, when value not empty update header and zoom sunburst graphic
      function click(d) {
        if (d.name !== "empty") {
+        makeHeader(path,d);
         $("#bh-profile-usage-header").html(d.path+"<br>"+nl.sara.beehub.utils.bytesToSize(d.size,1)+", "+(100 * d.size / totalSize).toPrecision(3)+" % of total usage");
-        path.transition()
-          .duration(750)
-          .attrTween("d", arcTween(d));
+        changePosition(path,d);
        }
      }
+     
+     function makeHeader(path,d){
+       var allDirs = d.path.split("/");
+       console.log(allDirs);
+       console.log("nu");
+     };
+     
+     function changePosition(path,d){
+       path.transition()
+       .duration(750)
+       .attrTween("d", arcTween(d));
+     };
      
      // Mouseover handler, when value not empty show tooltip
      function mouseover(d) {
@@ -292,7 +310,7 @@ $(function (){
        return color((d.children ? d : d.parent).name); 
      }
    } 
- }
+ };
 
  /**
   * Check if name object exists in object
@@ -317,7 +335,7 @@ $(function (){
   } else {
     return null;
   }
- } 
+ };
  
  /**
   * Put json response of accounting data request in object for 3d.js
@@ -381,7 +399,7 @@ $(function (){
  
   calculateSizes(returnValue);
   return returnValue;
- }
+ };
  
  /**
   * Calculates the sizes of child object and create an empty child for not used space. 

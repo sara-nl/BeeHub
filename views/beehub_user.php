@@ -159,8 +159,9 @@ require 'views/header.php';
 
 <!-- Usage tab -->
 <div id="bh-profile-panel-usage" class="tab-pane fade">
- <div style="height:25px"><h4 id="bh-profile-usage-header"></h4></div>
+ <div><h4 id="bh-profile-usage-header"></h4></div>
  <div id="bh-profile-usage-graph"></div>
+ <div id="bh-dir-loading" hidden="hidden"></div>
 </div>
 
 <!-- End Usage tab -->
@@ -188,6 +189,6 @@ require 'views/header.php';
       </div>
     </form>
   </div>
-<?php endif;
+<?php endif; ?>
 
-require 'views/footer.php'; ?>
+<?php require 'views/footer.php'; ?>
