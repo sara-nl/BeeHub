@@ -234,8 +234,10 @@ $(function (){
      // Update header
      $("#bh-profile-usage-header").html(root.path+"<br>"+nl.sara.beehub.utils.bytesToSize(root.size,1)+", "+(100 * root.size / totalSize).toPrecision(3)+" % of total usage");
      
+     var nodes = partition.nodes(root);
+     
      var path = svg.selectAll("path")
-      .data(partition.nodes(root))
+      .data(nodes)
       .enter().append("path")
       .attr("d", arc)
       .style("stroke", "#fff")
@@ -245,24 +247,51 @@ $(function (){
       .on("mouseout", mouseout);
 
      // Click handler, when value not empty update header and zoom sunburst graphic
-     function click(d) {
+     function click(d, i) {
        if (d.name !== "empty") {
-        makeHeader(path,d);
-        $("#bh-profile-usage-header").html(d.path+"<br>"+nl.sara.beehub.utils.bytesToSize(d.size,1)+", "+(100 * d.size / totalSize).toPrecision(3)+" % of total usage");
-        changePosition(path,d);
-       }
+         $("#bh-profile-usage-header").html("");
+         var breadcrumb = '<ul id="bh-profile-graphic" class="breadcrumb bh-dir-breadcrumb"></ul>';
+         breadcrumb = breadcrumb + nl.sara.beehub.utils.bytesToSize(d.size,1)+', '+(100 * d.size / totalSize).toPrecision(3)+' % of total usage';
+         $("#bh-profile-usage-header").html(breadcrumb);
+         if (d.parent){
+           makeHeader(path, i);
+         } else {
+           $('#bh-profile-graphic').prepend('<li data-index="'+i+'">BeeHub root</li>');
+         };
+       };
+       changePosition(path, i);
      }
      
-     function makeHeader(path,d){
-       var allDirs = d.path.split("/");
-       console.log(allDirs);
-       console.log("nu");
+     // make header of graphic view
+     function makeHeader(path,i){
+       if (nodes[i].name === "root") {
+         $('#bh-profile-graphic').prepend('<li style="cursor: pointer" data-index="'+i+'">BeeHub root <span class ="divider"> &raquo; </span></li>');
+       } else {
+         $('#bh-profile-graphic').prepend('<li style="cursor: pointer" data-index="'+i+'">'+nodes[i].name+'<span class ="divider">/</span></li>');
+       };
+       $('#bh-profile-graphic').find('li').first().unbind('click').on('click', function(){
+         click(nodes[i], i);
+       });
+       
+       if (nodes[i].parent){
+         makeHeader(path, findIndex(nodes[i].parent));
+       };
      };
      
-     function changePosition(path,d){
+     // find the index of a node in an array with nodes
+     function findIndex(node){
+       for (var i in nodes) {
+         if (nodes[i].path === node.path) {
+           return i;
+         };
+       };
+     };
+     
+     // Change graphic view
+     function changePosition(path,i){
        path.transition()
        .duration(750)
-       .attrTween("d", arcTween(d));
+       .attrTween("d", arcTween(nodes[i]));
      };
      
      // Mouseover handler, when value not empty show tooltip
