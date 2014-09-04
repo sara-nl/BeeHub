@@ -39,6 +39,10 @@ set_exception_handler( array( 'BeeHub', 'exception_handler' ) );
 // We need SimpleSamlPHP
 require_once( BeeHub::$CONFIG['environment']['simplesamlphp'] . 'lib' . DIRECTORY_SEPARATOR . '_autoload.php' );
 
+if ( isset( $_SERVER['HTTP_ORIGIN'] ) && !empty( $_SERVER['HTTP_ORIGIN'] ) ) {
+  die( 'Cross Origin Resourc Sharing prohibited!' );
+}
+
 DAV::$PROTECTED_PROPERTIES[ DAV::PROP_GROUP_MEMBER_SET ] = true;
 DAV::$ACL_PROPERTIES[BeeHub::PROP_SPONSOR] = 'sponsor';
 DAV::addSupported_Properties( BeeHub::PROP_SPONSOR, 'sponsor' );
