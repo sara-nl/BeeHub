@@ -39,6 +39,7 @@
   var rememberShowError =                           nl.sara.beehub.view.showError;
   var rememberDislogShowError =                     nl.sara.beehub.view.dialog.showError;
   var rememberClient =                              nl.sara.webdav.Client;
+  var rememberClientPrototypeGetAjax =              nl.sara.webdav.Client.prototype.getAjax;
   var rememberProperty =                            nl.sara.webdav.Property;
   var rememberCreateTreeNode =                      nl.sara.beehub.view.tree.createTreeNode;
   var rememberAddResource =                         nl.sara.beehub.view.addResource;
@@ -86,6 +87,7 @@
     nl.sara.beehub.view.showError =                         rememberShowError;
     nl.sara.beehub.view.dialog.showError =                  rememberDislogShowError;                   
     nl.sara.webdav.Client =                                 rememberClient;
+    nl.sara.webdav.Client.prototype.getAjax =               rememberClientPrototypeGetAjax;
     nl.sara.webdav.Property =                               rememberProperty;
     nl.sara.beehub.view.tree.createTreeNode =               rememberCreateTreeNode;
     nl.sara.beehub.view.addResource =                       rememberAddResource;
@@ -844,7 +846,7 @@
       // Do nothing
     };
     
-    nl.sara.webdav.Client.getAjax = function(what, destination, callback, headers){
+    nl.sara.webdav.Client.prototype.getAjax = function(what, destination, callback, headers){
       deepEqual(what,"PUT","What should be PUT");
       deepEqual(destination,currentDirectory+"/file1","Destination should be "+currentDirectory+"/file1");
       
@@ -1000,7 +1002,7 @@
       deepEqual(info, "test","Info should be test.");
     };
 
-    nl.sara.webdav.Client.getAjax = function(what, destination, callback, headers){
+    nl.sara.webdav.Client.prototype.getAjax = function(what, destination, callback, headers){
       deepEqual(what,"PUT","What should be PUT");
       deepEqual(destination,currentDirectory+"/file1","Destination should be "+currentDirectory+"/file1");
       
@@ -1434,7 +1436,7 @@
       // Do nothing
     };
     
-    nl.sara.webdav.Client.getAjax = function(what, destination, callback, headers){
+    nl.sara.webdav.Client.prototype.getAjax = function(what, destination, callback, headers){
       deepEqual(what,"PUT","What should be PUT");
       deepEqual(destination,currentDirectory+"/file1_2","Destination should be "+currentDirectory+"/file1_2");
       
@@ -1559,7 +1561,7 @@
       // Do nothing
     };
     
-    nl.sara.webdav.Client.getAjax = function(what, destination, callback, headers){
+    nl.sara.webdav.Client.prototype.getAjax = function(what, destination, callback, headers){
       deepEqual(what,"PUT","What should be PUT");
       deepEqual(destination,currentDirectory+"/file1_2","Destination should be "+currentDirectory+"/file1_2");
       
@@ -1839,7 +1841,7 @@
       // Do nothing
     };
     
-    nl.sara.webdav.Client.getAjax = function(what, destination, callback, headers){
+    nl.sara.webdav.Client.prototype.getAjax = function(what, destination, callback, headers){
       deepEqual(what,"PUT","What should be PUT");
       deepEqual(destination,currentDirectory+"/file1","Destination should be "+currentDirectory+"/file1");
       
@@ -1952,7 +1954,7 @@
       // Do nothing
     };
     
-    nl.sara.webdav.Client.getAjax = function(what, destination, callback, headers){
+    nl.sara.webdav.Client.prototype.getAjax = function(what, destination, callback, headers){
       deepEqual(what,"PUT","What should be PUT");
       deepEqual(destination,currentDirectory+"/file1","Destination should be "+currentDirectory+"/file1");
       
