@@ -200,7 +200,7 @@ $(function (){
        .attr("width", width)
        .attr("height", height)
        .append("g")
-       .attr("transform", "translate(" + width / 2 + "," + (height / 2 + 10) + ")")
+       .attr("transform", "translate(" + width / 2 + "," + (height / 2 + 10) + ")");
    
    var partition = d3.layout.partition()
        .value(function(d) { return d.size; });
@@ -285,14 +285,14 @@ $(function (){
    
    // Color of graphic part
    function determineColor(d){
-    var percentage = (100 * d.value / totalSize).toPrecision(3);
+//    var percentage = (100 * d.value / totalSize).toPrecision(3);
      if (d.name === "empty"){
        return "#FFFFFF";
      } else {
        return color((d.children ? d : d.parent).name); 
      }
    } 
- }
+ };
 
  /**
   * Check if name object exists in object
@@ -317,7 +317,7 @@ $(function (){
   } else {
     return null;
   }
- } 
+ };
  
  /**
   * Put json response of accounting data request in object for 3d.js
@@ -381,7 +381,7 @@ $(function (){
  
   calculateSizes(returnValue);
   return returnValue;
- }
+ };
  
  /**
   * Calculates the sizes of child object and create an empty child for not used space. 

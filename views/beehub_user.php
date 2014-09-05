@@ -159,7 +159,7 @@ require 'views/header.php';
 
 <!-- Usage tab -->
 <div id="bh-profile-panel-usage" class="tab-pane fade">
- <div style="height:25px"><h4 id="bh-profile-usage-header"></h4></div>
+ <div><h4 id="bh-profile-usage-header"></h4></div>
  <div id="bh-profile-usage-graph"></div>
 </div>
 
