@@ -191,6 +191,47 @@ class BeeHub_AuthTest extends BeeHub_Tests_Db_Test_Case {
     $this->assertTrue ( \BeeHub_Auth::is_authentication_required(), 'BeeHub_Auth::is_authentication_required() should return true on all other locations' );
   }
 
+
+  public function testGetPostAuthCode() {
+    $simpleSAML = new \SimpleSAML_Auth_Simple( 'BeeHub' );
+
+    // Test whether we get a non empty key back
+    $auth = new BeeHub_Auth( $simpleSAML );
+    $postAuthCode = $auth->getPostAuthCode();
+    $this->assertNotEmpty( $postAuthCode, "POST authentication code should not be empty" );
+
+    // And whether a new instance returns the same key
+    $auth2 = new BeeHub_Auth( $simpleSAML );
+    $this->assertSame( $postAuthCode, $auth2->getPostAuthCode(), "POST authentication codes from different instances should be the same" );
+  }
+
+
+  public function testCheckPostAuthCode() {
+    $simpleSAML = new \SimpleSAML_Auth_Simple( 'BeeHub' );
+    $auth = new BeeHub_Auth( $simpleSAML );
+
+    // Empty codes should not be correct!
+    $_POST['POST_auth_code'] = null;
+    $this->assertFalse( $auth->checkPostAuthCode(), 'An empty POST authentication code should not be correct' );
+
+    // A wrong code should not be correct
+    $postAuthCode = $auth->getPostAuthCode();
+    $_POST['POST_auth_code'] = $postAuthCode . 'wrong code';
+    $this->assertFalse( $auth->checkPostAuthCode(), 'A wrong code should be considered wrong' );
+
+    // A good code should be correct
+    $_POST['POST_auth_code'] = $postAuthCode;
+    $this->assertTrue( $auth->checkPostAuthCode(), 'The correct code should be considered correct' );
+    $newPostAuthCode = $auth->getPostAuthCode();
+    $this->assertNotSame( $postAuthCode, $newPostAuthCode, 'After a successfull check, a new code should be generated' );
+
+    // And after 5 failed attempts, a new code should be generated
+    for ( $counter = 0; $counter < 5; $counter++ ) {
+      $this->assertFalse( $auth->checkPostAuthCode(), "All five attempts with a wrong POST authentication code should fail" );
+    }
+    $this->assertNotSame( $newPostAuthCode, $auth->getPostAuthCode(), 'After 5 failed attempts, a new code should be generated' );
+  }
+
 } // class BeeHub_AuthTest
 
 // End of file
