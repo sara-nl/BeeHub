@@ -289,6 +289,8 @@ class BeeHub_Auth {
    * @return  string  The POST authentication code
    */
   public function getPostAuthCode() {
+    BeeHub::startSession();
+
     if ( ! isset( $_SESSION[ self::$SESSION_KEY ] ) || empty( $_SESSION[ self::$SESSION_KEY ] ) ) {
       $_SESSION[ self::$SESSION_KEY ] = bin2hex( openssl_random_pseudo_bytes( 16 ) );
     }
@@ -319,6 +321,7 @@ class BeeHub_Auth {
    */
   public function checkPostAuthCode() {
     $postField = 'POST_auth_code';
+    BeeHub::startSession();
 
     if (
       ! isset( $_POST[ $postField ] ) ||
