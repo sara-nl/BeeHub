@@ -54,6 +54,14 @@ DAV::$LOCKPROVIDER = BeeHub_Lock_Provider::inst();
 DAV::$ACLPROVIDER  = BeeHub_ACL_Provider::inst();
 DAV::$UNAUTHORIZED = array( BeeHub::getAuth(), 'unauthorized' );
 
+// In case of POST requests, we can already check the POST authentication code
+if ( $_SERVER['REQUEST_METHOD'] === 'POST' ) {
+  if ( ! BeeHub::getAuth()->checkPostAuthCode() ) {
+    throw new DAV_Status( DAV::HTTP_FORBIDDEN, 'POST authentication code (POST_auth_code) was incorrect. The correct code can be obtained with a GET request to /system/?POST_auth_code' );
+  }
+}
+
+// Prepare test environments if needed
 if ( ( APPLICATION_ENV === BeeHub::ENVIRONMENT_TEST ) && isset( $_GET['test'] ) ) {
   if ( substr( $_SERVER['REQUEST_URI'], 0, 19 ) !== '/foo/client_tests/?' ) {
     header( 'Location: /foo/client_tests/?' . $_SERVER['QUERY_STRING'] );

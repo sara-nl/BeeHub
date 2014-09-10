@@ -299,14 +299,6 @@ class BeeHub_Auth {
 
 
   /**
-   * The number of failed attempts to check a POST authentication code
-   *
-   * @internal
-   */
-  private $failedPostAuthCodeAttempts = 0;
-
-
-  /**
    * Checks whether the user submitted a correct POST authentication code and sets a new code when authentication succeeded or too many attempts have been done.
    *
    * Using this method instead of checking it yourself. This to ensure the
@@ -321,23 +313,29 @@ class BeeHub_Auth {
    */
   public function checkPostAuthCode() {
     $postField = 'POST_auth_code';
+    // The key of the $_SESSION array field with the number of failed attempts to check a POST authentication code
+    $postAuthAttempts = 'POST_auth_attempts';
     BeeHub::startSession();
 
+    if ( ! isset( $_SESSION[ $postAuthAttempts ] ) ) {
+      $_SESSION[ $postAuthAttempts ] = 0;
+    }
+    
     if (
       ! isset( $_POST[ $postField ] ) ||
       empty( $_POST[ $postField ] ) ||
       $_POST[ $postField ] != $_SESSION[ self::$SESSION_KEY ]
     ){
-      $this->failedPostAuthCodeAttempts++;
-      if ( $this->failedPostAuthCodeAttempts >= 5 ) {
+      $_SESSION[ $postAuthAttempts ]++;
+      if ( $_SESSION[ $postAuthAttempts ] >= 5 ) {
         unset( $_SESSION[ self::$SESSION_KEY ] );
-        $this->failedPostAuthCodeAttempts = 0;
+        $_SESSION[ $postAuthAttempts ] = 0;
       }
       return false;
     }
 
     unset( $_SESSION[ self::$SESSION_KEY ] );
-    $this->failedPostAuthCodeAttempts = 0;
+    $_SESSION[ $postAuthAttempts ] = 0;
 
     return true;
   }
