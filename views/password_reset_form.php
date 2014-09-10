@@ -14,6 +14,7 @@ require 'views/header.php';
     <p class="long_text">If you&#39;ve forgotten your password, you can request a reset code here. This code will allow you to choose a new password. After completing this form, an e-mail will be sent to the e-mail address attached to your account.</p>
     <br />
     <form class="form-horizontal" method="post">
+      <input type="hidden" name="POST_auth_code" value="<?= DAV::xmlescape( BeeHub::getAuth()->getPostAuthCode() ) ?>" />
       <div class="control-group">
         <label class="control-label" for="username">Username</label>
         <div class="controls">
@@ -41,6 +42,7 @@ require 'views/header.php';
     <p class="long_text">Please fill out the reset code you received in your e-mail and choose a new password.</p>
     <br />
     <form class="form-horizontal" method="post">
+      <input type="hidden" name="POST_auth_code" value="<?= DAV::xmlescape( BeeHub::getAuth()->getPostAuthCode() ) ?>" />
       <div class="control-group">
         <label class="control-label" for="username">Username</label>
         <div class="controls">

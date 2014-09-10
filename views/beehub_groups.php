@@ -119,6 +119,7 @@
 	<br/>
 	<div id="bh-gs-panel-create" class="tab-pane fade">
     <form id="bh-gs-create-form" class="form-horizontal" action="<?= BeeHub::GROUPS_PATH ?>" method="post">
+      <input type="hidden" name="POST_auth_code" value="<?= DAV::xmlescape( BeeHub::getAuth()->getPostAuthCode() ) ?>" />
 	    <div class="control-group">
 		    <label class="control-label" for="bh-gs-name">Group name</label>
 		    <div class="controls">

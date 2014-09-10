@@ -95,6 +95,7 @@ require 'views/header.php';
 <div id="panel-password" class="tab-pane fade">
   <br />
   <form class="form-horizontal" id="change-password" method="post">
+    <input type="hidden" name="POST_auth_code" value="<?= DAV::xmlescape( BeeHub::getAuth()->getPostAuthCode() ) ?>" />
     <div class="control-group passwd">
       <label class="control-label" for="password">Old password</label>
       <div class="controls">
@@ -148,6 +149,7 @@ require 'views/header.php';
 <?php if ( !is_null( $unverified_address ) ) : ?>
   <div id="panel-verify" class="tab-pane fade <?= isset($_GET['verification_code']) ? 'in active' : '' ?>">
     <form id="verify_email" class="form-horizontal" method="post">
+      <input type="hidden" name="POST_auth_code" value="<?= DAV::xmlescape( BeeHub::getAuth()->getPostAuthCode() ) ?>" />
       <h4>Verify email address: <?= $unverified_address ?></h4>
       <p>Please verify your e-mail address by entering the verification code you've recieved through an e-mail and for security reasons, enter your password.</p>
       <div class="control-group">

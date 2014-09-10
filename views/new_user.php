@@ -11,6 +11,7 @@
 <br/>
 </form>
     <form id="createuserform" class="form-horizontal" action="<?= BeeHub::USERS_PATH ?>" method="post">
+      <input type="hidden" name="POST_auth_code" value="<?= DAV::xmlescape( BeeHub::getAuth()->getPostAuthCode() ) ?>" />
 	    <div class="control-group">
 		    <label class="control-label" for="username">User name</label>
 		    <div class="controls">

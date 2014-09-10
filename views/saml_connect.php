@@ -12,6 +12,7 @@ $attributes = $simpleSaml->getAttributes();
 </p>
 <p>For security reasons, please provide your password.</p>
 <form class="form-horizontal" method="post">
+  <input type="hidden" name="POST_auth_code" value="<?= DAV::xmlescape( BeeHub::getAuth()->getPostAuthCode() ) ?>" />
   <div class="control-group">
     <label class="control-label" for="password">BeeHub password:</label>
     <div class="controls">
