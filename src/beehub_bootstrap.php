@@ -39,7 +39,7 @@ set_exception_handler( array( 'BeeHub', 'exception_handler' ) );
 // We need SimpleSamlPHP
 require_once( BeeHub::$CONFIG['environment']['simplesamlphp'] . 'lib' . DIRECTORY_SEPARATOR . '_autoload.php' );
 
-if ( isset( $_SERVER['HTTP_ORIGIN'] ) && !empty( $_SERVER['HTTP_ORIGIN'] ) ) {
+if ( isset( $_SERVER['HTTP_ORIGIN'] ) && !empty( $_SERVER['HTTP_ORIGIN'] ) && ( parse_url( $_SERVER['HTTP_ORIGIN'], PHP_URL_HOST ) != $_SERVER['SERVER_NAME'] ) ) {
   die( 'Cross Origin Resourc Sharing prohibited!' );
 }
 

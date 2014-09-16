@@ -85,8 +85,40 @@
     setup: function(){
       // Call init function
       nl.sara.beehub.view.acl.init();
+    }, 
+    teardown: function() {
+      // clean up after each test
+      backToOriginalEnvironment();
     }
   });
+  
+  var rememberChangePermissions = nl.sara.beehub.view.acl.changePermissions;
+  var rememberChangePermissionsController = nl.sara.beehub.controller.changePermissions;
+  var rememberShowChangePermissions = nl.sara.beehub.view.acl.showChangePermissions;
+  var rememberMaskView =  nl.sara.beehub.controller.maskView;
+  var rememberUpAclRule = nl.sara.beehub.view.acl.moveUpAclRule;
+  var rememberMoveUpAclRuleController = nl.sara.beehub.controller.moveUpAclRule;
+  var rememberDownAclRule = nl.sara.beehub.view.acl.moveDownAclRule;
+  var rememberMoveDownAclRuleController = nl.sara.beehub.controller.moveDownAclRule;
+  var rememberDeleteRowIndex = nl.sara.beehub.view.acl.deleteRowIndex;
+  var rememberDeleteAclRuleController = nl.sara.beehub.controller.deleteAclRule;
+  var rememberSetTableSort = nl.sara.beehub.view.acl.setTableSorter;
+  var rememberAddAclRule = nl.sara.beehub.controller.addAclRule;
+
+  var backToOriginalEnvironment = function(){
+    nl.sara.beehub.view.acl.changePermissions = rememberChangePermissions;
+    nl.sara.beehub.controller.changePermissions = rememberChangePermissionsController;
+    nl.sara.beehub.view.acl.showChangePermissions = rememberShowChangePermissions;
+    nl.sara.beehub.controller.maskView = rememberMaskView;
+    nl.sara.beehub.view.acl.moveUpAclRule = rememberUpAclRule;
+    nl.sara.beehub.controller.moveUpAclRule = rememberMoveUpAclRuleController;
+    nl.sara.beehub.view.acl.moveDownAclRule = rememberDownAclRule;
+    nl.sara.beehub.controller.moveDownAclRule = rememberMoveDownAclRuleController;
+    nl.sara.beehub.view.acl.deleteRowIndex = rememberDeleteRowIndex;
+    nl.sara.beehub.controller.deleteAclRule = rememberDeleteAclRuleController;
+    nl.sara.beehub.view.acl.setTableSorter = rememberSetTableSort;
+    nl.sara.beehub.controller.addAclRule = rememberAddAclRule;
+  };
   
   /**
    * Check if row handlers are set
@@ -102,17 +134,14 @@
     var rowIndex = 0;
 
     // Rewrite functions
-    var rememberChangePermissions = nl.sara.beehub.view.acl.changePermissions;
     nl.sara.beehub.view.acl.changePermissions = function(row, val){
       deepEqual(val, permissions, "Permissions should be "+permissions);
     };
     
-    var rememberChangePermissionsController = nl.sara.beehub.controller.changePermissions;
     nl.sara.beehub.controller.changePermissions = function(row, oldVal) {
       deepEqual(oldVal, permissionsOld, "Old permissions should be "+permissionsOld);
     };
     
-    var rememberShowChangePermissions = nl.sara.beehub.view.acl.showChangePermissions;
     nl.sara.beehub.view.acl.showChangePermissions = function(row, show) {
       if (show) {
         $(row).find(aclPermissionsField).hide();
@@ -127,12 +156,10 @@
       }
     };
     
-    var rememberMaskView =  nl.sara.beehub.controller.maskView;
     nl.sara.beehub.controller.maskView = function(value, bool) {
-      ok(true, "Mask view is called");
+      // Do nothing
     };
     
-    var rememberUpAclRule = nl.sara.beehub.view.acl.moveUpAclRule;
     nl.sara.beehub.view.acl.moveUpAclRule = function(row){
       if ((row !== undefined) && ($(row).index() === rowIndex)) {
         ok(true, "Move up acl is called with the right row object");
@@ -141,7 +168,6 @@
       }
     };
     
-    var rememberMoveUpAclRuleController = nl.sara.beehub.controller.moveUpAclRule;
     nl.sara.beehub.controller.moveUpAclRule = function(row, t){
       if ((row !== undefined) && (t !== undefined) && ($(row).index() === rowIndex)) {
         ok(true, "Move up acl controller is called with the right row object");
@@ -150,7 +176,6 @@
       }
     };
     
-    var rememberDownAclRule = nl.sara.beehub.view.acl.moveDownAclRule;
     nl.sara.beehub.view.acl.moveDownAclRule = function(row){
       if ((row !== undefined) && ($(row).index() === rowIndex)) {
         ok(true, "Move down acl is called with the right row object");
@@ -159,7 +184,6 @@
       }
     };
     
-    var rememberMoveDownAclRuleController = nl.sara.beehub.controller.moveDownAclRule;
     nl.sara.beehub.controller.moveDownAclRule = function(row, t){
       if ((row !== undefined) && (t !== undefined) && ($(row).index() === rowIndex)) {
         ok(true, "Move down acl controller is called with the right row object");
@@ -168,7 +192,6 @@
       }
     };
     
-    var rememberDeleteRowIndex = nl.sara.beehub.view.acl.deleteRowIndex;
     nl.sara.beehub.view.acl.deleteRowIndex = function(index){
       if ((index !== undefined) && (index === rowIndex)){
         ok(true, "Delete row is called with the right index");
@@ -177,7 +200,6 @@
       }
     };
     
-    var rememberDeleteAclRuleController = nl.sara.beehub.controller.deleteAclRule;
     nl.sara.beehub.controller.deleteAclRule = function(row, index, t){
       if ((index !== undefined) && (index === rowIndex) && (t !== undefined)){
         ok(true, "Delete row controller is called with the right index");
@@ -221,23 +243,11 @@
         
         // Check down icon handler
         $(row).find(aclDownIcon).click();
-        
+//        
         // Check delete icon handler
         $(row).find(aclRemoveIcon).click();
       };
     });
-    
-    // Back to original environment
-    nl.sara.beehub.view.acl.changePermissions = rememberChangePermissions;
-    nl.sara.beehub.controller.changePermissions = rememberChangePermissionsController;
-    nl.sara.beehub.view.acl.showChangePermissions = rememberShowChangePermissions;
-    nl.sara.beehub.controller.maskView = rememberMaskView;
-    nl.sara.beehub.view.acl.moveUpAclRule = rememberUpAclRule;
-    nl.sara.beehub.controller.moveUpAclRule = rememberMoveUpAclRuleController;
-    nl.sara.beehub.view.acl.moveDownAclRule = rememberDownAclRule;
-    nl.sara.beehub.controller.moveDownAclRule = rememberMoveDownAclRuleController;
-    nl.sara.beehub.view.acl.deleteRowIndex = rememberDeleteRowIndex;
-    nl.sara.beehub.controller.deleteAclRule = rememberDeleteAclRuleController;
   };
   
   /**
@@ -335,7 +345,6 @@
   test( 'nl.sara.beehub.view.acl.init: Set view', function() {
     expect( 3 );  
     
-    var rememberSetTableSort = nl.sara.beehub.view.acl.setTableSorter;
     nl.sara.beehub.view.acl.setTableSorter = function(input){
       deepEqual(input.length,1,"Table sorter is called");
     };
@@ -347,7 +356,6 @@
     deepEqual(nl.sara.beehub.view.acl.getViewPath(), currentDirectory, "View path should be "+currentDirectory );
     deepEqual(nl.sara.beehub.view.acl.getView(), "directory", "View should be directory");
     
-    nl.sara.beehub.view.acl.setTableSorter = rememberSetTableSort;
   });
   
   /**
@@ -356,7 +364,6 @@
   test( 'nl.sara.beehub.view.acl.init: Set view add button', function() {
     expect( 1 );  
  
-    var rememberAddAclRule = nl.sara.beehub.controller.addAclRule;
     nl.sara.beehub.controller.addAclRule = function(){
       ok(true, "Add acl button click handler is set");
     };
@@ -364,16 +371,14 @@
     // Call init function
     nl.sara.beehub.view.acl.init();
     
-    $(addButton).click();
-    
-    nl.sara.beehub.controller.addAclRule = rememberAddAclRule;
+    $(addButton).click(); 
   });
   
   /**
    * Test if row handlers are set
    */
   test( 'nl.sara.beehub.view.acl.init: Set view row handlers', function() {
-    expect( 89 ); 
+    expect( 76 ); 
     var rows = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclRow);
     checkSetRowHandlers(rows);
   });
@@ -614,7 +619,7 @@
    * Test deleteRowIndex
    */
   test('nl.sara.beehub.view.acl.deleteRowIndex', function(){
-    expect(87);
+    expect(77);
     
     var name = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclPrincipal).eq(1).attr('data-value');
     var result = nl.sara.beehub.view.acl.getAclView().find(aclContents).find('td[data-value = "'+name+'"]').attr('data-value');
@@ -642,7 +647,7 @@
    * Test moveDownAclRule
    */
   test('nl.sara.beehub.view.acl.moveDownAclRule' , function() {
-    expect(106);
+    expect(93);
     
     var index = nl.sara.beehub.view.acl.getIndexLastProtected() + 1;
     var row = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclRow).eq(index);
@@ -652,7 +657,7 @@
     
     // index +1 should be the same row now
     var rowNew = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclRow).eq(index+1);
-    var nameNew = row.find(aclPrincipal).attr('data-value');
+    var nameNew = rowNew.find(aclPrincipal).attr('data-value');
     deepEqual(nameNew, name, "Name should be "+name);
     
     var rows = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclRow);
@@ -664,8 +669,9 @@
    * Test moveUpAclRule
    */
   test('nl.sara.beehub.view.acl.moveUpAclRule' , function() {
-    expect(106);
+    expect(93);
     
+    // Get first row that can move up
     var index = nl.sara.beehub.view.acl.getIndexLastProtected() + 2;
     var row = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclRow).eq(index);
     var name = row.find(aclPrincipal).attr('data-value');
@@ -674,7 +680,7 @@
     
     // index +1 should be the same row now
     var rowNew = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclRow).eq(index-1);
-    var nameNew = row.find(aclPrincipal).attr('data-value');
+    var nameNew = rowNew.find(aclPrincipal).attr('data-value');
     deepEqual(nameNew, name, "Name should be "+name);
     
     var rows = nl.sara.beehub.view.acl.getAclView().find(aclContents).find(aclRow);

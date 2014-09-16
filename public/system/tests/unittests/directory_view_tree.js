@@ -200,18 +200,18 @@
     expect(5);
     
     nl.sara.beehub.view.tree.slideTrigger("show");
-    deepEqual($(treeSlideTrigger).is(":hidden"), false, "Trigger should be shown");
+    deepEqual($(treeSlideTrigger).css('display') === "none", false, "Trigger should be shown");
     
     nl.sara.beehub.view.tree.slideTrigger("hide");
-    deepEqual($(treeSlideTrigger).is(":hidden"), true, "Trigger should be hidden");
+    deepEqual($(treeSlideTrigger).css('display') === "none", true, "Trigger should be hidden");
     
     nl.sara.beehub.view.tree.slideTrigger("show");
-    deepEqual($(treeSlideTrigger).is(":hidden"), false, "Trigger should be shown");
+    deepEqual($(treeSlideTrigger).css('display') === "none", false, "Trigger should be shown");
     
     nl.sara.beehub.view.tree.slideTrigger("left");
     deepEqual($(treeSlideTrigger+" i").hasClass('icon-folder-open'), false, "icon-folder-open should be removed");
     deepEqual($(treeSlideTrigger+" i").hasClass('icon-folder-close'), true, "icon-folder-close should be added");
-  })
+  });
   
   /**
    * Test noMask

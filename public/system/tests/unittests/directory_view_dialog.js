@@ -413,7 +413,7 @@
    * Test scrollTo
    */
   test('nl.sara.beehub.view.dialog.showResourcesDialog', function(){ 
-    expect(26);
+    expect(46);
     // Setup environment    
     nl.sara.beehub.controller.actionAction = "copy";
     nl.sara.beehub.controller.actionDestination = currentDirectory;
@@ -454,8 +454,12 @@
     
     // Test if all resource fields are set
     for(var i=0; i<20; i++){
-      deepEqual($(dialog).find("tr[id='dialog_tr_/test/test"+i+"']").html(), '<td>displayname'+i+'</td><td class="info" width="60%"></td>', "Table value is "+i);
+      var first = $(dialog).find("tr[id='dialog_tr_/test/test"+i+"']").find('td')[0];
+      var second = $(dialog).find("tr[id='dialog_tr_/test/test"+i+"']").find('td')[1];
+      deepEqual($(first).html(), 'displayname'+i, 'Value should be displayname'+i);
+      deepEqual($(second).hasClass("info"), true, "Should contain class info");
     };
+    
     // Test click handlers
     $(dialog).find(dialogCancelButton).click();
     var button = $(dialog).find(dialogButton);
