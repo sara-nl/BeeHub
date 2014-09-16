@@ -292,7 +292,12 @@ class BeeHub_Auth {
     BeeHub::startSession();
 
     if ( ! isset( $_SESSION[ self::$SESSION_KEY ] ) || empty( $_SESSION[ self::$SESSION_KEY ] ) ) {
-      $_SESSION[ self::$SESSION_KEY ] = bin2hex( openssl_random_pseudo_bytes( 16 ) );
+      // In the test environment, we always use the same POST authentication code
+      if ( APPLICATION_ENV === BeeHub::ENVIRONMENT_TEST ) {
+        $_SESSION[ self::$SESSION_KEY ] = 'abcdefg';
+      }else{
+        $_SESSION[ self::$SESSION_KEY ] = bin2hex( openssl_random_pseudo_bytes( 16 ) );
+      }
     }
     return $_SESSION[ self::$SESSION_KEY ];
   }
@@ -324,7 +329,7 @@ class BeeHub_Auth {
     if (
       ! isset( $_POST[ $postField ] ) ||
       empty( $_POST[ $postField ] ) ||
-      $_POST[ $postField ] != $_SESSION[ self::$SESSION_KEY ]
+      $_POST[ $postField ] !== $this->getPostAuthCode()
     ){
       $_SESSION[ $postAuthAttempts ]++;
       if ( $_SESSION[ $postAuthAttempts ] >= 5 ) {

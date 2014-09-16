@@ -102,10 +102,10 @@ nl.sara.beehub.retrieveNewPostAuth = function(){
         notification.html('<div style="float:left">You are invited to join the group \'<span name="groupname"></span>\'</div><div style="float:right"><button class="btn btn-success">Join</button> <button class="btn btn-danger">Decline</button></div><div style="clear:both"></div>');
         $('span[name="groupname"]', notification).text(data.displayname);
         $('.btn-success', notification).click(function() {
-          client.post(data.group, nl.sara.beehub.reload_notifications, 'join=1');
+          client.post(data.group, nl.sara.beehub.reload_notifications, 'join=1&POST_auth_code='+ nl.sara.beehub.postAuth);
         });
         $('.btn-danger', notification).click(function() {
-          client.post(data.group, nl.sara.beehub.reload_notifications, 'leave=1');
+          client.post(data.group, nl.sara.beehub.reload_notifications, 'leave=1&POST_auth_code='+ nl.sara.beehub.postAuth);
         });
         break;
       case 'group_request':
@@ -114,10 +114,10 @@ nl.sara.beehub.retrieveNewPostAuth = function(){
         $('span[name="user_email"]', notification).text(data.user_email);
         $('span[name="group_displayname"]', notification).text(data.group_displayname);
         $('.btn-success', notification).click(function() {
-          client.post(data.group, nl.sara.beehub.reload_notifications, 'add_members[]=' + data.user);
+          client.post(data.group, nl.sara.beehub.reload_notifications, 'add_members[]=' + data.user+'&POST_auth_code='+ nl.sara.beehub.postAuth);
         });
         $('.btn-danger', notification).click(function() {
-          client.post(data.group, nl.sara.beehub.reload_notifications, 'delete_members[]=' + data.user);
+          client.post(data.group, nl.sara.beehub.reload_notifications, 'delete_members[]=' + data.user+'&POST_auth_code='+ nl.sara.beehub.postAuth);
         });
         break;
       case 'sponsor_request':
@@ -126,10 +126,10 @@ nl.sara.beehub.retrieveNewPostAuth = function(){
         $('span[name="user_email"]', notification).text(data.user_email);
         $('span[name="sponsor_displayname"]', notification).text(data.sponsor_displayname);
         $('.btn-success', notification).click(function() {
-          client.post(data.sponsor, nl.sara.beehub.reload_notifications, 'add_members[]=' + data.user);
+          client.post(data.sponsor, nl.sara.beehub.reload_notifications, 'add_members[]=' + data.user+'&POST_auth_code='+ nl.sara.beehub.postAuth);
         });
         $('.btn-danger', notification).click(function() {
-          client.post(data.sponsor, nl.sara.beehub.reload_notifications, 'delete_members[]=' + data.user);
+          client.post(data.sponsor, nl.sara.beehub.reload_notifications, 'delete_members[]=' + data.user+'&POST_auth_code='+ nl.sara.beehub.postAuth);
         });
         break;
       case 'no_sponsor':
@@ -141,6 +141,7 @@ nl.sara.beehub.retrieveNewPostAuth = function(){
   }
 
   nl.sara.beehub.show_notifications = function(data) {
+    nl.sara.beehub.retrieveNewPostAuth();
     notification_window.empty();
 
     if (data.length === 0) {
