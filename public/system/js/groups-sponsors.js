@@ -60,27 +60,28 @@ $(function() {
 		// closure for ajax request
 		function callback(button){
 			return function(status){
-        if (status !== 200) {
-          alert('Something went wrong on the server. No changes were made.');
-          return;
-        }
+			  nl.sara.beehub.retrieveNewPostAuth();
+     if (status !== 200) {
+       alert('Something went wrong on the server. No changes were made.');
+       return;
+     }
 
-        if ( button.text() === 'Accept invitation' ) {
-          // TODO: this should be handled more gracefully
-          location.reload();
-          return;
-        }
-        // Change button to join button
-        var cancelrequestbutton = $('<button type="button" value="'+button.val()+'" class="btn btn-danger bh-gs-join-leave-button">Cancel request</button>');
-        cancelrequestbutton.click(function () {
-                joinLeaveListener($(this));
-        });
-        button.closest('a').append(cancelrequestbutton);
-        button.remove();
+     if ( button.text() === 'Accept invitation' ) {
+       // TODO: this should be handled more gracefully
+       location.reload();
+       return;
+     }
+     // Change button to join button
+     var cancelrequestbutton = $('<button type="button" value="'+button.val()+'" class="btn btn-danger bh-gs-join-leave-button">Cancel request</button>');
+     cancelrequestbutton.click(function () {
+             joinLeaveListener($(this));
+     });
+     button.closest('a').append(cancelrequestbutton);
+     button.remove();
 			};
 		}
 		
-		client.post(button.val(), callback(button) , 'join=1');
+		client.post(button.val(), callback(button) , 'join=1&POST_auth_code='+ nl.sara.beehub.postAuth);
 	};
 
 	$('.bh-gs-join-button').on('click', function (e) {
@@ -91,6 +92,7 @@ $(function() {
     // Closure for ajax request
     function callback(button){
       return function(status){
+        nl.sara.beehub.retrieveNewPostAuth();
         if (status === 409) {
           alert("You can't leave this group, you're the last administrator! Don't leave your herd without a shepherd, please appoint a new administrator before leaving them!");
           return;
@@ -117,7 +119,7 @@ $(function() {
     if (confirm('Are you sure you want to cancel membership of the '+group_or_sponsor+' '+button.closest('td').prev().html()+' ?')) {
       // Send leave request to server
       var client = new nl.sara.webdav.Client();
-			client.post(button.val(), callback(button), 'leave=1');
+			client.post(button.val(), callback(button), 'leave=1&POST_auth_code='+ nl.sara.beehub.postAuth);
 	  }
 	};
 
@@ -134,6 +136,7 @@ $(function() {
 	$('.bh-gs-mygs-leave-button').on('click', function (e) {
     function callback(button){
       return function(status, data){
+        nl.sara.beehub.retrieveNewPostAuth();
         if (status === 409) {
           alert("You can't leave this "+group_or_sponsor+", you're the last administrator! Don't leave your "+group_or_sponsor+" without a leader, please appoint a new administrator before leaving them!");
           return;
@@ -158,7 +161,7 @@ $(function() {
     if ( confirm( 'Are you sure you want to leave the '+group_or_sponsor+' '+button.parent().prev().html()+' ?' ) ) {
       // Send leave request to server
       var client = new nl.sara.webdav.Client();
-			client.post(button.val(), callback(button) , 'leave=1');
+			client.post(button.val(), callback(button) , 'leave=1&POST_auth_code='+ nl.sara.beehub.postAuth);
 		}
 	});
 

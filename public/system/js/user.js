@@ -107,7 +107,9 @@ $(function (){
   $('#change-password').submit(function (e) {
     e.preventDefault();
     var client = new nl.sara.webdav.Client();
+    $( 'input[name="POST_auth_code"]' ).val( nl.sara.beehub.postAuth );
     client.post(location.pathname, function(status, data) {
+      nl.sara.beehub.retrieveNewPostAuth();
       if (status===200) {
         alert("Your password is changed now!");
 
@@ -121,13 +123,6 @@ $(function (){
         error.text( 'Wrong password.' );
         $("#password").parent().append(error);
       };
-
-      // Set the new POST authentication code
-      client.get( '/system/?POST_auth_code', function( status, data ) {
-        if ( status === 200 ) {
-          $( 'input[name="POST_auth_code"]' ).val( data );
-        }
-      } );
     }, $("#change-password").serialize());
   });
 	
@@ -164,8 +159,12 @@ $(function (){
 	*/
 	$('#verify_email').submit(function (e) {
 		 e.preventDefault();
+   // Set the new POST authentication code
+   $( 'input[name="POST_auth_code"]' ).val( nl.sara.beehub.postAuth );
+   
 		 var client = new nl.sara.webdav.Client();
 		    client.post(location.pathname, function(status, data) {
+		     nl.sara.beehub.retrieveNewPostAuth();
 		    	if (status===200) {
 			    	location.reload();
 		    	}else if (status===403) {
@@ -173,12 +172,6 @@ $(function (){
 		    	} else {
 		    		alert( "Something went wrong. Your email is not verified.!" );
 		    	};
-          // Set the new POST authentication code
-          client.get( '/system/?POST_auth_code', function( status, data ) {
-            if ( status === 200 ) {
-              $( 'input[name="POST_auth_code"]' ).val( data );
-            }
-          } );
 		    }, $("#verify_email").serialize());
 	});
 });

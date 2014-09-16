@@ -44,6 +44,24 @@ nl.sara.beehub.forbidden_group_names = [
   "system"
 ];
 
+nl.sara.beehub.postAuth ='';
+
+/**
+ * Retrieve new POST authentication code from server.
+ * 
+ */
+nl.sara.beehub.retrieveNewPostAuth = function(){
+ var client = new nl.sara.webdav.Client();
+ // Set the new POST authentication code
+ client.get( '/system/?POST_auth_code', function( status, data ) {
+   if ( status === 200 ) {
+     nl.sara.beehub.postAuth = data;
+   } else {
+     alert("Something went wrong. Please reload the page. When this does not solve the problem contact support@beehub.nl");
+   };
+ });
+};
+
 // in a anonymous function, to not pollute the global namespace:
 (function () {
 	var active;

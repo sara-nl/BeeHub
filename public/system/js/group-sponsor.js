@@ -89,6 +89,7 @@ $(function (){
     // Closure for ajax request
     function callback(group_or_sponsor, invitedUser) {
       return function(status){
+        nl.sara.beehub.retrieveNewPostAuth();
         if (status === 409) {
           alert('You are not allowed to remove all the '+group_or_sponsor+' administrators from a '+group_or_sponsor+'. Leave at least one '+group_or_sponsor+' administrator in the '+group_or_sponsor+' or appoint a new '+group_or_sponsor+' administrator!');
           return;
@@ -106,16 +107,15 @@ $(function (){
            alert(nl.sara.beehub.principals.users[invitedUser] + " has been invited.");
         } else if (group_or_sponsor === "sponsor") {
           alert(nl.sara.beehub.principals.users[invitedUser] + " has been added.");
-          window.location.reload();
-        }
+        };
+        window.location.reload();
       };
     }
 
 	  event.preventDefault();
 	  if (invitedUser !== ""){
 		  var client = new nl.sara.webdav.Client();
-		  
-			client.post(window.location.pathname, callback(group_or_sponsor, invitedUser), 'add_members[]='+invitedUser);
+			client.post(window.location.pathname, callback(group_or_sponsor, invitedUser), 'add_members[]='  +invitedUser+ '&POST_auth_code='+ nl.sara.beehub.postAuth  );
 	  }
   });
   
@@ -175,14 +175,15 @@ $(function (){
 	  
 	  function callback(group_or_sponsor, button) {
 	    return function(status){
+	      nl.sara.beehub.retrieveNewPostAuth();
 	      if (status === 409) {
 	        alert('You are not allowed to remove all the '+group_or_sponsor+' administrators from a '+group_or_sponsor+'. Leave at least one '+group_or_sponsor+' administrator in the '+group_or_sponsor+' or appoint a new '+group_or_sponsor+' administrator!');  
 	        return;
-	      }
+	      };
 	      if (status === 403) {
 	       alert('You are not allowed to perform this action!');  
 	       return;
-	      }
+	      };
 	      if ( status !== 200 ) {
 	      alert('Something went wrong on the server. No changes were made.');
 	      return;
@@ -195,7 +196,7 @@ $(function (){
 	        button.remove();
 	    };
 	  }
-		client.post(window.location.pathname, callback(group_or_sponsor, button), 'delete_admins[]='+button.val());
+		client.post(window.location.pathname, callback(group_or_sponsor, button), 'delete_admins[]='+button.val()+ '&POST_auth_code='+ nl.sara.beehub.postAuth  );
   };
 
   $('.demote_link').click(handleDemote);
@@ -208,6 +209,7 @@ $(function (){
 	  // Closure for ajax request
 	  function callback(button) {
 	    return function(status){
+	       nl.sara.beehub.retrieveNewPostAuth();
         if (status === 403) {
           alert('You are not allowed to perform this action!');
           return;
@@ -233,6 +235,7 @@ $(function (){
     
     function callback(group_or_sponsor) {
       return function(status){
+        nl.sara.beehub.retrieveNewPostAuth();
         if (status === 409) {
           alert('You are not allowed to remove all the '+group_or_sponsor+' administrators from a '+group_or_sponsor+'. Leave at least one '+group_or_sponsor+' administrator in the '+group_or_sponsor+' or appoint a new '+group_or_sponsor+' administrator!');
           return;
@@ -244,7 +247,7 @@ $(function (){
         $('#bh-gs-user-'+button.val()).remove();
       };
     }
-    client.post(window.location.pathname, callback(group_or_sponsor) , 'delete_members[]='+button.val());
+    client.post(window.location.pathname, callback(group_or_sponsor) , 'delete_members[]='+button.val()+ '&POST_auth_code='+ nl.sara.beehub.postAuth  );
   }; // End of remove_link event listener
   $('.remove_link').on('click', function (e) {
 		handleRemove($(this));

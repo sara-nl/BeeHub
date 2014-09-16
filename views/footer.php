@@ -15,6 +15,9 @@
     <script type="text/javascript" src="/system/bootstrap/js/bootstrap.js"></script>
     <script type="text/javascript" src="/system/js/webdavlib.js"></script>
     <script type="text/javascript" src="/system/js/beehub.js"></script>
+    <script type="text/javascript">
+    	nl.sara.beehub.postAuth = '<?= BeeHub::getAuth()->getPostAuthCode() ?>';
+    </script>
     <script type="text/javascript" src="/system/js/server/principals.js"></script>
     <script type="text/javascript">
       nl.sara.beehub.show_notifications(<?= json_encode( BeeHub::notifications( BeeHub_Auth::inst() ) ) ?>);
