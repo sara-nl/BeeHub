@@ -141,7 +141,6 @@ nl.sara.beehub.retrieveNewPostAuth = function(){
   }
 
   nl.sara.beehub.show_notifications = function(data) {
-    nl.sara.beehub.retrieveNewPostAuth();
     notification_window.empty();
 
     if (data.length === 0) {
@@ -156,6 +155,7 @@ nl.sara.beehub.retrieveNewPostAuth = function(){
   };
 
   nl.sara.beehub.reload_notifications = function() {
+    nl.sara.beehub.retrieveNewPostAuth();
     $.getJSON('/system/notifications.php', nl.sara.beehub.show_notifications);
   };
 

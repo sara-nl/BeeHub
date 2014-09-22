@@ -645,6 +645,13 @@ try {
 
 if ( RUN_CLIENT_TESTS ) {
   $footer .= '
+    <script type="text/javascript">
+      (function( open ){
+        XMLHttpRequest.prototype.open = function( method, url, async, user, password ) {
+          open.call( this, method, url, false, user, password );
+        }
+      })( XMLHttpRequest.prototype.open );
+    </script>
     <script src="/system/tests/unittests/directory_view_tree.js"></script>
     <script src="/system/tests/unittests/directory_view.js"></script> 
     <script src="/system/tests/unittests/directory_controller.js"></script> 

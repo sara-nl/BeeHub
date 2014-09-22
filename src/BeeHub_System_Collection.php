@@ -44,11 +44,7 @@ class BeeHub_System_Collection extends BeeHub_Directory {
     // collection with a 'POST_auth_code' query field set. However, this is only
     // allowed when using HTTPS
     if ( isset( $_GET['POST_auth_code'] ) ) {
-      if ( isset( $_SERVER['HTTPS'] ) ) {
-        return BeeHub::getAuth()->getPostAuthCode();
-      }else{
-        throw new DAV_Status( DAV::HTTP_BAD_REQUEST, 'POST authentication code can only be requested over HTTPS' );
-      }
+      return BeeHub::getAuth()->getPostAuthCode();
     }
 
     $this->include_view();
