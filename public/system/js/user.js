@@ -378,14 +378,14 @@ $(function (){
       "children" : []     
   };
   
-  $.each(data, function(i, value){
-    if (value["_id"] === "/"){
-      returnValue.size = value["value"];
+  $.each(data, function( path, size){
+    if (path === "/"){
+      returnValue.size = size;
       returnValue.path = "BeeHub root";
       return;
     };
    var children = returnValue.children;  
-   var dirs = value["_id"].split("/");
+   var dirs = path.split("/");
     
    for (var i=1; i < dirs.length-1; i++) { 
      var exist = checkExist(children,dirs[i]);
@@ -394,14 +394,14 @@ $(function (){
       if (i === (dirs.length -2)) {
         if (exist !== null) {
           // change size
-          children[exist].size = value["value"]; 
+          children[exist].size = size;
         } else {
            //create object with size
            var add = {
             "name": dirs[i],
-            "size": value["value"],
+            "size": size,
             "children": [],
-            "path": value["_id"]
+            "path": path
            };
            children.push(add);
         }
@@ -416,7 +416,7 @@ $(function (){
            "name": dirs[i],
            "children": [],
            "size": 0,
-           "path": value["_id"]
+           "path": path
           };
           children.push(add);
           // pas children aan

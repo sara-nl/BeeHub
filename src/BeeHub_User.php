@@ -79,48 +79,25 @@ class BeeHub_User extends BeeHub_Principal {
    */
   private function method_GET_usage() {
     $db = BeeHub::getNoSQL();
-    
-    $stats = $db->command(
-      array(
-        'mapReduce' => 'files',
-        'map' => 
-//        '
-//          function() {
-//            if ( this.props === undefined || this.props[ "DAV: getcontentlength" ] === undefined || this.props[ "DAV: getcontentlength" ] < 1 ) {
-//              return;
-//            }
-//            var path = "/" + this.path;
-//            var parent = path.substr( 0, path.lastIndexOf( "/" ) );
-//            emit( parent, this.props["DAV: getcontentlength"] );
-//          }
-//        ',
-        '
-          function() {
-            if ( this.props === undefined || this.props[ "DAV: getcontentlength" ] === undefined || this.props[ "DAV: getcontentlength" ] < 1 ) {
-              return;
-            }
-            var pathParts = this.path.split("/");
-            pathParts.pop();
-            pathParts.unshift( "" );
-            var path = "";
-            for ( var key in pathParts ) {
-              path +=  pathParts[key] + "/";
-              emit( path, this.props["DAV: getcontentlength"] );
-            }
-          }
-        ',
-        'reduce' => '
-          function( id, values ) {
-            return Array.sum( values );
-          }
-        ',
-        'out' => array( 'inline' => 1 ),
-        'query' => array( 'props.DAV: owner' => $this->name )
-      )
-    );
-    
-    if ( ! $stats['ok'] ) {
-      throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR, 'Unable to retrieve usage statistics due to an unknown error' );
+
+    // Uitzoeken: checken of ik nu ook alleen documenten met een getcontentlength terug krijg (geen directories)
+    $stats = $db->selectCollection('files')->find( array( 'props.DAV: owner' => $this->name ), array( 'path' => 1, 'props.DAV: getcontentlength' => 1 ) );
+
+    $results = array();
+    foreach( $stats as $result ) {
+      $pathElements = explode( '/', $result['path'] );
+      // The last element is the file name: not interesting ( we only want directories)
+      array_pop( $pathElements );
+
+      // Add the size to the root
+      @$results['/'] += $result['props']['DAV: getcontentlength'];
+
+      $rebuildPath = '/';
+      // Deze loop is een bottleneck die vooral tijd kost als een gebruiker veel bestanden heeft.
+      foreach ( $pathElements as $element ) {
+        $rebuildPath .= $element . '/';
+        @$results[ $rebuildPath ] += $result['props']['DAV: getcontentlength'];
+      }
     }
     
     return json_encode(
@@ -128,7 +105,7 @@ class BeeHub_User extends BeeHub_Principal {
         array(
           'user' => $this->path,
           'time' => date( 'c' ),
-          'usage' => $stats['results']
+          'usage' => $results
         )
       )
     );
