@@ -105,6 +105,7 @@ class BeeHub_User extends BeeHub_Principal {
         array(
           'user' => $this->path,
           'time' => date( 'c' ),
+          "resource_count" => $stats->count(),
           'usage' => $results
         )
       )

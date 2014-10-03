@@ -30,6 +30,9 @@ function setUpDatabase() {
 
   // All the resources are stored
   $filesCollection = $db->createCollection( 'files' );
+  $filesCollection->ensureIndex( array( 'props.http://beehub%2Enl/ sponsor' => 1 ) );
+  $filesCollection->ensureIndex( array( 'props.DAV: owner' => 1 ) );
+  $filesCollection->ensureIndex( array( 'path' => 1 ), array( 'unique' => 1 ) );
   $files = array();
   $files[] = array(
     'path' => 'home'

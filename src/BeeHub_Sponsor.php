@@ -91,22 +91,14 @@ class BeeHub_Sponsor extends BeeHub_Principal {
    */
   private function method_GET_usage() {
     $collection = BeeHub::getNoSQL()->files;
-    $stats = $collection->group(
-      array( 'props.DAV: owner' => 1 ),
-      array( 'usage' => 0 ),
-      'function( file, stats ) {
-         if ( file.props !== undefined && file.props["DAV: getcontentlength"] !== undefined )
-           stats.usage += file.props["DAV: getcontentlength"];
-      }',
-      array(
-        'condition' => array(
-          "props.http://beehub%2Enl/ sponsor" => $this->name
-        )
-      )
-    );
-    
-    if ( ! $stats['ok'] ) {
-      throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR, 'Unable to retrieve usage statistics due to an unknown error' );
+
+    // Uitzoeken: checken of ik nu ook alleen documenten met een getcontentlength terug krijg (geen directories)
+    $stats = $collection->find( array( 'props.http://beehub%2Enl/ sponsor' => $this->name ), array( 'props.DAV: owner' => 1, 'props.DAV: getcontentlength' => 1 ) );
+
+    $results = array();
+    $stats->reset();
+    foreach( $stats as $result ) {
+      @$results[ $result['props']['DAV: owner'] ] += $result['props']['DAV: getcontentlength'];
     }
 
     return json_encode(
@@ -114,7 +106,8 @@ class BeeHub_Sponsor extends BeeHub_Principal {
         array(
           "sponsor" => $this->path,
           "time" => date( 'c' ),
-          "usage" => $stats['retval'],
+          "resource_count" => $stats->count(),
+          "usage" => $results,
         )
       )
     );
