@@ -152,7 +152,7 @@
 </div>
 
 <?php
-  $footer .='
+  $footer = '
     <script type="text/javascript" src="/system/js/groupssponsors.js"></script>
     <script type="text/javascript" src="/system/js/gs-controller.js"></script>
     <script type="text/javascript" src="/system/js/gs-utils.js"></script>

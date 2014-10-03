@@ -87,6 +87,7 @@ class BeeHub {
   const ENVIRONMENT_DEVELOPMENT = 'development';
   const ENVIRONMENT_PRODUCTION  = 'production';
   const ENVIRONMENT_TEST        = 'test';
+  const ENVIRONMENT_STRESS      = 'stress';
   /**#@-*/
 
 
@@ -471,23 +472,23 @@ class BeeHub {
       throw new DAV_Status( DAV::HTTP_INTERNAL_SERVER_ERROR );
     }
 
-    if ( ! ( self::$mongo instanceof MongoClient ) ) {
+    if ( ! ( self::$mongo instanceof MongoDB ) ) {
       if ( ! empty( $config['mongo']['host'] ) ) {
-        $server = 'mongodb://';
-        if ( ! empty( $config['mongo']['user'] ) && ! empty( $config['mongo']['password'] ) ) {
-          $server .= $config['mongo']['user'] . ':' . $config['mongo']['password'];
-        }
-        $server .= $config['mongo']['host'];
+        $server = 'mongodb://' . $config['mongo']['host'];
         if ( ! empty( $config['mongo']['port'] ) ) {
           $server .= ':' . $config['mongo']['port'];
         }
-        self::$mongo = new MongoClient( $server );
+        $mongoDB = new MongoClient( $server );
       }else{
-        self::$mongo = new MongoClient();
+        $mongoDB = new MongoClient();
+      }
+      self::$mongo = $mongoDB->selectDB( $config['mongo']['database'] );
+      if ( ! empty( $config['mongo']['user'] ) && ! empty( $config['mongo']['password'] ) ) {
+        self::$mongo->authenticate(  $config['mongo']['user'], $config['mongo']['password'] );
       }
     }
 
-    return self::$mongo->selectDB( $config['mongo']['database'] );
+    return self::$mongo;
   }
   
   

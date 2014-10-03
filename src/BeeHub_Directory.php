@@ -67,6 +67,18 @@ private function internal_create_member( $name, $collection = false ) {
   if ( !$result )
     throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
 
+  // And create the object in the database
+  $unslashifiedPath = \DAV::unslashify( $path );
+  if ( substr( $unslashifiedPath, 0, 1 ) === '/' ) {
+    $unslashifiedPath = substr( $unslashifiedPath, 1 );
+  }
+  $document = array( 'path' => $unslashifiedPath );
+  if ( $collection ) {
+    $document['collection'] = true;
+  }
+  $filesCollection = BeeHub::getNoSQL()->files;
+  $filesCollection->save( $document );
+
   // And set the attributes
   $new_resource = DAV::$REGISTRY->resource($path);
   if ( ! $collection ) {
@@ -290,7 +302,12 @@ private $dir = null;
  */
 private function dir() {
   if (is_null($this->dir)) {
-    $this->dir = new DirectoryIterator( $this->localPath );
+    $unslashifiedPath = DAV::unslashify( $this->path ) . '/';
+    if ( substr( $unslashifiedPath, 0, 1 ) === '/' ) {
+      $unslashifiedPath = DAV::unslashify( substr( $unslashifiedPath, 1 ) );
+    }
+    $collection = BeeHub::getNoSQL()->files;
+    $this->dir = $collection->find( array( 'path' => array( '$regex' => preg_quote( $unslashifiedPath ) . '/[^/]*$' ) ) );
     $this->skipInvalidMembers();
   }
   return $this->dir;
@@ -298,37 +315,43 @@ private function dir() {
 
 
 private function skipInvalidMembers() {
-  while (
-    $this->dir()->valid() && (
-      $this->dir()->isDot() ||
-      !DAV::$REGISTRY->resource(
-        $this->path . $this->current()
-      )->isVisible()
-  ) ) {
-    DAV::$REGISTRY->forget(
-      $this->path . $this->current()
-    );
+  while ( $this->dir()->valid() && ( !DAV::$REGISTRY->resource( $this->path . $this->current() )->isVisible() ) ) {
+    DAV::$REGISTRY->forget( $this->path . $this->current() );
     $this->dir->next();
   }
 }
 
 
 public function current() {
-  $retval = rawurlencode($this->dir()->getFilename());
-  if ('dir' == $this->dir()->getType())
+  $document = $this->dir()->current();
+  $retval = rawurlencode( basename( $document['path'] ) );
+  if ( isset( $document['collection'] ) && $document['collection'] ) {
     $retval .= '/';
+  }
   return $retval;
 }
-public function key()     { return $this->dir()->key(); }
-public function next()    {
+
+
+public function key() {
+  return $this->dir()->key();
+}
+
+
+public function next() {
   $this->dir()->next();
   $this->skipInvalidMembers();
 }
+
+
 public function rewind()  {
   $this->dir()->rewind();
   $this->skipInvalidMembers();
 }
-public function valid()   { return $this->dir()->valid(); }
+
+
+public function valid() {
+  return $this->dir()->valid();
+}
 
 
 } // class BeeHub_Directory

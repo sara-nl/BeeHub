@@ -65,6 +65,9 @@ function traverse($iterator) {
     $document = array(
         'path' => $unslashifiedPath,
         'props' => $stored_props );
+    if ( $fileinfo->isDir() ) {
+      $document['collection'] = true;
+    }
     $collection->save( $document );
   }
 }

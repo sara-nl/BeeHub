@@ -70,4 +70,13 @@ if ( APPLICATION_ENV === BeeHub::ENVIRONMENT_TEST ) {
   $_SERVER['PHP_AUTH_PW'] = 'password_of_john';
 }
 
+// If we want to run the client tests, load the test configuration and reset the storage backend (of the test environment)
+if ( APPLICATION_ENV === BeeHub::ENVIRONMENT_STRESS ) {
+  require_once( dirname( dirname ( __FILE__ ) ) . DIRECTORY_SEPARATOR . 'tests' . DIRECTORY_SEPARATOR . 'stress_environment.php' );
+  \BeeHub\stress\loadTestConfig();
+  if ( isset( $_GET['reset_environment'] ) ) {
+    \BeeHub\stress\setUpDatabase();
+  }
+}
+
 // End of file

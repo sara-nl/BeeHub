@@ -140,6 +140,7 @@
      alert("The "+group_or_sponsor+" is changed.")
      view.changeGroupSponsorStarted = false;
      nl.sara.beehub.gs.view.utils.mask(false);
+     $("#bh-dir-mask-loading").hide();
    };
  };
  
@@ -400,11 +401,13 @@
   * 
   */
  function createUsageView() { 
-  var view = this;
-  
-  view.getUsageDataStarted = true;
-  nl.sara.beehub.gs.view.utils.mask(true);
-  view.controller.getUsageData(location.href+"?usage");
+   if ($("#bh-dir-loading").css('display') === "none" && ($("#bh-gs-usage-div").html() === undefined || ($("#bh-gs-usage-div").html() === ""))){ 
+    var view = this;
+    
+    view.getUsageDataStarted = true;
+    $("#bh-dir-loading").show();
+    view.controller.getUsageData(location.href+"?usage");
+   };
  };
  
  /**
@@ -436,7 +439,7 @@
    var barLabel = function(d) { return nl.sara.beehub.principals['users'][d['props.DAV: owner']]; };
    var barValueGb = function(d) { return parseFloat(d['usage']/1024/1024/1024); };
    var barValue = function(d) { return parseFloat(d['usage']); };
-
+  
    // sorting
    var sortedData = data.sort(function(a,b){
      return d3.descending(barValue(a), barValue(b));
@@ -457,12 +460,12 @@
    var gridContainer = chart.append('g')
      .attr('transform', 'translate(' + barLabelWidth + ',' + gridLabelHeight + ')'); 
    
-   gridContainer.selectAll("text").data(x.ticks(10)).enter().append("text")
-     .attr("x", x)
-     .attr("dy", -3)
-     .attr("text-anchor", "middle")
-     .attr("font-size", "10px")
-     .text(String);
+//   gridContainer.selectAll("text").data(x.ticks(10)).enter().append("text")
+//     .attr("x", x)
+//     .attr("dy", -3)
+//     .attr("text-anchor", "middle")
+//     .attr("font-size", "10px")
+//     .text(String);
    
    // vertical grid lines
    gridContainer.selectAll("line").data(x.ticks(10)).enter().append("line")
@@ -516,6 +519,7 @@
    
    if (view.getUsageDataStarted) {
      nl.sara.beehub.gs.view.utils.mask(false);
+     $("#bh-dir-loading").hide();
      view.getUsageDataStarted = false;
    };
  };

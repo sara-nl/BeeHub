@@ -36,13 +36,15 @@ class BeeHub_MongoResource extends BeeHub_Resource {
   /**
    * @var array
    */
-  protected $stat;
+  protected $stat = array();
 
 
   public function __construct($path) {
     parent::__construct($path);
     $this->localPath = BeeHub::localPath($path);
-    $this->stat = stat($this->localPath);
+    if ( file_exists( $this->localPath ) ) {
+      $this->stat = stat($this->localPath);
+    }
   }
 
 

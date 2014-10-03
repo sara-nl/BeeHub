@@ -112,6 +112,11 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
     if (!mkdir($userdir)) {
       throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
     }
+    // And create the directory in the database
+    $document = array( 'path' => 'home/' . $user_name, 'collection' => true );
+    $filesCollection = BeeHub::getNoSQL()->files;
+    $filesCollection->save( $document );
+    
     $userdir_resource = DAV::$REGISTRY->resource('/home/' . $user_name);
     $userdir_resource->user_set( DAV::PROP_OWNER, $user->path );
     // TODO: this should not be hard coded. When a users is accepted by his/her first sponsor, this should automatically be set.

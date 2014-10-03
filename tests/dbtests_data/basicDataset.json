@@ -104,13 +104,15 @@
       "path": "",
       "props" :
       {
-      }
+      },
+      "collection": true
     },
     {
       "path": "home",
       "props" :
       {
-      }
+      },
+      "collection": true
     },
     {
       "path": "home/john",
@@ -118,21 +120,24 @@
       {
         "DAV: owner": "john",
         "http://beehub%2Enl/ sponsor": "sponsor_a"
-      }
+      },
+      "collection": true
     },
     {
       "path": "home/johny",
       "props" :
       {
         "DAV: owner": "johny"
-      }
+      },
+      "collection": true
     },
     {
       "path": "home/jane",
       "props" :
       {
         "DAV: owner": "jane"
-      }
+      },
+      "collection": true
     },
     {
       "path": "foo",
@@ -140,7 +145,8 @@
       {
         "http://beehub%2Enl/ sponsor": "sponsor_a",
         "DAV: acl": "[[\"/system/users/john\",false,[\"DAV: all\"],false],[\"/system/groups/foo\",false,[\"DAV: read\", \"DAV: write\"],false]]"
-      }
+      },
+      "collection": true
     },
     {
       "path": "foo/file.txt",
@@ -174,7 +180,8 @@
         "http://beehub%2Enl/ sponsor": "sponsor_a",
         "DAV: acl": "[[\"/system/users/johny\",false,[\"DAV: read\"],true]]",
         "test_namespace test_property": "this is a random dead property"
-      }
+      },
+      "collection": true
     },
     {
       "path": "foo/directory2",
@@ -182,7 +189,8 @@
       {
         "DAV: owner": "john",
         "http://beehub%2Enl/ sponsor": "sponsor_a"
-      }
+      },
+      "collection": true
     },
     {
       "path": "foo/client_tests",
@@ -191,7 +199,8 @@
         "DAV: owner": "john",
         "http://beehub%2Enl/ sponsor": "sponsor_a",
         "DAV: acl": "[[\"/system/groups/foo\",false,[\"DAV: write\",\"DAV: write-acl\"],true],[\"DAV: authenticated\",true,[\"DAV: read\"],false],[\"DAV: all\",false,[\"DAV: read\"],false],[\"DAV: owner\",false,[\"DAV: read\"],false],[\"DAV: authenticated\",false,[\"DAV: write\"],false]]"
-      }
+      },
+      "collection": true
     },
     {
       "path": "foo/client_tests/file.txt",
@@ -225,7 +234,8 @@
         "http://beehub%2Enl/ sponsor": "sponsor_a",
         "DAV: acl": "[[\"/system/users/johny\",false,[\"DAV: read\"],true]]",
         "test_namespace test_property": "this is a random dead property"
-      }
+      },
+      "collection": true
     },
     {
       "path": "foo/client_tests/directory2",
@@ -233,7 +243,8 @@
       {
         "DAV: owner": "john",
         "http://beehub%2Enl/ sponsor": "sponsor_a"
-      }
+      },
+      "collection": true
     },
     {
       "path": "bar",
@@ -241,31 +252,36 @@
       {
         "http://beehub%2Enl/ sponsor": "sponsor_b",
         "DAV: acl": "[[\"/system/users/john\",false,[\"DAV: all\"],false],[\"/system/groups/bar\",false,[\"DAV: read\", \"DAV: write\"],false]]"
-      }
+      },
+      "collection": true
     },
     {
       "path": "system",
       "props" :
       {
-      }
+      },
+      "collection": true
     },
     {
       "path": "system/groups",
       "props" :
       {
-      }
+      },
+      "collection": true
     },
     {
       "path": "system/sponsors",
       "props" :
       {
-      }
+      },
+      "collection": true
     },
     {
       "path": "system/users",
       "props" :
       {
-      }
+      },
+      "collection": true
     },
     {
       "path": "denyAll",

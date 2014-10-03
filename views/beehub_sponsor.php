@@ -102,6 +102,7 @@ require 'views/header.php';
   <!-- Usage tab -->
   <br/>
   <div id="bh-gs-panel-usage" class="tab-pane">
+    <div id="bh-dir-loading" hidden="hidden"></div>
   </div>
   <!--  End usage tab -->
   

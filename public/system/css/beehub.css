@@ -169,7 +169,7 @@ ul.dynatree-container{
 /* Mask to disable input*/
 #bh-dir-mask, #bh-dir-mask-transparant, #bh-dir-mask-loading {
    position:           fixed;
-   z-index:            400;
+   z-index:            10000;
    top:                0;
    left:               0;
    width:              100%;
@@ -180,6 +180,21 @@ ul.dynatree-container{
 	background: url("/system/img/bh-dir-loading.gif") no-repeat scroll 50% 50% #A7A9AC;
   opacity: 0.3;
 }
+
+#bh-dir-loading {
+ background: url("/system/img/bh-dir-loading.gif") no-repeat scroll 50% 50%;
+  opacity: 0.3;
+}
+
+#bh-dir-loading {
+	  position:           fixed;
+   top:                200px;
+   left:               100px;
+   width:              100px;
+   height:             100px;
+   z-index:            100;
+}
+
 
 /* Mask to disable input*/
 #bh-dir-mask {
