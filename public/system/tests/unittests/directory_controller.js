@@ -3417,8 +3417,8 @@
       },
       this.acl = function(){
         
-      }
-    }
+      };
+    };
     
     nl.sara.beehub.view.acl.setAddAclRuleDialogClickHandler = function(addAclRuleDialog){
       var readPrivilege = new nl.sara.webdav.Privilege();
@@ -3484,8 +3484,8 @@
       },
       this.acl = function(){
         
-      }
-    }
+      };
+    };
     
     nl.sara.beehub.view.acl.setAddAclRuleDialogClickHandler = function(addAclRuleDialog){
       var readPrivilege = new nl.sara.webdav.Privilege();

@@ -133,6 +133,20 @@ class BeeHub_DirectoryTest extends BeeHub_Tests_Db_Test_Case {
   }
 
 
+  public function testRootIterator() {
+    $obj = new \BeeHub_Directory( '/' );
+    $children = array();
+    foreach ( $obj as $child ) {
+      $children[] = $child;
+    }
+    sort( $children );
+
+    $expected = array( 'home/', 'foo/', 'bar/', 'system/', 'allowAll/' );
+    sort( $expected );
+    $this->assertSame( $expected, $children );
+  }
+
+
   public function testMethod_COPYToUnexistingCollection() {
     $this->setExpectedException( '\DAV_Status', null, \DAV::HTTP_CONFLICT );
     $this->obj->method_COPY( '/unexisting_directory/directory/' );

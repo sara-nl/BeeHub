@@ -302,12 +302,17 @@ private $dir = null;
  */
 private function dir() {
   if (is_null($this->dir)) {
+    $collection = BeeHub::getNoSQL()->files;
     $unslashifiedPath = DAV::unslashify( $this->path ) . '/';
     if ( substr( $unslashifiedPath, 0, 1 ) === '/' ) {
       $unslashifiedPath = DAV::unslashify( substr( $unslashifiedPath, 1 ) );
     }
-    $collection = BeeHub::getNoSQL()->files;
-    $this->dir = $collection->find( array( 'path' => array( '$regex' => preg_quote( $unslashifiedPath ) . '/[^/]*$' ) ) );
+    if ( $unslashifiedPath !== '/' ) {
+      $this->dir = $collection->find( array( 'path' => array( '$regex' => preg_quote( $unslashifiedPath ) . '/[^/]*$' ) ) );
+    }else{
+      $this->dir = $collection->find( array( 'path' => array( '$regex' => '^[^/]+$' ) ) );
+    }
+
     $this->skipInvalidMembers();
   }
   return $this->dir;
