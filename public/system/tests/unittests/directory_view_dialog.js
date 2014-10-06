@@ -454,11 +454,12 @@
     
     // Test if all resource fields are set
     for(var i=0; i<20; i++){
-      var val = $(dialog).find("tr[id='dialog_tr_/test/test"+i+"']").find('td').eq(0).html();
-      var info = $(dialog).find("tr[id='dialog_tr_/test/test"+i+"']").find('td').eq(1).hasClass('info');
-      deepEqual(val, 'displayname'+i, "Table value is "+i);
-      deepEqual(info, true, "Class info should be set");
+      var first = $(dialog).find("tr[id='dialog_tr_/test/test"+i+"']").find('td')[0];
+      var second = $(dialog).find("tr[id='dialog_tr_/test/test"+i+"']").find('td')[1];
+      deepEqual($(first).html(), 'displayname'+i, 'Value should be displayname'+i);
+      deepEqual($(second).hasClass("info"), true, "Should contain class info");
     };
+    
     // Test click handlers
     $(dialog).find(dialogCancelButton).click();
     var button = $(dialog).find(dialogButton);

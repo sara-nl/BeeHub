@@ -254,6 +254,98 @@ class BeeHub_Auth {
     return ! $noRequireAuth;
   }
 
+
+  /**
+   * The key of the $_SESSION array that stores the POST authentication code
+   *
+   * This variable should be considered a class constant. I feel that it is
+   * better to create a private static variable than a public constant, because
+   * the chance of any documentation creation software (like phpDocumentor)
+   * will put it in the public API documentation is less.
+   *
+   * @internal
+   */
+  private static $SESSION_KEY = 'beehub_postAuthCode';
+
+
+  /**
+   * Gets the currently valid POST authentication code.
+   *
+   * The POST authentication code is used to validate that the client is allowed
+   * to submit POST requests. The most important example of a client that is not
+   * allowed to do this is a JavaScript from another website. It should not be
+   * possible for such a script to submit a (hidden) HTML POST form that can
+   * change settings for this user. To prevent this attach, the POST requests
+   * should include a field 'POST_auth_code' with the value returned by this
+   * method. Other websites can not retrieve this code because of 'Cross Origin
+   * Resource Sharing' limitations normal browsers have. (And if your browser
+   * does not have this, I would suggest to quickly stop using such an insecure
+   * browser).
+   *
+   * Do NOT compare the user submitted value with this value, instead, let the
+   * checkPostAuthCode() method do that. This will ensure each code is only used
+   * once and empty codes are not allowed.
+   *
+   * @api
+   * @return  string  The POST authentication code
+   */
+  public function getPostAuthCode() {
+    BeeHub::startSession();
+
+    if ( ! isset( $_SESSION[ self::$SESSION_KEY ] ) || empty( $_SESSION[ self::$SESSION_KEY ] ) ) {
+      // In the test environment, we always use the same POST authentication code
+      if ( APPLICATION_ENV === BeeHub::ENVIRONMENT_TEST ) {
+        $_SESSION[ self::$SESSION_KEY ] = 'abcdefg';
+      }else{
+        $_SESSION[ self::$SESSION_KEY ] = bin2hex( openssl_random_pseudo_bytes( 16 ) );
+      }
+    }
+    return $_SESSION[ self::$SESSION_KEY ];
+  }
+
+
+  /**
+   * Checks whether the user submitted a correct POST authentication code and sets a new code when authentication succeeded or too many attempts have been done.
+   *
+   * Using this method instead of checking it yourself. This to ensure the
+   * following:
+   * - Enforce a consistent API (always the same POST field: POST_auth_code)
+   * - Refresh the code after a successful check
+   * - Refresh the code after five failed attempts
+   *
+   * @see getPostAuthCode()
+   * @api
+   * @return  boolean  True of the code was correct, false otherwise
+   */
+  public function checkPostAuthCode() {
+    $postField = 'POST_auth_code';
+    // The key of the $_SESSION array field with the number of failed attempts to check a POST authentication code
+    $postAuthAttempts = 'POST_auth_attempts';
+    BeeHub::startSession();
+
+    if ( ! isset( $_SESSION[ $postAuthAttempts ] ) ) {
+      $_SESSION[ $postAuthAttempts ] = 0;
+    }
+    
+    if (
+      ! isset( $_POST[ $postField ] ) ||
+      empty( $_POST[ $postField ] ) ||
+      $_POST[ $postField ] !== $this->getPostAuthCode()
+    ){
+      $_SESSION[ $postAuthAttempts ]++;
+      if ( $_SESSION[ $postAuthAttempts ] >= 5 ) {
+        unset( $_SESSION[ self::$SESSION_KEY ] );
+        $_SESSION[ $postAuthAttempts ] = 0;
+      }
+      return false;
+    }
+
+    unset( $_SESSION[ self::$SESSION_KEY ] );
+    $_SESSION[ $postAuthAttempts ] = 0;
+
+    return true;
+  }
+
 } // class BeeHub_Auth
 
 // End of file

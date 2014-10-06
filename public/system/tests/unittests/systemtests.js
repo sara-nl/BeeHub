@@ -125,19 +125,23 @@
    */
   asyncTest( 'POST request /denyAll/allowWrite', function(assert) { 
     //POST request to /denyAll/allowWrite should be successful
-    this.webdav.post('/denyAll/allowWrite', createRequestCallback(assert, this.statusNotImplemented));
+    this.webdav.post('/denyAll/allowWrite', createRequestCallback(assert, this.statusNotImplemented), 'POST_auth_code=abcdefg');
+  });
+  asyncTest( 'POST request /denyAll/allowWrite', function(assert) { 
+    //POST request to /denyAll/allowWrite should be forbidden with no authentication code
+    this.webdav.post('/denyAll/allowWrite', createRequestCallback(assert, this.statusNotAllowed));
   });
   asyncTest( 'POST request /denyAll/allowWriteDir/resource', function(assert) { 
     //POST request to /denyAll/allowWriteDir/resource should be successful
-    this.webdav.post('/denyAll/allowWriteDir/resource', createRequestCallback(assert, this.statusNotImplemented));
+    this.webdav.post('/denyAll/allowWriteDir/resource', createRequestCallback(assert, this.statusNotImplemented), 'POST_auth_code=abcdefg');
   });
   asyncTest( 'POST request /allowAll/denyWrite', function(assert) { 
     //POST request to /allowAll/denyWrite should fail
-    this.webdav.post('/allowAll/denyWrite', createRequestCallback(assert, this.statusNotImplemented));
+    this.webdav.post('/allowAll/denyWrite', createRequestCallback(assert, this.statusNotImplemented), 'POST_auth_code=abcdefg');
   });
   asyncTest( 'POST request /allowAll/denyWriteDir/resource', function(assert) { 
     //POST request to /allowAll/denyWriteDir/resource should fail
-    this.webdav.post('/allowAll/denyWriteDir/resource', createRequestCallback(assert, this.statusNotImplemented));
+    this.webdav.post('/allowAll/denyWriteDir/resource', createRequestCallback(assert, this.statusNotImplemented), 'POST_auth_code=abcdefg');
   });
   
   

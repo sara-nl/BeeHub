@@ -211,7 +211,7 @@
     nl.sara.beehub.view.tree.slideTrigger("left");
     deepEqual($(treeSlideTrigger+" i").hasClass('icon-folder-open'), false, "icon-folder-open should be removed");
     deepEqual($(treeSlideTrigger+" i").hasClass('icon-folder-close'), true, "icon-folder-close should be added");
-  })
+  });
   
   /**
    * Test noMask

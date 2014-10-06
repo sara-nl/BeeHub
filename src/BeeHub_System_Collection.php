@@ -39,6 +39,14 @@ class BeeHub_System_Collection extends BeeHub_Directory {
 
   public function method_GET() {
     $this->assert( BeeHub::PRIV_READ_CONTENT );
+
+    // You can request the POST authentication code through the system
+    // collection with a 'POST_auth_code' query field set. However, this is only
+    // allowed when using HTTPS
+    if ( isset( $_GET['POST_auth_code'] ) ) {
+      return BeeHub::getAuth()->getPostAuthCode();
+    }
+
     $this->include_view();
   }
 

@@ -163,8 +163,8 @@
     // Check click event 
     row.find(menuRename).click();
 
-    deepEqual(row.find(renameField).is(':hidden'), true, 'Name field should be hidden');
-    deepEqual(row.find(renameColumn).is(':hidden'), false, 'Input field should be shown');
+    deepEqual(row.find(renameField).css('display') === "none", true, 'Name field should be hidden');
+    deepEqual(row.find(renameColumn).css('display') === "none", false, 'Input field should be shown');
     deepEqual(row.find(renameColumn).find(':input').val(), displayname,'Input field value should be testfolder');
   
     row.find(renameColumn).find(':input').val("newFolderName");
@@ -179,8 +179,8 @@
 
     // Check blur event
     row.find(renameForm).blur();
-    deepEqual(row.find(renameField).is(':hidden'), false, 'Name field should be shown');
-    deepEqual(row.find(renameColumn).is(':hidden'), true, 'Input field should be hidden');
+    deepEqual(row.find(renameField).css('display') === "none", false, 'Name field should be shown');
+    deepEqual(row.find(renameColumn).css('display') === "none", true, 'Input field should be hidden');
   };
   
   /**

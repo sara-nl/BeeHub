@@ -47,6 +47,24 @@ nl.sara.beehub.forbidden_group_names = [
   "system"
 ];
 
+nl.sara.beehub.postAuth ='';
+
+/**
+ * Retrieve new POST authentication code from server.
+ * 
+ */
+nl.sara.beehub.retrieveNewPostAuth = function(){
+ var client = new nl.sara.webdav.Client();
+ // Set the new POST authentication code
+ client.get( '/system/?POST_auth_code', function( status, data ) {
+   if ( status === 200 ) {
+     nl.sara.beehub.postAuth = data;
+   } else {
+     alert("Something went wrong. Please reload the page. When this does not solve the problem contact support@beehub.nl");
+   };
+ });
+};
+
 // in a anonymous function, to not pollute the global namespace:
 (function () {
 	var active;
@@ -87,10 +105,10 @@ nl.sara.beehub.forbidden_group_names = [
         notification.html('<div style="float:left">You are invited to join the group \'<span name="groupname"></span>\'</div><div style="float:right"><button class="btn btn-success">Join</button> <button class="btn btn-danger">Decline</button></div><div style="clear:both"></div>');
         $('span[name="groupname"]', notification).text(data.displayname);
         $('.btn-success', notification).click(function() {
-          client.post(data.group, nl.sara.beehub.reload_notifications, 'join=1');
+          client.post(data.group, nl.sara.beehub.reload_notifications, 'join=1&POST_auth_code='+ nl.sara.beehub.postAuth);
         });
         $('.btn-danger', notification).click(function() {
-          client.post(data.group, nl.sara.beehub.reload_notifications, 'leave=1');
+          client.post(data.group, nl.sara.beehub.reload_notifications, 'leave=1&POST_auth_code='+ nl.sara.beehub.postAuth);
         });
         break;
       case 'group_request':
@@ -99,10 +117,10 @@ nl.sara.beehub.forbidden_group_names = [
         $('span[name="user_email"]', notification).text(data.user_email);
         $('span[name="group_displayname"]', notification).text(data.group_displayname);
         $('.btn-success', notification).click(function() {
-          client.post(data.group, nl.sara.beehub.reload_notifications, 'add_members[]=' + data.user);
+          client.post(data.group, nl.sara.beehub.reload_notifications, 'add_members[]=' + data.user+'&POST_auth_code='+ nl.sara.beehub.postAuth);
         });
         $('.btn-danger', notification).click(function() {
-          client.post(data.group, nl.sara.beehub.reload_notifications, 'delete_members[]=' + data.user);
+          client.post(data.group, nl.sara.beehub.reload_notifications, 'delete_members[]=' + data.user+'&POST_auth_code='+ nl.sara.beehub.postAuth);
         });
         break;
       case 'sponsor_request':
@@ -111,10 +129,10 @@ nl.sara.beehub.forbidden_group_names = [
         $('span[name="user_email"]', notification).text(data.user_email);
         $('span[name="sponsor_displayname"]', notification).text(data.sponsor_displayname);
         $('.btn-success', notification).click(function() {
-          client.post(data.sponsor, nl.sara.beehub.reload_notifications, 'add_members[]=' + data.user);
+          client.post(data.sponsor, nl.sara.beehub.reload_notifications, 'add_members[]=' + data.user+'&POST_auth_code='+ nl.sara.beehub.postAuth);
         });
         $('.btn-danger', notification).click(function() {
-          client.post(data.sponsor, nl.sara.beehub.reload_notifications, 'delete_members[]=' + data.user);
+          client.post(data.sponsor, nl.sara.beehub.reload_notifications, 'delete_members[]=' + data.user+'&POST_auth_code='+ nl.sara.beehub.postAuth);
         });
         break;
       case 'no_sponsor':
@@ -140,6 +158,7 @@ nl.sara.beehub.forbidden_group_names = [
   };
 
   nl.sara.beehub.reload_notifications = function() {
+    nl.sara.beehub.retrieveNewPostAuth();
     $.getJSON('/system/notifications.php', nl.sara.beehub.show_notifications);
   };
 
