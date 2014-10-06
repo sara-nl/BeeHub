@@ -289,7 +289,8 @@
       {
         "http://beehub%2Enl/ sponsor": "sponsor_a",
         "DAV: acl": "[[\"DAV: all\",false,[\"DAV: all\"],true]]"
-      }
+      },
+      "collection": true
     },
     {
       "path": "denyAll/allowRead",
@@ -345,7 +346,8 @@
       {
         "http://beehub%2Enl/ sponsor": "sponsor_a",
         "DAV: acl": "[[\"/system/users/john\",false,[\"DAV: read\"],false]]"
-      }
+      },
+      "collection": true
     },
     {
       "path": "denyAll/allowReadDir/resource",
@@ -368,7 +370,8 @@
       {
         "http://beehub%2Enl/ sponsor": "sponsor_a",
         "DAV: acl": "[[\"/system/users/john\",false,[\"DAV: write\"],false]]"
-      }
+      },
+      "collection": true
     },
     {
       "path": "denyAll/allowWriteDir/resource",
@@ -391,7 +394,8 @@
       {
         "http://beehub%2Enl/ sponsor": "sponsor_a",
         "DAV: acl": "[[\"/system/users/john\",false,[\"DAV: read\",\"DAV: write\"],false]]"
-      }
+      },
+      "collection": true
     },
     {
       "path": "denyAll/allowReadWriteDir/resource",
@@ -422,7 +426,8 @@
       {
         "http://beehub%2Enl/ sponsor": "sponsor_a",
         "DAV: acl": "[[\"/system/users/john\",false,[\"DAV: write-acl\"],false]]"
-      }
+      },
+      "collection": true
     },
     {
       "path": "denyAll/allowWriteAclDir/resource",
@@ -437,7 +442,8 @@
       {
         "http://beehub%2Enl/ sponsor": "sponsor_a",
         "DAV: acl": "[[\"/system/users/john\",false,[\"DAV: all\"],false]]"
-      }
+      },
+      "collection": true
     },
     {
       "path": "allowAll/denyRead",
@@ -469,7 +475,8 @@
       {
         "http://beehub%2Enl/ sponsor": "sponsor_a",
         "DAV: acl": "[[\"/system/users/john\",false,[\"DAV: read\"],true]]"
-      }
+      },
+      "collection": true
     },
     {
       "path": "allowAll/denyReadDir/resource",
@@ -484,7 +491,8 @@
       {
         "http://beehub%2Enl/ sponsor": "sponsor_a",
         "DAV: acl": "[[\"/system/users/john\",false,[\"DAV: write\"],true]]"
-      }
+      },
+      "collection": true
     },
     {
       "path": "allowAll/denyWriteDir/resource",
@@ -507,7 +515,8 @@
       {
         "http://beehub%2Enl/ sponsor": "sponsor_a",
         "DAV: acl": "[[\"/system/users/john\",false,[\"DAV: write-acl\"],true]]"
-      }
+      },
+      "collection": true
     },
     {
       "path": "allowAll/denyWriteAclDir/resource",

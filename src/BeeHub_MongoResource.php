@@ -96,7 +96,11 @@ class BeeHub_MongoResource extends BeeHub_Resource {
    * @see DAV_Resource::user_prop_getlastmodified()
    */
   public function user_prop_getlastmodified() {
-    return $this->stat['mtime'];
+    if ( isset( $this->stat['mtime'] ) ) {
+      return $this->stat['mtime'];
+    }else{
+      return null;
+    }
   }
 
 

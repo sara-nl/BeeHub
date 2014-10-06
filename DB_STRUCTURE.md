@@ -79,10 +79,20 @@ A complete document in the 'files' collection could look like this:
     "DAV: getetag": "\"EA\"",
     "test_namespace test_property": "this is a random dead property"
   },
-  "shallowWriteLock" : { "lockerId" : "beehub-devel53f49ae091feb6.35129299", "time" : NumberLong(1408539360) },
-  "shallowReadLock" : { "counter" : 1, "latest_lock" : NumberLong(1408539360) }
+  "collection": true
 }
 ```
 This describes the properties for the file 'foo/file.txt'. This path should NOT have leading or trailing slashes.
 The object/hash/map/array in the 'props' contains key-value pairs for webDAV properties. The key should contain exactly one space which separates the XML namespace from the XML node name. Also, these characters: . % $ should be replaced by the URL encoded counterparts: '%2E', '%25', '%24'
 Most properties are passed through directly to the client as webDAV properties. 'DAV: owner' and 'DAV: sponsor' are exceptions, they get respectively the users and sponsors path prepended automatically. The 'DAV: acl' property is also an exception, it contains a string that is interpreted by the BeeHub code to form the ACL.
+
+## Collection: locks
+A complete document in the 'locks' collection could look like this:
+```
+{
+  "path": "foo/file.txt",
+  "shallowWriteLock" : { "lockerId" : "beehub-devel53f49ae091feb6.35129299", "time" : NumberLong(1408539360) },
+  "shallowReadLock" : { "counter" : 1, "latest_lock" : NumberLong(1408539360) }
+}
+```
+This describes the shallow locks for the file 'foo/file.txt'. This path should NOT have leading or trailing slashes.

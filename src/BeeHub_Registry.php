@@ -100,6 +100,8 @@ class BeeHub_Registry implements DAV_Registry {
         }else {
           $retval = new BeeHub_File($path);
         }
+      }else{
+        return null;
       }
     }
     return ( $this->resourceCache[$path] = $retval );
@@ -193,7 +195,7 @@ class BeeHub_Registry implements DAV_Registry {
         $lockTypes['read'][] = $path;
       }
     }
-    $filesCollection = BeeHub::getNoSQL()->selectCollection( 'files' );
+    $filesCollection = BeeHub::getNoSQL()->selectCollection( 'locks' );
 
     // Make sure each path has a document in the database
     $upsertOptions = array( 'upsert' => true );
@@ -255,7 +257,7 @@ class BeeHub_Registry implements DAV_Registry {
    */
   public function shallowUnlock() {
     // Prepare the database calls
-    $filesCollection = BeeHub::getNoSQL()->selectCollection( 'files' );
+    $filesCollection = BeeHub::getNoSQL()->selectCollection( 'locks' );
     $options = array(
         'upsert' => false,
         'multiple' => true,
