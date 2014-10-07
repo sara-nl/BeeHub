@@ -615,7 +615,7 @@
     deepEqual(row.find('.bh-dir-sponsor-dropdown').is(":visible"), false, "Should be hidden.");
     deepEqual(row.find('.bh-dir-sponsor-select').html(), '',"Should be empty");
     deepEqual(row.find('.bh-dir-sponsor').attr('data-value'),sponsor1, "Should be "+sponsor1);
-    deepEqual(row.find('.bh-dir-sponsor').text(), sponsor1DisplayName, "Should be "+sponsor1DisplayName);
+    deepEqual(row.find('.bh-dir-sponsor').text().trim(), sponsor1DisplayName, "Should be "+sponsor1DisplayName);
   });
   
   /**

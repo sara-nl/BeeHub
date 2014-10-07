@@ -618,7 +618,7 @@
     row.find('.bh-dir-sponsor-dropdown').hide();
     row.find('.bh-dir-sponsor-select').html("");
     row.find('.bh-dir-sponsor').attr('data-value', sponsor.name);
-    row.find('.bh-dir-sponsor').html(sponsor.displayname+' <span class="caret" style="margin-top: 8px;"></span>');
+    row.find('.bh-dir-sponsor').html(sponsor.displayname + '<span class="caret" style="margin-top: 8px;"></span>');
     row.find('.bh-dir-sponsor').show();
     nl.sara.beehub.view.maskView("transparant", false);
   };
