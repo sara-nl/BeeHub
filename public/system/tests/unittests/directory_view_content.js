@@ -531,11 +531,12 @@
    * Test setSponsorDropdown
    */
   test("nl.sara.beehub.view.content.setSponsorDropdown", function(){
-    expect(13);
-    
+    expect(17);
+   
+    var expectedMaskViewValue;
     nl.sara.beehub.view.maskView = function(what, bool){
       deepEqual(what, "transparant","Mask should be set to transparant");
-      deepEqual(bool, true, "Mask should be set.");
+      deepEqual(bool, expectedMaskViewValue, "Mask should be set.");
     };
     
     nl.sara.beehub.controller.setSponsor = function(path, sponsor){
@@ -558,19 +559,23 @@
       }
     ];
     var row = $("tr[id='"+directory1+"']");
+    expectedMaskViewValue = false;
     nl.sara.beehub.view.content.setSponsorDropdown(directory1, sponsors);
     deepEqual(row.find('.bh-dir-sponsor').is(":visible"), false, "Should be hidden.");
     deepEqual(row.find('.bh-dir-sponsor-dropdown').is(":visible"), true, "Should be shown.");
     deepEqual(row.find('.bh-dir-sponsor-select').html(), '<option value="sponsor_a">Company A</option><option value="sponsor_b">Company A</option>',"Should not be empty");
  
     // Test blur
+    expectedMaskViewValue = true;
     row.find('.bh-dir-sponsor-select').blur();
     deepEqual(row.find('.bh-dir-sponsor').is(":visible"), true, "Should be shown.");
     deepEqual(row.find('.bh-dir-sponsor-dropdown').is(":visible"), false, "Should be hidden.");
     deepEqual(row.find('.bh-dir-sponsor-select').html(), '',"Should be empty");
 
     // Test change
+    expectedMaskViewValue = false;
     nl.sara.beehub.view.content.setSponsorDropdown(directory1, sponsors);
+    expectedMaskViewValue = true;
     row.find('.bh-dir-sponsor-dropdown').change();   
   });
   

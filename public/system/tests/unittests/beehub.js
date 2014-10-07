@@ -43,8 +43,4 @@
     deepEqual( nl.sara.beehub.utils.bytesToSize(15000000000, 1), "14.0 GB", "15000000000 bytes, precision 1");
     deepEqual( nl.sara.beehub.utils.bytesToSize(15000000000000, 0), "14 TB", "15000000000000 bytes, precision 0");
   });
-  
-  test('TODO-write tests for BeeHub File', function(){
-    ok(false,"TODO-write tests for beehub.js");
-  });
 })();
