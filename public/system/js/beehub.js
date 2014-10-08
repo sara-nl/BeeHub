@@ -196,12 +196,7 @@ nl.sara.beehub.codec.Sponsor.fromXML = function(nodelist) {
 
 nl.sara.beehub.codec.Sponsor.toXML = function(value, xmlDoc){
   var cdata = xmlDoc.createCDATASection( value );
-  // The server doesn't parse XML correctly: it expects the DAV: namespace to always use the D: prefix. When that's fixed, we can use the next line:
-  //var href = xmlDoc.createElementNS( 'DAV:', 'href' );
-  // But for now we need to do it with these 2 lines:
-  var href = xmlDoc.createElement('D:href');
-  href.setAttribute("xmlns:D","DAV:");
-  // The next lines are again 'normal'
+  var href = xmlDoc.createElementNS( 'DAV:', 'href' );
   href.appendChild( cdata );
   xmlDoc.documentElement.appendChild( href );
   return xmlDoc;
