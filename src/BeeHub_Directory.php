@@ -320,7 +320,7 @@ private function dir() {
 
 
 private function skipInvalidMembers() {
-  while ( $this->dir()->valid() && ( !DAV::$REGISTRY->resource( $this->path . $this->current() )->isVisible() ) ) {
+  while ( $this->valid() && ( !DAV::$REGISTRY->resource( $this->path . $this->current() )->isVisible() ) ) {
     DAV::$REGISTRY->forget( $this->path . $this->current() );
     $this->dir->next();
   }
@@ -329,7 +329,7 @@ private function skipInvalidMembers() {
 
 public function current() {
   $document = $this->dir()->current();
-  $retval = rawurlencode( basename( $document['path'] ) );
+  $retval = basename( $document['path'] );
   if ( isset( $document['collection'] ) && $document['collection'] ) {
     $retval .= '/';
   }
