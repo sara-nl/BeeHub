@@ -7,6 +7,7 @@
         "ext-mbstring": "*",
         "ext-mongo": "*",
         "ext-session": "*",
+        "lib-libxml": ">=2.9.1",
         "pieterb/webdav-php": "1.1.*"
     },
     "require-dev": {
