@@ -11,6 +11,8 @@ $mysqli = new mysqli(
         $CONFIG['mysql']['password'],
         $CONFIG['mysql']['database']
       );
+$mysqli->set_charset( 'utf8' );
+mb_internal_encoding( 'UTF-8' );
 $db = BeeHub::getNoSQL();
 
 // We need to do almost the same for all users, groups and sponsors ('things')
@@ -41,7 +43,7 @@ foreach( array( 'user', 'group', 'sponsor' ) as $thing ) {
             $value = rawurldecode( basename( $value ) );
           }
         }
-        $principal[$key] = $value;
+        $principal[$key] = mb_convert_encoding( $value, 'UTF-8' );
       }
     }
     
@@ -83,7 +85,7 @@ foreach( array( 'user', 'group', 'sponsor' ) as $thing ) {
           }
           $principal[ $subthing . 's' ] = array();
           while ( $membership = $membershipset->fetch_assoc() ) {
-            $principal[ $subthing . 's' ][] = $membership[$subthing . '_name'];
+            $principal[ $subthing . 's' ][] = mb_convert_encoding( $membership[$subthing . '_name'], 'UTF-8' );
           }
         }
       break;
@@ -103,13 +105,13 @@ foreach( array( 'user', 'group', 'sponsor' ) as $thing ) {
         // Determine the type of membership, as they will now get stored in separate arrays
         while ( $membership = $membershipset->fetch_assoc() ) {
           if ( $membership['is_admin'] === '1' ) {
-            $admins[] = $membership['user_name'];
+            $admins[] = mb_convert_encoding( $membership['user_name'], 'UTF-8' );
           } elseif ( ( ( @$membership['is_invited'] === '1' ) && ( @$membership['is_requested'] === '1' ) ) || ( @$membership['is_accepted'] === '1' ) ) {
-            $members[] = $membership['user_name'];
+            $members[] = mb_convert_encoding( $membership['user_name'], 'UTF-8' );
           } elseif ( ( @$membership['is_invited'] === '1' ) && ( @$membership['is_requested'] === '0' ) ) {
-            $admin_accepted_memberships[] = $membership['user_name'];
+            $admin_accepted_memberships[] = mb_convert_encoding( $membership['user_name'], 'UTF-8' );
           } elseif ( ( ( @$membership['is_invited'] === '0' ) && ( @$membership['is_requested'] === '1' ) ) || ( @$membership['is_accepted'] === '0' ) ) {
-            $user_accepted_memberships[] = $membership['user_name'];
+            $user_accepted_memberships[] = mb_convert_encoding( $membership['user_name'], 'UTF-8' );
           } else {
             trigger_error( 'Unknown type of membership: ' . var_dump( $membership ) );
           }

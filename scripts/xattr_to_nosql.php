@@ -2,6 +2,7 @@
 <?php
 
 require_once( dirname( __DIR__ ) . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'beehub_bootstrap.php' );
+mb_internal_encoding( 'UTF-8' );
 
 $CONFIG = BeeHub::config();
 
@@ -56,14 +57,14 @@ function traverse($iterator) {
           array( '%25', '%24', '%2E' ),
           $decodedKey
       );
-      $stored_props[ $encodedKey ] = $value;
+      $stored_props[ $encodedKey ] = mb_convert_encoding( $value, 'UTF-8' );
     }
     $unslashifiedPath = \DAV::unslashify( substr( $file, strlen( $CONFIG['environment']['datadir'] ) ) );
     if ( substr( $unslashifiedPath, 0, 1 ) === '/' ) {
       $unslashifiedPath = substr( $unslashifiedPath, 1 );
     }
     $document = array(
-        'path' => $unslashifiedPath,
+        'path' => mb_convert_encoding( $unslashifiedPath, 'UTF-8' ),
         'props' => $stored_props );
     if ( $fileinfo->isDir() ) {
       $document['collection'] = true;
