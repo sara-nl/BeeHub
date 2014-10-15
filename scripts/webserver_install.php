@@ -23,7 +23,10 @@ namespace nl\surfsara\beehub\install;
 \define( 'nl\surfsara\beehub\install\ADMIN_GROUP_DISPLAYNAME', 'Administrators' );
 \define( 'nl\surfsara\beehub\install\ADMIN_GROUP_DESCRIPTION', 'Administrators can manage BeeHub' );
 
-if ( $_SERVER['REQUEST_METHOD'] !== 'POST' ) {
+if ( isset( $_GET['POST_auth_code'] ) ) {
+  print( \BeeHub::getAuth()->getPostAuthCode() );
+  exit();
+}elseif ( $_SERVER['REQUEST_METHOD'] !== 'POST' ) {
   exit();
 }
 

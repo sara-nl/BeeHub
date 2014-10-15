@@ -22,11 +22,7 @@ require_once '../src/beehub_bootstrap.php';
 
 $config = BeeHub::config();
 if ( @$config['install']['run_install'] === 'true' ) {
-  if ( isset( $_GET['POST_auth_code'] ) ) {
-    print( BeeHub::getAuth()->getPostAuthCode() );
-  }else{
-    require_once( dirname( __DIR__) . DIRECTORY_SEPARATOR . 'scripts' . DIRECTORY_SEPARATOR . 'webserver_install.php' );
-  }
+  require_once( dirname( __DIR__) . DIRECTORY_SEPARATOR . 'scripts' . DIRECTORY_SEPARATOR . 'webserver_install.php' );
   exit();
 }
 
