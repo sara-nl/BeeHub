@@ -99,7 +99,10 @@ while [[ "${CONTINUE}" != "y" ]]; do
   read CONTINUE
 done
 
-curl --insecure --request POST --form "email=${EMAIL}" --user "${USER}:${PASSWORD}" "https://${HTTPD_HOST}:${SSL_PORT}/"
+COOKIEJAR=`mktemp --tmpdir cookies.XXXXX`
+POST_AUTH_CODE=`curl --insecure --cookie-jar ${COOKIEJAR} https://${HTTPD_HOST}:${SSL_PORT}/?POST_auth_code`
+curl --insecure --cookie-jar ${COOKIEJAR} --cookie ${COOKIEJAR} --request POST --form "POST_auth_code=${POST_AUTH_CODE}" --form "email=${EMAIL}" --user "${USER}:${PASSWORD}" "https://${HTTPD_HOST}:${SSL_PORT}/"
+rm -f "${COOKIEJAR}"
 
 # Set the configuration so it will not allow webserver installation
 mv config.ini config.ini.orig
