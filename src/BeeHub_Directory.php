@@ -161,9 +161,7 @@ public function method_DELETE( $name ) {
 
 
 public function delete_recursively() {
-trigger_error( 'start remove rec.: ' . $this->path );
   foreach( $this as $resource ) {
-trigger_error( 'remove child: ' . $this->path . $resource );
     DAV::$REGISTRY->resource( $this->path . $resource )->delete_recursively();
   }
   $this->collection()->method_DELETE( basename( $this->path ) );
