@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "pieterb/webdav-php",
-            "version": "1.1.4",
+            "version": "1.1.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pieterb/webdav-php.git",
-                "reference": "420eebca1f152281a40e4db0bcaf5ccaeb21215c"
+                "reference": "8cc436d417729d2068e62a26508fbb061d668e03"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pieterb/webdav-php/zipball/420eebca1f152281a40e4db0bcaf5ccaeb21215c",
-                "reference": "420eebca1f152281a40e4db0bcaf5ccaeb21215c",
+                "url": "https://api.github.com/repos/pieterb/webdav-php/zipball/8cc436d417729d2068e62a26508fbb061d668e03",
+                "reference": "8cc436d417729d2068e62a26508fbb061d668e03",
                 "shasum": ""
             },
             "require": {
@@ -52,7 +52,7 @@
             "keywords": [
                 "WebDAV"
             ],
-            "time": "2014-10-17 14:22:34"
+            "time": "2014-10-17 15:06:30"
         }
     ],
     "packages-dev": [
@@ -282,7 +282,7 @@
                 {
                     "name": "Johannes Schmitt",
                     "email": "schmittjoh@gmail.com",
-                    "homepage": "http://jmsyst.com",
+                    "homepage": "https://github.com/schmittjoh",
                     "role": "Developer of wrapped JMSSerializerBundle"
                 }
             ],
@@ -579,7 +579,7 @@
                     "email": "stof@notk.org"
                 },
                 {
-                    "name": "KnpLabs",
+                    "name": "Knplabs",
                     "homepage": "http://knplabs.com"
                 },
                 {
