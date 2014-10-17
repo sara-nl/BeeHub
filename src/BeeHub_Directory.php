@@ -161,7 +161,9 @@ public function method_DELETE( $name ) {
 
 
 public function delete_recursively() {
+trigger_error( 'start remove rec.: ' . $this->path );
   foreach( $this as $resource ) {
+trigger_error( 'remove child: ' . $this->path . $resource );
     DAV::$REGISTRY->resource( $this->path . $resource )->delete_recursively();
   }
   $this->collection()->method_DELETE( basename( $this->path ) );
@@ -227,19 +229,21 @@ public function method_MOVE( $member, $destination ) {
   if ( substr( $newPath, 0, 1 ) === '/' ) {
     $newPath = substr( $newPath, 1 );
   }
-  $mongoDocument = $filesCollection->findOne( array( 'path' => $path ) );
-  $mongoDocument['path'] = $newPath;
-  $destinationMongoDocument = $filesCollection->findOne( array( 'path' => $newPath ) );
-  if ( ! is_null( $destinationMongoDocument ) ) {
-    if ( isset( $destinationMongoDocument[ 'shallowReadLock' ] ) ) {
-      $mongoDocument[ 'shallowReadLock' ] = $destinationMongoDocument[ 'shallowReadLock' ];
-    }
-    if ( isset( $destinationMongoDocument[ 'shallowWriteLock' ] ) ) {
-      $mongoDocument[ 'shallowWriteLock' ] = $destinationMongoDocument[ 'shallowWriteLock' ];
-    }
-    $filesCollection->remove( array( 'path' => $newPath ) );
+
+  // We look up all paths that begin with the path of the resource we have to
+  // move. If it is a collection, this means we will also find all child
+  // resources and thus change all their locations in the database too.
+  $mongoResults = $filesCollection->find( array( 'path' => array( '$regex' => '^' . $path . '(/.*|$)' ) ) );
+  foreach ( $mongoResults as $mongoDocument ) {
+    $mongoDocument['path'] = $newPath . substr( $mongoDocument['path'], strlen( $path ) );
+    $filesCollection->save( $mongoDocument );
   }
-  $filesCollection->save( $mongoDocument );
+  $locksCollection = BeeHub::getNoSQL()->selectCollection( 'locks' );
+  $mongoResults = $locksCollection->find( array( 'path' => array( '$regex' => '^' . $path . '(/.*|$)' ) ) );
+  foreach ( $mongoResults as $mongoDocument ) {
+    $mongoDocument['path'] = $newPath . substr( $mongoDocument['path'], strlen( $path ) );
+    $locksCollection->save( $mongoDocument );
+  }
 
   // We need to make sure that the effective ACL at the destination is the same as at the resource
   $destinationAcl = array();
