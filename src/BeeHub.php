@@ -598,12 +598,6 @@ class BeeHub {
   
   
   /**
-   * @var  boolean  True if a session has previous been started, false otherwise
-   */
-  private static $sessionStarted = false;
-
-
-  /**
    * Starts a session
    *
    * @api
@@ -611,8 +605,7 @@ class BeeHub {
    */
   public static function startSession() {
     // This should actually be tested with session_status(), but that does not exist in PHP 5.3 yet
-    if ( ! self::$sessionStarted && ( php_sapi_name() !== 'cli' ) ) {
-      self::$sessionStarted = true;
+    if ( ( session_status() === PHP_SESSION_NONE ) && ( php_sapi_name() !== 'cli' ) ) {
       session_start();
     }
   }
