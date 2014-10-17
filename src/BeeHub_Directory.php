@@ -104,7 +104,7 @@ public function method_COPY( $path ) {
   if ( $destinationResource instanceof DAVACL_Resource ) {
     $destinationResource->assert( DAVACL::PRIV_WRITE_CONTENT );
     $destinationResource->assert( DAVACL::PRIV_WRITE_ACL );
-    $parent->method_DELETE( basename( $path ) );
+    $destinationResource->delete_recursively();
   }else{
     $parent->assert( DAVACL::PRIV_WRITE_CONTENT );
   }
@@ -134,16 +134,13 @@ public function method_DELETE( $name ) {
   $resource = DAV::$REGISTRY->resource( $path );
   $resource->assert( DAVACL::PRIV_WRITE_CONTENT );
   
-  // Remove the entry from mongoDB too
-  $filesCollection = BeeHub::getNoSQL()->selectCollection( 'files' );
   if ( substr( $path, 0, 1 ) === '/' ) {
     $unslashifiedPath = DAV::unslashify( substr( $path, 1 ) );
   }else{
     $unslashifiedPath = DAV::unslashify( $path );
   }
-  $filesCollection->remove( array( 'path' => $unslashifiedPath ) );
 
-  // And then from the filesystem
+  // From the filesystem
   $localpath = BeeHub::localPath( $path );
   if (is_dir($localpath)) {
     if (!@rmdir($localpath))
@@ -154,7 +151,20 @@ public function method_DELETE( $name ) {
       throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
   }
 
+  // Remove the entry from mongoDB too
+  $filesCollection = BeeHub::getNoSQL()->selectCollection( 'files' );
+  $filesCollection->remove( array( 'path' => $unslashifiedPath ) );
+
+  // Remove from the registry
   DAV::$REGISTRY->forget( $path );
+}
+
+
+public function delete_recursively() {
+  foreach( $this as $resource ) {
+    DAV::$REGISTRY->resource( $this->path . $resource )->delete_recursively();
+  }
+  $this->collection()->method_DELETE( basename( $this->path ) );
 }
 
 
@@ -197,7 +207,7 @@ public function method_MOVE( $member, $destination ) {
   if ( $destinationResource instanceof DAVACL_Resource ) {
     $destinationResource->assert( DAVACL::PRIV_WRITE_CONTENT );
     $destinationResource->assert( DAVACL::PRIV_WRITE_ACL );
-    $destinationResource->collection()->method_DELETE( basename( $destination ) );
+    $destinationResource->delete_recursively();
   }else{
     DAV::$REGISTRY->resource( dirname( $destination ) )->assert( DAVACL::PRIV_WRITE_CONTENT );
   }

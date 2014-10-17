@@ -76,6 +76,16 @@ class BeeHub_MongoResource extends BeeHub_Resource {
 
 
   /**
+   * Deletes the current resource and all its child resources
+   *
+   * @return void
+   */
+  public function delete_recursively() {
+    $this->collection()->method_DELETE( basename( $this->path ) );
+  }
+
+
+  /**
    * @return Array a list of ACEs.
    * @see BeeHub_Resource::user_prop_acl_internal()
    */
