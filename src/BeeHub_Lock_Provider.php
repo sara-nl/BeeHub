@@ -85,7 +85,7 @@ public function memberLocks($path) {
  */
 public function getlock($path) {
   $resource = \DAV::$REGISTRY->resource( $path );
-  if ( $value = $resource->user_prop( DAV::PROP_LOCKDISCOVERY ) ) {
+  if ( $resource && $value = $resource->user_prop( DAV::PROP_LOCKDISCOVERY ) ) {
     $value = json_decode( $value, true );
     if ( $value['timeout'] && $value['timeout'] < time() ) {
       $resource->user_set( DAV::PROP_LOCKDISCOVERY, null );
