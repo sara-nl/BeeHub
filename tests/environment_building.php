@@ -61,6 +61,7 @@ function reset_SERVER() {
   $_SERVER['HTTP_ACCESS_CONTROL_REQUEST_HEADERS'] = '';
   $_SERVER['HTTP_ORIGIN'] = '';
   $_SERVER['SERVER_PROTOCOL'] = 'https';
+  $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
 
   $_COOKIE = array();
   $_FILES = array();
