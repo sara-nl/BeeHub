@@ -35,10 +35,10 @@ if ( isset( $_GET['POST_auth_code'] ) ) {
 print( "Checking PHP configuration:\n" );
 $notGood = false;
 
-// PHP should be version 5.3 or higher
+// PHP should be version 5.4 or higher
 $version = \explode( '.', \phpversion() );
-print( 'PHP version should be >= 5.3 ...' );
-if ( ( $version[0] < 5 ) || ( ( $version[0] == 5 ) && ( $version[1] < 3 ) ) ) {
+print( 'PHP version should be > 5.4 ...' );
+if ( ( $version[0] < 5 ) || ( ( $version[0] == 5 ) && ( $version[1] < 4 ) ) ) {
   print( 'WRONG (actual value: ' . \phpversion() . "\n" );
   $notGood = true;
 }else{
@@ -66,11 +66,6 @@ if ( $tempfile === false ) {
 }else{
   \unlink( $tempfile );
   print( "ok\n" );
-}
-
-// short_open_tags should only be true for PHP 5.3, as of 5.4 <?= is always enabled
-if ( ( $version[0] == 5 ) && ( $version[1] < 4 ) ) {
-  $notGood = !test_config( 'short_open_tag', true ) || $notGood;
 }
 
 // If we encountered an error, abort now!
@@ -134,12 +129,12 @@ $usersCollection->insert(
 );
 
 // Create groups collection
-$db->createCollection( 'groups' );
+$groupsCollection = $db->createCollection( 'groups' );
 $groupsCollection->insert(
   array(
     'name' => \basename( $config['namespace']['admin_group'] ),
-    'displayname' => DEFAULT_GROUP_DISPLAYNAME,
-    'description' => DEFAULT_GROUP_DESCRIPTION
+    'displayname' => ADMIN_GROUP_DISPLAYNAME,
+    'description' => ADMIN_GROUP_DESCRIPTION
   )
 );
 $group = new \BeeHub_Group( $config['namespace']['admin_group'] );
@@ -182,11 +177,12 @@ if (
   \mkdir( $config['environment']['datadir'] . 'system', 0770, true ) &&
   \mkdir( $config['environment']['datadir'] . 'home', 0770, true ) &&
   \mkdir( $config['environment']['datadir'] . $userdir, 0770 ) &&
+  \mkdir( $config['environment']['datadir'] . \basename( $config['namespace']['admin_group'] ), 0770 ) &&
   \mkdir( $config['environment']['datadir'] . \BeeHub::GROUPS_PATH, 0770, true ) &&
   \mkdir( $config['environment']['datadir'] . \BeeHub::SPONSORS_PATH, 0770, true ) &&
   \mkdir( $config['environment']['datadir'] . \BeeHub::USERS_PATH, 0770, true )
 ){
-  $sysDirs = array( 'system', 'home', \BeeHub::GROUPS_PATH, \BeeHub::SPONSORS_PATH, \BeeHub::USERS_PATH );
+  $sysDirs = array( 'system', 'home', \basename( $config['namespace']['admin_group'] ), \BeeHub::GROUPS_PATH, \BeeHub::SPONSORS_PATH, \BeeHub::USERS_PATH );
   foreach ( $sysDirs as $sysDir ) {
     $sysDir = \DAV::unslashify( $sysDir );
     if ( substr( $sysDir, 0, 1) === '/' ) {
@@ -199,10 +195,29 @@ if (
     $filesCollection->insert( $fileDocument );
   }
 
+  // Add the user's home directory with different properties
   $fileDocument = array(
     'path' => \DAV::unslashify( $userdir ),
     'props' => array(
       \DAV::PROP_OWNER => $username
+    )
+  );
+  if ( substr( $fileDocument['path'], 0, 1) === '/' ) {
+    $fileDocument['path'] = substr( $fileDocument['path'], 1 );
+  }
+  $encodedKey = str_replace(
+    array( '%'  , '$'  , '.'   ),
+    array( '%25', '%24', '%2E' ),
+    \BeeHub::PROP_SPONSOR
+  );
+  $fileDocument['props'][ $encodedKey ] = DEFAULT_SPONSOR_NAME;
+  $filesCollection->insert( $fileDocument );
+
+  // Add the group directory with different properties
+  $fileDocument = array(
+    'path' => \DAV::unslashify( \basename( $config['namespace']['admin_group'] ) ),
+    'props' => array(
+      \DAV::PROP_ACL => '[["' . $config['namespace']['admin_group'] . '",false,["DAV: read", "DAV: write"],false]]'
     )
   );
   if ( substr( $fileDocument['path'], 0, 1) === '/' ) {
@@ -220,13 +235,6 @@ if (
   \ob_end_flush();
   print( "\nUnable to create the system directories\n" );
   exit();
-
-  // And for now; the e-infra sponsor
-  $mysql->real_query( 'INSERT INTO `beehub_sponsors` ( `sponsor_name`, `displayname`, `description` ) VALUES ( \'' . DEFAULT_SPONSOR_NAME . '\', \'' . DEFAULT_SPONSOR_DISPLAYNAME . '\', \'' . DEFAULT_SPONSOR_DESCRIPTION . '\' );' );
-
-  // Add the administrator group
-  $config = \BeeHub::config();
-  $mysql->real_query( 'INSERT INTO `beehub_groups` ( `group_name`, `displayname`, `description` ) VALUES ( \'' . \basename( $config['namespace']['admin_group'] ) . '\', \'' . ADMIN_GROUP_DISPLAYNAME . '\', \'' . ADMIN_GROUP_DESCRIPTION . '\' );' );
 }
 print( "ok\n" );
 
