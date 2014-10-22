@@ -305,6 +305,7 @@ require 'views/header.php';
             continue;
           }
           $owner = BeeHub_Registry::inst()->resource( $member->user_prop_owner() );
+          $isOwner = ( ( $owner instanceof BeeHub_Principal ) && ( BeeHub_Auth::inst()->current_user() instanceof BeeHub_User ) && ( BeeHub_Auth::inst()->current_user()->path === $owner->path ) );
           $sponsor = BeeHub_Registry::inst()->resource( $member->user_prop_sponsor() );
           
           // Determine if it is a file and is writable. If so, we'll want to keep the upload button enabled
@@ -630,6 +631,9 @@ $footer = '
   <script type="text/javascript" src="/system/js/directory_view_dialog.js"></script>
   <script type="text/javascript" src="/system/js/directory_view_acl.js"></script>
   <script type="text/javascript" src="/system/js/directory_resource.js"></script>
+  <script type="text/javascript">
+    nl.sara.beehub.currentUserPath = \'' . BeeHub::getAuth()->current_user()->path . '\';
+  </script>
 ';
 
 // If the directory ($this) is not writable nor any of the files in it, then you

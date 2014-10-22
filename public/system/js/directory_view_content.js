@@ -207,8 +207,11 @@
     $('.bh-dir-content-acl').unbind( 'click' ).click(handle_acl_menu_click);
     
     // Sponsor
-    $('.bh-dir-sponsor').unbind( 'click' ).click(handle_sponsor_click);
-    
+    $('.bh-dir-sponsor').unbind( 'click' ).each( function() {
+      if ( $( this ).attr( 'style' ) === 'cursor: pointer' ) {
+        $( this ).click(handle_sponsor_click);
+      }
+    } );
   };
   
   /*
