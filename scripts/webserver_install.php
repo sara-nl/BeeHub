@@ -182,7 +182,7 @@ if (
   \mkdir( $config['environment']['datadir'] . \BeeHub::SPONSORS_PATH, 0770, true ) &&
   \mkdir( $config['environment']['datadir'] . \BeeHub::USERS_PATH, 0770, true )
 ){
-  $sysDirs = array( 'system', 'home', \basename( $config['namespace']['admin_group'] ), \BeeHub::GROUPS_PATH, \BeeHub::SPONSORS_PATH, \BeeHub::USERS_PATH );
+  $sysDirs = array( 'system', 'home', \BeeHub::GROUPS_PATH, \BeeHub::SPONSORS_PATH, \BeeHub::USERS_PATH );
   foreach ( $sysDirs as $sysDir ) {
     $sysDir = \DAV::unslashify( $sysDir );
     if ( substr( $sysDir, 0, 1) === '/' ) {
@@ -190,6 +190,7 @@ if (
     }
     $fileDocument = array(
       'path' => $sysDir,
+      'collection' => true,
       'props' => array()
     );
     $filesCollection->insert( $fileDocument );
@@ -198,6 +199,7 @@ if (
   // Add the user's home directory with different properties
   $fileDocument = array(
     'path' => \DAV::unslashify( $userdir ),
+    'collection' => true,
     'props' => array(
       \DAV::PROP_OWNER => $username
     )
@@ -216,6 +218,7 @@ if (
   // Add the group directory with different properties
   $fileDocument = array(
     'path' => \DAV::unslashify( \basename( $config['namespace']['admin_group'] ) ),
+    'collection' => true,
     'props' => array(
       \DAV::PROP_ACL => '[["' . $config['namespace']['admin_group'] . '",false,["DAV: read", "DAV: write"],false]]'
     )
