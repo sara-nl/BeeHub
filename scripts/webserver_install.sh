@@ -79,7 +79,7 @@ while [[ "${CONTINUE}" != "y" ]]; do
   echo "What should the username be? [${USERNAME}] "
   read USERNAME_2
   if [[ "${USERNAME_2}" != "" ]]; then
-    PASSWORD="${USERNAME_2}"
+    USERNAME="${USERNAME_2}"
   fi
 
   echo "What should the password be? [${PASSWORD}] "
@@ -101,7 +101,7 @@ done
 
 COOKIEJAR=`mktemp --tmpdir cookies.XXXXX`
 POST_AUTH_CODE=`curl --insecure --cookie-jar ${COOKIEJAR} https://${HTTPD_HOST}:${SSL_PORT}/?POST_auth_code`
-curl --insecure --cookie-jar ${COOKIEJAR} --cookie ${COOKIEJAR} --request POST --form "POST_auth_code=${POST_AUTH_CODE}" --form "email=${EMAIL}" --user "${USER}:${PASSWORD}" "https://${HTTPD_HOST}:${SSL_PORT}/"
+curl --insecure --cookie-jar ${COOKIEJAR} --cookie ${COOKIEJAR} --request POST --form "POST_auth_code=${POST_AUTH_CODE}" --form "email=${EMAIL}" --user "${USERNAME}:${PASSWORD}" "https://${HTTPD_HOST}:${SSL_PORT}/"
 rm -f "${COOKIEJAR}"
 
 # Set the configuration so it will not allow webserver installation
