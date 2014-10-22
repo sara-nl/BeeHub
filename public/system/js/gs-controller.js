@@ -59,6 +59,7 @@
    var views = this.views;
     
    function callback(status, data) {
+     nl.sara.beehub.retrieveNewPostAuth();
      if (status === nl.sara.beehub.gs.Controller.STATUS_OK) {
        views.forEach(function(view) {
          if (view.updateAddUserSucceeded !== undefined){
@@ -75,7 +76,7 @@
    };
  
    var client = new nl.sara.webdav.Client();
-   client.post(window.location.pathname, callback, 'add_members[]='+user);
+   client.post(window.location.pathname, callback, 'add_members[]='+user + '&POST_auth_code=' + nl.sara.beehub.postAuth );
  };
  
  /**
@@ -87,6 +88,7 @@
   var views = this.views;
   
   function callback(status, data) {
+    nl.sara.beehub.retrieveNewPostAuth();
     if (status === nl.sara.beehub.gs.Controller.STATUS_OK) {
       views.forEach(function(view) {
         if (view.updateRemoveUserSucceeded !== undefined) {
@@ -104,7 +106,7 @@
   
  //send request to server
   var client = new nl.sara.webdav.Client();
-  client.post(window.location.pathname, callback , 'delete_members[]='+user);
+  client.post(window.location.pathname, callback , 'delete_members[]='+user + '&POST_auth_code=' + nl.sara.beehub.postAuth );
  };
  
  /**
@@ -116,6 +118,7 @@
   var views = this.views;
 
   function callback(status, data) {
+    nl.sara.beehub.retrieveNewPostAuth();
     if (status === nl.sara.beehub.gs.Controller.STATUS_OK) {
       views.forEach(function(view) {
         if (view.updatePromoteUserSucceeded !== undefined) {
@@ -133,7 +136,7 @@
   
   // send request to server
   var client = new nl.sara.webdav.Client();
-  client.post(window.location.pathname, callback, 'add_admins[]='+user);
+  client.post(window.location.pathname, callback, 'add_admins[]='+user + '&POST_auth_code=' + nl.sara.beehub.postAuth );
  };
  
  /**
@@ -146,6 +149,7 @@
    var views = this.views;
 
    function callback(status, data) {
+     nl.sara.beehub.retrieveNewPostAuth();
      if (status === nl.sara.beehub.gs.Controller.STATUS_OK) {
        views.forEach(function(view) {
          if (view.updateDemoteUserSucceeded !== undefined) {
@@ -162,7 +166,7 @@
    };
      
    var client = new nl.sara.webdav.Client();
-   client.post(window.location.pathname, callback, 'delete_admins[]='+user);
+   client.post(window.location.pathname, callback, 'delete_admins[]='+user + '&POST_auth_code=' + nl.sara.beehub.postAuth );
  };
  
  /**
@@ -175,6 +179,7 @@
    var views = this.views;
 
    function callback(status, data) {
+     nl.sara.beehub.retrieveNewPostAuth();
      if (status === nl.sara.beehub.gs.Controller.STATUS_OK) {
        views.forEach(function(view) {
          if (view.updateJoinSucceeded !== undefined) {
@@ -191,7 +196,7 @@
    };
   // Send leave request to server
   var client = new nl.sara.webdav.Client();
-  client.post(user, callback , 'join=1');
+  client.post(user, callback , 'join=1' + '&POST_auth_code=' + nl.sara.beehub.postAuth );
  };
  
  /**
@@ -204,6 +209,7 @@
    var views = this.views;
 
    function callback(status, data) {
+     nl.sara.beehub.retrieveNewPostAuth();
      if (status === nl.sara.beehub.gs.Controller.STATUS_OK) {
        views.forEach(function(view) {
          if (view.updateLeaveSucceeded !== undefined) {
@@ -219,7 +225,7 @@
      };
    };
    var client = new nl.sara.webdav.Client();
-   client.post(user, callback, 'leave=1');
+   client.post(user, callback, 'leave=1' + '&POST_auth_code=' + nl.sara.beehub.postAuth );
  };
  
  /**
