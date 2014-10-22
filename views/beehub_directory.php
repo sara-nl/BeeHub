@@ -386,11 +386,11 @@ require 'views/header.php';
             </td>
       
             <!-- Owner -->
-            <td class="owner" data-value="<?= DAV::xmlescape( $owner->path ) ?>">
-              <?= DAV::xmlescape( $owner->user_prop_displayname() ) ?>
+            <td class="owner" data-value="<?= ( $owner instanceof BeeHub_Principal ) ? DAV::xmlescape( $owner->path ) : "" ?>">
+              <?= ( $owner instanceof BeeHub_Principal ) ? DAV::xmlescape( $owner->user_prop_displayname() ) : "" ?>
             </td>
-            <td class="bh-dir-sponsor" data-value="<?= DAV::xmlescape( $sponsor->path ) ?>" style="cursor: pointer">
-            <?= DAV::xmlescape( $sponsor->user_prop_displayname() ) ?> <span class="caret"style="margin-top: 8px;"></span>
+            <td class="bh-dir-sponsor" data-value="<?= ( $sponsor instanceof BeeHub_Principal ) ? DAV::xmlescape( $sponsor->path ) : "" ?>" <?= $isOwner ? 'style="cursor: pointer"' : '' ?> >
+            <?= ( $sponsor instanceof BeeHub_Principal ) ? DAV::xmlescape( $sponsor->user_prop_displayname() ) : "" ?> <?= $isOwner ? '<span class="caret"style="margin-top: 8px;">' : '' ?></span>
           </td>
           <td class="bh-dir-sponsor-dropdown" hidden="hidden">
           <select class="bh-dir-sponsor-select">
