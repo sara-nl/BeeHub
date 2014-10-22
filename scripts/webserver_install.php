@@ -118,6 +118,7 @@ print( "Creating database structure..." );
 $username = $_SERVER['PHP_AUTH_USER'];
 $userEmail = $_POST['email'];
 $usersCollection = $db->createCollection( 'users' );
+$usersCollection->ensureIndex( array( 'name' => 1 ), array( 'unique' => 1 ) );
 $usersCollection->insert(
   array(
     'name' => $username,
@@ -130,6 +131,7 @@ $usersCollection->insert(
 
 // Create groups collection
 $groupsCollection = $db->createCollection( 'groups' );
+$groupsCollection->ensureIndex( array( 'name' => 1 ), array( 'unique' => 1 ) );
 $groupsCollection->insert(
   array(
     'name' => \basename( $config['namespace']['admin_group'] ),
@@ -144,6 +146,7 @@ $group->change_memberships( array( $username ), \BeeHub_Group::SET_ADMIN );
 
 // Create sponsors collection
 $sponsorsCollection = $db->createCollection( 'sponsors' );
+$sponsorsCollection->ensureIndex( array( 'name' => 1 ), array( 'unique' => 1 ) );
 $sponsorsCollection->insert(
   array(
     'name' => DEFAULT_SPONSOR_NAME,
@@ -166,6 +169,9 @@ $systemCollection->insert(
 
 // Create the files collection
 $filesCollection = $db->createCollection( 'files' );
+$filesCollection->ensureIndex( array( 'props.http://beehub%2Enl/ sponsor' => 1 ) );
+$filesCollection->ensureIndex( array( 'props.DAV: owner' => 1 ) );
+$filesCollection->ensureIndex( array( 'path' => 1 ), array( 'unique' => 1 ) );
 
 // Done creating the database structure
 print( "ok\n" );

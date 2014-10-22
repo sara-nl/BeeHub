@@ -40,6 +40,7 @@ function setUpDatabase() {
   
   // Create 1 sponsor
   $collection = $db->createCollection( 'sponsors' );
+  $collection->ensureIndex( array( 'name' => 1 ), array( 'unique' => 1 ) );
   $sponsors = array();
   $sponsorNames = array();
   $sponsors[] = array(
@@ -52,6 +53,7 @@ function setUpDatabase() {
   
   // Create 200 groepen
   $collection = $db->createCollection( 'groups' );
+  $collection->ensureIndex( array( 'name' => 1 ), array( 'unique' => 1 ) );
   $groups = array();
   $groupNames = array();
   for ( $counter = 1; $counter <= 500; $counter++ ) {
@@ -100,6 +102,7 @@ function setUpDatabase() {
 
   // 20 gebruikers
   $collection = $db->createCollection( 'users' );
+  $collection->ensureIndex( array( 'name' => 1 ), array( 'unique' => 1 ) );
   $users = array();
   for ( $counter = 1; $counter <= 20; $counter++ ) {
     $users[] = array(

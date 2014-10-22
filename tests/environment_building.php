@@ -183,6 +183,17 @@ function setUpDatabase() {
     $collection->batchInsert( $documents );
   }
 
+  $filesCollection = $db->selectCollection( 'files' );
+  $filesCollection->ensureIndex( array( 'props.http://beehub%2Enl/ sponsor' => 1 ) );
+  $filesCollection->ensureIndex( array( 'props.DAV: owner' => 1 ) );
+  $filesCollection->ensureIndex( array( 'path' => 1 ), array( 'unique' => 1 ) );
+  $groupsCollection = $db->selectCollection( 'groups' );
+  $groupsCollection->ensureIndex( array( 'name' => 1 ), array( 'unique' => 1 ) );
+  $sponsorsCollection = $db->selectCollection( 'sponsors' );
+  $sponsorsCollection->ensureIndex( array( 'name' => 1 ), array( 'unique' => 1 ) );
+  $usersCollection = $db->selectCollection( 'users' );
+  $usersCollection->ensureIndex( array( 'name' => 1 ), array( 'unique' => 1 ) );
+
   \BeeHub_Principal::update_principals_json();
 }
 

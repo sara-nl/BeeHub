@@ -10,6 +10,9 @@ $CONFIG = BeeHub::config();
 $db = BeeHub::getNoSQL();
 $collection = $db->files;
 $collection->remove();
+$filesCollection->ensureIndex( array( 'props.http://beehub%2Enl/ sponsor' => 1 ) );
+$filesCollection->ensureIndex( array( 'props.DAV: owner' => 1 ) );
+$filesCollection->ensureIndex( array( 'path' => 1 ), array( 'unique' => 1 ) );
 
 /**
  * Traverse over the files and subdirectories

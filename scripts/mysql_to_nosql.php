@@ -19,6 +19,7 @@ $db = BeeHub::getNoSQL();
 $name = $displayname = null;
 foreach( array( 'user', 'group', 'sponsor' ) as $thing ) {
   $collection = $db->selectCollection( $thing . 's' );
+  $collection->ensureIndex( array( 'name' => 1 ), array( 'unique' => 1 ) );
   $collection->remove();
   
   // Select all 'things'
