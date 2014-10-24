@@ -35,6 +35,23 @@
   var sponsor1DisplayName = "Company A";
   var sponsor2 = "sponsor_b";
   
+  var rememberClientcopy =                          nl.sara.webdav.Client.prototype.copy;
+  var rememberClientpropfind =                      nl.sara.webdav.Client.prototype.propfind;
+  var rememberClientmkcol =                         nl.sara.webdav.Client.prototype.mkcol;
+  var rememberClientproppatch =                     nl.sara.webdav.Client.prototype.proppatch;
+  var rememberClientmove =                          nl.sara.webdav.Client.prototype.move;
+  var rememberClienthead =                      	nl.sara.webdav.Client.prototype.head;
+  var rememberClientput =                          	nl.sara.webdav.Client.prototype.put;
+  var rememberClientremove =                      	nl.sara.webdav.Client.prototype.remove;
+  var rememberClientpost =                         	nl.sara.webdav.Client.prototype.post;
+  var rememberClientget =                      		nl.sara.webdav.Client.prototype.get;
+  var rememberClientacl =                      		nl.sara.webdav.Client.prototype.acl;
+  var rememberClientlock =                         	nl.sara.webdav.Client.prototype.lock;
+  var rememberClientreport =                      	nl.sara.webdav.Client.prototype.report;
+  var rememberClientoptions =                      	nl.sara.webdav.Client.prototype.options;
+  var rememberClientPrototypeGetAjax =              nl.sara.webdav.Client.prototype.getAjax;
+  var rememberFailOnOverwrite =                     nl.sara.webdav.Client.FAIL_ON_OVERWRITE;
+  var rememberSilelentOverwrite =                   nl.sara.webdav.Client.SILENT_OVERWRITE;
   var rememberPrincipals =                          deepCopy(nl.sara.beehub.principals);
   var rememberConfirm =                             window.confirm;
   var rememberClearAllViews =                       nl.sara.beehub.view.clearAllViews;
@@ -43,8 +60,6 @@
   var rememberInputDisable =                        nl.sara.beehub.view.inputDisable;
   var rememberShowError =                           nl.sara.beehub.view.showError;
   var rememberDislogShowError =                     nl.sara.beehub.view.dialog.showError;
-  var rememberClient =                              nl.sara.webdav.Client;
-  var rememberClientPrototypeGetAjax =              nl.sara.webdav.Client.prototype.getAjax;
   var rememberProperty =                            nl.sara.webdav.Property;
   var rememberCreateTreeNode =                      nl.sara.beehub.view.tree.createTreeNode;
   var rememberAddResource =                         nl.sara.beehub.view.addResource;
@@ -67,8 +82,6 @@
   var rememberUsersPath =                           nl.sara.beehub.users_path;
   var rememberGroupsPath =                          nl.sara.beehub.groups_path;
   var rememberSponsorsPath =                        nl.sara.beehub.sponsors_path;
-  var rememberFailOnOverwrite =                     nl.sara.webdav.Client.FAIL_ON_OVERWRITE;
-  var rememberSilelentOverwrite =                   nl.sara.webdav.Client.SILENT_OVERWRITE;
   var rememberGetAcl =                              nl.sara.beehub.view.acl.getAcl;
   var rememberGetViewPath =                         nl.sara.beehub.view.acl.getViewPath;
   var rememberSetView =                             nl.sara.beehub.view.acl.setView;
@@ -90,13 +103,28 @@
   var rememberSetNewSponsor =                       nl.sara.beehub.view.content.setNewSponsor;
   
   var backToOriginalEnvironment = function(){
+	nl.sara.webdav.Client.prototype.copy = 					rememberClientcopy                          
+	nl.sara.webdav.Client.prototype.propfind = 				rememberClientpropfind                       
+	nl.sara.webdav.Client.prototype.mkcol = 				rememberClientmkcol                          
+	nl.sara.webdav.Client.prototype.proppatch = 			rememberClientproppatch                    
+	nl.sara.webdav.Client.prototype.move = 					rememberClientmove                         
+	nl.sara.webdav.Client.prototype.head = 					rememberClienthead                     	
+	nl.sara.webdav.Client.prototype.put = 					rememberClientput                          	
+	nl.sara.webdav.Client.prototype.remove = 				rememberClientremove 
+	nl.sara.webdav.Client.prototype.get = 					rememberClientget                          	
+	nl.sara.webdav.Client.prototype.post = 					rememberClientpost  
+	nl.sara.webdav.Client.prototype.acl = 					rememberClientacl 
+	nl.sara.webdav.Client.prototype.lock = 					rememberClientlock                          	
+	nl.sara.webdav.Client.prototype.report = 				rememberClientreport  
+	nl.sara.webdav.Client.prototype.options = 				rememberClientoptions  
+    nl.sara.webdav.Client.prototype.getAjax =               rememberClientPrototypeGetAjax;
+	nl.sara.webdav.Client.FAIL_ON_OVERWRITE =               rememberFailOnOverwrite;
+	nl.sara.webdav.Client.SILENT_OVERWRITE =                rememberSilelentOverwrite;
     nl.sara.beehub.view.clearAllViews =                     rememberClearAllViews;
     nl.sara.beehub.view.maskView =                          rememberMaskView;
     nl.sara.beehub.view.inputDisable =                      rememberInputDisable;
     nl.sara.beehub.view.showError =                         rememberShowError;
     nl.sara.beehub.view.dialog.showError =                  rememberDislogShowError;                   
-    nl.sara.webdav.Client =                                 rememberClient;
-    nl.sara.webdav.Client.prototype.getAjax =               rememberClientPrototypeGetAjax;
     nl.sara.webdav.Property =                               rememberProperty;
     nl.sara.beehub.view.tree.createTreeNode =               rememberCreateTreeNode;
     nl.sara.beehub.view.addResource =                       rememberAddResource;
@@ -119,8 +147,6 @@
     nl.sara.beehub.users_path =                             rememberUsersPath;
     nl.sara.beehub.groups_path =                            rememberGroupsPath;
     nl.sara.beehub.sponsors_path =                          rememberSponsorsPath;
-    nl.sara.webdav.Client.FAIL_ON_OVERWRITE =               rememberFailOnOverwrite;
-    nl.sara.webdav.Client.SILENT_OVERWRITE =                rememberSilelentOverwrite;
     nl.sara.beehub.view.acl.getAcl =                        rememberGetAcl;
     nl.sara.beehub.view.acl.getViewPath =                   rememberGetViewPath;
     nl.sara.beehub.view.acl.setView =                       rememberSetView;
@@ -233,11 +259,9 @@
       ok(true, "UpdateResourceInfo is called with info "+info);
     };
     
-    nl.sara.webdav.Client = function(){
-      nl.sara.webdav.Client.FAIL_ON_OVERWRITE = 3;
-      nl.sara.webdav.Client.SILENT_OVERWRITE = 5;
-      
-      this.copy = function(path, callback, destination, overwrite){
+    nl.sara.webdav.Client.FAIL_ON_OVERWRITE = 3;
+    nl.sara.webdav.Client.SILENT_OVERWRITE = 5;
+    nl.sara.webdav.Client.prototype.copy = function(path, callback, destination, overwrite){
         switch(path)
         {
         case currentDirectory+"/directory/file1":
@@ -272,7 +296,7 @@
           ok(false, "This should not happen.");
         }
       };
-      this.move = function(path, callback, destination, overwrite){
+      nl.sara.webdav.Client.prototype.move = function(path, callback, destination, overwrite){
         switch(path)
         {
         case currentDirectory+"/directory/file1":
@@ -308,11 +332,10 @@
           ok(false, "This should not happen.");
         }
       };
-      this.propfind = function(resourcepath, callback ,value ,properties){
+      nl.sara.webdav.Client.prototype.propfind = function(resourcepath, callback ,value ,properties){
         var data = getDataObject("file1", null);
         callback(207, data);
       };
-    };
     
     nl.sara.beehub.view.dialog.setAlreadyExist = function(resource, overwrite, rename, cancel){
       deepEqual(resource.path,currentDirectory+"/directory/file1", "Already exists should be called with "+currentDirectory+"/file1");
@@ -467,14 +490,12 @@
       ok(true, "Callback function is called.");
     };
     
-    nl.sara.webdav.Client = function(){
-      this.propfind = function(path, callback ,val ,properties){
+    nl.sara.webdav.Client.prototype.propfind = function(path, callback ,val ,properties){
         deepEqual(path, "/test", "Propfind should be called with path value "+path);
         deepEqual(val, 1, "Propfind should be called with val value 1");
         deepEqual(properties[0].tagname, 'resourcetype', "Prop tagname should be resourcetype");
         deepEqual(properties[0].namespace, 'DAV:', "Prop namespace should be DAV:");
         callback();
-      };
     };
     
     nl.sara.webdav.Property = function(){
@@ -530,23 +551,22 @@
     var testTypeResult = "";
     var testError="";
     
-    nl.sara.webdav.Client = function(){
-      this.mkcol = function(path, callback) {
-        deepEqual(path, pathName, "Mkkol is called with path "+currentDirectory+"/new_folder");
-        callback(201,"/test");
-        if (!tested405) {
-          tested405 = true;
-          pathName = currentDirectory+"/new_folder_1";
-          callback(405,"/test");
-        }
-        testError = "You are not allowed to create a new folder.";
-        callback(403,"/test");
-        // Unknown return value
-        testError = "Unknown error.";
-        callback(1,"/test");
-      };
+    nl.sara.webdav.Client.prototype.mkcol = function(path, callback) {
+	    deepEqual(path, pathName, "Mkkol is called with path "+currentDirectory+"/new_folder");
+	    callback(201,"/test");
+	    if (!tested405) {
+	      tested405 = true;
+	      pathName = currentDirectory+"/new_folder_1";
+	      callback(405,"/test");
+	    }
+	    testError = "You are not allowed to create a new folder.";
+	    callback(403,"/test");
+	    // Unknown return value
+	    testError = "Unknown error.";
+	    callback(1,"/test");
+    };
       
-      this.propfind = function(resourcepath, callback ,val , properties){
+    nl.sara.webdav.Client.prototype.propfind = function(resourcepath, callback ,val , properties){
         deepEqual(resourcepath, "/test", "Resource path should be test");
         deepEqual(val, 1, "Val should be 1.");
         deepEqual(properties.length, 7, "Properties");
@@ -578,7 +598,6 @@
         testTypeResult = "getcontenttype";
         callback(207,data);
       };
-    };
   
     nl.sara.beehub.view.addResource = function(resource){
       deepEqual(resource.path, "testPath", "Resource path should be testPath.");
@@ -636,15 +655,13 @@
       deepEqual(sponsorObjects[0].displayname, spon1Disp, "Sponsor displayname should be "+spon1Disp);
     };
     
-    nl.sara.webdav.Client = function(){
-      this.propfind = function(owner, callback ,depth,properties){
+    nl.sara.webdav.Client.prototype.propfind = function(owner, callback ,depth,properties){
         var status = 1;
         callback(status, null);
         var data = getDataObject(currentDirectory,null);
         status = 207;
         callback(status, data);
       };
-    };
     nl.sara.beehub.controller.getSponsors(owner,currentDirectory);  
   });
   
@@ -668,14 +685,12 @@
       deepEqual(sponsor, sponsorPath+spon, "Sponsor should be "+sponPath+spon);
     };
     
-    nl.sara.webdav.Client = function(){
-      this.proppatch = function(owner, callback, properties){
+    nl.sara.webdav.Client.prototype.proppatch = function(owner, callback, properties){
         var status = 1;
         callback(status);
         status = 207;
         callback(status);
       };
-    };
     
     nl.sara.beehub.controller.setSponsor(owner,sponsorPath+sponsor2);  
   });
@@ -693,8 +708,7 @@
     var firstTest = true;
     
     // Setup environment
-    nl.sara.webdav.Client = function(){
-      this.move = function(path, callback, newPath, overWriteMode) {
+    nl.sara.webdav.Client.prototype.move = function(path, callback, newPath, overWriteMode) {
         deepEqual(path, currentDirectory+"/original", "Move should be called called with path original");
         deepEqual(newPath, currentDirectory+"/new", "Move should be called with new name new.");
         deepEqual(overWriteMode, testOverwrite, "Overwrite mode should be ");
@@ -706,7 +720,6 @@
           callback(204);
         };
       };
-    };
     
     nl.sara.webdav.Client.FAIL_ON_OVERWRITE = 3;
     nl.sara.webdav.Client.SILENT_OVERWRITE = 5;
@@ -831,8 +844,7 @@
       actionFunction();
     };
     
-    nl.sara.webdav.Client = function(){
-      this.head = function(path, callback, string){    
+    nl.sara.webdav.Client.prototype.head = function(path, callback, string){    
 
         switch(path)
         {
@@ -851,7 +863,6 @@
           ok(false, "This should not happen.");
         };
       };
-    };
     
     nl.sara.beehub.view.dialog.setAlreadyExist = function(resource, overwrite, rename, cancel){
       deepEqual(resource.path,currentDirectory+"/file1", "Already exists should be called with "+currentDirectory+"/file1");
@@ -886,37 +897,34 @@
       actionFunction();
     };
     
-    nl.sara.webdav.Client = function(){
-      this.head = function(path, callback, string){    
-
-        switch(path)
-        {
-        case currentDirectory+"/file1":
-          // File excists
-          ok(true, "Path is ok.");
-          deepEqual(string, "", "Teststring should be empty.");
-          callback(404);
-          break;
-        case currentDirectory+"/file2":
-          // File does not excists
-          ok(true, "Next action is started.");
-          deepEqual(string, "", "Teststring should be empty.");
-          break;
-        default:
-          ok(false, "This should not happen.");
-        }
-      };
-      this.put = function(destination, callback, string, type){
+    nl.sara.webdav.Client.prototype.head = function(path, callback, string){    
+	  switch(path)
+	    {
+	    case currentDirectory+"/file1":
+	      // File excists
+	      ok(true, "Path is ok.");
+	      deepEqual(string, "", "Teststring should be empty.");
+	      callback(404);
+	      break;
+	    case currentDirectory+"/file2":
+	      // File does not excists
+	      ok(true, "Next action is started.");
+	      deepEqual(string, "", "Teststring should be empty.");
+	      break;
+	    default:
+	      ok(false, "This should not happen.");
+	    }
+	  };
+      nl.sara.webdav.Client.prototype.put = function(destination, callback, string, type){
         deepEqual(destination, currentDirectory+"/file1", "Destination should be "+currentDirectory+"/file1");
         deepEqual(type, "type", "Type should be type.");
         deepEqual(string, "", "String should be empty.");
         callback(putEmptyFileStatus);
       };    
-      this.propfind = function(resourcepath, callback ,value ,properties){
-        var data = getDataObject("file1", null);
-        callback(207, data);
-      };
-    };
+	  nl.sara.webdav.Client.prototype.propfind = function(resourcepath, callback ,value ,properties){
+	    var data = getDataObject("file1", null);
+	    callback(207, data);
+	  };
     
     nl.sara.beehub.view.addResource = function(resource){
       deepEqual(resource.path,"file1", "Path should be file1.");
@@ -983,8 +991,7 @@
       actionFunction();
     };
     
-    nl.sara.webdav.Client = function(){
-      this.head = function(path, callback, string){    
+    nl.sara.webdav.Client.prototype.head = function(path, callback, string){    
 
         switch(path)
         {
@@ -1003,13 +1010,12 @@
           ok(false, "This should not happen.");
         }
       };
-      this.put = function(destination, callback, string, type){
+      nl.sara.webdav.Client.prototype.put = function(destination, callback, string, type){
         deepEqual(destination, currentDirectory+"/file1", "Destination should be "+currentDirectory+"/file1");
         deepEqual(type, "type", "Type should be type.");
         deepEqual(string, "", "String should be empty.");
         callback(403);
       };    
-    };
     
     nl.sara.beehub.view.dialog.updateResourceInfo = function(resource, info){
       deepEqual(resource.path, currentDirectory+"/file1","Resource path should be "+currentDirectory+"/file1.");
@@ -1046,8 +1052,7 @@
       actionFunction();
     };
     
-    nl.sara.webdav.Client = function(){
-      this.head = function(path, callback, string){    
+    nl.sara.webdav.Client.prototype.head = function(path, callback, string){    
 
         switch(path)
         {
@@ -1066,16 +1071,15 @@
           ok(false, "This should not happen.");
         }
       };
-      this.put = function(destination, callback, string, type){
+      nl.sara.webdav.Client.prototype.put = function(destination, callback, string, type){
         deepEqual(destination, currentDirectory+"/file1", "Destination should be "+currentDirectory+"/file1");
         deepEqual(type, "type", "Type should be type.");
         deepEqual(string, "", "String should be empty.");
         callback(putEmptyFileStatus);
       };    
-      this.remove = function(destination){
+      nl.sara.webdav.Client.prototype.remove = function(destination){
         deepEqual(destination, currentDirectory+"/file1", "Resource path should be "+currentDirectory+"/file1");
       };
-    };
     
     nl.sara.beehub.view.dialog.updateResourceInfo = function(resource, info){
       deepEqual(resource.path, currentDirectory+"/file1","Resource path should be "+currentDirectory+"/file1.");
@@ -1129,9 +1133,7 @@
       actionFunction();
     };
     
-    nl.sara.webdav.Client = function(){
-      this.head = function(path, callback, string){    
-
+    nl.sara.webdav.Client.prototype.head = function(path, callback, string){    
         switch(path)
         {
         case currentDirectory+"/file1":
@@ -1149,13 +1151,12 @@
           ok(false, "This should not happen.");
         }
       };
-      this.put = function(destination, callback, string, type){
+      nl.sara.webdav.Client.prototype.put = function(destination, callback, string, type){
         deepEqual(destination, currentDirectory+"/file1", "Destination should be "+currentDirectory+"/file1");
         deepEqual(type, "type", "Type should be type.");
         deepEqual(string, "", "String should be empty.");
         callback(1, "test");
       };    
-    };
     
     nl.sara.beehub.view.dialog.updateResourceInfo = function(resource, info){
       deepEqual(resource.path, currentDirectory+"/file1","Resource path should be "+currentDirectory+"/file1.");
@@ -1186,9 +1187,7 @@
       actionFunction();
     }; 
     
-    nl.sara.webdav.Client = function(){
-      this.head = function(path, callback, string){    
-
+    nl.sara.webdav.Client.prototype.head = function(path, callback, string){    
         switch(path)
         {
         case currentDirectory+"/file1":
@@ -1206,7 +1205,6 @@
           ok(false, "This should not happen.");
         }
       }; 
-    };
     
     nl.sara.beehub.view.dialog.updateResourceInfo = function(resource, info){
       deepEqual(resource.path, currentDirectory+"/file1","Resource path should be "+currentDirectory+"/file1.");
@@ -1244,8 +1242,7 @@
       deepEqual(info,"Unknown error.", "Info should ben unknown error.");
     };
     
-    nl.sara.webdav.Client = function(){
-      this.head = function(path, callback, string){   
+    nl.sara.webdav.Client.prototype.head = function(path, callback, string){   
         switch(path)
         {
         case currentDirectory+"/file1_2":
@@ -1269,7 +1266,6 @@
           ok(false, "This should not happen.");
         }
       }; 
-    };
       
     nl.sara.beehub.view.dialog.setAlreadyExist = function(resource, overwrite, rename, cancel){
       deepEqual(resource.path,currentDirectory+"/file1", "Already exists should be called with "+currentDirectory+"/file1");
@@ -1308,8 +1304,7 @@
       deepEqual(info,"Unknown error.", "Info should ben unknown error.");
     };
     
-    nl.sara.webdav.Client = function(){
-      this.head = function(path, callback, string){   
+    nl.sara.webdav.Client.prototype.head = function(path, callback, string){   
         switch(path)
         {
         case currentDirectory+"/file1_2":
@@ -1333,13 +1328,12 @@
           ok(false, "This should not happen.");
         }
       }; 
-      this.put = function(destination, callback, string, type){
+      nl.sara.webdav.Client.prototype.put = function(destination, callback, string, type){
         deepEqual(destination, currentDirectory+"/file1_2", "Destination should be "+currentDirectory+"/file1_2");
         deepEqual(type, "type", "Type should be type.");
         deepEqual(string, "", "String should be empty.");
         callback(403);
       };
-    };
     
     nl.sara.beehub.view.dialog.updateResourceInfo = function(resource, info){
       deepEqual(resource.path, currentDirectory+"/file1","Resource path should be "+currentDirectory+"/file1.");
@@ -1383,8 +1377,7 @@
       deepEqual(info,"Unknown error.", "Info should ben unknown error.");
     };
     
-    nl.sara.webdav.Client = function(){
-      this.head = function(path, callback, string){   
+    nl.sara.webdav.Client.prototype.head = function(path, callback, string){   
         switch(path)
         {
         case currentDirectory+"/file1_2":
@@ -1408,14 +1401,13 @@
           ok(false, "This should not happen.");
         }
       }; 
-      this.put = function(destination, callback, string, type){
+      nl.sara.webdav.Client.prototype.put = function(destination, callback, string, type){
         deepEqual(destination, currentDirectory+"/file1_2", "Destination should be "+currentDirectory+"/file1_2");
         deepEqual(type, "type", "Type should be type.");
         deepEqual(string, "", "String should be empty.");
         callback(1, "test");
       };
-    };
-    
+      
     nl.sara.beehub.view.dialog.updateResourceInfo = function(resource, info){
       deepEqual(resource.path, currentDirectory+"/file1","Resource path should be "+currentDirectory+"/file1.");
       deepEqual(info, "test","Info should be test.");
@@ -1461,8 +1453,7 @@
       deepEqual(info,"Unknown error.", "Info should ben unknown error.");
     };
     
-    nl.sara.webdav.Client = function(){
-      this.head = function(path, callback, string){   
+    nl.sara.webdav.Client.prototype.head = function(path, callback, string){   
         switch(path)
         {
         case currentDirectory+"/file1_2":
@@ -1486,17 +1477,16 @@
           ok(false, "This should not happen.");
         }
       }; 
-      this.put = function(destination, callback, string, type){
+      nl.sara.webdav.Client.prototype.put = function(destination, callback, string, type){
         deepEqual(destination, currentDirectory+"/file1_2", "Destination should be "+currentDirectory+"/file1_2");
         deepEqual(type, "type", "Type should be type.");
         deepEqual(string, "", "String should be empty.");
         callback(putEmptyFileStatus);
       };
-      this.propfind = function(resourcepath, callback ,value ,properties){
+      nl.sara.webdav.Client.prototype.propfind = function(resourcepath, callback ,value ,properties){
         var data = getDataObject("file1", null);
         callback(207, data);
       };
-    };
     
     nl.sara.beehub.view.dialog.updateResourceInfo = function(resource, info){
       deepEqual(resource.path, currentDirectory+"/file1","Resource path should be "+currentDirectory+"/file1.");
@@ -1583,8 +1573,7 @@
       deepEqual(info,"Unknown error.", "Info should ben unknown error.");
     };
     
-    nl.sara.webdav.Client = function(){
-      this.head = function(path, callback, string){   
+    nl.sara.webdav.Client.prototype.head = function(path, callback, string){   
         switch(path)
         {
         case currentDirectory+"/file1_2":
@@ -1608,20 +1597,19 @@
           ok(false, "This should not happen.");
         }
       }; 
-      this.put = function(destination, callback, string, type){
+      nl.sara.webdav.Client.prototype.put = function(destination, callback, string, type){
         deepEqual(destination, currentDirectory+"/file1_2", "Destination should be "+currentDirectory+"/file1_2");
         deepEqual(type, "type", "Type should be type.");
         deepEqual(string, "", "String should be empty.");
         callback(putEmptyFileStatus);
       };
-      this.propfind = function(resourcepath, callback ,value ,properties){
+      nl.sara.webdav.Client.prototype.propfind = function(resourcepath, callback ,value ,properties){
         var data = getDataObject("file1", null);
         callback(207, data);
       };
-      this.remove = function(destination){
+      nl.sara.webdav.Client.prototype.remove = function(destination){
         deepEqual(destination, currentDirectory+"/file1_2", "Resource path should be "+currentDirectory+"/file1_2");
       };
-    };
     
     nl.sara.beehub.view.dialog.updateResourceInfo = function(resource, info){
       deepEqual(resource.path, currentDirectory+"/file1","Resource path should be "+currentDirectory+"/file1.");
@@ -1694,8 +1682,7 @@
       deepEqual(info,"Canceled", "Info should be canceled.");
     };
     
-    nl.sara.webdav.Client = function(){
-      this.head = function(path, callback, string){   
+    nl.sara.webdav.Client.prototype.head = function(path, callback, string){   
         switch(path)
         {
         case currentDirectory+"/file1":
@@ -1713,7 +1700,6 @@
           ok(false, "This should not happen.");
         }
       }; 
-    };
       
     nl.sara.beehub.view.dialog.setAlreadyExist = function(resource, overwrite, rename, cancel){
       deepEqual(resource.path,currentDirectory+"/file1", "Already exists should be called with "+currentDirectory+"/file1");
@@ -1752,8 +1738,7 @@
       deepEqual(info,"Forbidden", "Info should be forbidden.");
     };
     
-    nl.sara.webdav.Client = function(){
-      this.head = function(path, callback, string){   
+    nl.sara.webdav.Client.prototype.head = function(path, callback, string){   
         switch(path)
         {
         case currentDirectory+"/file1":
@@ -1771,13 +1756,12 @@
           ok(false, "This should not happen.");
         }
       }; 
-      this.put = function(destination, callback, string, type){
+      nl.sara.webdav.Client.prototype.put = function(destination, callback, string, type){
         deepEqual(destination, currentDirectory+"/file1", "Destination should be "+currentDirectory+"/file1");
         deepEqual(type, "type", "Type should be type.");
         deepEqual(string, "", "String should be empty.");
         callback(403);
       };
-    };
       
     nl.sara.beehub.view.dialog.setAlreadyExist = function(resource, overwrite, rename, cancel){
       deepEqual(resource.path,currentDirectory+"/file1", "Already exists should be called with "+currentDirectory+"/file1");
@@ -1816,8 +1800,7 @@
       deepEqual(info,"test", "Info should be test.");
     };
     
-    nl.sara.webdav.Client = function(){
-      this.head = function(path, callback, string){   
+    nl.sara.webdav.Client.prototype.head = function(path, callback, string){   
         switch(path)
         {
         case currentDirectory+"/file1":
@@ -1835,13 +1818,12 @@
           ok(false, "This should not happen.");
         }
       }; 
-      this.put = function(destination, callback, string, type){
+      nl.sara.webdav.Client.prototype.put = function(destination, callback, string, type){
         deepEqual(destination, currentDirectory+"/file1", "Destination should be "+currentDirectory+"/file1");
         deepEqual(type, "type", "Type should be type.");
         deepEqual(string, "", "String should be empty.");
         callback(1, "test");
       };
-    };
       
     nl.sara.beehub.view.dialog.setAlreadyExist = function(resource, overwrite, rename, cancel){
       deepEqual(resource.path,currentDirectory+"/file1", "Already exists should be called with "+currentDirectory+"/file1");
@@ -1878,8 +1860,7 @@
       actionFunction();
     };
     
-    nl.sara.webdav.Client = function(){
-      this.head = function(path, callback, string){   
+    nl.sara.webdav.Client.prototype.head = function(path, callback, string){   
         switch(path)
         {
         case currentDirectory+"/file1":
@@ -1896,17 +1877,16 @@
           ok(false, "This should not happen.");
         }
       }; 
-      this.put = function(destination, callback, string, type){
+      nl.sara.webdav.Client.prototype.put = function(destination, callback, string, type){
         deepEqual(destination, currentDirectory+"/file1", "Destination should be "+currentDirectory+"/file1");
         deepEqual(type, "type", "Type should be type.");
         deepEqual(string, "", "String should be empty.");
         callback(putEmptyFileStatus);
       };
-      this.propfind = function(resourcepath, callback ,value ,properties){
+      nl.sara.webdav.Client.prototype.propfind = function(resourcepath, callback ,value ,properties){
         var data = getDataObject("file1", null);
         callback(207, data);
       };
-    };
       
     nl.sara.beehub.view.dialog.setAlreadyExist = function(resource, overwrite, rename, cancel){
       deepEqual(resource.path,currentDirectory+"/file1", "Already exists should be called with "+currentDirectory+"/file1");
@@ -1988,8 +1968,7 @@
       deepEqual(info,"test", "Info should be test.");
     };
     
-    nl.sara.webdav.Client = function(){
-      this.head = function(path, callback, string){   
+    nl.sara.webdav.Client.prototype.head = function(path, callback, string){   
         switch(path)
         {
         case currentDirectory+"/file1":
@@ -2006,20 +1985,19 @@
           ok(false, "This should not happen.");
         }
       }; 
-      this.put = function(destination, callback, string, type){
+      nl.sara.webdav.Client.prototype.put = function(destination, callback, string, type){
         deepEqual(destination, currentDirectory+"/file1", "Destination should be "+currentDirectory+"/file1");
         deepEqual(type, "type", "Type should be type.");
         deepEqual(string, "", "String should be empty.");
         callback(putEmptyFileStatus);
       };
-      this.propfind = function(resourcepath, callback ,value ,properties){
+      nl.sara.webdav.Client.prototype.propfind = function(resourcepath, callback ,value ,properties){
         var data = getDataObject("file1", null);
         callback(207, data);
       };
-      this.remove = function(destination){
+      nl.sara.webdav.Client.prototype.remove = function(destination){
         deepEqual(destination, currentDirectory+"/file1", "Resource path should be "+currentDirectory+"/file1");
       };
-    };
       
     nl.sara.beehub.view.dialog.setAlreadyExist = function(resource, overwrite, rename, cancel){
       deepEqual(resource.path,currentDirectory+"/file1", "Already exists should be called with "+currentDirectory+"/file1");
@@ -2085,8 +2063,7 @@
       deepEqual(info, error, "Info should be "+error);
     };
     
-    nl.sara.webdav.Client = function(){
-      this.remove = function(path, callback){
+    nl.sara.webdav.Client.prototype.remove = function(path, callback){
         switch(path)
         {
         case currentDirectory+"/file1":
@@ -2101,7 +2078,6 @@
           ok(false, "This should not happen.");
         }
       };
-    };
     
     nl.sara.beehub.view.dialog.showError = function(error){
       deepEqual(error, "Moving an item to itself is not possible. Use rename icon for renaming the resource(s)."
@@ -2147,6 +2123,7 @@
     nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory), "copy");
     // activate directory
     treeNode.find("a[href$='"+currentDirectory+"/']").click();
+    alert($( "#bh-dir-tree ul.dynatree-container" ).find("a[href$='"+currentDirectory+"/']").length);
   });
   
   /**
@@ -3090,13 +3067,11 @@
       return "testPath";
     };
     
-    nl.sara.webdav.Client = function(){
-      this.acl = function(path, callback, acl){
+    nl.sara.webdav.Client.prototype.acl = function(path, callback, acl){
         deepEqual(path,"testPath", "Path should be testPath");
         deepEqual(acl.test, "acl", "Acl test should be acl.");
         callback(status);
       };
-    };
     
     var aclOk = function(){
       ok(true, "acl ok is called.");
@@ -3253,8 +3228,7 @@
       // Do nothing
     };
     
-    nl.sara.webdav.Client = function(){
-      this.propfind = function(resourcePath, callback ,value, properties){
+    nl.sara.webdav.Client.prototype.propfind = function(resourcePath, callback ,value, properties){
         var data = {};
         if (closeDialogTest){
           data = getDataObject("/test", null, 200, aclTest);
@@ -3288,7 +3262,6 @@
          callback(207, data);
         }
       };
-    };
     
     nl.sara.beehub.view.setCustomAclOnResource = function(ownACL, resourcePath){
       deepEqual(ownACL, allInherited, "OwnACL should be "+allInherited);
@@ -3401,8 +3374,7 @@
        // Do nothing
      };
     
-    nl.sara.webdav.Client = function(){
-      this.propfind = function(path,callback){
+     nl.sara.webdav.Client.prototype.propfind = function(path,callback){
           var data = getDataObject(nl.sara.beehub.view.getHomePath(), null, 200, [{
           principal         :     nl.sara.webdav.Ace.SELF,
           principalString   :     'DAV: self',
@@ -3415,10 +3387,9 @@
          }]);
         callback(207, data);
       },
-      this.acl = function(){
+      nl.sara.webdav.Client.prototype.acl = function(){
         
       };
-    };
     
     nl.sara.beehub.view.acl.setAddAclRuleDialogClickHandler = function(addAclRuleDialog){
       var readPrivilege = new nl.sara.webdav.Privilege();
@@ -3468,8 +3439,7 @@
        // Do nothing
      };
     
-    nl.sara.webdav.Client = function(){
-      this.propfind = function(path,callback){
+     nl.sara.webdav.Client.prototype.propfind = function(path,callback){
           var data = getDataObject(nl.sara.beehub.view.getHomePath(), null, 200, [{
           principal         :     nl.sara.webdav.Ace.SELF,
           principalString   :     'DAV: self',
@@ -3482,10 +3452,9 @@
          }]);
         callback(207, data);
       },
-      this.acl = function(){
+      nl.sara.webdav.Client.prototype.acl = function(){
         
       };
-    };
     
     nl.sara.beehub.view.acl.setAddAclRuleDialogClickHandler = function(addAclRuleDialog){
       var readPrivilege = new nl.sara.webdav.Privilege();

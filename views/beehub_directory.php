@@ -391,7 +391,7 @@ require 'views/header.php';
               <?= ( $owner instanceof BeeHub_Principal ) ? DAV::xmlescape( $owner->user_prop_displayname() ) : "" ?>
             </td>
             <td class="bh-dir-sponsor" data-value="<?= ( $sponsor instanceof BeeHub_Principal ) ? DAV::xmlescape( $sponsor->path ) : "" ?>" <?= $isOwner ? 'style="cursor: pointer"' : '' ?> >
-            <?= ( $sponsor instanceof BeeHub_Principal ) ? DAV::xmlescape( $sponsor->user_prop_displayname() ) : "" ?> <?= $isOwner ? '<span class="caret"style="margin-top: 8px;">' : '' ?></span>
+            <?= ( $sponsor instanceof BeeHub_Principal ) ? DAV::xmlescape( $sponsor->user_prop_displayname() ) : "" ?> <?= $isOwner ? '<span class="caret" style="margin-top: 8px;">' : '' ?></span>
           </td>
           <td class="bh-dir-sponsor-dropdown" hidden="hidden">
           <select class="bh-dir-sponsor-select">

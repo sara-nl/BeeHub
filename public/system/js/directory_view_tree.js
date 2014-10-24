@@ -376,7 +376,6 @@
     // Determine which path we want to extend now
     expandedPath += parents.shift() + '/';
     var parentLink = $( 'a[href="' + encodeURI( expandedPath ) + '"]', treeNode );
-
     if ( parentLink.length === 0 ) {
       throw "Unable to add directory to the tree: parent directory does not exist";
     }

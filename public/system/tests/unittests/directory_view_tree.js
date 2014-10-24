@@ -333,16 +333,14 @@
 
     var newDir = $( 'a[href="' + encodeURI( path+'test1/' ) + '"]', treeNode );
     
-    deepEqual(newDir.length, 0, "Path should nout be present.");
+    deepEqual(newDir.length, 0, "Path should not be present.");
     
     nl.sara.beehub.view.tree.addPath(path+'test1/');
     
     newDir = $( 'a[href="' + encodeURI( path+'test1/' ) + '"]', treeNode );
     var parent = $( 'a[href="' + encodeURI( path ) + '"]', treeNode ).parent();
-    
     deepEqual(newDir.length, 1, "Path should not be present.");
     deepEqual(parent.hasClass('dynatree-expanded'), true, "Class expanded should be set.");
-    
     // Back to original environment
     nl.sara.beehub.view.tree.removePath(path+'test1');
   });

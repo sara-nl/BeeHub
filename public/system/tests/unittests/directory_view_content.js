@@ -57,7 +57,7 @@
   var sponsor1 = "sponsor_a";
   var sponsor1DisplayName = "Company A";
   var sponsor2 = "sponsor_b";
-  var sponsor2DisplayName = "Company A";
+  var sponsor2DisplayName = "Company B";
   var dropDownSponsor = '.bh-dir-sponsor';
   
   module("content view",{
@@ -563,7 +563,7 @@
     nl.sara.beehub.view.content.setSponsorDropdown(directory1, sponsors);
     deepEqual(row.find('.bh-dir-sponsor').is(":visible"), false, "Should be hidden.");
     deepEqual(row.find('.bh-dir-sponsor-dropdown').is(":visible"), true, "Should be shown.");
-    deepEqual(row.find('.bh-dir-sponsor-select').html(), '<option value="sponsor_a">Company A</option><option value="sponsor_b">Company A</option>',"Should not be empty");
+    deepEqual(row.find('.bh-dir-sponsor-select').html(), '<option value="sponsor_a">Company A</option><option value="sponsor_b">Company B</option>',"Should not be empty");
  
     // Test blur
     expectedMaskViewValue = true;
