@@ -24,8 +24,8 @@
   var directory =               "/foo/client_tests/directory";
   
 //  var testFile =                    "/foo/client_tests/file2.txt";
-  var treeNode = $( "#bh-dir-tree ul.dynatree-container" );
   
+  var treeNode =		$("#bh-dir-tree ul.dynatree-container");
   var treeSlideTrigger = ".bh-dir-tree-slide-trigger"; 
   var treeHeader =        "#bh-dir-tree-header";
   var treeSlide =         ".bh-dir-tree-slide";
@@ -338,8 +338,8 @@
     nl.sara.beehub.view.tree.addPath(path+'test1/');
     
     newDir = $( 'a[href="' + encodeURI( path+'test1/' ) + '"]', treeNode );
-    var parent = $( 'a[href="' + encodeURI( path ) + '"]', treeNode ).parent();
-    deepEqual(newDir.length, 1, "Path should not be present.");
+    var parent = $( 'a[href="' + encodeURI( path ) + '"]', treeNode).parent();
+    deepEqual(newDir.length, 1, "Path should be present.");
     deepEqual(parent.hasClass('dynatree-expanded'), true, "Class expanded should be set.");
     // Back to original environment
     nl.sara.beehub.view.tree.removePath(path+'test1');

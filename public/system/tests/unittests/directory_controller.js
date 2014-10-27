@@ -28,13 +28,14 @@
   
   var currentDirectory = "/foo/client_tests";
   var parentDirectory = "/foo";
-  var treeNode = $( "#bh-dir-tree ul.dynatree-container" );
+  var treeNode = $("#bh-dir-tree ul.dynatree-container");
   var owner = "foo";
   var sponsorPath = "/system/sponsors/";
   var sponsor1 = "sponsor_a";
   var sponsor1DisplayName = "Company A";
   var sponsor2 = "sponsor_b";
   
+  var rememberClient =                          	nl.sara.webdav.Client;
   var rememberClientcopy =                          nl.sara.webdav.Client.prototype.copy;
   var rememberClientpropfind =                      nl.sara.webdav.Client.prototype.propfind;
   var rememberClientmkcol =                         nl.sara.webdav.Client.prototype.mkcol;
@@ -103,6 +104,7 @@
   var rememberSetNewSponsor =                       nl.sara.beehub.view.content.setNewSponsor;
   
   var backToOriginalEnvironment = function(){
+	nl.sara.webdav.Client =									rememberClient;                        	
 	nl.sara.webdav.Client.prototype.copy = 					rememberClientcopy                          
 	nl.sara.webdav.Client.prototype.propfind = 				rememberClientpropfind                       
 	nl.sara.webdav.Client.prototype.mkcol = 				rememberClientmkcol                          
@@ -296,6 +298,7 @@
           ok(false, "This should not happen.");
         }
       };
+      
       nl.sara.webdav.Client.prototype.move = function(path, callback, destination, overwrite){
         switch(path)
         {
@@ -2116,14 +2119,13 @@
    *   gives always the same values back
    */
   test("nl.sara.beehub.controller.initAction, copy", function() {
+	  
     expect(14);
      
     setupCopyMoveTestEnvironment(201);
-
     nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory), "copy");
     // activate directory
     treeNode.find("a[href$='"+currentDirectory+"/']").click();
-    alert($( "#bh-dir-tree ul.dynatree-container" ).find("a[href$='"+currentDirectory+"/']").length);
   });
   
   /**
@@ -2140,7 +2142,7 @@
     expect(14);
      
     setupCopyMoveTestEnvironment(201);
-
+    
     nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory+"/directory"), "copy");
     // activate directory
     treeNode.find("a[href$='"+currentDirectory+"/directory/']").click();
@@ -2160,7 +2162,7 @@
     expect(14);
     
     setupCopyMoveTestEnvironment(204);
-
+        
     nl.sara.beehub.controller.initAction(getCopyMoveTestResources(currentDirectory), "copy");
     // activate directory
     treeNode.find("a[href$='"+currentDirectory+"/']").click();

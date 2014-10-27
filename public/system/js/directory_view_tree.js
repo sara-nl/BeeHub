@@ -47,7 +47,6 @@
 
   function directoryClickHandler() {
     var link = $( this );
-
     // If there is an alter handler has been defined, use call that one
     if ( directoryClickHandlerAlternative !== null ) {
       directoryClickHandlerAlternative( link.attr( 'href' ) );

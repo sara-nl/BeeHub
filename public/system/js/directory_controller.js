@@ -550,6 +550,7 @@
     if (action === "copy" || action === "move") {
       // Change view
       nl.sara.beehub.controller.setCopyMoveView(true);
+
       // Change select node handler in tree to get destination
       nl.sara.beehub.view.tree.setOnActivate("Select "+action+" destination", function(path){
         // actionDestination, destination of move or copy resources
