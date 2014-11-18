@@ -160,7 +160,11 @@ class BeeHub_DB {
     if (!empty($args)) {
       $ref = new ReflectionClass('mysqli_stmt');
       $method = $ref->getMethod('bind_param');
-      $method->invokeArgs($stmt, $args);
+      $mysqlArguments = array( $args[0] );
+      for ( $argsCounter = 1; $argsCounter < count( $args ); $argsCounter++ ) {
+        $mysqlArguments[] = &$args[ $argsCounter ];
+      }
+      $method->invokeArgs($stmt, $mysqlArguments);
     }
     if (!$stmt->execute()) {
       if (self::mysqli()->errno === 1213)
