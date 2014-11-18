@@ -26,8 +26,7 @@ function traverse($iterator) {
   global $collection, $CONFIG;
   foreach($iterator as $fileinfo) {
     $file = $fileinfo->getPathname();
-    if ( $fileinfo->isDot() ||
-         false !== strpos( $fileinfo->getBasename(), '#' ) ) {
+    if ( $fileinfo->isDot() ) {
       continue;
     } elseif ( $fileinfo->isDir() ) {
       traverse( new DirectoryIterator( $file ) );
