@@ -320,7 +320,7 @@ private function dir() {
       $unslashifiedPath = DAV::unslashify( substr( $unslashifiedPath, 1 ) );
     }
     if ( $unslashifiedPath !== '/' ) {
-      $this->dir = $collection->find( array( 'path' => array( '$regex' => preg_quote( $unslashifiedPath ) . '/[^/]*$' ) ) );
+      $this->dir = $collection->find( array( 'path' => array( '$regex' => '^' . preg_quote( $unslashifiedPath ) . '/[^/]*$' ) ) );
     }else{
       $this->dir = $collection->find( array( 'path' => array( '$regex' => '^[^/]+$' ) ) );
     }
