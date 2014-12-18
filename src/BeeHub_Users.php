@@ -113,7 +113,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
       throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
     }
     // And create the directory in the database
-    $document = array( 'path' => 'home/' . $user_name, 'collection' => true );
+    $document = array( 'path' => 'home/' . $user_name, 'depth' => 2, 'collection' => true );
     $filesCollection = BeeHub::getNoSQL()->files;
     $filesCollection->save( $document );
     

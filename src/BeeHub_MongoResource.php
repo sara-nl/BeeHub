@@ -270,6 +270,7 @@ class BeeHub_MongoResource extends BeeHub_Resource {
     if ( is_null( $document ) ) {
       $document = array(
           'path' => $path,
+          'depth' => substr_count( $path, '/' ) + 1,
           'props' => $urlencodedProps );
     }else{
       $document['props'] = $urlencodedProps;
@@ -296,10 +297,23 @@ class BeeHub_MongoResource extends BeeHub_Resource {
    */
   public function get_members_with_prop($prop) {
     $collection = BeeHub::getNoSQL()->files;
+    $unslashifiedPath = DAV::unslashify( $this->path );
+    while ( substr( $unslashifiedPath, 0, 1 ) === '/' ) {
+      $unslashifiedPath = substr( $unslashifiedPath, 1 );
+    }
+
+    if ( $unslashifiedPath === '' ) {
+      $queryArray = array(
+                'depth' => array( '$gt' => 0 ),
+                'props.' . $prop => array( '$exists' => true ) );
+    }else{
+      $queryArray = array(
+                'depth' => array( '$gt' => substr_count( $unslashifiedPath, '/' ) + 1 ),
+                'path' => array( '$regex' => '^' . preg_quote( DAV::slashify( $unslashifiedPath ) ) . '.*'),
+                'props.' . $prop => array( '$exists' => true ) );
+    }
     $results = $collection->find(
-            array(
-                'path' => array( '$regex' => preg_quote( DAV::slashify( $this->path ) ) . '.*'),
-                'props.' . $prop => array( '$exists' => true ) ),
+            $queryArray,
             array('path' => 1, 'props.' . $prop => 1)
             );
     $returnVal = array();

@@ -12,6 +12,7 @@ $collection = $db->files;
 $collection->remove();
 $collection->ensureIndex( array( 'props.http://beehub%2Enl/ sponsor' => 1 ) );
 $collection->ensureIndex( array( 'props.DAV: owner' => 1 ) );
+$collection->ensureIndex( array( 'depth' => 1 ) );
 $collection->ensureIndex( array( 'path' => 1 ), array( 'unique' => 1 ) );
 
 /**
@@ -65,8 +66,14 @@ function traverse($iterator) {
     if ( substr( $unslashifiedPath, 0, 1 ) === '/' ) {
       $unslashifiedPath = substr( $unslashifiedPath, 1 );
     }
+    if ( $unslashifiedPath === '' ) {
+      $depth = 0;
+    }else{
+      $depth = substr_count( $unslashifiedPath, '/' ) + 1;
+    }
     $document = array(
         'path' => mb_convert_encoding( $unslashifiedPath, 'UTF-8' ),
+        'depth' => $depth,
         'props' => $stored_props );
     if ( $fileinfo->isDir() ) {
       $document['collection'] = true;

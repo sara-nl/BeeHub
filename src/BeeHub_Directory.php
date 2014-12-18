@@ -72,7 +72,7 @@ private function internal_create_member( $name, $collection = false ) {
   if ( substr( $unslashifiedPath, 0, 1 ) === '/' ) {
     $unslashifiedPath = substr( $unslashifiedPath, 1 );
   }
-  $document = array( 'path' => $unslashifiedPath );
+  $document = array( 'path' => $unslashifiedPath, 'depth' => substr_count( $unslashifiedPath, '/' ) + 1 );
   if ( $collection ) {
     $document['collection'] = true;
   }
@@ -320,9 +320,9 @@ private function dir() {
       $unslashifiedPath = DAV::unslashify( substr( $unslashifiedPath, 1 ) );
     }
     if ( $unslashifiedPath !== '/' ) {
-      $this->dir = $collection->find( array( 'path' => array( '$regex' => '^' . preg_quote( $unslashifiedPath ) . '/[^/]*$' ) ) );
+      $this->dir = $collection->find( array( 'depth' => substr_count( $unslashifiedPath, '/' ) + 2, 'path' => array( '$regex' => '^' . preg_quote( $unslashifiedPath ) . '/[^/]*$' ) ) );
     }else{
-      $this->dir = $collection->find( array( 'path' => array( '$regex' => '^[^/]+$' ) ) );
+      $this->dir = $collection->find( array( 'depth' => 1, 'path' => array( '$regex' => '^[^/]+$' ) ) );
     }
 
     $this->skipInvalidMembers();
