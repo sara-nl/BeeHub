@@ -26,11 +26,6 @@
  */
 class BeeHub_File extends BeeHub_MongoResource {
 
-public function __construct ($path) {
-  parent::__construct($path);
-}
-
-
 public function user_prop_executable() {
   $retval = $this->user_prop(DAV::PROP_EXECUTABLE);
   return is_null($retval) ? null : (bool)$retval;

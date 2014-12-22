@@ -40,23 +40,37 @@ class BeeHub_MongoResource extends BeeHub_Resource {
 
 
   public function __construct($path) {
+    if ( is_array( $path ) ) {
+      $document = $path;
+      $path = '/' . $document['path'] . ( isset( $document['collection'] ) && $document['collection'] ? '/' : '' );
+    }else{
+      $document = null;
+    }
+
     parent::__construct($path);
     $this->localPath = BeeHub::localPath($path);
     if ( file_exists( $this->localPath ) ) {
       $this->stat = stat($this->localPath);
     }
+
+    if ( is_array( $document ) ) {
+      $this->init_props( $document );
+    }
   }
 
 
-  protected function init_props() {
+  protected function init_props( $document = null ) {
     if (is_null($this->stored_props)) {
-      $collection = BeeHub::getNoSQL()->files;
-      $path = DAV::unslashify( $this->path );
-      if ( substr( $path, 0, 1 ) === '/' ) {
-        $path = substr( $path, 1 );
+      if ( is_null( $document ) ) {
+        $collection = BeeHub::getNoSQL()->files;
+        $path = DAV::unslashify( $this->path );
+        if ( substr( $path, 0, 1 ) === '/' ) {
+          $path = substr( $path, 1 );
+        }
+        $path = urldecode( $path );
+        $document = $collection->findOne( array('path' => $path ) );
       }
-      $path = urldecode( $path );
-      $document = $collection->findOne( array('path' => $path ) );
+
       $this->stored_props = array();
       
       if ( !is_null( $document ) && !empty( $document['props'] ) ) {

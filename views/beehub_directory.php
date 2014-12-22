@@ -213,14 +213,12 @@ require 'views/header.php';
       for ( $counter = 0; $counter <= $last; $counter++ ) :
         $member = $members[ $counter ];
         $memberResource = $registry->resource( $path . $member );
-        $hasChildren = false;
-        foreach( $memberResource as $submember ) {
-          $hasChildren = ( $registry->resource( $memberResource->path . $submember )->prop_resourcetype() === DAV_Collection::RESOURCETYPE );
-          $registry->forget( $memberResource->path . $submember );
-          if ( $hasChildren ) {
-            break;
-          }
-        }
+        // Previous versions actually checked whether the resource has children
+        // or not. But with the new set-up that means a query for each resource
+        // and this is simply to expensive. Setting this to true for all cases
+        // means the end-user will find out there are no child resources on the
+        // first attempt to unfold the directory in the tree
+        $hasChildren = true;
         $expanded = isset( $treeState[ $memberResource->path ] ) && $hasChildren ? $treeState[ $memberResource->path ] : false;
         ?><li <?= ( $counter === $last ) ? 'class="dynatree-lastsib"' : '' ?>
           ><span class="dynatree-node dynatree-folder

@@ -31,7 +31,11 @@ class BeeHub_Directory extends BeeHub_MongoResource implements DAV_Collection {
  * @param string $path
  */
 public function __construct($path) {
-  parent::__construct(DAV::slashify($path));
+  if ( ! is_array( $path ) ) {
+    parent::__construct(DAV::slashify($path));
+  }else{
+    parent::__construct( $path );
+  }
 }
 
 
@@ -304,9 +308,15 @@ public function method_MOVE( $member, $destination ) {
 
 
 /**
- * @var DirectoryIterator
+ * @var  Array  All visible child resources
  */
 private $dir = null;
+
+
+/**
+ * @var  int  The current key
+ */
+private $currentKey = 0;
 
 
 /**
@@ -315,59 +325,58 @@ private $dir = null;
 private function dir() {
   if (is_null($this->dir)) {
     $collection = BeeHub::getNoSQL()->files;
-    $unslashifiedPath = DAV::unslashify( $this->path ) . '/';
-    if ( substr( $unslashifiedPath, 0, 1 ) === '/' ) {
-      $unslashifiedPath = DAV::unslashify( substr( $unslashifiedPath, 1 ) );
+    $unslashifiedPath = DAV::unslashify( $this->path );
+    while ( substr( $unslashifiedPath, 0, 1 ) === '/' ) {
+      $unslashifiedPath = substr( $unslashifiedPath, 1 );
     }
-    if ( $unslashifiedPath !== '/' ) {
-      $this->dir = $collection->find( array( 'depth' => substr_count( $unslashifiedPath, '/' ) + 2, 'path' => array( '$regex' => '^' . preg_quote( $unslashifiedPath ) . '/[^/]*$' ) ) );
+    if ( ! empty( $unslashifiedPath ) ) {
+      $query = array( 'depth' => substr_count( $unslashifiedPath, '/' ) + 2, 'path' => array( '$regex' => '^' . preg_quote( $unslashifiedPath ) . '/[^/]*$' ) );
     }else{
-      $this->dir = $collection->find( array( 'depth' => 1, 'path' => array( '$regex' => '^[^/]+$' ) ) );
+      $query = array( 'depth' => 1 );
     }
+    $allChildren = $collection->find( $query );
 
-    $this->skipInvalidMembers();
+    $this->dir = array();
+    foreach( $allChildren as $document ) {
+      $child = basename( $document['path'] );
+      if ( isset( $document['collection'] ) && $document['collection'] ) {
+        $child .= '/';
+      }
+      if ( ! DAV::$REGISTRY->resource( $document )->isVisible() ) {
+        DAV::$REGISTRY->forget( $this->path . $child );
+      }else{
+        $this->dir[] = $child;
+      }
+    }
   }
   return $this->dir;
 }
 
 
-private function skipInvalidMembers() {
-  while ( $this->valid() && ( !DAV::$REGISTRY->resource( $this->path . $this->current() )->isVisible() ) ) {
-    DAV::$REGISTRY->forget( $this->path . $this->current() );
-    $this->dir->next();
-  }
-}
-
-
 public function current() {
-  $document = $this->dir()->current();
-  $retval = basename( $document['path'] );
-  if ( isset( $document['collection'] ) && $document['collection'] ) {
-    $retval .= '/';
-  }
-  return $retval;
+  $dir = $this->dir();
+  return $dir[ $this->currentKey ];
 }
 
 
 public function key() {
-  return $this->dir()->key();
+  return $this->currentKey;
 }
 
 
 public function next() {
-  $this->dir()->next();
-  $this->skipInvalidMembers();
+  $this->currentKey++;
 }
 
 
 public function rewind()  {
-  $this->dir()->rewind();
-  $this->skipInvalidMembers();
+  $this->currentKey = 0;
 }
 
 
 public function valid() {
-  return $this->dir()->valid();
+  $dir = $this->dir();
+  return ( $this->currentKey < count( $dir ) );
 }
 
 

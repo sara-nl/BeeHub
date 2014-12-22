@@ -50,6 +50,13 @@ class BeeHub_Registry implements DAV_Registry {
    * @param string $path
    */
   public function resource( $path ) {
+    if ( is_array( $path ) ) {
+      $document = $path;
+      $path = '/' . $document['path'];
+    }else{
+      $document = null;
+    }
+
     $path = DAV::unslashify( $path );
     $systemPath   = DAV::unslashify( BeeHub::SYSTEM_PATH   );
     $usersPath    = DAV::unslashify( BeeHub::USERS_PATH    );
@@ -93,12 +100,14 @@ class BeeHub_Registry implements DAV_Registry {
         $unslashifiedPath = substr( $unslashifiedPath, 1 );
       }
       $collection = BeeHub::getNoSQL()->files;
-      $document = $collection->findOne( array( 'path' => $unslashifiedPath ));
+      if ( ! is_array( $document ) ) {
+        $document = $collection->findOne( array( 'path' => $unslashifiedPath ));
+      }
       if ( ! is_null( $document ) ) {
         if ( isset( $document['collection'] ) && $document['collection'] ) {
-          $retval = new BeeHub_Directory($path);
+          $retval = new BeeHub_Directory( $document );
         }else {
-          $retval = new BeeHub_File($path);
+          $retval = new BeeHub_File( $document );
         }
       }else{
         return null;
