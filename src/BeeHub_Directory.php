@@ -158,6 +158,8 @@ public function method_DELETE( $name ) {
   // Remove the entry from mongoDB too
   $filesCollection = BeeHub::getNoSQL()->selectCollection( 'files' );
   $filesCollection->remove( array( 'path' => $unslashifiedPath ) );
+  $locksCollection = BeeHub::getNoSQL()->selectCollection( 'locks' );
+  $locksCollection->remove( array( 'path' => $unslashifiedPath ) );
 
   // Remove from the registry
   DAV::$REGISTRY->forget( $path );
