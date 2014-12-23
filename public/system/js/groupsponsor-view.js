@@ -416,9 +416,15 @@
   * @param {JSON} data Usage data from server
   * 
   */
- nl.sara.beehub.gs.view.GroupSponsorView.prototype.updateUsageDataSucceeded = function(data){ 
+ nl.sara.beehub.gs.view.GroupSponsorView.prototype.updateUsageDataSucceeded = function(originalData){ 
    var view = this;
-   
+
+   // The d3 plugin required the data in another format
+   var data = [];
+   for ( var key in originalData ) {
+     data.push( { 'props.DAV: owner' : key, 'usage' : originalData[ key ] } );
+   }   
+
    // Stop when sponsor has no users
    if (data.length === 0){
      $('#bh-gs-panel-usage', this.viewDiv).html('<h5 style="margin-left:10px;">No storage used for this sponsor.</h5>'); 
