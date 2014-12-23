@@ -172,6 +172,8 @@ $filesCollection = $db->createCollection( 'files' );
 $filesCollection->ensureIndex( array( 'props.http://beehub%2Enl/ sponsor' => 1 ) );
 $filesCollection->ensureIndex( array( 'props.DAV: owner' => 1 ) );
 $filesCollection->ensureIndex( array( 'path' => 1 ), array( 'unique' => 1 ) );
+$locksCollection = $db->createCollection( 'locks' );
+$locksCollection->ensureIndex( array( 'path' => 1 ), array( 'unique' => 1 ) );
 
 // Done creating the database structure
 print( "ok\n" );

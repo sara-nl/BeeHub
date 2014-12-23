@@ -187,6 +187,8 @@ function setUpDatabase() {
   $filesCollection->ensureIndex( array( 'props.http://beehub%2Enl/ sponsor' => 1 ) );
   $filesCollection->ensureIndex( array( 'props.DAV: owner' => 1 ) );
   $filesCollection->ensureIndex( array( 'path' => 1 ), array( 'unique' => 1 ) );
+  $locksCollection = $db->selectCollection( 'locks' );
+  $locksCollection->ensureIndex( array( 'path' => 1 ), array( 'unique' => 1 ) );
   $groupsCollection = $db->selectCollection( 'groups' );
   $groupsCollection->ensureIndex( array( 'name' => 1 ), array( 'unique' => 1 ) );
   $sponsorsCollection = $db->selectCollection( 'sponsors' );

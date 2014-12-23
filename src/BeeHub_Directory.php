@@ -241,11 +241,12 @@ public function method_MOVE( $member, $destination ) {
     $filesCollection->save( $mongoDocument );
   }
   $locksCollection = BeeHub::getNoSQL()->selectCollection( 'locks' );
-  $mongoResults = $locksCollection->find( array( 'path' => array( '$regex' => '^' . $path . '(/.*|$)' ) ) );
+  $mongoResults = $locksCollection->find( array( 'path' => array( '$regex' => '^' . $path . '/.*' ) ) );
   foreach ( $mongoResults as $mongoDocument ) {
     $mongoDocument['path'] = $newPath . substr( $mongoDocument['path'], strlen( $path ) );
     $locksCollection->save( $mongoDocument );
   }
+  $locksCollection->remove( array( 'path' => $path ) );
 
   // We need to make sure that the effective ACL at the destination is the same as at the resource
   $destinationAcl = array();
