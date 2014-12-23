@@ -238,6 +238,7 @@ public function method_MOVE( $member, $destination ) {
   $mongoResults = $filesCollection->find( array( 'path' => array( '$regex' => '^' . $path . '(/.*|$)' ) ) );
   foreach ( $mongoResults as $mongoDocument ) {
     $mongoDocument['path'] = $newPath . substr( $mongoDocument['path'], strlen( $path ) );
+    $mongoDocument['depth'] = substr_count( $mongoDocument['path'], '/' ) + 1;
     $filesCollection->save( $mongoDocument );
   }
   $locksCollection = BeeHub::getNoSQL()->selectCollection( 'locks' );
