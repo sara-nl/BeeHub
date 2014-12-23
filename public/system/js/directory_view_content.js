@@ -37,7 +37,7 @@
     $.tablesorter.addParser({
       id: 'filesize', 
       is: function(s) { 
-       return s.match(new RegExp( /[0-9]+(\.[0-9]+)?\ (KB|B|GB|MB|TB)/ ));
+       return false;
       }, 
       format: function(s) {
         // If not a dir
