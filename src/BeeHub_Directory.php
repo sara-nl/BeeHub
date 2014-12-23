@@ -235,14 +235,14 @@ public function method_MOVE( $member, $destination ) {
   // We look up all paths that begin with the path of the resource we have to
   // move. If it is a collection, this means we will also find all child
   // resources and thus change all their locations in the database too.
-  $mongoResults = $filesCollection->find( array( 'path' => array( '$regex' => '^' . $path . '(/.*|$)' ) ) );
+  $mongoResults = $filesCollection->find( array( 'path' => array( '$regex' => '^' . preg_quote( $path ) . '(/.*|$)' ) ) );
   foreach ( $mongoResults as $mongoDocument ) {
     $mongoDocument['path'] = $newPath . substr( $mongoDocument['path'], strlen( $path ) );
     $mongoDocument['depth'] = substr_count( $mongoDocument['path'], '/' ) + 1;
     $filesCollection->save( $mongoDocument );
   }
   $locksCollection = BeeHub::getNoSQL()->selectCollection( 'locks' );
-  $mongoResults = $locksCollection->find( array( 'path' => array( '$regex' => '^' . $path . '/.*' ) ) );
+  $mongoResults = $locksCollection->find( array( 'path' => array( '$regex' => '^' . preg_quote( $path ) . '/.*' ) ) );
   foreach ( $mongoResults as $mongoDocument ) {
     $mongoDocument['path'] = $newPath . substr( $mongoDocument['path'], strlen( $path ) );
     $locksCollection->save( $mongoDocument );
