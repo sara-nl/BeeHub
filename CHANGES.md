@@ -1,5 +1,8 @@
 # Change log
 
+## next version
+- js-webdav-lib is now no longer linked as a submodule, but instead is copied directly into the repository
+
 ## v1.6.1
 POST requests now require a POST auth code which can be obtained by performing a
 GET request to /system/?POST_auth_code. The code itself must be included in the

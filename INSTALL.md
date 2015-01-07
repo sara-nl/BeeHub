@@ -18,11 +18,6 @@ BeeHub is written in PHP and intended/tested in a Linux environment with Apache 
 
 ### Requirements by dependencies:
 
-At the moment of writing, js-webdav-lib requires the following:
-
-* java
-* unzip
-
 One or more dependencies installed by Composer also require PHP extensions. At the moment of writing, most noticeable:
 
 * dom
@@ -31,7 +26,7 @@ One or more dependencies installed by Composer also require PHP extensions. At t
 ### e.g.: In Ubuntu 12.04
 
 ```
-$ sudo aptitude install apache2 php5 libapache2-mod-php5 php-pear php5-dev libmagic-dev php5-gd php5-mcrypt php5-xsl mongodb git make simplesamlphp default-jre unzip
+$ sudo aptitude install apache2 php5 libapache2-mod-php5 php-pear php5-dev libmagic-dev php5-gd php5-mcrypt php5-xsl mongodb git make simplesamlphp
 
 $ sudo curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin
 

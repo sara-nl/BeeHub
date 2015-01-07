@@ -6,5 +6,4 @@ config.ini
 /.htaccess
 /vendor/
 /public/system/simplesaml
-/public/system/js/webdavlib.js
 /doc-parser/
