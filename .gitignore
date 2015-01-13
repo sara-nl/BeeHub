@@ -1,9 +1,9 @@
 .buildpath
 .project
 .settings
-nbproject
 config.ini
 /.htaccess
 /vendor/
 /public/system/simplesaml
 /doc-parser/
+/nbproject/private/
