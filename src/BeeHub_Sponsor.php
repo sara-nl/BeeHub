@@ -150,15 +150,16 @@ BeeHub';
         foreach ($this->users as $user => $attributes) {
           if ($attributes['is_admin']) {
             $user = BeeHub::user($user);
-            $recipients[] = $user->prop(DAV::PROP_DISPLAYNAME) . ' <' . $user->prop(BeeHub::PROP_EMAIL) . '>';
+            $recipients[ $user->prop( BeeHub::PROP_EMAIL ) ] = $user->prop( DAV::PROP_DISPLAYNAME );
           }
         }
       }
       $this->change_memberships( array( $current_user->name ), self::USER_ACCEPT );
       if (!is_null($message)) {
-        BeeHub::email($recipients,
-                      'BeeHub notification: membership request for sponsor ' . $this->prop(DAV::PROP_DISPLAYNAME),
-                      $message);
+        BeeHub::email( $recipients,
+                       'BeeHub notification: membership request for sponsor ' . $this->prop(DAV::PROP_DISPLAYNAME),
+                       $message
+        );
       }
     }
 
@@ -182,9 +183,10 @@ You are now sponsored by \'' . $this->prop(DAV::PROP_DISPLAYNAME) . '\'.
 Best regards,
 
 BeeHub';
-                BeeHub::email($user->prop(DAV::PROP_DISPLAYNAME) . ' <' . $user->prop(BeeHub::PROP_EMAIL) . '>',
+                BeeHub::email( array( $user->prop( BeeHub::PROP_EMAIL ) => $user->prop( DAV::PROP_DISPLAYNAME ) ),
                               'BeeHub notification: new sponsor ' . $this->prop(DAV::PROP_DISPLAYNAME),
-                              $message);
+                              $message
+                );
               }
             }
             $this->change_memberships( $members, self::ADMIN_ACCEPT );
@@ -208,9 +210,10 @@ Sponsor administrator ' . $current_user->prop(DAV::PROP_DISPLAYNAME) . ' removed
 Best regards,
 
 BeeHub';
-              BeeHub::email($user->prop(DAV::PROP_DISPLAYNAME) . ' <' . $user->prop(BeeHub::PROP_EMAIL) . '>',
-                            'BeeHub notification: removed from sponsor ' . $this->prop(DAV::PROP_DISPLAYNAME),
-                            $message);
+              BeeHub::email( array( $user->prop( BeeHub::PROP_EMAIL ) => $user->prop( DAV::PROP_DISPLAYNAME ) ),
+                             'BeeHub notification: removed from sponsor ' . $this->prop(DAV::PROP_DISPLAYNAME),
+                             $message
+              );
             }
             break;
           default: //Should/could never happen

@@ -114,15 +114,16 @@ BeeHub';
         foreach ($this->users as $user => $attributes) {
           if ($attributes['is_admin']) {
             $user = BeeHub::user($user);
-            $recipients[] = $user->prop(DAV::PROP_DISPLAYNAME) . ' <' . $user->prop(BeeHub::PROP_EMAIL) . '>';
+            $recipients[ $user->prop( BeeHub::PROP_EMAIL ) ] = $user->prop( DAV::PROP_DISPLAYNAME );
           }
         }
       }
       $this->change_memberships(array($current_user->name), self::USER_ACCEPT);
       if (!is_null($message)) {
-        BeeHub::email($recipients,
-                      'BeeHub notification: membership request for group ' . $this->prop(DAV::PROP_DISPLAYNAME),
-                      $message);
+        BeeHub::email( $recipients,
+                       'BeeHub notification: membership request for group ' . $this->prop(DAV::PROP_DISPLAYNAME),
+                       $message
+        );
       }
     }
 
@@ -160,9 +161,10 @@ Best regards,
 BeeHub';
               }
               if ( ! is_null( $message ) ) {
-                BeeHub::email($user->prop(DAV::PROP_DISPLAYNAME) . ' <' . $user->prop(BeeHub::PROP_EMAIL) . '>',
-                              'BeeHub notification: membership accepted for group ' . $this->prop(DAV::PROP_DISPLAYNAME),
-                              $message);
+                BeeHub::email( array( $user->prop( BeeHub::PROP_EMAIL ) => $user->prop( DAV::PROP_DISPLAYNAME ) ),
+                               'BeeHub notification: membership accepted for group ' . $this->prop(DAV::PROP_DISPLAYNAME),
+                               $message
+                );
               }
             }
             $this->change_memberships($members, self::ADMIN_ACCEPT);
@@ -185,9 +187,10 @@ Group administrator ' . $current_user->prop(DAV::PROP_DISPLAYNAME) . ' removed y
 Best regards,
 
 BeeHub';
-              BeeHub::email($user->prop(DAV::PROP_DISPLAYNAME) . ' <' . $user->prop(BeeHub::PROP_EMAIL) . '>',
-                            'BeeHub notification: removed from group ' . $this->prop(DAV::PROP_DISPLAYNAME),
-                            $message);
+              BeeHub::email( array( $user->prop( BeeHub::PROP_EMAIL ) => $user->prop( DAV::PROP_DISPLAYNAME ) ),
+                             'BeeHub notification: removed from group ' . $this->prop(DAV::PROP_DISPLAYNAME),
+                             $message
+              );
             }
             break;
           default: //Should/could never happen

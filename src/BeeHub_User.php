@@ -281,9 +281,10 @@ If this was a mistake, or you do not want to add this e-mail address to this Bee
 Best regards,
 
 BeeHub';
-      BeeHub::email($document['displayname'] . ' <' . $document['unverified_email'] . '>',
-                    'Verify e-mail address for BeeHub',
-                    $message);
+      BeeHub::email( array( $document['unverified_email'] => $document['displayname'] ),
+                     'Verify e-mail address for BeeHub',
+                     $message
+      );
     }
 
     // Update the json file containing all displaynames of all privileges

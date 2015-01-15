@@ -182,6 +182,12 @@ realm = "${REALM}"
 [email]
 sender_address = "${MAIL_ADDRESS}"
 sender_name    = "${MAIL_NAME}"
+host           = ""
+port           = ""
+security       = ""
+auth_method    = ""
+username       = ""
+password       = ""
 
 [install]
 run_install = "false"

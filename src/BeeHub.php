@@ -361,16 +361,16 @@ class BeeHub {
 
   /**
    * Send an e-mail
-   * @param   string|array  $recipients  The recipient or an array of recepients
-   * @param   type          $subject     The subject of the message
-   * @param   type          $message     The message body
+   * @param   array  $recipients  An array of the recipients. The key represents the e-mail address, the value is the displayname
+   * @param   type   $subject     The subject of the message
+   * @param   type   $message     The message body
    * @return  void
    */
   public static function email($recipients, $subject, $message) {
     if ( is_null( self::$emailer ) ) {
       self::$emailer = new BeeHub_Emailer();
     }
-    self::$emailer->email($recipients, $subject, $message);
+    self::$emailer->email( $recipients, $subject, $message );
   }
   
 

@@ -17,25 +17,77 @@
  * @package BeeHub
  */
 
+use Zend\Mail;
+
 /**
  * This class let's you sent e-mail
  *
  * @package BeeHub
  */
 class BeeHub_Emailer {
+  
+  /**
+   * @var  \Zend\Mail\Transport\TransportInterface  The transport instance used for sending e-mail
+   */
+  private $emailer;
+
+
+  /**
+   * Prepares the \Zend\Mail module
+   */
+  public function __construct() {
+    $beehubConfig = \BeeHub::config();
+    $config = $beehubConfig['email'];
+    
+    if ( ! empty( $config['host'] ) ) {
+      // Configure the transporter for sending through SMTP
+      $transport = new Mail\Transport\Smtp();
+      
+      $emailConfig = array( 'host' => $config['host'] );
+      if ( !empty( $config['port'] ) ) {
+        $emailConfig['port'] = $config['port'];
+      }
+      if ( !empty( $config['security'] ) ) {
+        $emailConfig['connection_config'] = array();
+        $emailConfig['connection_config']['ssl'] = $config['security'];
+      }
+      if ( !empty( $config['auth_method'] ) ) {
+        $emailConfig['connection_class'] = $config['auth_method'];
+        if ( !isset( $emailConfig['connection_config'] ) ) {
+          $emailConfig['connection_config'] = array();
+        }
+        $emailConfig['connection_config']['username'] = $config['username'];
+        $emailConfig['connection_config']['password'] = $config['password'];
+      }
+      $options = new Mail\Transport\SmtpOptions( $emailConfig );
+      $transport->setOptions( $options );
+    }else{
+      // Else we use the Sendmail transporter (which actually just uses mail()
+      $transport = new Mail\Transport\Sendmail();
+    }
+    
+    $this->emailer = $transport;
+  }
+
 
   /**
    * Send an e-mail
-   * @param   string|array  $recipients  The recipient or an array of recepients
-   * @param   type          $subject     The subject of the message
-   * @param   type          $message     The message body
+   * @param   array  $recipients  An array of the recipients. The key represents the e-mail address, the value is the displayname
+   * @param   type   $subject     The subject of the message
+   * @param   type   $message     The message body
    * @return  void
    */
-  public function email($recipients, $subject, $message) {
-    if (is_array($recipients)) {
-      $recipients = implode(',', $recipients);
-    }
-    mail($recipients, $subject, $message, 'From: ' . BeeHub::$CONFIG['email']['sender_name'] . ' <' . BeeHub::$CONFIG['email']['sender_address'] . '>', '-f ' . BeeHub::$CONFIG['email']['sender_address']);
+  public function email( $recipients, $subject, $message ) {
+    $beehubConfig = \BeeHub::config();
+    $config = $beehubConfig['email'];
+    
+    $mail = new Mail\Message();
+    $mail->setBody( $message )
+         ->addTo( $recipients )
+         ->setSubject( $subject )
+         ->setFrom( $config['sender_address'], $config['sender_name'] )
+         ->setEncoding( 'UTF-8' );
+    $this->emailer->send( $mail );
   }
 
 } // class BeeHub_Emailer
