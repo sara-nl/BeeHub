@@ -33,9 +33,11 @@ function setUpDatabase() {
   $filesCollection->ensureIndex( array( 'props.http://beehub%2Enl/ sponsor' => 1 ) );
   $filesCollection->ensureIndex( array( 'props.DAV: owner' => 1 ) );
   $filesCollection->ensureIndex( array( 'path' => 1 ), array( 'unique' => 1 ) );
+  $filesCollection->ensureIndex( array( 'depth' => 1, 'path' => 1 ) );
   $files = array();
   $files[] = array(
-    'path' => 'home'
+    'path' => 'home',
+    'depth' => 1
   );
   
   // Create 1 sponsor
@@ -67,6 +69,7 @@ function setUpDatabase() {
     // Create the resources for this group; all for user1 who is in all groups
     $files[] = array(
       'path' => 'group' . $counter,
+      'depth' => 1,
       'props' => array(
         'http://beehub%2Enl/ sponsor' => 'sponsor1'
       ),
@@ -75,6 +78,7 @@ function setUpDatabase() {
     for ( $resourceCounter = 1; $resourceCounter <= 1000; $resourceCounter++ ) {
       $files[] = array(
         'path' => 'group' . $counter . '/5mb_' . $resourceCounter,
+        'depth' => 2,
         'props' => array(
           'DAV: owner' => 'user1',
           'DAV: getcontentlength' => 5242880,
@@ -87,6 +91,7 @@ function setUpDatabase() {
     for ( $resourceCounter = 1; $resourceCounter <= 500; $resourceCounter++ ) {
       $files[] = array(
         'path' => 'group' . $counter . '/100gb_' . $resourceCounter,
+        'depth' => 2,
         'props' => array(
           'DAV: owner' => 'user1',
           'DAV: getcontentlength' => 107374182400,
@@ -118,6 +123,7 @@ function setUpDatabase() {
     //   /home/userXX/    200 bestanden van 500 Mb
     $files[] = array(
       'path' => 'home/user' . $counter,
+      'depth' => 2,
       'props' => array(
         'DAV: owner' => 'user' . $counter,
         'http://beehub%2Enl/ sponsor' => 'sponsor1'
@@ -127,6 +133,7 @@ function setUpDatabase() {
     for ( $resourceCounter = 1; $resourceCounter <= 500; $resourceCounter++ ) {
       $files[] = array(
         'path' => 'home/user' . $counter . '/500mb_' . $resourceCounter,
+        'depth' => 3,
         'props' => array(
           'DAV: owner' => 'user' . $counter,
           'DAV: getcontentlength' => 524288000,
@@ -157,6 +164,7 @@ function setUpDatabase() {
     //   /home/userXX/dir2/dir1    10 bestanden van 1 Tb
     $files[] = array(
       'path' => 'home/user' . $counter,
+      'depth' => 2,
       'props' => array(
         'DAV: owner' => 'user' . $counter,
         'http://beehub%2Enl/ sponsor' => 'sponsor1'
@@ -165,6 +173,7 @@ function setUpDatabase() {
     );
     $files[] = array(
       'path' => 'home/user' . $counter . '/dir1',
+      'depth' => 3,
       'props' => array(
         'DAV: owner' => 'user' . $counter,
         'http://beehub%2Enl/ sponsor' => 'sponsor1'
@@ -173,6 +182,7 @@ function setUpDatabase() {
     );
     $files[] = array(
       'path' => 'home/user' . $counter . '/dir2',
+      'depth' => 3,
       'props' => array(
         'DAV: owner' => 'user' . $counter,
         'http://beehub%2Enl/ sponsor' => 'sponsor1'
@@ -181,6 +191,7 @@ function setUpDatabase() {
     );
     $files[] = array(
       'path' => 'home/user' . $counter . '/dir2/dir1',
+      'depth' => 4,
       'props' => array(
         'DAV: owner' => 'user' . $counter,
         'http://beehub%2Enl/ sponsor' => 'sponsor1'
@@ -190,6 +201,7 @@ function setUpDatabase() {
     for ( $resourceCounter = 1; $resourceCounter <= 10000; $resourceCounter++ ) {
       $files[] = array(
         'path' => 'home/user' . $counter . '/1mb_' . $resourceCounter,
+        'depth' => 3,
         'props' => array(
           'DAV: owner' => 'user' . $counter,
           'DAV: getcontentlength' => 1048576,
@@ -202,6 +214,7 @@ function setUpDatabase() {
     for ( $resourceCounter = 1; $resourceCounter <= 1000; $resourceCounter++ ) {
       $files[] = array(
         'path' => 'home/user' . $counter . '/dir1/1gb_' . $resourceCounter,
+        'depth' => 4,
         'props' => array(
           'DAV: owner' => 'user' . $counter,
           'DAV: getcontentlength' => 1073741824,
@@ -214,6 +227,7 @@ function setUpDatabase() {
     for ( $resourceCounter = 1; $resourceCounter <= 10; $resourceCounter++ ) {
       $files[] = array(
         'path' => 'home/user' . $counter . '/dir2/dir1/1tb_' . $resourceCounter,
+        'depth' => 5,
         'props' => array(
           'DAV: owner' => 'user' . $counter,
           'DAV: getcontentlength' => $tb,
@@ -240,6 +254,7 @@ function setUpDatabase() {
     //   /home/userXX/dir1    20 bestanden van 500 Gb
     $files[] = array(
       'path' => 'home/user' . $counter,
+      'depth' => 2,
       'props' => array(
         'DAV: owner' => 'user' . $counter,
         'http://beehub%2Enl/ sponsor' => 'sponsor1'
@@ -248,6 +263,7 @@ function setUpDatabase() {
     );
     $files[] = array(
       'path' => 'home/user' . $counter . '/dir1',
+      'depth' => 3,
       'props' => array(
         'DAV: owner' => 'user' . $counter,
         'http://beehub%2Enl/ sponsor' => 'sponsor1'
@@ -257,6 +273,7 @@ function setUpDatabase() {
     for ( $resourceCounter = 1; $resourceCounter <= 10; $resourceCounter++ ) {
       $files[] = array(
         'path' => 'home/user' . $counter . '/1tb_' . $resourceCounter,
+        'depth' => 3,
         'props' => array(
           'DAV: owner' => 'user' . $counter,
           'DAV: getcontentlength' => $tb,
@@ -269,6 +286,7 @@ function setUpDatabase() {
     for ( $resourceCounter = 1; $resourceCounter <= 20; $resourceCounter++ ) {
       $files[] = array(
         'path' => 'home/user' . $counter . '/dir1/500gb_' . $resourceCounter,
+        'depth' => 4,
         'props' => array(
           'DAV: owner' => 'user' . $counter,
           'DAV: getcontentlength' => 536870912000,
@@ -295,6 +313,7 @@ function setUpDatabase() {
     //   /home/userXX/dir1    200 bestanden van 500 Gb, 1,000 bestanden van 1 Mb
     $files[] = array(
       'path' => 'home/user' . $counter,
+      'depth' => 2,
       'props' => array(
         'DAV: owner' => 'user' . $counter,
         'http://beehub%2Enl/ sponsor' => 'sponsor1'
@@ -303,6 +322,7 @@ function setUpDatabase() {
     );
     $files[] = array(
       'path' => 'home/user' . $counter . '/dir1',
+      'depth' => 3,
       'props' => array(
         'DAV: owner' => 'user' . $counter,
         'http://beehub%2Enl/ sponsor' => 'sponsor1'
@@ -312,6 +332,7 @@ function setUpDatabase() {
     for ( $resourceCounter = 1; $resourceCounter <= 10; $resourceCounter++ ) {
       $files[] = array(
         'path' => 'home/user' . $counter . '/1tb_' . $resourceCounter,
+        'depth' => 3,
         'props' => array(
           'DAV: owner' => 'user' . $counter,
           'DAV: getcontentlength' => $tb,
@@ -324,6 +345,7 @@ function setUpDatabase() {
     for ( $resourceCounter = 1; $resourceCounter <= 10000; $resourceCounter++ ) {
       $files[] = array(
         'path' => 'home/user' . $counter . '/1kb_' . $resourceCounter,
+        'depth' => 3,
         'props' => array(
           'DAV: owner' => 'user' . $counter,
           'DAV: getcontentlength' => 1024,
@@ -336,6 +358,7 @@ function setUpDatabase() {
     for ( $resourceCounter = 1; $resourceCounter <= 200; $resourceCounter++ ) {
       $files[] = array(
         'path' => 'home/user' . $counter . '/dir1/500gb_' . $resourceCounter,
+        'depth' => 4,
         'props' => array(
           'DAV: owner' => 'user' . $counter,
           'DAV: getcontentlength' => 536870912000,
@@ -348,6 +371,7 @@ function setUpDatabase() {
     for ( $resourceCounter = 1; $resourceCounter <= 1000; $resourceCounter++ ) {
       $files[] = array(
         'path' => 'home/user' . $counter . '/dir1/1mb_' . $resourceCounter,
+        'depth' => 4,
         'props' => array(
           'DAV: owner' => 'user' . $counter,
           'DAV: getcontentlength' => 1048576,
@@ -378,6 +402,7 @@ function setUpDatabase() {
     //   /home/userXX/dir3/dir1/../dir20/    150 bestanden van 20 Mb in tussenliggende dirs
     $files[] = array(
       'path' => 'home/user' . $counter,
+      'depth' => 2,
       'props' => array(
         'DAV: owner' => 'user' . $counter,
         'http://beehub%2Enl/ sponsor' => 'sponsor1'
@@ -387,6 +412,7 @@ function setUpDatabase() {
     for ( $resourceCounter = 1; $resourceCounter <= 10; $resourceCounter++ ) {
       $files[] = array(
         'path' => 'home/user' . $counter . '/10mb_' . $resourceCounter,
+        'depth' => 3,
         'props' => array(
           'DAV: owner' => 'user' . $counter,
           'DAV: getcontentlength' => 10485760,
@@ -398,6 +424,7 @@ function setUpDatabase() {
     $files = array();
     $files[] = array(
       'path' => 'home/user' . $counter . '/dir1',
+      'depth' => 3,
       'props' => array(
         'DAV: owner' => 'user' . $counter,
         'http://beehub%2Enl/ sponsor' => 'sponsor1'
@@ -407,6 +434,7 @@ function setUpDatabase() {
     for ( $resourceCounter = 1; $resourceCounter <= 10; $resourceCounter++ ) {
       $files[] = array(
         'path' => 'home/user' . $counter . '/dir1/10mb_' . $resourceCounter,
+        'depth' => 4,
         'props' => array(
           'DAV: owner' => 'user' . $counter,
           'DAV: getcontentlength' => 10485760,
@@ -418,6 +446,7 @@ function setUpDatabase() {
     $files = array();
     $files[] = array(
       'path' => 'home/user' . $counter . '/dir2',
+      'depth' => 3,
       'props' => array(
         'DAV: owner' => 'user' . $counter,
         'http://beehub%2Enl/ sponsor' => 'sponsor1'
@@ -427,6 +456,7 @@ function setUpDatabase() {
     for ( $resourceCounter = 1; $resourceCounter <= 100; $resourceCounter++ ) {
       $files[] = array(
         'path' => 'home/user' . $counter . '/dir2/1gb_' . $resourceCounter,
+        'depth' => 4,
         'props' => array(
           'DAV: owner' => 'user' . $counter,
           'DAV: getcontentlength' => 1073741824,
@@ -441,6 +471,7 @@ function setUpDatabase() {
       $path .= '/dir' . $dirCounter;
       $files[] = array(
         'path' => $path,
+        'depth' => 3 + $dirCounter,
         'props' => array(
           'DAV: owner' => 'user' . $counter,
           'http://beehub%2Enl/ sponsor' => 'sponsor1'
@@ -450,6 +481,7 @@ function setUpDatabase() {
       for ( $resourceCounter = 1; $resourceCounter <= 150; $resourceCounter++ ) {
         $files[] = array(
           'path' => $path . '/20mb_' . $resourceCounter,
+          'depth' => 3 + $dirCounter + 1,
           'props' => array(
             'DAV: owner' => 'user' . $counter,
             'DAV: getcontentlength' => 20971520,
@@ -462,6 +494,7 @@ function setUpDatabase() {
     }
     $files[] = array(
       'path' => 'home/user' . $counter . '/dir3',
+      'depth' => 3,
       'props' => array(
         'DAV: owner' => 'user' . $counter,
         'http://beehub%2Enl/ sponsor' => 'sponsor1'
@@ -473,6 +506,7 @@ function setUpDatabase() {
       $path .= '/dir' . $dirCounter;
       $files[] = array(
         'path' => $path,
+        'depth' => 3 + $dirCounter,
         'props' => array(
           'DAV: owner' => 'user' . $counter,
           'http://beehub%2Enl/ sponsor' => 'sponsor1'
@@ -482,6 +516,7 @@ function setUpDatabase() {
       for ( $resourceCounter = 1; $resourceCounter <= 150; $resourceCounter++ ) {
         $files[] = array(
           'path' => $path . '/20mb_' . $resourceCounter,
+          'depth' => 3 + $dirCounter + 1,
           'props' => array(
             'DAV: owner' => 'user' . $counter,
             'DAV: getcontentlength' => 20971520,

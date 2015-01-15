@@ -12,8 +12,8 @@ $collection = $db->files;
 $collection->remove();
 $collection->ensureIndex( array( 'props.http://beehub%2Enl/ sponsor' => 1 ) );
 $collection->ensureIndex( array( 'props.DAV: owner' => 1 ) );
-$collection->ensureIndex( array( 'depth' => 1 ) );
 $collection->ensureIndex( array( 'path' => 1 ), array( 'unique' => 1 ) );
+$collection->ensureIndex( array( 'depth' => 1, 'path' => 1 ) );
 $locksCollection = $db->locks;
 $locksCollection->ensureIndex( array( 'path' => 1 ), array( 'unique' => 1 ) );
 

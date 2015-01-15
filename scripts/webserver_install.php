@@ -172,6 +172,7 @@ $filesCollection = $db->createCollection( 'files' );
 $filesCollection->ensureIndex( array( 'props.http://beehub%2Enl/ sponsor' => 1 ) );
 $filesCollection->ensureIndex( array( 'props.DAV: owner' => 1 ) );
 $filesCollection->ensureIndex( array( 'path' => 1 ), array( 'unique' => 1 ) );
+$filesCollection->ensureIndex( array( 'depth' => 1, 'path' => 1 ) );
 $locksCollection = $db->createCollection( 'locks' );
 $locksCollection->ensureIndex( array( 'path' => 1 ), array( 'unique' => 1 ) );
 
@@ -198,6 +199,7 @@ if (
     }
     $fileDocument = array(
       'path' => $sysDir,
+      'depth' => substr_count( $sysDir, '/' ) + 1,
       'collection' => true,
       'props' => array()
     );
@@ -215,6 +217,7 @@ if (
   if ( substr( $fileDocument['path'], 0, 1) === '/' ) {
     $fileDocument['path'] = substr( $fileDocument['path'], 1 );
   }
+  $fileDocument['depth'] = substr_count( $fileDocument['path'], '/' ) + 1;
   $encodedKey = str_replace(
     array( '%'  , '$'  , '.'   ),
     array( '%25', '%24', '%2E' ),
@@ -234,6 +237,7 @@ if (
   if ( substr( $fileDocument['path'], 0, 1) === '/' ) {
     $fileDocument['path'] = substr( $fileDocument['path'], 1 );
   }
+  $fileDocument['depth'] = substr_count( $fileDocument['path'], '/' ) + 1;
   $encodedKey = str_replace(
     array( '%'  , '$'  , '.'   ),
     array( '%25', '%24', '%2E' ),
