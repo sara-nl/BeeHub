@@ -1,6 +1,6 @@
 # Change log
 
-## next version
+## v2.0
 - js-webdav-lib is now no longer linked as a submodule, but instead is copied directly into the repository
 - E-mail is now being send using the Zend\Mail classes. This means it can be sent over SMTP.
 
