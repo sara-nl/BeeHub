@@ -253,6 +253,29 @@ if (
 }
 print( "ok\n" );
 
+// Then import the database structure
+$mysql = \BeeHub_DB::mysqli();
+if ( $mysql->connect_errno ) {
+  \header( 'HTTP/1.1 500 Internal Server Error' );
+  \ob_end_flush();
+  print( "\nFailed to connect to MySQL: (" . $mysql->connect_errno . ") " . $mysql->connect_error . "\n" );
+  exit();
+}
+
+$result = $mysql->query( 'SHOW TABLES' );
+if ( $result->num_rows > 0 ) {
+  print( "MySQL database already contains tables. Skipping initialisation of database.\n" );
+}else{
+  print( "Creating database structure..." );
+  if ( \BeeHub_DB::createDbTables() === false ) {
+    \header( 'HTTP/1.1 500 Internal Server Error' );
+    \ob_end_flush();
+    print( "\nUnable to create database structure\n" );
+    exit();
+  }
+  print( "ok\n" );
+}
+
 // Create principals.js with displaynames of all principals
 \BeeHub_Principal::update_principals_json();
 

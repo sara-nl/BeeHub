@@ -38,6 +38,10 @@ MONGO_PORT="27017"
 MONGO_USERNAME=""
 MONGO_PASSWORD=""
 MONGO_DATABASE=""
+MYSQL_HOST="localhost"
+MYSQL_USERNAME=""
+MYSQL_PASSWORD=""
+MYSQL_DATABASE=""
 REALM=""
 MAIL_ADDRESS=""
 MAIL_NAME=""
@@ -130,6 +134,36 @@ while [[ "${CONTINUE}" != "y" ]]; do
     fi
   done
 
+  while [[ 1 -eq 1 ]]; do
+    echo "What host runs the mySQL database? [${MYSQL_HOST}] "
+    read MYSQL_HOST_2
+    if [[ "${MYSQL_HOST_2}" != "" ]]; then
+      MYSQL_HOST="${MYSQL_HOST_2}"
+    fi
+    echo "What is the mySQL username? [${MYSQL_USERNAME}] "
+    read MYSQL_USERNAME_2
+    if [[ "${MYSQL_USERNAME_2}" != "" ]]; then
+      MYSQL_USERNAME="${MYSQL_USERNAME_2}"
+    fi
+    echo "What is the mySQL password? [${MYSQL_PASSWORD}] "
+    read MYSQL_PASSWORD_2
+    if [[ "${MYSQL_PASSWORD_2}" != "" ]]; then
+      MYSQL_PASSWORD="${MYSQL_PASSWORD_2}"
+    fi
+    echo "What is the mySQL database? [${MYSQL_DATABASE}] "
+    read MYSQL_DATABASE_2
+    if [[ "${MYSQL_DATABASE_2}" != "" ]]; then
+      MYSQL_DATABASE="${MYSQL_DATABASE_2}"
+    fi
+    MYSQL_WORKS=1
+    mysql "--host=${MYSQL_HOST}" "--user=${MYSQL_USERNAME}" "--password=${MYSQL_PASSWORD}" "--database=${MYSQL_DATABASE}" "--execute=SHOW TABLES;" >/dev/null 2>&1 || MYSQL_WORKS=0
+    if [[ ${MYSQL_WORKS} -eq 0 ]]; then
+      echo -e "\nEither you entered wrong mysql connection information, or the mySQL server is unreachable. Please make sure the mySQL server is running and reachable and/or retry entering your mySQL connection information"
+    else
+      break
+    fi
+  done
+
   echo "When using HTTP authentication, what realm should be used? [${REALM}] "
   read REALM_2
   if [[ "${REALM_2}" != "" ]]; then
@@ -175,6 +209,12 @@ port     = "${MONGO_PORT}"
 user     = "${MONGO_USERNAME}"
 password = "${MONGO_PASSWORD}"
 database = "${MONGO_DATABASE}"
+
+[mysql]
+host     = "${MYSQL_HOST}"
+username = "${MYSQL_USERNAME}"
+password = "${MYSQL_PASSWORD}"
+database = "${MYSQL_DATABASE}"
 
 [authentication]
 realm = "${REALM}"
