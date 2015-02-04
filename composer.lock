@@ -8,16 +8,16 @@
     "packages": [
         {
             "name": "pieterb/webdav-php",
-            "version": "1.1.6",
+            "version": "1.1.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pieterb/webdav-php.git",
-                "reference": "da543b25a1bd682e824255522a07508494de24fb"
+                "reference": "4a5e2509736cb0d591a4e4ccc711f13af07ca4c7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pieterb/webdav-php/zipball/da543b25a1bd682e824255522a07508494de24fb",
-                "reference": "da543b25a1bd682e824255522a07508494de24fb",
+                "url": "https://api.github.com/repos/pieterb/webdav-php/zipball/4a5e2509736cb0d591a4e4ccc711f13af07ca4c7",
+                "reference": "4a5e2509736cb0d591a4e4ccc711f13af07ca4c7",
                 "shasum": ""
             },
             "require": {
@@ -52,7 +52,7 @@
             "keywords": [
                 "WebDAV"
             ],
-            "time": "2015-02-03 13:48:37"
+            "time": "2015-02-04 10:20:43"
         },
         {
             "name": "zendframework/zend-crypt",
