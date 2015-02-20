@@ -41,6 +41,8 @@ A complete document in the 'groups' collection could look like this:
 ```
 This describes the group Foo. Jane is currently the only administrator of this group, but there is also a (regular) member John. Jany is invited to become a member, but she did not accept this invitation yet. Johny has requested to become a member, but this is not approved by a group administrator yet.
 
+A user can cancel her request to join a group, and in that case there's no trace to see that he's ever requested so.
+
 ## Collection: sponsors
 A complete document in the 'sponsors' collection could look like this:
 ```
