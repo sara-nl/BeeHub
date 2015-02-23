@@ -308,6 +308,7 @@
     var resourcetypeProp = new nl.sara.webdav.Property();
     resourcetypeProp.tagname = 'sponsor';
     resourcetypeProp.namespace='http://beehub.nl/';
+//    alert(sponsor)
     resourcetypeProp.setValueAndRebuildXml(nl.sara.beehub.encodeURIFullPath(sponsor.name));
     var properties = [resourcetypeProp];
     webdav.proppatch(nl.sara.beehub.encodeURIFullPath(owner), callback, properties);

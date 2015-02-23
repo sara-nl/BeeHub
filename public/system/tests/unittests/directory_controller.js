@@ -685,7 +685,7 @@
     
     nl.sara.beehub.view.content.setNewSponsor = function(owner, sponsor){
       deepEqual(owner, own, "Owner should be "+owner);
-      deepEqual(sponsor, sponsorPath+spon, "Sponsor should be "+sponPath+spon);
+      deepEqual(sponsor.name, sponsorPath+spon, "Sponsor should be "+sponPath+spon);
     };
     
     nl.sara.webdav.Client.prototype.proppatch = function(owner, callback, properties){
@@ -694,8 +694,7 @@
         status = 207;
         callback(status);
       };
-    
-    nl.sara.beehub.controller.setSponsor(owner,sponsorPath+sponsor2);  
+    nl.sara.beehub.controller.setSponsor(owner,{name: sponsorPath+sponsor2});  
   });
   
   /**
@@ -3658,7 +3657,6 @@
     ace.principal = nl.sara.webdav.Ace.ALL;
     ace.addPrivilege( readPrivilege );
     var originalRow = nl.sara.beehub.view.acl.createRow( ace );
-
     nl.sara.beehub.view.acl.changePermissions = function(row, oldVal){
       deepEqual(row, originalRow, "Row should be row.");
       deepEqual(oldVal, "oldVal", "Oldval should be oldVal.");
