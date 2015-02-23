@@ -96,13 +96,13 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
 
     $groupdir_resource = DAV::$REGISTRY->resource( '/' . $group_name );
     $groupdir_resource->user_set( BeeHub::PROP_SPONSOR, $user_sponsor );
-    $groupdir_resource->user_set( DAV::PROP_ACL, '[["' . BeeHub::GROUPS_PATH . rawurlencode($group->name) . '",false,["DAV: read", "DAV: write"],false]]' );
+    $groupdir_resource->user_set( DAV::PROP_ACL, '[["' . BeeHub::GROUPS_PATH . $group->name . '",false,["DAV: read", "DAV: write"],false]]' );
     $groupdir_resource->storeProperties();
 
     // Group created, redirect to the group page
     DAV::redirect(
       DAV::HTTP_SEE_OTHER,
-      BeeHub::GROUPS_PATH . rawurlencode($group->name)
+      BeeHub::GROUPS_PATH . $group->name
     );
   }
 
@@ -121,7 +121,7 @@ class BeeHub_Groups extends BeeHub_Principal_Collection {
     $resultSet = $collection->find( array( 'displayname' => array( '$regex' => $match, '$options' => 'i' ) ), array( 'name' => true ) );
     $retval = array();
     foreach ( $resultSet as $row ) {
-      $retval[] = BeeHub::GROUPS_PATH . rawurlencode( $row['name'] );
+      $retval[] = BeeHub::GROUPS_PATH . $row['name'];
     }
     return $retval;
   }

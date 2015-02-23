@@ -160,7 +160,7 @@ class BeeHub_User extends BeeHub_Principal {
         $this->stored_props[BeeHub::PROP_X509] = $result['x509'];
       }
       if ( isset( $result['default_sponsor'] ) ) {
-        $this->stored_props[BeeHub::PROP_SPONSOR] = BeeHub::SPONSORS_PATH . rawurlencode( $result['default_sponsor'] );
+        $this->stored_props[BeeHub::PROP_SPONSOR] = BeeHub::SPONSORS_PATH . $result['default_sponsor'];
       }
       if ( isset( $result['password'] ) ) {
         $this->password = $result['password'];
@@ -176,7 +176,7 @@ class BeeHub_User extends BeeHub_Principal {
       $groups = array();
       if ( isset( $result['groups'] ) ) {
         foreach ( $result['groups'] as $group ) {
-          $groups[] = BeeHub::GROUPS_PATH . rawurlencode( $group );
+          $groups[] = BeeHub::GROUPS_PATH . $group;
         }
       }
       $this->stored_props[DAV::PROP_GROUP_MEMBERSHIP] = $groups;
@@ -185,7 +185,7 @@ class BeeHub_User extends BeeHub_Principal {
       $sponsors = array();
       if ( isset( $result['sponsors'] ) ) {
         foreach ( $result['sponsors'] as $sponsor ) {
-          $sponsors[] = BeeHub::SPONSORS_PATH . rawurlencode( $sponsor );
+          $sponsors[] = BeeHub::SPONSORS_PATH . $sponsor;
         }
       }
       $this->stored_props[BeeHub::PROP_SPONSOR_MEMBERSHIP] = $sponsors;
@@ -241,7 +241,7 @@ class BeeHub_User extends BeeHub_Principal {
       unset( $document['surfconext_id'], $document['surfconext_description']);
     }
     
-    $p_sponsor = rawurldecode( basename( @$this->stored_props[BeeHub::PROP_SPONSOR] ) );
+    $p_sponsor = basename( @$this->stored_props[BeeHub::PROP_SPONSOR] );
     if ( isset( $document['sponsors'] ) && is_array( $document['sponsors'] ) && in_array( $p_sponsor, $document['sponsors'] ) ) {
       $document['default_sponsor'] = $p_sponsor;
     }
@@ -262,7 +262,7 @@ class BeeHub_User extends BeeHub_Principal {
 
     // Notify the user if needed
     if ($change_email) {
-      $activation_link = BeeHub::urlbase(true) . $this->path . '?verification_code=' . $document['verification_code'];
+      $activation_link = BeeHub::urlbase(true) . DAV::encodeURIFullPath( $this->path ) . '?verification_code=' . $document['verification_code'];
       $message =
 'Dear ' . $document['displayname'] . ',
 

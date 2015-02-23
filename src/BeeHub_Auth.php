@@ -123,7 +123,7 @@ class BeeHub_Auth {
       if ( !is_null( $result ) ) { // We found a user, this is the one that's logged in!
         $this->SURFconext = true;
         $this->set_user( $result['name'] );
-      } elseif ($_SERVER['REQUEST_URI'] !== BeeHub::USERS_PATH) {
+      } elseif ( rawurldecode( $_SERVER['REQUEST_URI'] ) !== BeeHub::USERS_PATH) {
         throw new DAV_Status(
           DAV::HTTP_TEMPORARY_REDIRECT,
           BeeHub::urlbase(true) . BeeHub::USERS_PATH
@@ -152,7 +152,7 @@ class BeeHub_Auth {
       if ( empty($email) &&
            DAV::unslashify( DAV::getPath() ) != DAV::unslashify($user->path) ) {
         $message = file_get_contents( dirname( dirname ( __FILE__ ) ) . '/views/error_no_verified_email.html' );
-        $message = str_replace( '%USER_PATH%', BeeHub::urlbase(true) . $user->path, $message );
+        $message = str_replace( '%USER_PATH%', BeeHub::urlbase(true) . DAV::encodeURIFullPath( $user->path ), $message );
         BeeHub::htmlError( $message, DAV::HTTP_FORBIDDEN );
       }
     }
