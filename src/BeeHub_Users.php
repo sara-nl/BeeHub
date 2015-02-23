@@ -107,6 +107,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
     // TODO: This should not be hard coded, a new user should not have a sponsor but request one after his account is created, but I want to inform the user about his through the not-yet-existing notification system
     $sponsor = DAV::$REGISTRY->resource('/system/sponsors/e-infra');
     $sponsor->change_memberships( $user_name, BeeHub_Sponsor::USER_ACCEPT );
+    $sponsor->change_memberships( $user_name, BeeHub_Sponsor::ADMIN_ACCEPT );
 
     // And create a user directory
     if (!mkdir($userdir)) {
