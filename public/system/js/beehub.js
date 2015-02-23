@@ -50,6 +50,23 @@ nl.sara.beehub.forbidden_group_names = [
 nl.sara.beehub.postAuth ='';
 
 /**
+ * URI encodes all elements in a full path
+ *
+ * In other words, URI encode a string, except for the slashes (/)
+ *
+ * @param   {String}  path  The path to URI encode
+ * @return  {String}        The encoded path
+ */
+nl.sara.beehub.encodeURIFullPath = function( path ) {
+  var pathElements = path.split('/'); // BeeHub does not accept / in a 
+// file name, this is always a path delimiter
+  for ( var index in pathElements ) {
+    pathElements[ index ] = encodeURI( pathElements[ index ] );
+  }
+  return pathElements.join('/');
+}
+
+/**
  * Retrieve new POST authentication code from server.
  * 
  */
@@ -279,7 +296,7 @@ nl.sara.beehub.utils.bytesToSize = function(bytes, precision)
  * Returns path with slash at the end
  */
 nl.sara.beehub.utils.getPath = function() {
- var path = location.pathname;
+ var path = decodeURI(location.pathname);
  // add slash to the end of path
  if (!path.match(/\/$/)) {
    path=path+'/'; 

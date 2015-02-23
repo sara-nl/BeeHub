@@ -55,7 +55,7 @@ require 'views/header.php';
       // Then print the parent directories
       $newpath = '/';
       for ( $counter = 0 ; $counter < $count ; $counter++ ) {
-        $value = urldecode( $crumb[ $counter ] );
+        $value = $crumb[ $counter ] ;
         $newpath .= $value . '/'; // We extend the path for each intermediate directory, but...
         // ...show only the two last directories
         if ( $counter >= $start ) {
@@ -63,7 +63,7 @@ require 'views/header.php';
           if ( $counter === ( $count - 1 ) ) {
             print( '<li class="active">' . DAV::xmlescape( $value ) . '</li>' );
           } else {
-            print( '<li><a href="' . DAV::xmlescape( $newpath ) . '">' . DAV::xmlescape( $value ) . '</a><span class="divider">/</span></li>' );
+            print( '<li><a href="' . DAV::xmlescape( DAV::encodeURIFullPath($newpath) ) . '">' . DAV::xmlescape( $value ) . '</a><span class="divider">/</span></li>' );
           }
         }
       }
@@ -230,7 +230,7 @@ require 'views/header.php';
                 "
             ><span class="dynatree-<?= $hasChildren ? 'expander' : 'connector' ?>"></span
             ><span class="dynatree-icon"></span
-            ><a class="dynatree-title" href="<?= DAV::xmlescape( $memberResource->path ) ?>"><?= DAV::xmlescape( $memberResource->user_prop_displayname() ) ?></a
+            ><a class="dynatree-title" href="<?= DAV::xmlescape( DAV::encodeURIFullPath($memberResource->path )) ?>"><?= DAV::xmlescape( $memberResource->user_prop_displayname() ) ?></a
           ></span
           <?php if ( $expanded && $hasChildren ) : ?>
             ><ul><?= printTree( $memberResource->path, $treeState, $selectedPath ); ?></ul
@@ -335,12 +335,12 @@ require 'views/header.php';
             <!-- Name -->
             <?php if (substr($member->path, -1) === '/'): ?>
               <td class="bh-dir-content-name displayname" data-value="<?= DAV::xmlescape( $member->user_prop_displayname() ) ?>">
-                <a href="<?= DAV::xmlescape( DAV::unslashify( $member->path ) ) ?>"><span style="font-weight: bold"><?= DAV::xmlescape( $member->user_prop_displayname() ) ?>/</span></a>
+                <a href="<?= DAV::xmlescape( DAV::encodeURIFullPath( $member->path ) ) ?>"><span style="font-weight: bold"><?= DAV::xmlescape( $member->user_prop_displayname() ) ?>/</span></a>
               </td>
               <!-- File -->
             <?php else : ?>
               <td class="bh-dir-content-name displayname" data-value="<?= DAV::xmlescape( $member->user_prop_displayname() ) ?>">
-                <a href="<?= DAV::xmlescape( DAV::unslashify( $member->path ) ) ?>"><?= DAV::xmlescape( $member->user_prop_displayname() ) ?></a>
+                <a href="<?= DAV::xmlescape( DAV::encodeURIFullPath( $member->path ) ) ?>"><?= DAV::xmlescape( $member->user_prop_displayname() ) ?></a>
               </td>
             <?php endif; ?>
             <!-- Hidden rename -->
@@ -558,7 +558,7 @@ require 'views/header.php';
 	              $class ='bh-dir-acl-protected';
 	            } elseif ( ! is_null( $ace->inherited ) ) {
 	              $info = 'inherited';
-	              $message = 'inherited from: <a href="' . $ace->inherited . '">' . $ace->inherited . '</a>';
+	              $message = 'inherited from: <a href="' . DAV::encodeURIFullPath($ace->inherited) . '">' . $ace->inherited . '</a>';
 	              $class ='bh-dir-acl-inherited';
 	            }
 	            ?>

@@ -321,7 +321,7 @@
     if ( principal_data_value.indexOf( nl.sara.beehub.users_path ) !== -1 ) {
       icon = '<i class="icon-user"></i>';
     }
-    row.push('<td class="bh-dir-acl-principal" data-value="' + nl.sara.beehub.controller.htmlEscape( principal_data_value ) + '" data-invert="' + nl.sara.beehub.controller.htmlEscape(invertVal) + '" data-toggle="tooltip" title="' + nl.sara.beehub.controller.htmlEscape( principal_data_value ) + '" ></i><b>'+show+'</b> ('+icon+')</td>');
+    row.push('<td class="bh-dir-acl-principal" data-value="' + nl.sara.beehub.controller.htmlEscape( nl.sara.beehub.encodeURIFullPath(principal_data_value) ) + '" data-invert="' + nl.sara.beehub.controller.htmlEscape(invertVal) + '" data-toggle="tooltip" title="' + nl.sara.beehub.controller.htmlEscape( principal_data_value ) + '" ></i><b>'+show+'</b> ('+icon+')</td>');
     
     // Permissions
     var aceClass= '';

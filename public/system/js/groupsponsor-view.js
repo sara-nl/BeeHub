@@ -116,7 +116,7 @@
    view.changeGroupSponsorStarted = true;
    
    nl.sara.beehub.gs.view.utils.mask(true);
-   view.controller.changeGroupOrSponsor(location.pathname, displayName, description);
+   view.controller.changeGroupOrSponsor(decodeURI(location.pathname), displayName, description);
  };
  
  /**
@@ -406,7 +406,7 @@
     
     view.getUsageDataStarted = true;
     $("#bh-dir-loading").show();
-    view.controller.getUsageData(location.href+"?usage");
+    view.controller.getUsageData(decodeURI(location.href)+"?usage");
    };
  };
  

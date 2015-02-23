@@ -35,7 +35,7 @@
   /*
    * Add slash to the end of the path
    */
-  var path = location.pathname;
+  var path = decodeURI(location.pathname);
   if (!path.match(/\/$/)) {
     path=path+'/'; 
   };
@@ -48,7 +48,7 @@
   
   // Needed for copy, move, delete and upload
   var actionCounter = 0;
-  
+
   nl.sara.beehub.controller.getPath = function(){
     return path;
   };
@@ -77,7 +77,7 @@
    * @param {String} location
    */
   nl.sara.beehub.controller.goToPage = function(location) {
-    window.location.href=location;
+    window.location.href=nl.sara.beehub.encodeURIFullPath(location);
   };
   
   /**
@@ -148,41 +148,41 @@
    * @return  {nl.sara.beehub.ClientResource}        Resource object
    */
   var extractPropsFromPropfindRequest = function(data){
-    var path = data.getResponseNames()[0];
-    
-    var resource = new nl.sara.beehub.ClientResource(path);
+    var encodedPath = data.getResponseNames()[0];
+
+    var resource = new nl.sara.beehub.ClientResource(decodeURI(encodedPath));
     
     // Get type
-    if (data.getResponse(path).getProperty('DAV:','resourcetype').getParsedValue() !== null) {
-      if (nl.sara.webdav.codec.ResourcetypeCodec.COLLECTION === data.getResponse(path).getProperty('DAV:','resourcetype').getParsedValue()) {
+    if (data.getResponse(encodedPath).getProperty('DAV:','resourcetype').getParsedValue() !== null) {
+      if (nl.sara.webdav.codec.ResourcetypeCodec.COLLECTION === data.getResponse(encodedPath).getProperty('DAV:','resourcetype').getParsedValue()) {
         resource.type = "collection";
       };
-    } else if (data.getResponse(path).getProperty('DAV:','getcontenttype').getParsedValue() !== null) {
-      resource.type = data.getResponse(path).getProperty('DAV:','getcontenttype').getParsedValue();
+    } else if (data.getResponse(encodedPath).getProperty('DAV:','getcontenttype').getParsedValue() !== null) {
+      resource.type = data.getResponse(encodedPath).getProperty('DAV:','getcontenttype').getParsedValue();
     }; 
     // Get displayname
-    if (data.getResponse(path).getProperty('DAV:','displayname').getParsedValue() !== null) {
-      resource.displayname = data.getResponse(path).getProperty('DAV:','displayname').getParsedValue();
+    if (data.getResponse(encodedPath).getProperty('DAV:','displayname').getParsedValue() !== null) {
+      resource.displayname = data.getResponse(encodedPath).getProperty('DAV:','displayname').getParsedValue();
     };
     
     // Get owner
-    if (data.getResponse(path).getProperty('DAV:','owner').getParsedValue() !== null) {
-      resource.owner = data.getResponse(path).getProperty('DAV:','owner').getParsedValue();
+    if (data.getResponse(encodedPath).getProperty('DAV:','owner').getParsedValue() !== null) {
+      resource.owner = data.getResponse(encodedPath).getProperty('DAV:','owner').getParsedValue();
     };
     
     // Get sponsor
-    if (data.getResponse(path).getProperty('http://beehub.nl/','sponsor').getParsedValue() !== null) {
-      resource.sponsor = data.getResponse(path).getProperty('http://beehub.nl/','sponsor').getParsedValue();
+    if (data.getResponse(encodedPath).getProperty('http://beehub.nl/','sponsor').getParsedValue() !== null) {
+      resource.sponsor = data.getResponse(encodedPath).getProperty('http://beehub.nl/','sponsor').getParsedValue();
     };
     
     // Get last modified date
-    if (data.getResponse(path).getProperty('DAV:','getlastmodified').getParsedValue() !== null) {
-      resource.lastmodified = data.getResponse(path).getProperty('DAV:','getlastmodified').getParsedValue();
+    if (data.getResponse(encodedPath).getProperty('DAV:','getlastmodified').getParsedValue() !== null) {
+      resource.lastmodified = data.getResponse(encodedPath).getProperty('DAV:','getlastmodified').getParsedValue();
     };
     
     // Get content length
-    if (data.getResponse(path).getProperty('DAV:','getcontentlength').getParsedValue() !== null) {
-      resource.contentlength = data.getResponse(path).getProperty('DAV:','getcontentlength').getParsedValue();
+    if (data.getResponse(encodedPath).getProperty('DAV:','getcontentlength').getParsedValue() !== null) {
+      resource.contentlength = data.getResponse(encodedPath).getProperty('DAV:','getcontentlength').getParsedValue();
     };
     return resource;
   };
@@ -252,7 +252,7 @@
     
     // Property request
     var webdav = new nl.sara.webdav.Client();
-    webdav.propfind(resourcepath, createCallback() ,1,properties);
+    webdav.propfind(nl.sara.beehub.encodeURIFullPath(resourcepath), createCallback() ,1,properties);
   };
   
   /**
@@ -272,8 +272,8 @@
         var sponsorObjects = [];
         for (var i in sponsors) {
           var sponsor = {};
-          sponsor.name = sponsors[i];
-          sponsor.displayname = nl.sara.beehub.controller.getDisplayName(sponsors[i]);
+          sponsor.name = decodeURI(sponsors[i]);
+          sponsor.displayname = nl.sara.beehub.controller.getDisplayName(sponsor.name);
           sponsorObjects.push(sponsor);
         }
         nl.sara.beehub.view.content.setSponsorDropdown(path, sponsorObjects);
@@ -286,7 +286,7 @@
     resourcetypeProp.tagname = 'sponsor-membership';
     resourcetypeProp.namespace='http://beehub.nl/';
     var properties = [resourcetypeProp];
-    webdav.propfind(owner, callback ,1,properties);
+    webdav.propfind(nl.sara.beehub.encodeURIFullPath(owner), callback ,1,properties);
   };
   
   /**
@@ -308,9 +308,9 @@
     var resourcetypeProp = new nl.sara.webdav.Property();
     resourcetypeProp.tagname = 'sponsor';
     resourcetypeProp.namespace='http://beehub.nl/';
-    resourcetypeProp.setValueAndRebuildXml(sponsor.name);
+    resourcetypeProp.setValueAndRebuildXml(nl.sara.beehub.encodeURIFullPath(sponsor.name));
     var properties = [resourcetypeProp];
-    webdav.proppatch(owner, callback, properties);
+    webdav.proppatch(nl.sara.beehub.encodeURIFullPath(owner), callback, properties);
   };
   
   /**
@@ -327,7 +327,7 @@
     resourcetypeProp.tagname = 'resourcetype';
     resourcetypeProp.namespace='DAV:';
     var properties = [resourcetypeProp];
-    client.propfind(path, callback ,1,properties);
+    client.propfind(nl.sara.beehub.encodeURIFullPath(path), callback ,1,properties);
   };
   
   /**
@@ -367,7 +367,7 @@
     
     // Webdav request
     var webdav = new nl.sara.webdav.Client();
-    webdav.mkcol(path+foldername, createNewFolderCallback(counter, foldername));
+    webdav.mkcol(nl.sara.beehub.encodeURIFullPath(path+foldername), createNewFolderCallback(counter, foldername));
   };
   
   /**
@@ -394,7 +394,7 @@
       if (status === 405){
         counter++;
         var webdav = new nl.sara.webdav.Client();
-        webdav.mkcol(path+foldername+'_'+counter, createNewFolderCallback(counter, foldername));
+        webdav.mkcol(nl.sara.beehub.encodeURIFullPath(path + foldername)+'_'+counter, createNewFolderCallback(counter, foldername));
         return;
       };
       // Forbidden
@@ -419,7 +419,7 @@
    */
   nl.sara.beehub.controller.renameResource = function(resource, fileNameNew, overwriteMode){
     var webdav = new nl.sara.webdav.Client();
-    webdav.move(resource.path, createRenameCallback(resource, fileNameNew, overwriteMode), encodeURI(path + fileNameNew),  overwriteMode);
+    webdav.move(nl.sara.beehub.encodeURIFullPath(resource.path), createRenameCallback(resource, fileNameNew, overwriteMode), encodeURI(path + fileNameNew),  overwriteMode);
   };
   
   /**
@@ -607,7 +607,7 @@
        // Update dialog info
        nl.sara.beehub.view.dialog.updateResourceInfo(resource,"Copy resource. This can take a while and no progress info is available. Please wait...");
        // start copy request
-       webdav.copy(resource.path, createActionCallback(resource, 1, false), resourceDestination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
+       webdav.copy(nl.sara.beehub.encodeURIFullPath(resource.path), createActionCallback(resource, 1, false), resourceDestination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
       } 
        break;
     // move settings 
@@ -616,7 +616,7 @@
       var resourceDestination = nl.sara.beehub.controller.actionDestination + resource.displayname;
       if (nl.sara.beehub.controller.actionDestination !== path) {
         // start move
-        webdav.move(resource.path,createActionCallback(resource, 0, false), resourceDestination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
+        webdav.move(nl.sara.beehub.encodeURIFullPath(resource.path),createActionCallback(resource, 0, false), resourceDestination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
       } else {
         nl.sara.beehub.view.dialog.showError("Moving an item to itself is not possible. Use rename icon for renaming the resource(s).");
       }
@@ -624,12 +624,12 @@
     // delete settings
     case "delete":
       // start delete
-      webdav.remove(resource.path,createActionCallback(resource, 0, false));
+      webdav.remove(nl.sara.beehub.encodeURIFullPath(resource.path),createActionCallback(resource, 0, false));
       break;
     case "upload":
       // head request, notice: request and callback are not the same as the other actions. FAIL_ON_OVERWRITE is not implemented with uploading. 
       // Testing if file already exist must be done before start uploading the file
-      webdav.head(resource.path, createUploadHeadCallback(resource, 0, false) ,"");
+      webdav.head(nl.sara.beehub.encodeURIFullPath(resource.path), createUploadHeadCallback(resource, 0, false) ,"");
     default:
       // This should never happen
     }
@@ -691,11 +691,11 @@
             // Update dialog info
             nl.sara.beehub.view.dialog.updateResourceInfo(resource,"Copy resource. This can take a while and no progress info is available. Please wait...");
             // start copy request
-            webdav.copy(resource.path, createActionCallback(resource, renameCounter, true), resourceDestination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
+            webdav.copy(nl.sara.beehub.encodeURIFullPath(resource.path), createActionCallback(resource, renameCounter, true), resourceDestination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
           };
           if (nl.sara.beehub.controller.actionAction === "move") {
             // start move request
-            webdav.move(resource.path, createActionCallback(resource, renameCounter, true), resourceDestination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
+            webdav.move(nl.sara.beehub.encodeURIFullPath(resource.path), createActionCallback(resource, renameCounter, true), resourceDestination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
           };
         }
         break;
@@ -818,7 +818,7 @@
           renameCounter = renameCounter + 1;
           destination = resource.path+"_"+renameCounter;
           // start head request with new name
-          webdav.head(destination, createUploadHeadCallback(resource, renameCounter, true));
+          webdav.head(nl.sara.beehub.encodeURIFullPath(destination), createUploadHeadCallback(resource, renameCounter, true));
         };
         
         if (!single) {
@@ -836,7 +836,7 @@
         }
         // Put empty file on server to check if upload is allowed. This prevent waiting for a long time (large files) 
         // while the upload is forbidden
-        webdav.put(destination, createUploadEmptyFileCallback(resource, destination, renameCounter, false, single),"", resource.file.type);
+        webdav.put(nl.sara.beehub.encodeURIFullPath(destination), createUploadEmptyFileCallback(resource, destination, renameCounter, false, single),"", resource.file.type);
         break;
       default:
         // Something went wrong, a new action should start
@@ -877,7 +877,7 @@
           var client = new nl.sara.webdav.Client();
           var ajax = client.getAjax( 
           "PUT",
-              destination,
+          nl.sara.beehub.encodeURIFullPath(destination),
               createUploadCallback(resource, destination, renameCounter, overwrite, single),
               headers 
           );
@@ -952,7 +952,7 @@
           nl.sara.beehub.view.dialog.updateResourceInfo(resource,responseText);
         // Delete the empty file
           var webdav = new nl.sara.webdav.Client();
-          webdav.remove(destination);
+          webdav.remove(nl.sara.beehub.encodeURIFullPath(destination));
       }
 
       if (!single) {
@@ -979,41 +979,41 @@
         var overwrite = function() {
           var resourceDestination = nl.sara.beehub.controller.actionDestination + resource.displayname;
           // start copy with SILENT OVERWRITE and renameCounter=0
-          webdav.copy(resource.path, createActionCallback(resource, 0, false), resourceDestination, nl.sara.webdav.Client.SILENT_OVERWRITE);
+          webdav.copy(nl.sara.beehub.encodeURIFullPath(resource.path), createActionCallback(resource, 0, false), resourceDestination, nl.sara.webdav.Client.SILENT_OVERWRITE);
         };
         
         var rename = function() {
           // change destination name with renameCounter
           var resourceDestination = nl.sara.beehub.controller.actionDestination + resource.displayname+"_1";
           // start copy with renameCounter=1
-          webdav.copy(resource.path, createActionCallback(resource, 1, false), resourceDestination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
+          webdav.copy(nl.sara.beehub.encodeURIFullPath(resource.path), createActionCallback(resource, 1, false), resourceDestination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
         };
         break;
       case "move": 
         var overwrite = function() {
           var resourceDestination = nl.sara.beehub.controller.actionDestination + resource.displayname;
           // start move with SILENT OVERWRITE and renameCounter=0
-          webdav.move(resource.path, createActionCallback(resource, 0, false), resourceDestination, nl.sara.webdav.Client.SILENT_OVERWRITE);
+          webdav.move(nl.sara.beehub.encodeURIFullPath(resource.path), createActionCallback(resource, 0, false), resourceDestination, nl.sara.webdav.Client.SILENT_OVERWRITE);
         };
         
         var rename = function() {
           // change destination name with renameCounter
           var resourceDestination = nl.sara.beehub.controller.actionDestination + resource.displayname+"_1";
           // start move with renameCounter=1
-          webdav.move(resource.path, createActionCallback(resource, 1, false), resourceDestination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
+          webdav.move(nl.sara.beehub.encodeURIFullPath(resource.path), createActionCallback(resource, 1, false), resourceDestination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
         };  
         break;
       case "upload":
         var overwrite = function() {
           // start upload flow but skip head and set overwrite true and renameCounter=1
-          webdav.put(resource.path, createUploadEmptyFileCallback(resource, resource.path, 1, true, true), "", resource.file.type);
+          webdav.put(nl.sara.beehub.encodeURIFullPath(resource.path), createUploadEmptyFileCallback(resource, resource.path, 1, true, true), "", resource.file.type);
         };
         
         var rename = function() {
           // change destination name
           var resourcePath = resource.path+"_1";
           // start head request with renameCounter=1
-          webdav.head(resourcePath, createUploadHeadCallback(resource, 1, true) ,"");
+          webdav.head(nl.sara.beehub.encodeURIFullPath(resourcePath), createUploadHeadCallback(resource, 1, true) ,"");
         };
         break;
       default:
@@ -1040,7 +1040,7 @@
     // create webdav client object
     var webdav = new nl.sara.webdav.Client();
     // send acl request to the server
-    webdav.acl(nl.sara.beehub.view.acl.getViewPath(),function(status,data){
+    webdav.acl(nl.sara.beehub.encodeURIFullPath(nl.sara.beehub.view.acl.getViewPath()),function(status,data){
       // Delete dialog
       if (status === 200){
         functionSaveAclOk();
@@ -1070,7 +1070,7 @@
     var properties = [aclProp];
 
     // send the request to the server
-    webdav.propfind(resourcePath, createGetAclCallback(resourcePath) ,0,properties);
+    webdav.propfind(nl.sara.beehub.encodeURIFullPath(resourcePath), createGetAclCallback(resourcePath) ,0,properties);
   };
   
   var addAclRuleDialog = function( ace ){
@@ -1170,7 +1170,7 @@
           aceObject['principal'] = 'DAV: self';
           break;
         default:
-          aceObject['principal'] = ace.principal;
+          aceObject['principal'] = decodeURI(ace.principal);
         break;
       }
     }  
@@ -1245,15 +1245,15 @@
       var aclProp = new nl.sara.webdav.Property();
       aclProp.namespace = 'DAV:';
       aclProp.tagname = 'acl';
-      webdavClient.propfind( resourcePath, function( status, data ) {
+      webdavClient.propfind( nl.sara.beehub.encodeURIFullPath(resourcePath), function( status, data ) {
         if ( status === 207 ) {
           
-          var response = data.getResponse( resourcePath );
+          var response = data.getResponse( nl.sara.beehub.encodeURIFullPath(resourcePath ));
           if ( response === undefined ) {
             if ( resourcePath.substr( -1 ) === '/' ) {
               resourcePath = resourcePath.substr( 0, resourcePath.length -1 );
             }
-            response = data.getResponse( resourcePath );
+            response = data.getResponse( nl.sara.beehub.encodeURIFullPath(resourcePath ));
           }
           var aces = response.getProperty( 'DAV:', 'acl' ).getParsedValue().getAces();
           // Determine if there are non-inherited and non-protected ACE's
