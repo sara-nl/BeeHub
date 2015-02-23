@@ -105,7 +105,7 @@ class BeeHub_Sponsors extends BeeHub_Principal_Collection {
     // Sponsor created, redirect to the sponsor page
     DAV::redirect(
       DAV::HTTP_SEE_OTHER,
-      BeeHub::SPONSORS_PATH . rawurlencode( $sponsor->name )
+      BeeHub::SPONSORS_PATH . $sponsor->name
     );
   }
 

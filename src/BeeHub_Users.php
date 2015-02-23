@@ -35,7 +35,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
          APPLICATION_ENV !== BeeHub::ENVIRONMENT_DEVELOPMENT ) {
       throw new DAV_Status(
         DAV::HTTP_MOVED_PERMANENTLY,
-        BeeHub::urlbase(true) . $_SERVER['REQUEST_URI']
+        BeeHub::urlbase(true) . rawurldecode( $_SERVER['REQUEST_URI'] )
       );
     }
     $display_name = '';
@@ -82,9 +82,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
     $collection->insert( array( 'name' => $user_name ) );
     
     // Fetch the user and store extra properties
-    $user = DAV::$REGISTRY->resource(
-      BeeHub::USERS_PATH . rawurlencode($user_name)
-    );
+    $user = DAV::$REGISTRY->resource( BeeHub::USERS_PATH . $user_name );
     $user->set_password($password);
     $user->user_set(DAV::PROP_DISPLAYNAME, $displayname);
     $user->user_set(BeeHub::PROP_EMAIL, $email);
@@ -143,7 +141,7 @@ class BeeHub_Users extends BeeHub_Principal_Collection {
     $resultSet = $collection->find( array( 'displayname' => array( '$regex' => $match, '$options' => 'i' ) ), array( 'name' => true ) );
     $retval = array();
     foreach ( $resultSet as $row ) {
-      $retval[] = BeeHub::USERS_PATH . rawurlencode( $row['name'] );
+      $retval[] = BeeHub::USERS_PATH . $row['name'];
     }
     return $retval;
   }

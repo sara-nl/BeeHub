@@ -254,9 +254,9 @@
     
     // Name
     if (resource.type==='collection') {
-      row.push('<td class="bh-dir-content-name displayname" data-value="'+nl.sara.beehub.controller.htmlEscape(resource.displayname)+'"><a href="'+nl.sara.beehub.controller.htmlEscape(resource.path)+'"><b>'+nl.sara.beehub.controller.htmlEscape(resource.displayname)+'/</b></a></td>');
+      row.push('<td class="bh-dir-content-name displayname" data-value="'+nl.sara.beehub.controller.htmlEscape(resource.displayname)+'"><a href="'+nl.sara.beehub.controller.htmlEscape(nl.sara.beehub.encodeURIFullPath(resource.path))+'"><b>'+nl.sara.beehub.controller.htmlEscape(resource.displayname)+'/</b></a></td>');
     } else {
-      row.push('<td class="bh-dir-content-name displayname" data-value="'+nl.sara.beehub.controller.htmlEscape(resource.displayname)+'"><a href="'+nl.sara.beehub.controller.htmlEscape(resource.path)+'">'+nl.sara.beehub.controller.htmlEscape(resource.displayname)+'</a></td>');
+      row.push('<td class="bh-dir-content-name displayname" data-value="'+nl.sara.beehub.controller.htmlEscape(resource.displayname)+'"><a href="'+nl.sara.beehub.controller.htmlEscape(nl.sara.beehub.encodeURIFullPath(resource.path))+'">'+nl.sara.beehub.controller.htmlEscape(resource.displayname)+'</a></td>');
     }
     row.push('<td class="bh-dir-content-rename-td" hidden="true"><input class="bh-dir-content-rename-form" name="'+nl.sara.beehub.controller.htmlEscape(resource.displayname)+'" value="'+nl.sara.beehub.controller.htmlEscape(resource.displayname)+'"></td>');
     
@@ -425,10 +425,10 @@
   nl.sara.beehub.view.content.updateResource = function(resourceOrg, resourceNew){
     var collectionOrg = resourceOrg.path.substr( 0, resourceOrg.path.lastIndexOf( '/', resourceOrg.path.length - 2 ) + 1 );
     var collectionNew = resourceNew.path.substr( 0, resourceNew.path.lastIndexOf( '/', resourceNew.path.length - 2 ) + 1 );
-    var currentPath = location.pathname;
-    if ( currentPath.substr( -1 ) !== '/' ) {
-      currentPath += '/';
-    }
+    var currentPath = nl.sara.beehub.controller.getPath()
+//    if ( currentPath.substr( -1 ) !== '/' ) {
+//      currentPath += '/';
+//    }
 
     if ( collectionOrg === currentPath ) {
 //       delete current row

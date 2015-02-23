@@ -49,7 +49,7 @@
     var link = $( this );
     // If there is an alter handler has been defined, use call that one
     if ( directoryClickHandlerAlternative !== null ) {
-      directoryClickHandlerAlternative( link.attr( 'href' ) );
+      directoryClickHandlerAlternative( decodeURI(link.attr( 'href' )) );
       return false;
     }
 
@@ -130,7 +130,7 @@
         }
       }else{
         // If there is no list loaded yet; load one now!
-        var url = expander.siblings( 'a' ).attr( 'href' );
+        var url = decodeURI(expander.siblings( 'a' ).attr( 'href' ));
         nl.sara.beehub.controller.getTreeNode( url, nl.sara.beehub.controller.createGetTreeNodeCallback(url, parent, expander));
       }
     }
@@ -141,15 +141,16 @@
     var childCollections = {};
     for ( var pathindex in data.getResponseNames() ) {
       var path = data.getResponseNames()[pathindex];
-
+      var decodedPath = decodeURI(path);
+      
       // We only want to add children and only if they are directories
-      if ( ( url !== path) &&
+      if ( ( url !== decodedPath) &&
            ( data.getResponse( path ).getProperty( 'DAV:','resourcetype' ) !== null ) &&
            ( nl.sara.webdav.codec.ResourcetypeCodec.COLLECTION === data.getResponse( path ).getProperty( 'DAV:','resourcetype' ).getParsedValue() )
          )
       {
-        childArray.push( path.toLowerCase() );
-        childCollections[ path.toLowerCase() ] = path;
+        childArray.push( decodedPath.toLowerCase() );
+        childCollections[ decodedPath.toLowerCase() ] = decodedPath;
       }
     }
 
@@ -157,7 +158,7 @@
     var list = $( '<ul></ul>' );
     for ( var index in childArray ) {
       var path = childCollections[ childArray[ index ] ];
-      var element = createTreeElement( path, ( parseInt( index ) === ( childArray.length - 1 ) ) );
+      var element = createTreeElement( decodedPath, ( parseInt( index ) === ( childArray.length - 1 ) ) );
       list.append( element );
     }
 
@@ -187,8 +188,9 @@
     while (name.substring(name.length-1) === '/') {
       name = name.substr(0, name.length-1);
     };
-    name = decodeURIComponent( name.substr( name.lastIndexOf( '/' ) + 1 ) );
-    
+//    name = decodeURIComponent( name.substr( name.lastIndexOf( '/' ) + 1 ) );
+    name = name.substr( name.lastIndexOf( '/' ) + 1 );
+
     var element = $( '<li></li>' );
     if ( last)  {
       element.addClass( 'dynatree-lastsib' );
@@ -203,7 +205,7 @@
     var expanderSpan = $( '<span class="dynatree-expander"></span>' );
     var iconSpan = $( '<span class="dynatree-icon"></span>' );
     var link = $( '<a class="dynatree-title"></a>' );
-    link.attr( 'href', path );
+    link.attr( 'href', nl.sara.beehub.encodeURIFullPath(path ));
     link.text( name );
     elementSpan.append( expanderSpan );
     elementSpan.append( iconSpan );
@@ -374,7 +376,7 @@
 
     // Determine which path we want to extend now
     expandedPath += parents.shift() + '/';
-    var parentLink = $( 'a[href="' + encodeURI( expandedPath ) + '"]', treeNode );
+    var parentLink = $( 'a[href="' + nl.sara.beehub.encodeURIFullPath( expandedPath ) + '"]', treeNode );
     if ( parentLink.length === 0 ) {
       throw "Unable to add directory to the tree: parent directory does not exist";
     }
@@ -396,7 +398,7 @@
 
   function addDirectory( path ) {
     // Start with checking if the path doesn't exist yet (now all parents are expanded)
-    if ( $( 'a[href="' + encodeURI( path ) + '"]', treeNode ).length > 0 ) {
+    if ( $( 'a[href="' + nl.sara.beehub.encodeURIFullPath( path ) + '"]', treeNode ).length > 0 ) {
       return;
     }
 
@@ -405,7 +407,7 @@
     var parentSpan;
     var list;
     if ( parentPath !== '/' ) {
-      parentSpan = $( 'a[href="' + encodeURI( parentPath ) + '"]', treeNode ).parent('span');
+      parentSpan = $( 'a[href="' + nl.sara.beehub.encodeURIFullPath( parentPath ) + '"]', treeNode ).parent('span');
       parentLi = parentSpan.parent( 'li' );
 
       // Get the list
@@ -468,9 +470,9 @@
         parentSpan.addClass( 'dynatree-has-children' );
         nl.sara.beehub.view.tree.attachEvents( parentLi );
       }
-      list.append( createTreeElement( encodeURI( path ), true ) );
+      list.append( createTreeElement( path , true ) );
     }else{
-      nextElement.before( createTreeElement( encodeURI( path ), false ) );
+      nextElement.before( createTreeElement( path , false ) );
     }
   }
 
@@ -485,7 +487,7 @@
     }
 
     // Remove the list element representing the path to be deleted
-    var pathLink = $( 'a[href="' + encodeURI( path ) + '"]', treeNode );
+    var pathLink = $( 'a[href="' + nl.sara.beehub.encodeURIFullPath( path ) + '"]', treeNode );
     if ( pathLink.length === 0 ) {
       // This path doesn't exist, so we're done without doing anything :)
       return;
@@ -539,11 +541,11 @@
   nl.sara.beehub.view.tree.updateResource = function(resourceOrg, resourceNew){
     if ( resourceOrg.type === 'collection' ) {
       // delete current row
-      nl.sara.beehub.view.tree.removePath( decodeURI( resourceOrg.path ) );
+      nl.sara.beehub.view.tree.removePath( resourceOrg.path  );
     }
     if ( resourceNew.type === 'collection' ) {
       // add new row
-      nl.sara.beehub.view.tree.addPath( decodeURI( resourceNew.path ) );
+      nl.sara.beehub.view.tree.addPath( resourceNew.path );
     }
   };
    

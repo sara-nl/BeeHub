@@ -155,7 +155,6 @@ class BeeHub {
    * @return  string         The location where the data is stored in the storage backend
    */
   public static function localPath($path) {
-    $path = rawurldecode( $path );
     if ( substr( $path, 0, 1 ) === '/' ) {
       $path = substr( $path, 1 );
     }
@@ -226,8 +225,7 @@ class BeeHub {
    */
   public static function user($name) {
     if ($name[0] !== '/')
-      $name = BeeHub::USERS_PATH .
-        rawurlencode($name);
+      $name = BeeHub::USERS_PATH . $name;
     $retval = DAV::$REGISTRY->resource( $name );
     if ( !$retval || !( $retval instanceof BeeHub_User ) ) throw new DAV_Status(
       DAV::HTTP_FORBIDDEN, DAV::COND_RECOGNIZED_PRINCIPAL
@@ -245,8 +243,7 @@ class BeeHub {
    */
   public static function group($name) {
     if ($name[0] !== '/')
-      $name = BeeHub::GROUPS_PATH .
-        rawurlencode($name);
+      $name = BeeHub::GROUPS_PATH . $name;
     $retval = DAV::$REGISTRY->resource( $name );
     if ( !$retval || !( $retval instanceof BeeHub_Group ) ) throw new DAV_Status(
       DAV::HTTP_FORBIDDEN, DAV::COND_RECOGNIZED_PRINCIPAL
@@ -264,8 +261,7 @@ class BeeHub {
    */
   public static function sponsor($name) {
     if ($name[0] !== '/')
-      $name = BeeHub::SPONSORS_PATH .
-        rawurlencode($name);
+      $name = BeeHub::SPONSORS_PATH . $name;
     $retval = DAV::$REGISTRY->resource( $name );
     if ( !$retval || !( $retval instanceof BeeHub_Sponsor ) ) throw new DAV_Status(
       DAV::HTTP_FORBIDDEN, DAV::COND_RECOGNIZED_PRINCIPAL
@@ -299,7 +295,7 @@ class BeeHub {
         $notifications[] = array(
             'type' => 'group_invitation',
             'data' => array(
-                'group'       => BeeHub::GROUPS_PATH . rawurlencode( $row['name'] ),
+                'group'       => BeeHub::GROUPS_PATH . $row['name'],
                 'displayname' => $row['displayname']
             )
         );
@@ -313,7 +309,7 @@ class BeeHub {
           $notifications[] = array(
               'type' => 'group_request',
               'data' => array(
-                  'group'             => BeeHub::GROUPS_PATH . rawurlencode( $group['name'] ),
+                  'group'             => BeeHub::GROUPS_PATH . $group['name'],
                   'group_displayname' => $group['displayname'],
                   'user'              => $user->path,
                   'user_displayname'  => $user->user_prop_displayname(),
@@ -336,7 +332,7 @@ class BeeHub {
             $notifications[] = array(
                 'type' => 'sponsor_request',
                 'data' => array(
-                    'sponsor'             => BeeHub::SPONSORS_PATH . rawurlencode( $sponsor['name'] ),
+                    'sponsor'             => BeeHub::SPONSORS_PATH . $sponsor['name'],
                     'sponsor_displayname' => $sponsor['displayname'],
                     'user'                => $user->path,
                     'user_displayname'    => $user->user_prop_displayname(),

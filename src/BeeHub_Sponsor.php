@@ -247,7 +247,7 @@ BeeHub';
       $user_accepted_memberships[$user_name] = 1;
 
       // And finaly, also the properties of this object
-      $this->users[ BeeHub::USERS_PATH . rawurlencode( $user_name ) ] = array(
+      $this->users[ BeeHub::USERS_PATH . $user_name ] = array(
         'is_admin' => false,
         'is_accepted' => false
       );
@@ -285,12 +285,12 @@ BeeHub';
       }
 
       // And finaly, also the properties of this object
-      $this->users[ BeeHub::USERS_PATH . rawurlencode( $user_name ) ] = array(
+      $this->users[ BeeHub::USERS_PATH . $user_name ] = array(
         'is_admin' => false,
         'is_accepted' => true
       );
       if ( ! in_array( $user_name, $this->stored_props[DAV::PROP_GROUP_MEMBER_SET] ) ) {
-        $this->stored_props[DAV::PROP_GROUP_MEMBER_SET][] = BeeHub::USERS_PATH . rawurlencode( $user_name );
+        $this->stored_props[DAV::PROP_GROUP_MEMBER_SET][] = BeeHub::USERS_PATH . $user_name;
       }
 
     }
@@ -316,7 +316,7 @@ BeeHub';
       $admins[$user_name] = 1;
 
       // And finaly, also the properties of this object
-      $this->users[ BeeHub::USERS_PATH . rawurlencode( $user_name ) ] = array(
+      $this->users[ BeeHub::USERS_PATH . $user_name ] = array(
         'is_admin' => true,
         'is_accepted' => true
       );
@@ -343,7 +343,7 @@ BeeHub';
       $members[$user_name] = 1;
 
       // And finaly, also the properties of this object
-      $this->users[ BeeHub::USERS_PATH . rawurlencode( $user_name ) ] = array(
+      $this->users[ BeeHub::USERS_PATH . $user_name ] = array(
         'is_admin' => false,
         'is_accepted' => true
       );
@@ -376,8 +376,8 @@ BeeHub';
     }
 
     // And unset the necessary properties of this object
-    unset( $this->users[ BeeHub::USERS_PATH . rawurlencode( $user_name ) ] );
-    $key = array_search( BeeHub::USERS_PATH . rawurlencode( $user_name ), $this->stored_props[DAV::PROP_GROUP_MEMBER_SET] );
+    unset( $this->users[ BeeHub::USERS_PATH . $user_name ] );
+    $key = array_search( BeeHub::USERS_PATH . $user_name, $this->stored_props[DAV::PROP_GROUP_MEMBER_SET] );
     if ( $key !== false ) {
       unset( $this->stored_props[DAV::PROP_GROUP_MEMBER_SET][$key] );
     }
@@ -494,7 +494,7 @@ BeeHub';
     if ( $user instanceof BeeHub_User ) {
       return $user->name;
     }else{
-      return rawurldecode( basename( $user ) );
+      return basename( $user );
     }
   }
 
@@ -518,28 +518,28 @@ BeeHub';
         $document['members'] = array();
       }
       foreach ( $document['members'] as $username ) {
-        $this->users[ BeeHub::USERS_PATH . rawurlencode( $username ) ] = array(
+        $this->users[ BeeHub::USERS_PATH . $username ] = array(
           'is_accepted' => true,
           'is_admin' => false
         );
-        $members[] = BeeHub::USERS_PATH . rawurlencode( $username );
+        $members[] = BeeHub::USERS_PATH . $username;
       }
       if ( !isset( $document['admins'] ) ) {
         $document['admins'] = array();
       }
       foreach ( $document['admins'] as $username ) {
-        $this->users[ BeeHub::USERS_PATH . rawurlencode( $username ) ] = array(
+        $this->users[ BeeHub::USERS_PATH . $username ] = array(
           'is_accepted' => true,
           'is_admin' => true
         );
-        $members[] = BeeHub::USERS_PATH . rawurlencode( $username );
+        $members[] = BeeHub::USERS_PATH . $username;
       }
       $this->stored_props[DAV::PROP_GROUP_MEMBER_SET] = $members;
       if ( !isset( $document['user_accepted_memberships'] ) ) {
         $document['user_accepted_memberships'] = array();
       }
       foreach ( $document['user_accepted_memberships'] as $username ) {
-        $this->users[ BeeHub::USERS_PATH . rawurlencode( $username ) ] = array(
+        $this->users[ BeeHub::USERS_PATH . $username ] = array(
           'is_accepted' => false,
           'is_admin' => false
         );

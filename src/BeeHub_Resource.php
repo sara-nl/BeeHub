@@ -302,7 +302,7 @@ public function set_acl( $aces ) {
         DAV::HTTP_BAD_REQUEST,
         'Illegal value for property sponsor.'
       );
-    $this->user_set_sponsor(DAV::parseURI($sponsor->URIs[0]));
+    $this->user_set_sponsor( $sponsor->URIs[0] );
   }
 
 
