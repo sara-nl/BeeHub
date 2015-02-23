@@ -67,7 +67,6 @@ class BeeHub_MongoResource extends BeeHub_Resource {
         if ( substr( $path, 0, 1 ) === '/' ) {
           $path = substr( $path, 1 );
         }
-        $path = urldecode( $path );
         $document = $collection->findOne( array('path' => $path ) );
       }
 
@@ -77,10 +76,10 @@ class BeeHub_MongoResource extends BeeHub_Resource {
         foreach ( $document['props'] as $key => $value ) {
           $decoded_key = rawurldecode( $key );
           if ( $decoded_key === DAV::PROP_OWNER ) {
-            $value = BeeHub::USERS_PATH . rawurlencode( $value );
+            $value = BeeHub::USERS_PATH . $value;
           }
           if ( $decoded_key === BeeHub::PROP_SPONSOR ) {
-            $value = BeeHub::SPONSORS_PATH . rawurlencode( $value );
+            $value = BeeHub::SPONSORS_PATH . $value;
           }
           $this->stored_props[ $decoded_key ] = $value;
         }
@@ -146,7 +145,7 @@ class BeeHub_MongoResource extends BeeHub_Resource {
    * @see DAV_Resource::user_prop_displayname()
    */
   public function user_prop_displayname() {
-    return rawurldecode(basename($this->path));
+    return basename($this->path);
   }
 
 
@@ -263,7 +262,7 @@ class BeeHub_MongoResource extends BeeHub_Resource {
     }
     
     $collection = BeeHub::getNoSQL()->files;
-    $path = urldecode( trim( $this->path, '/' ) );
+    $path = trim( $this->path, '/' );
     $document = $collection->findOne( array('path' => $path ) );
     
     $urlencodedProps = array();
