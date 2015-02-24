@@ -601,14 +601,14 @@
       if (nl.sara.beehub.controller.actionDestination !== path) {
         nl.sara.beehub.view.dialog.updateResourceInfo(resource,"Copy resource. This can take a while and no progress info is available. Please wait...");
         // start copy
-        webdav.copy(nl.sara.beehub.encodeURIFullPath(resource.path), createActionCallback(resource, 0, false), resourceDestination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
+        webdav.copy(nl.sara.beehub.encodeURIFullPath(resource.path), createActionCallback(resource, 0, false), nl.sara.beehub.encodeURIFullPath(resourceDestination), nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
       } else {
        resourceDestination = nl.sara.beehub.controller.actionDestination + resource.displayname+"_1";
        // start copy or move with new name
        // Update dialog info
        nl.sara.beehub.view.dialog.updateResourceInfo(resource,"Copy resource. This can take a while and no progress info is available. Please wait...");
        // start copy request
-       webdav.copy(nl.sara.beehub.encodeURIFullPath(resource.path), createActionCallback(resource, 1, false), resourceDestination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
+       webdav.copy(nl.sara.beehub.encodeURIFullPath(resource.path), createActionCallback(resource, 1, false), nl.sara.beehub.encodeURIFullPath(resourceDestination), nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
       } 
        break;
     // move settings 
@@ -617,7 +617,7 @@
       var resourceDestination = nl.sara.beehub.controller.actionDestination + resource.displayname;
       if (nl.sara.beehub.controller.actionDestination !== path) {
         // start move
-        webdav.move(nl.sara.beehub.encodeURIFullPath(resource.path),createActionCallback(resource, 0, false), resourceDestination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
+        webdav.move(nl.sara.beehub.encodeURIFullPath(resource.path),createActionCallback(resource, 0, false), nl.sara.beehub.encodeURIFullPath(resourceDestination), nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
       } else {
         nl.sara.beehub.view.dialog.showError("Moving an item to itself is not possible. Use rename icon for renaming the resource(s).");
       }
@@ -692,11 +692,11 @@
             // Update dialog info
             nl.sara.beehub.view.dialog.updateResourceInfo(resource,"Copy resource. This can take a while and no progress info is available. Please wait...");
             // start copy request
-            webdav.copy(nl.sara.beehub.encodeURIFullPath(resource.path), createActionCallback(resource, renameCounter, true), resourceDestination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
+            webdav.copy(nl.sara.beehub.encodeURIFullPath(resource.path), createActionCallback(resource, renameCounter, true), nl.sara.beehub.encodeURIFullPath(resourceDestination), nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
           };
           if (nl.sara.beehub.controller.actionAction === "move") {
             // start move request
-            webdav.move(nl.sara.beehub.encodeURIFullPath(resource.path), createActionCallback(resource, renameCounter, true), resourceDestination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
+            webdav.move(nl.sara.beehub.encodeURIFullPath(resource.path), createActionCallback(resource, renameCounter, true), nl.sara.beehub.encodeURIFullPath(resourceDestination), nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
           };
         }
         break;
@@ -980,28 +980,28 @@
         var overwrite = function() {
           var resourceDestination = nl.sara.beehub.controller.actionDestination + resource.displayname;
           // start copy with SILENT OVERWRITE and renameCounter=0
-          webdav.copy(nl.sara.beehub.encodeURIFullPath(resource.path), createActionCallback(resource, 0, false), resourceDestination, nl.sara.webdav.Client.SILENT_OVERWRITE);
+          webdav.copy(nl.sara.beehub.encodeURIFullPath(resource.path), createActionCallback(resource, 0, false), nl.sara.beehub.encodeURIFullPath(resourceDestination), nl.sara.webdav.Client.SILENT_OVERWRITE);
         };
         
         var rename = function() {
           // change destination name with renameCounter
           var resourceDestination = nl.sara.beehub.controller.actionDestination + resource.displayname+"_1";
           // start copy with renameCounter=1
-          webdav.copy(nl.sara.beehub.encodeURIFullPath(resource.path), createActionCallback(resource, 1, false), resourceDestination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
+          webdav.copy(nl.sara.beehub.encodeURIFullPath(resource.path), createActionCallback(resource, 1, false), nl.sara.beehub.encodeURIFullPath(resourceDestination), nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
         };
         break;
       case "move": 
         var overwrite = function() {
           var resourceDestination = nl.sara.beehub.controller.actionDestination + resource.displayname;
           // start move with SILENT OVERWRITE and renameCounter=0
-          webdav.move(nl.sara.beehub.encodeURIFullPath(resource.path), createActionCallback(resource, 0, false), resourceDestination, nl.sara.webdav.Client.SILENT_OVERWRITE);
+          webdav.move(nl.sara.beehub.encodeURIFullPath(resource.path), createActionCallback(resource, 0, false), nl.sara.beehub.encodeURIFullPath(resourceDestination), nl.sara.webdav.Client.SILENT_OVERWRITE);
         };
         
         var rename = function() {
           // change destination name with renameCounter
           var resourceDestination = nl.sara.beehub.controller.actionDestination + resource.displayname+"_1";
           // start move with renameCounter=1
-          webdav.move(nl.sara.beehub.encodeURIFullPath(resource.path), createActionCallback(resource, 1, false), resourceDestination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
+          webdav.move(nl.sara.beehub.encodeURIFullPath(resource.path), createActionCallback(resource, 1, false), nl.sara.beehub.encodeURIFullPath(resourceDestination), nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
         };  
         break;
       case "upload":
