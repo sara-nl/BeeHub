@@ -158,7 +158,7 @@
     var list = $( '<ul></ul>' );
     for ( var index in childArray ) {
       var path = childCollections[ childArray[ index ] ];
-      var element = createTreeElement( decodedPath, ( parseInt( index ) === ( childArray.length - 1 ) ) );
+      var element = createTreeElement( path, ( parseInt( index ) === ( childArray.length - 1 ) ) );
       list.append( element );
     }
 
