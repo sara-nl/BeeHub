@@ -61,7 +61,7 @@ nl.sara.beehub.encodeURIFullPath = function( path ) {
   var pathElements = path.split('/'); // BeeHub does not accept / in a 
 // file name, this is always a path delimiter
   for ( var index in pathElements ) {
-    pathElements[ index ] = encodeURI( pathElements[ index ] );
+    pathElements[ index ] = encodeURIComponent( pathElements[ index ] );
   }
   return pathElements.join('/');
 }
@@ -296,7 +296,7 @@ nl.sara.beehub.utils.bytesToSize = function(bytes, precision)
  * Returns path with slash at the end
  */
 nl.sara.beehub.utils.getPath = function() {
- var path = decodeURI(location.pathname);
+ var path = decodeURIComponent(location.pathname);
  // add slash to the end of path
  if (!path.match(/\/$/)) {
    path=path+'/'; 

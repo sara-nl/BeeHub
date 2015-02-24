@@ -35,7 +35,7 @@
   /*
    * Add slash to the end of the path
    */
-  var path = decodeURI(location.pathname);
+  var path = decodeURIComponent(location.pathname);
   if (!path.match(/\/$/)) {
     path=path+'/'; 
   };
@@ -150,7 +150,7 @@
   var extractPropsFromPropfindRequest = function(data){
     var encodedPath = data.getResponseNames()[0];
 
-    var resource = new nl.sara.beehub.ClientResource(decodeURI(encodedPath));
+    var resource = new nl.sara.beehub.ClientResource(decodeURIComponent(encodedPath));
     
     // Get type
     if (data.getResponse(encodedPath).getProperty('DAV:','resourcetype').getParsedValue() !== null) {
@@ -272,7 +272,7 @@
         var sponsorObjects = [];
         for (var i in sponsors) {
           var sponsor = {};
-          sponsor.name = decodeURI(sponsors[i]);
+          sponsor.name = decodeURIComponent(sponsors[i]);
           sponsor.displayname = nl.sara.beehub.controller.getDisplayName(sponsor.name);
           sponsorObjects.push(sponsor);
         }
@@ -420,7 +420,7 @@
    */
   nl.sara.beehub.controller.renameResource = function(resource, fileNameNew, overwriteMode){
     var webdav = new nl.sara.webdav.Client();
-    webdav.move(nl.sara.beehub.encodeURIFullPath(resource.path), createRenameCallback(resource, fileNameNew, overwriteMode), encodeURI(path + fileNameNew),  overwriteMode);
+    webdav.move(nl.sara.beehub.encodeURIFullPath(resource.path), createRenameCallback(resource, fileNameNew, overwriteMode), nl.sara.beehub.encodeURIFullPath(path + fileNameNew),  overwriteMode);
   };
   
   /**
@@ -1171,7 +1171,7 @@
           aceObject['principal'] = 'DAV: self';
           break;
         default:
-          aceObject['principal'] = decodeURI(ace.principal);
+          aceObject['principal'] = decodeURIComponent(ace.principal);
         break;
       }
     }  

@@ -49,7 +49,7 @@
     var link = $( this );
     // If there is an alter handler has been defined, use call that one
     if ( directoryClickHandlerAlternative !== null ) {
-      directoryClickHandlerAlternative( decodeURI(link.attr( 'href' )) );
+      directoryClickHandlerAlternative( decodeURIComponent(link.attr( 'href' )) );
       return false;
     }
 
@@ -130,7 +130,7 @@
         }
       }else{
         // If there is no list loaded yet; load one now!
-        var url = decodeURI(expander.siblings( 'a' ).attr( 'href' ));
+        var url = decodeURIComponent(expander.siblings( 'a' ).attr( 'href' ));
         nl.sara.beehub.controller.getTreeNode( url, nl.sara.beehub.controller.createGetTreeNodeCallback(url, parent, expander));
       }
     }
@@ -141,7 +141,7 @@
     var childCollections = {};
     for ( var pathindex in data.getResponseNames() ) {
       var path = data.getResponseNames()[pathindex];
-      var decodedPath = decodeURI(path);
+      var decodedPath = decodeURIComponent(path);
       
       // We only want to add children and only if they are directories
       if ( ( url !== decodedPath) &&
