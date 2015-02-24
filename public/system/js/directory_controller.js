@@ -601,7 +601,7 @@
       if (nl.sara.beehub.controller.actionDestination !== path) {
         nl.sara.beehub.view.dialog.updateResourceInfo(resource,"Copy resource. This can take a while and no progress info is available. Please wait...");
         // start copy
-        webdav.copy(resource.path, createActionCallback(resource, 0, false), resourceDestination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
+        webdav.copy(nl.sara.beehub.encodeURIFullPath(resource.path), createActionCallback(resource, 0, false), resourceDestination, nl.sara.webdav.Client.FAIL_ON_OVERWRITE);
       } else {
        resourceDestination = nl.sara.beehub.controller.actionDestination + resource.displayname+"_1";
        // start copy or move with new name

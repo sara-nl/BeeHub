@@ -367,7 +367,7 @@
    */
   nl.sara.beehub.view.content.addResource = function(resource){
     var collection = resource.path.substr( 0, resource.path.lastIndexOf( '/', resource.path.length - 2 ) + 1 );
-    var currentPath = location.pathname;
+    var currentPath = nl.sara.beehub.controller.getPath();
 
     if ( currentPath.substr( -1 ) !== '/' ) {
       currentPath += '/';
