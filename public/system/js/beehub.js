@@ -77,7 +77,7 @@ nl.sara.beehub.retrieveNewPostAuth = function(){
    if ( status === 200 ) {
      nl.sara.beehub.postAuth = data;
    } else {
-     alert("Something went wrong. Please reload the page. When this does not solve the problem contact support@beehub.nl");
+     alert("Something went wrong. Please reload the page. When this does not solve the problem contact helpdesk@surfsara.nl");
    };
  });
 };

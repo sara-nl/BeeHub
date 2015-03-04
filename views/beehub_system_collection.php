@@ -26,7 +26,7 @@ require 'views/header.php';
 <div class="row-fluid">
   <div class="span12">
     <h5>Support</h5>
-    If you have any questions or remarks, please read the <a href="https://www.surfsara.nl/systems/beehub/usage/">documentation</a> or contact us at <a href="mailto:support@beehub.nl">support@beehub.nl</a>.
+    If you have any questions or remarks, please read the <a href="https://www.surfsara.nl/systems/beehub/usage/">documentation</a> or contact us at <a href="mailto:helpdesk@surfsara.nl?subject=I%20got%20stung%20by%20a%20bee!">helpdesk@surfsara.nl</a>.
   </div>
 </div>
 <?php require 'views/footer.php'; ?>
