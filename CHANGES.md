@@ -1,5 +1,12 @@
 # Change log
 
+## v2.0.2
+- Now really fixed the bugs with URL encoded paths and file names; files and directories with all sorts of crazy characters should now work fine again
+
+## v2.0.1
+- Reverted the lock system back to the mySQL implementation
+- Tried to solve some bugs with URL encoding
+
 ## v2.0
 - js-webdav-lib is now no longer linked as a submodule, but instead is copied directly into the repository
 - E-mail is now being send using the Zend\Mail classes. This means it can be sent over SMTP.
