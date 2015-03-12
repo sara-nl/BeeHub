@@ -298,6 +298,22 @@ class BeeHub_MongoResource extends BeeHub_Resource {
    * @see DAVACL_Resource::user_set_acl()
    */
   public function user_set_acl($aces) {
+    $trimmedPath = trim( $this->path, '/' );
+    if ( ( substr( $trimmedPath, 0, 5 ) === 'home' . DIRECTORY_SEPARATOR ) && ( strrpos ( $trimmedPath, '/' ) === 4 ) ) {
+      // This is a user's home folder, so no ACE's allowed which grant access to 'DAV: unauthenticated' or 'DAV: authenticated' principals
+      foreach ( $aces as $ace ) {
+        if (
+          ( ! $ace->deny ) &&
+          (
+            ( $ace->principal === DAVACL::PRINCIPAL_ALL ) ||
+            ( $ace->principal === DAVACL::PRINCIPAL_AUTHENTICATED ) ||
+            ( $ace->principal === DAVACL::PRINCIPAL_UNAUTHENTICATED )
+          )
+        ){
+          throw new DAV_Status( DAV::HTTP_FORBIDDEN, "On users' home folders, it is not allowed to grant privileges to unauthenticated users or to 'all BeeHub users' in general" );
+        }
+      }
+    }
     $this->user_set(DAV::PROP_ACL, $aces ? DAVACL_Element_ace::aces2json($aces) : null);
     $this->storeProperties();
   }

@@ -1,5 +1,8 @@
 # Change log
 
+## v2.0.3
+- It is now forbidden to grant privileges to a home folder (members of /home/) without specifying a specific group or user. In other words, "DAV: all", "DAV: authenticated" and "DAV: unauthenticated" are no longer allowed to have an ACE granting them privileges to these folders.
+
 ## v2.0.2
 - Now really fixed the bugs with URL encoded paths and file names; files and directories with all sorts of crazy characters should now work fine again
 

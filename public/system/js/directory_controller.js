@@ -1298,7 +1298,8 @@
         ( ace.principal === nl.sara.webdav.Ace.AUTHENTICATED )
       )
     ) {
-      return confirm( 'You are about to give a large group access to your home folder. Are you sure that this is what you want to do?' );
+      alert( 'You can only give a specific group or user access to your home folder.' );
+      return false;
     }
     
     return true;

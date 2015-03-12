@@ -54,7 +54,7 @@
   var rememberFailOnOverwrite =                     nl.sara.webdav.Client.FAIL_ON_OVERWRITE;
   var rememberSilelentOverwrite =                   nl.sara.webdav.Client.SILENT_OVERWRITE;
   var rememberPrincipals =                          deepCopy(nl.sara.beehub.principals);
-  var rememberConfirm =                             window.confirm;
+  var rememberAlert =                               window.alert;
   var rememberClearAllViews =                       nl.sara.beehub.view.clearAllViews;
   var rememberClearDialogView =                     nl.sara.beehub.view.dialog.clearView;
   var rememberMaskView =                            nl.sara.beehub.view.maskView;
@@ -170,7 +170,7 @@
     nl.sara.beehub.view.content.errorNewSponsor =           rememberErrorNewSponsor;
     nl.sara.beehub.view.content.setNewSponsor =             rememberSetNewSponsor;
     nl.sara.beehub.principals  =                            deepCopy(rememberPrincipals);
-    window.confirm =                                         rememberConfirm; 
+    window.alert =                                          rememberAlert;
 
   };
   
@@ -3403,74 +3403,8 @@
       addAclRuleDialog( ace );
     };
     
-    window.confirm = function() { 
-      ok( true, 'User is being asked what he/she wants' );
-      return false;
-    };
-    
-    // call function on home
-    nl.sara.beehub.controller.getAclFromServer(nl.sara.beehub.view.getHomePath());
-  });
-  
-  /**
-   * Test private addAclRuleDialog via getAclFromServer : grant privilege on home dir
-   */
-  test("nl.sara.beehub.controller.addAclRule: grant privilege on home dir --> OK on warning", function(){
-    expect(2);
-
-     nl.sara.beehub.view.acl.getViewPath = function(){ return nl.sara.beehub.view.getHomePath(); };
-
-     nl.sara.beehub.view.acl.setView = function(){
-       // Do nothing
-     };
-     
-     nl.sara.beehub.view.acl.addRow = function(row, index){
-       // Do nothing
-     };
- 
-     nl.sara.beehub.controller.saveAclOnServer = function(okfunc, notokfunc){
-       ok( true, 'saveAclOnServer should be called' );
-     };
- 
-     nl.sara.beehub.view.acl.deleteRowIndex = function(index){
-       ok( false, 'deleteRowIndex should not be called' );
-     };
-
-     nl.sara.beehub.view.dialog.showAcl = function(){
-       // Do nothing
-     };
-    
-     nl.sara.webdav.Client.prototype.propfind = function(path,callback){
-          var data = getDataObject(nl.sara.beehub.view.getHomePath(), null, 200, [{
-          principal         :     nl.sara.webdav.Ace.SELF,
-          principalString   :     'DAV: self',
-          invertprincipal   :     false,
-          isprotected       :     false,
-          inherited         :     false,
-          grantdeny         :     1,
-          permString        :     "allow read",
-          getPrivilegeNames :     function(){return ["read"];}
-         }]);
-        callback(207, data);
-      },
-      nl.sara.webdav.Client.prototype.acl = function(){
-        
-      };
-    
-    nl.sara.beehub.view.acl.setAddAclRuleDialogClickHandler = function(addAclRuleDialog){
-      var readPrivilege = new nl.sara.webdav.Privilege();
-      readPrivilege.namespace = 'DAV:';
-      readPrivilege.tagname = 'read';
-      var ace = new nl.sara.webdav.Ace();
-      ace.principal = nl.sara.webdav.Ace.ALL;
-      ace.grantdeny = nl.sara.webdav.Ace.GRANT;
-      ace.addPrivilege( readPrivilege );
-      addAclRuleDialog( ace );
-    };
-    
-    window.confirm = function() { 
-      ok( true, 'User is being asked what he/she wants' );
-      return true;
+    window.alert = function() { 
+      ok( true, 'User is notified that this is not allowed' );
     };
     
     // call function on home
@@ -3554,57 +3488,8 @@
       ok( false, 'deleteRowIndex should not be called' );
     };
 
-    var oldConfirm = window.confirm;
-    window.confirm = function() {
-      ok( true, 'User is being asked what he/she wants' );
-      return false;
-    };
-    nl.sara.beehub.controller.addAclRule();
-    window.confirm = oldConfirm;
-  });
-
-  /**
-   * Test nl.sara.beehub.controller.addAclRule: grant privilege on home dir
-   */
-  test("nl.sara.beehub.controller.addAclRule: grant privilege on home dir --> accept warning", function(){
-    expect(6);
-
-    nl.sara.beehub.view.acl.getViewPath = function(){ return nl.sara.beehub.view.getHomePath(); };
-
-    nl.sara.beehub.view.dialog.showAddRuleDialog = function(actionFunction, html){
-      if (html.length > 0){
-        ok(true, "Html is created.");
-      }
-      var readPrivilege = new nl.sara.webdav.Privilege();
-      readPrivilege.namespace = 'DAV:';
-      readPrivilege.tagname = 'read';
-      var ace = new nl.sara.webdav.Ace();
-      ace.principal = nl.sara.webdav.Ace.ALL;
-      ace.grantdeny = nl.sara.webdav.Ace.GRANT;
-      ace.addPrivilege( readPrivilege );
-      actionFunction(ace);
-    };
-
-    nl.sara.beehub.view.acl.addRow = function(row, index){
-      deepEqual(index,0, "Index should be 0.");
-    };
-
-    nl.sara.beehub.controller.saveAclOnServer = function(okfunc, notokfunc){
-      okfunc();
-      notokfunc();
-    };
-
-    nl.sara.beehub.view.dialog.clearView = function(){
-      ok(true, "Clear view is called.");
-    };
-
-    nl.sara.beehub.view.acl.deleteRowIndex = function(index){
-      deepEqual(index, 1, "Index should be 1.");
-    };
-
-    window.confirm = function() {
-      ok( true, 'User is being asked what he/she wants' );
-      return true;
+    window.alert = function() {
+      ok( true, 'User is being notified that this is not allowed' );
     };
     nl.sara.beehub.controller.addAclRule();
   });
@@ -3662,49 +3547,12 @@
       deepEqual(oldVal, "oldVal", "Oldval should be oldVal.");
     };
 
-    window.confirm = function() {
-      ok( true, 'User is being asked what he/she wants' );
-      return false;
+    window.alert = function() {
+      ok( true, 'User is being notified that this is not allowed' );
     };
     nl.sara.beehub.controller.changePermissions( originalRow, "oldVal" );
   });
 
-  /**
-   * Test changePermissions
-   */
-  test("nl.sara.beehub.controller.changePermissions: grant privilege on home dir --> accept warning", function(){
-    expect(4);
-
-    nl.sara.beehub.view.acl.getViewPath = function(){ return nl.sara.beehub.view.getHomePath(); };
-
-    nl.sara.beehub.controller.saveAclOnServer = function(okfunc, notokfunc){
-      ok( true, 'savAclOnServer should be called' );
-      okfunc();
-      notokfunc();
-    };
-
-    var readPrivilege = new nl.sara.webdav.Privilege();
-    readPrivilege.namespace = 'DAV:';
-    readPrivilege.tagname = 'read';
-    var ace = new nl.sara.webdav.Ace();
-    ace.principal = nl.sara.webdav.Ace.ALL;
-    ace.addPrivilege( readPrivilege );
-    var originalRow = nl.sara.beehub.view.acl.createRow( ace );
-
-    nl.sara.beehub.view.acl.changePermissions = function(row, oldVal){
-      deepEqual(row, originalRow, "Row should be row.");
-      deepEqual(oldVal, "oldVal", "Oldval should be oldVal.");
-    };
-
-    var oldConfirm = window.confirm;
-    window.confirm = function() {
-      ok( true, 'User is being asked what he/she wants' );
-      return true;
-    };
-    nl.sara.beehub.controller.changePermissions( originalRow, "oldVal" );
-    window.confirm = oldConfirm;
-  });
-  
   /**
    * Test deleteAclRule
    */

@@ -176,7 +176,7 @@ function clientUser2() {
  * @returns  {String}  The path
  */
 function basePath() {
-  return '/home/' + username1 + '/';
+  return '/home/' + username1 + '/testDir.removeMe/';
 }
 
 
@@ -186,37 +186,62 @@ nl.sara.testutil.queueTest( 'Deny access to user 2 if directory owned by user 1'
   var client2 = clientUser2();
 
   // Make sure the testDir does not exist
-  client1.remove( basePath() + 'testDir', function( status ) {
+  client1.remove( basePath(), function( status ) {
     if ( ( status < 200 ) || ( ( status > 299 ) && ( status !== 404 ) ) ) {
       nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'Unable to clear test directory ' + basePath() + 'testDir' + ' . Status code: ' + status );
       return;
     }
 
     // Create a directory for user 1
-    client1.mkcol( basePath() + 'testDir', function( status ) {
+    client1.mkcol( basePath(), function( status ) {
       if ( ( status < 200 ) || ( status > 299 ) ) {
-        nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'Unable to create directory. Status code: ' + status );
+        nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'Unable to create test directory. Status code: ' + status );
         return;
       }
 
-      // Create a file in the directory for user 1
-      client1.put( basePath() + 'testDir/file.txt', function( status ) {
+      // Make sure no permissions are inherited
+      var privilege = new nl.sara.webdav.Privilege();
+      privilege.namespace = 'DAV:';
+      privilege.tagname = 'all';
+      var ace = new nl.sara.webdav.Ace();
+      ace.grantdeny = nl.sara.webdav.Ace.DENY;
+      ace.principal = nl.sara.webdav.Ace.ALL;
+      ace.addPrivilege( privilege );
+      var acl = new nl.sara.webdav.Acl();
+      acl.addAce( ace );
+      client1.acl( basePath(), function( status ) {
         if ( ( status < 200 ) || ( status > 299 ) ) {
-          nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'Unable to create file. Status code: ' + status );
+          nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'Unable to set permissions on test directory. Status code: ' + status );
           return;
         }
 
-        // User 2 should now not have access to this file
-        client2.get( basePath() + 'testDir/file.txt', function( status ) {
-          if ( status !== 404 ) {
-            nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'User 2 should not be able to access the file. Expected status code 404, received status code ' + status );
-            return;
-          }else{
-            nl.sara.testutil.finishTest( testId, nl.sara.testutil.SUCCESS );
+        // Create a directory for user 1
+        client1.mkcol( basePath() + 'testDir', function( status ) {
+          if ( ( status < 200 ) || ( status > 299 ) ) {
+            nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'Unable to create directory. Status code: ' + status );
             return;
           }
+    
+          // Create a file in the directory for user 1
+          client1.put( basePath() + 'testDir/file.txt', function( status ) {
+            if ( ( status < 200 ) || ( status > 299 ) ) {
+              nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'Unable to create file. Status code: ' + status );
+              return;
+            }
+    
+            // User 2 should now not have access to this file
+            client2.get( basePath() + 'testDir/file.txt', function( status ) {
+              if ( status !== 404 ) {
+                nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'User 2 should not be able to access the file. Expected status code 404, received status code ' + status );
+                return;
+              }else{
+                nl.sara.testutil.finishTest( testId, nl.sara.testutil.SUCCESS );
+                return;
+              }
+            } );
+          }, 'Lorem ipsum', 'text/plain; charset=UTF-8' );
         } );
-      }, 'Lorem ipsum', 'text/plain; charset=UTF-8' );
+      }, acl );
     } );
   }, { 'Depth': 'infinity' } );
 } );
@@ -977,47 +1002,76 @@ nl.sara.testutil.queueTest( 'File should inherit ACL from directory', function( 
 
       // Test the inherited-acl-set
       var inheritedAclHrefs = response.getProperty( 'DAV:', 'inherited-acl-set' ).getParsedValue();
-      if ( ( inheritedAclHrefs === null ) || ( inheritedAclHrefs.length !== 1 ) || ( inheritedAclHrefs[0] !== basePath() + 'testDir/' ) ) {
-        nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'The file should (only) inherit from its direct parent directory (' + basePath() + 'testDir/' + '). Returned value: ' + JSON.stringify( inheritedAclHrefs ) );
+      if ( inheritedAclHrefs === null ) {
+        nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'The file should inherit privileges' );
+        return;
+      }
+      var inheritedFromBasePath = false;
+      var illegalInheritPath = false;
+      var inheritableParentsPath = basePath() + 'testDir/';
+      for ( var index in inheritedAclHrefs ) {
+        if ( basePath() === inheritedAclHrefs[ index ] ) {
+console.log( "van basepath: " + inheritedAclHrefs[ index ] );
+          inheritedFromBasePath = true;
+        }else if ( inheritableParentsPath.substr( 0, inheritedAclHrefs[ index ].length ) !== inheritedAclHrefs[ index ] ) {
+console.log( "niet van parent: " + inheritedAclHrefs[ index ] );
+          illegalInheritPath = true;
+          break;
+        }
+      }
+      if ( ! inheritedFromBasePath || illegalInheritPath ) {
+        nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'The file should (only) inherit privileges from its parent directories. Returned value: ' + JSON.stringify( inheritedAclHrefs ) );
         return;
       }
 
       // Test the acl
-      var retrievedAcl = response.getProperty( 'DAV:', 'acl' ).getParsedValue();
-      if ( retrievedAcl.getLength() !== 4 ) {
-        nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'ACL should be 4 ACE\'s long. Real length: ' + retrievedAcl.getLength() );
+      var retrievedAces = response.getProperty( 'DAV:', 'acl' ).getParsedValue().getAces();
+      var validTestAces = [];
+      for ( var index in retrievedAces ) {
+        if
+        (
+            ( false === retrievedAces[ index ].inherited ) ||
+            ( retrievedAces[ index ].inherited.substr( 0, basePath().length ) === basePath() )
+        ) {
+          validTestAces.push( retrievedAces[ index ] );
+        }
+      }
+      if ( 5 !== validTestAces.length ) {
+        nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'ACL should be 5 ACE\'s long. Real length: ' + validTestAces.length );
         return;
       }
-      var priv1 = retrievedAcl.getAce( 0 );
-      var priv2 = retrievedAcl.getAce( 1 );
-      var priv3 = retrievedAcl.getAce( 2 );
-      var priv4 = retrievedAcl.getAce( 3 );
       if (
-        ( priv1.principal.namespace !== 'DAV:' ) ||
-        ( priv1.principal.tagname !== 'owner' ) ||
-        ( priv1.invertprincipal !== false ) ||
-        ( priv1.grantdeny !== nl.sara.webdav.Ace.GRANT ) ||
-        ( priv1.inherited !== false ) ||
-        ( priv1.isprotected !== true ) ||
-        ( priv1.getPrivilege( 'DAV:', 'all' ) === undefined ) ||
-        ( priv2.principal !== nl.sara.webdav.Ace.ALL ) ||
-        ( priv2.invertprincipal !== false ) ||
-        ( priv2.grantdeny !== nl.sara.webdav.Ace.GRANT ) ||
-        ( priv2.inherited !== false ) ||
-        ( priv2.isprotected !== true ) ||
-        ( priv2.getPrivilege( 'DAV:', 'unbind' ) === undefined ) ||
-        ( priv3.principal !== '/system/users/' + username1 ) ||
-        ( priv3.invertprincipal !== false ) ||
-        ( priv3.grantdeny !== nl.sara.webdav.Ace.DENY ) ||
-        ( priv3.inherited !== false ) ||
-        ( priv3.isprotected !== false ) ||
-        ( priv3.getPrivilege( 'DAV:', 'all' ) === undefined ) ||
-        ( priv4.principal !== '/system/users/' + username2 ) ||
-        ( priv4.invertprincipal !== false ) ||
-        ( priv4.grantdeny !== nl.sara.webdav.Ace.GRANT ) ||
-        ( priv4.inherited !== basePath() + 'testDir/' ) ||
-        ( priv4.isprotected !== false ) ||
-        ( priv4.getPrivilege( 'DAV:', 'read' ) === undefined )
+        ( validTestAces[0].principal.namespace !== 'DAV:' ) ||
+        ( validTestAces[0].principal.tagname !== 'owner' ) ||
+        ( validTestAces[0].invertprincipal !== false ) ||
+        ( validTestAces[0].grantdeny !== nl.sara.webdav.Ace.GRANT ) ||
+        ( validTestAces[0].inherited !== false ) ||
+        ( validTestAces[0].isprotected !== true ) ||
+        ( validTestAces[0].getPrivilege( 'DAV:', 'all' ) === undefined ) ||
+        ( validTestAces[1].principal !== nl.sara.webdav.Ace.ALL ) ||
+        ( validTestAces[1].invertprincipal !== false ) ||
+        ( validTestAces[1].grantdeny !== nl.sara.webdav.Ace.GRANT ) ||
+        ( validTestAces[1].inherited !== false ) ||
+        ( validTestAces[1].isprotected !== true ) ||
+        ( validTestAces[1].getPrivilege( 'DAV:', 'unbind' ) === undefined ) ||
+        ( validTestAces[2].principal !== '/system/users/' + username1 ) ||
+        ( validTestAces[2].invertprincipal !== false ) ||
+        ( validTestAces[2].grantdeny !== nl.sara.webdav.Ace.DENY ) ||
+        ( validTestAces[2].inherited !== false ) ||
+        ( validTestAces[2].isprotected !== false ) ||
+        ( validTestAces[2].getPrivilege( 'DAV:', 'all' ) === undefined ) ||
+        ( validTestAces[3].principal !== '/system/users/' + username2 ) ||
+        ( validTestAces[3].invertprincipal !== false ) ||
+        ( validTestAces[3].grantdeny !== nl.sara.webdav.Ace.GRANT ) ||
+        ( validTestAces[3].inherited !== basePath() + 'testDir/' ) ||
+        ( validTestAces[3].isprotected !== false ) ||
+        ( validTestAces[3].getPrivilege( 'DAV:', 'read' ) === undefined ) ||
+        ( validTestAces[4].principal !== nl.sara.webdav.Ace.ALL ) ||
+        ( validTestAces[4].invertprincipal !== false ) ||
+        ( validTestAces[4].grantdeny !== nl.sara.webdav.Ace.DENY ) ||
+        ( validTestAces[4].inherited !== basePath() ) ||
+        ( validTestAces[4].isprotected !== false ) ||
+        ( validTestAces[4].getPrivilege( 'DAV:', 'all' ) === undefined )
       ){
         nl.sara.testutil.finishTest( testId, nl.sara.testutil.FAILURE, 'File ACL is not correct' );
         return;
