@@ -155,7 +155,7 @@
    * Test setOnActivate, attachEvents
    */
   test('nl.sara.beehub.view.tree.setOnActivate, attachEvents', function(){
-    expect(45);
+    expect(55);
     
     var testHref = "";
     
