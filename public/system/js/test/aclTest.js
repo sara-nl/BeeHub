@@ -16,17 +16,6 @@
 
 "use strict";
 
-// TODO: determine the url to the server
-// TODO: prepare/reset server environment
-// TODO: determine which two users to use
-// TODO: how to make sure both users are member of the testgroup?
-// TODO: create test to check environment and set up final stuff?
-// TODO:
-/*
-- User 1: change privileges and check that the privilege table is implemented correctly
-*/
-
-
 ///**
 // * Tests whether the correct attributes are set on group members
 // */
@@ -75,11 +64,20 @@ if (nl.sara.testutil === undefined) {
       'description': description,
       'test': testFunction
     };
-    if ( ! running ) {
-      running = true;
-      window.setTimeout( function() { tests[ testId ].test( testId ); }, 500 );
-    }
   };
+
+
+  /**
+   * Starts the tests
+   *
+   * @returns  {void}
+   */
+  nl.sara.testutil.startTest = function() {
+    if ( ! running && ( tests.length > 0 ) ) {
+      running = true;
+      window.setTimeout( function() { tests[0].test(0); }, 500 );
+    }
+  }
   
   
   /**
@@ -134,12 +132,12 @@ if (nl.sara.testutil === undefined) {
 
 
 // Home dir van user 1 wordt gebruikt en moet geen ACL er op hebben staan
-var username1 = 'niek';
-var password1 = 'test';
-var username2 = 'laura';
-var password2 = 'test';
+var username1 = '';
+var password1 = '';
+var username2 = '';
+var password2 = '';
 // user 1 moet lid en administrator van deze groep zijn
-var sharedGroup = 'tempgroupdinges';
+var sharedGroup = '';
 
 
 /**
@@ -1011,10 +1009,8 @@ nl.sara.testutil.queueTest( 'File should inherit ACL from directory', function( 
       var inheritableParentsPath = basePath() + 'testDir/';
       for ( var index in inheritedAclHrefs ) {
         if ( basePath() === inheritedAclHrefs[ index ] ) {
-console.log( "van basepath: " + inheritedAclHrefs[ index ] );
           inheritedFromBasePath = true;
         }else if ( inheritableParentsPath.substr( 0, inheritedAclHrefs[ index ].length ) !== inheritedAclHrefs[ index ] ) {
-console.log( "niet van parent: " + inheritedAclHrefs[ index ] );
           illegalInheritPath = true;
           break;
         }
@@ -1099,5 +1095,23 @@ console.log( "niet van parent: " + inheritedAclHrefs[ index ] );
 
   }, acl );
 } );
+
+
+// After adding all the tests, the start button can be clicked
+( function() {
+  var button = document.getElementById('start_button');
+  button.addEventListener( 'click', function() {
+    username1 = document.getElementById( 'user1' ).value;
+    password1 = document.getElementById( 'password1' ).value;
+    username2 = document.getElementById( 'user2' ).value;
+    password2 = document.getElementById( 'password2' ).value;
+    sharedGroup = document.getElementById( 'group' ).value;
+    document.getElementsByTagName( 'body' ).item( 0 )
+            .removeChild( document.getElementById('form_div') );
+    nl.sara.testutil.startTest();
+  } );
+  button.removeAttribute( 'disabled' );
+} )();
+
 
 // End of file

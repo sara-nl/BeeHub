@@ -5,6 +5,16 @@
     <title>BeeHub ACL test</title>
   </head>
   <body>
+    <div id="form_div">
+      <form action="#">
+        <div>Username of user 1: <input type="text" id="user1" name="user1" /> Note that this resource will be removed if it already exists: /home/{username1}/testDir.removeMe</div>
+        <div>Password of user 1: <input type="password" id="password1" name="password1" /></div>
+        <div>Username of user 2: <input type="text" id="user2" name="user2" /></div>
+        <div>Password of user 2: <input type="password" id="password2" name="password2" /></div>
+        <div>Group of which both users are a member: <input type="name" id="group" name="group" /></div>
+        <div><input type="button" id="start_button" value="Start" disabled="disabled" /></dib>
+      </form>
+    </div>
     <script type="text/javascript" src="../webdavlib.js"></script>
     <script type="text/javascript" src="aclTest.js"></script>
   </body>
