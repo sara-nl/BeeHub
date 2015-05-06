@@ -1,5 +1,8 @@
 # Change log
 
+## Next version
+- Fixed error message when unauthenticated users try to upload something
+
 ## v2.0.3
 - It is now forbidden to grant privileges to a home folder (members of /home/) without specifying a specific group or user. In other words, "DAV: all", "DAV: authenticated" and "DAV: unauthenticated" are no longer allowed to have an ACE granting them privileges to these folders.
 
