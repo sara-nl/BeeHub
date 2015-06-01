@@ -1,6 +1,6 @@
 # Change log
 
-## Next version
+## v2.0.4
 - Fixed error message when unauthenticated users try to upload something
 - Fixed a bug where files that exist in MongoDB, but not in the filesystem, could not be deleted
 
