@@ -152,9 +152,10 @@ public function method_DELETE( $name ) {
     if (!@rmdir($localpath))
       throw new DAV_Status(DAV::HTTP_CONFLICT, 'Unable to DELETE resource: ' . $name);
   }
-  else {
-    if (!@unlink($localpath))
+  elseif ( file_exists( $localpath ) ) {
+    if (!@unlink($localpath)) {
       throw new DAV_Status(DAV::HTTP_INTERNAL_SERVER_ERROR);
+    }
   }
 
   // Remove the entry from mongoDB too
