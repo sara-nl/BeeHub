@@ -10,6 +10,7 @@ BeeHub is written in PHP and intended/tested in a Linux environment with Apache 
 * PHP 5.3 or higher, both the CLI and the Apache2 interface
 * PHP extensions: fileinfo, mbstring, session and pcntl. And from the PECL repository: mongo.
 * mongoDB 2.4 or higher
+* MySQL or MariaDB 5.1 or higher
 * git
 * make
 * simpleSAMLphp; see http://simplesamlphp.org/
