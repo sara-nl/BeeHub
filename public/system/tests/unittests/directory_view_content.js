@@ -399,7 +399,9 @@
     deepEqual(resource.type, file1Type, "Type should be "+file1Type);
     deepEqual(resource.owner, file1Owner, "Owner should be "+file1Owner);
     deepEqual(resource.contentlength, file1Size, "Contentlength should be "+file1Size);
-    deepEqual(resource.lastmodified, file1LastModified, "Lastmodified should be "+file1LastModified);
+    var foundDate = new Date( resource.lastmodified );
+    var expectedDate = new Date( file1LastModified );
+    deepEqual(foundDate.getTime(), expectedDate.getTime(), "Lastmodified should be "+file1LastModified);
   });
   
   /**
@@ -455,7 +457,9 @@
     deepEqual(testresource1.displayname, file1Displayname, "Displayname should be "+file1Displayname);
     deepEqual(testresource1.type, file1Type, "Type should be "+file1Type);
     deepEqual(testresource1.contentlength, file1Size, "Contentlength should be "+file1Size);
-    deepEqual(testresource1.lastmodified, file1LastModified, "Lastmodified should be "+file1LastModified);
+    var foundDate = new Date( testresource1.lastmodified );
+    var expectedDate = new Date( file1LastModified );
+    deepEqual(foundDate.getTime(), expectedDate.getTime(), "Lastmodified should be "+file1LastModified);
     deepEqual(testresource1.owner, file1Owner, "Owner should be "+file1Owner);
     
     nl.sara.beehub.view.content.deleteResource(resource);
@@ -482,7 +486,9 @@
     deepEqual(testresource1.displayname, file1Displayname, "Displayname should be "+file1Displayname);
     deepEqual(testresource1.type, file1Type, "Type should be "+file1Type);
     deepEqual(testresource1.contentlength, file1Size, "Contentlength should be "+file1Size);
-    deepEqual(testresource1.lastmodified, file1LastModified, "Lastmodified should be "+file1LastModified);
+    var foundDate = new Date( testresource1.lastmodified );
+    var expectedDate = new Date( file1LastModified );
+    deepEqual(foundDate.getTime(), expectedDate.getTime(), "Lastmodified should be "+file1LastModified);
     deepEqual(testresource1.owner, file1Owner, "Owner should be "+file1Owner);
     
     var resourcenew = new nl.sara.beehub.ClientResource(location.pathname+"testfile2");
