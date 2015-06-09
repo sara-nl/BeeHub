@@ -354,10 +354,10 @@ require 'views/header.php';
               $size = $member->user_prop_getcontentlength();
               if ( ! empty( $size ) ) {
                 $unit = null;
-                $units = array('B', 'KB', 'MB', 'GB', 'TB');
+                $units = array('B', 'kB', 'MB', 'GB', 'TB');
                 for ($i = 0, $c = count($units); $i < $c; $i++) {
-                  if ($size > 1024) {
-                    $size = $size / 1024;
+                  if ($size > 1000) {
+                    $size = $size / 1000;
                   } else {
                     $unit = $units[$i];
                     break;

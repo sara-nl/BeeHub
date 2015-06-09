@@ -42,7 +42,7 @@
       format: function(s) {
         // If not a dir
         if (s !== "") {
-          var suf = s.match(new RegExp( /(KB|B|GB|MB|TB)$/ ))[1];
+          var suf = s.match(new RegExp( /(kB|B|GB|MB|TB)$/ ))[1];
           var num = parseFloat(s.match( new RegExp( /^[0-9]+(\.[0-9]+)?/ ))[0]);
         } else {
           var suf = "DIR";
@@ -52,14 +52,14 @@
             return 0;
           case 'B':
             return num;
-          case 'KB':
-            return num * 1024;
+          case 'kB':
+            return num * 1000;
           case 'MB':
-            return num * 1024 * 1024;
+            return num * 1000 * 1000;
           case 'GB':
-            return num * 1024 * 1024 * 1024;
+            return num * 1000 * 1000 * 1000;
           case 'TB':
-            return num * 1024 * 1024 * 1024 * 1024;
+            return num * 1000 * 1000 * 1000 * 1000;
           }
       }, 
       type: 'numeric' 

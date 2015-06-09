@@ -267,16 +267,16 @@ nl.sara.webdav.Property.addCodec(nl.sara.beehub.codec.Sponsor_membership_Codec);
  */
 nl.sara.beehub.utils.bytesToSize = function(bytes, precision)
 {  
-    var kilobyte = 1024;
-    var megabyte = kilobyte * 1024;
-    var gigabyte = megabyte * 1024;
-    var terabyte = gigabyte * 1024;
+    var kilobyte = 1000;
+    var megabyte = kilobyte * 1000;
+    var gigabyte = megabyte * 1000;
+    var terabyte = gigabyte * 1000;
    
     if ((bytes >= 0) && (bytes < kilobyte)) {
         return bytes + ' B';
  
     } else if ((bytes >= kilobyte) && (bytes < megabyte)) {
-        return (bytes / kilobyte).toFixed(precision) + ' KB';
+        return (bytes / kilobyte).toFixed(precision) + ' kB';
  
     } else if ((bytes >= megabyte) && (bytes < gigabyte)) {
         return (bytes / megabyte).toFixed(precision) + ' MB';

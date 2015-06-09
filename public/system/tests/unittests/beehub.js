@@ -38,9 +38,9 @@
     
     deepEqual( nl.sara.beehub.utils.bytesToSize(0, 2), "0 B", "0 bytes, precision 2");
     deepEqual( nl.sara.beehub.utils.bytesToSize(500, 2), "500 B", "500 bytes, precision 2");
-    deepEqual( nl.sara.beehub.utils.bytesToSize(1500, 2), "1.46 KB", "1500 bytes, precision 2");
-    deepEqual( nl.sara.beehub.utils.bytesToSize(15000000, 2), "14.31 MB", "15000000 bytes, precision 2");
-    deepEqual( nl.sara.beehub.utils.bytesToSize(15000000000, 1), "14.0 GB", "15000000000 bytes, precision 1");
-    deepEqual( nl.sara.beehub.utils.bytesToSize(15000000000000, 0), "14 TB", "15000000000000 bytes, precision 0");
+    deepEqual( nl.sara.beehub.utils.bytesToSize(1500, 2), "1.50 kB", "1500 bytes, precision 2");
+    deepEqual( nl.sara.beehub.utils.bytesToSize(15000000, 2), "15.00 MB", "15000000 bytes, precision 2");
+    deepEqual( nl.sara.beehub.utils.bytesToSize(15000000000, 1), "15.0 GB", "15000000000 bytes, precision 1");
+    deepEqual( nl.sara.beehub.utils.bytesToSize(15000000000000, 0), "15 TB", "15000000000000 bytes, precision 0");
   });
 })();
