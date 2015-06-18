@@ -1,5 +1,9 @@
 # Change log
 
+## v2.0.5
+- Fixed a bug which limited large uploads (sometimes)
+- File sizes are now shown in SI units (1,000 bytes = 1kB, 1,000,000 bytes = 1 MB)
+
 ## v2.0.4
 - Fixed error message when unauthenticated users try to upload something
 - Fixed a bug where files that exist in MongoDB, but not in the filesystem, could not be deleted
