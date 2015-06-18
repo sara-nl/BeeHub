@@ -159,6 +159,7 @@ public function method_PUT($stream) {
     if ( ( $cl = (int)(@$_SERVER['CONTENT_LENGTH']) ) ||
          ( $cl = (int)(@$_SERVER['HTTP_X_EXPECTED_ENTITY_LENGTH']) ) ) {
       # The client has indicated the length of the request entity body:
+      set_time_limit(120);
       $time = time();
 
       // Loop until we reach the end of the request body (or when we have read the indicated length)
@@ -196,6 +197,7 @@ public function method_PUT($stream) {
     } else {
       # The client didn't give us any clue about the request body entity size.
       # Let's make the best of it...
+      set_time_limit(120);
       $time = time();
 
       // We break out of this loop, from within it
