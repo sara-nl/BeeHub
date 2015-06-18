@@ -30,6 +30,18 @@
 		    	<input type="email" id="user_displayName" name="email" value="<?= $email_address ?>" required/>
 		    </div>
 	    </div>
+
+	    <?php if (BeeHub_Auth::inst()->simpleSaml()->isAuthenticated()) : ?>
+	    	<div class="control-group">
+			    <label class="control-label" for=""></label>
+			    <div class="controls">
+			      <p>
+			      	This will become your BeeHub specific password, it should be different than your SURFconext password.
+			      </p>
+			    </div>
+		    </div>
+	    <?php endif; ?>
+
 	    <div class="control-group">
 		    <label class="control-label" for="username_password">Password</label>
 		    <div class="controls">
@@ -48,8 +60,8 @@
 		    </div>
 	    </div>
     </form>
- 
-<?php 
+
+<?php
 	$footer='<script type="text/javascript" src="/system/js/users.js"></script>';
-	require('views/footer.php'); 
+	require('views/footer.php');
 ?>
