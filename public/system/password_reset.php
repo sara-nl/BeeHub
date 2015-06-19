@@ -27,7 +27,7 @@ header('Content-Type: text/html; charset="UTF-8"');
 if ( $_SERVER['REQUEST_METHOD'] === 'GET' ) {
   require('views/password_reset_form.php');
 }elseif ( $_SERVER['REQUEST_METHOD'] === 'POST' ) { // POST requests will either send you a reset code or, if a code is given, it will reset your password
-  
+
   //First try to get the username
   $username = null;
   if ( isset( $_POST['username'] ) && !empty( $_POST['username'] ) ) {
@@ -39,7 +39,7 @@ if ( $_SERVER['REQUEST_METHOD'] === 'GET' ) {
       $username = $result['name'];
     }
   }
-  
+
   // Then find the actual user
   $user = null;
   try {
@@ -52,7 +52,7 @@ if ( $_SERVER['REQUEST_METHOD'] === 'GET' ) {
   if ( isset( $_POST['reset_code'] ) && !empty( $_POST['reset_code']) ) {
     if ( !is_null( $user ) &&
          ( isset( $_POST['new_password'] ) && !empty( $_POST['new_password'] ) ) &&
-         ( isset( $_POST['new_password2'] ) && ( $_POST['new_password'] === $_POST['new_password2'] ) ) && 
+         ( isset( $_POST['new_password2'] ) && ( $_POST['new_password'] === $_POST['new_password2'] ) ) &&
          $user->check_password_reset_code($_POST['reset_code'] ) ) {
       $user->set_password( $_POST['new_password'] );
       require('views/password_reset_done.php');
@@ -82,9 +82,8 @@ if ( $_SERVER['REQUEST_METHOD'] === 'GET' ) {
   Best regards,
 
   BeeHub';
-        BeeHub::email($user->prop( DAV::PROP_DISPLAYNAME ) . ' <' . $user->prop( BeeHub::PROP_EMAIL ) . '>',
-                      'Password reset for BeeHub',
-                      $message);
+      $sub = array($user->prop( BeeHub::PROP_EMAIL ) => $user->prop( DAV::PROP_DISPLAYNAME ));
+      BeeHub::email($sub, 'Password reset for BeeHub', $message);
     }
     require('views/password_reset_code_sent.php');
   }
