@@ -527,9 +527,10 @@ class BeeHub {
    */
   public static function exception_handler( $exception ) {
     if ( ! $exception instanceof DAV_Status ) {
+      trigger_error( strval( $exception ), E_USER_WARNING );
       $exception = new DAV_Status(
         DAV::HTTP_INTERNAL_SERVER_ERROR,
-        strval( $exception )
+        "Unexpected error occured at " . date('r')
       );
     }
     $exception->output();
