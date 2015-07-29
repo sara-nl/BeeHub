@@ -333,16 +333,15 @@ class BeeHub_Auth {
       $_POST[ $postField ] !== $this->getPostAuthCode()
     ){
       $_SESSION[ $postAuthAttempts ]++;
-      if ( $_SESSION[ $postAuthAttempts ] >= 5 ) {
+      if ( $_SESSION[ $postAuthAttempts ] >= 500 ) {
+        // After 500 failed attempts, we unset the key, so a new one should be generated. This is to prevent brute force attempts.
         unset( $_SESSION[ self::$SESSION_KEY ] );
         $_SESSION[ $postAuthAttempts ] = 0;
       }
       return false;
     }
 
-    unset( $_SESSION[ self::$SESSION_KEY ] );
     $_SESSION[ $postAuthAttempts ] = 0;
-
     return true;
   }
 
