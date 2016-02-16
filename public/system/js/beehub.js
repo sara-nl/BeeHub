@@ -76,7 +76,7 @@ nl.sara.beehub.retrieveNewPostAuth = function(){
  client.get( '/system/?POST_auth_code', function( status, data ) {
    if ( status === 200 ) {
      nl.sara.beehub.postAuth = data;
-   } else {
+   } else if ( status !== 403 ) {
      alert("Something went wrong. Please reload the page. When this does not solve the problem contact helpdesk@surfsara.nl");
    };
  });
