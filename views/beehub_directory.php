@@ -630,7 +630,7 @@ $footer = '
   <script type="text/javascript" src="/system/js/directory_view_acl.js"></script>
   <script type="text/javascript" src="/system/js/directory_resource.js"></script>
   <script type="text/javascript">
-    nl.sara.beehub.currentUserPath = \'' . BeeHub::getAuth()->current_user()->path . '\';
+    nl.sara.beehub.currentUserPath = \'' . @BeeHub::getAuth()->current_user()->path . '\';
   </script>
 ';
 
