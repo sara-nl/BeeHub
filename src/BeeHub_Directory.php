@@ -315,15 +315,9 @@ public function method_MOVE( $member, $destination ) {
 
 
 /**
- * @var  Array  All visible child resources
+ * @var DirectoryIterator
  */
 private $dir = null;
-
-
-/**
- * @var  int  The current key
- */
-private $currentKey = 0;
 
 
 /**
@@ -331,60 +325,45 @@ private $currentKey = 0;
  */
 private function dir() {
   if (is_null($this->dir)) {
-    $collection = BeeHub::getNoSQL()->files;
-    $unslashifiedPath = DAV::unslashify( $this->path );
-    while ( substr( $unslashifiedPath, 0, 1 ) === '/' ) {
-      $unslashifiedPath = substr( $unslashifiedPath, 1 );
-    }
-    if ( ! empty( $unslashifiedPath ) ) {
-      $query = array( 'depth' => substr_count( $unslashifiedPath, '/' ) + 2, 'path' => array( '$regex' => '^' . preg_quote( $unslashifiedPath ) . '/[^/]*$' ) );
-    }else{
-      $query = array( 'depth' => 1 );
-    }
-    $allChildren = $collection->find( $query );
-
-    $this->dir = array();
-    foreach( $allChildren as $document ) {
-      $child = basename( $document['path'] );
-      if ( isset( $document['collection'] ) && $document['collection'] ) {
-        $child .= '/';
-      }
-      if ( ! DAV::$REGISTRY->resource( $document )->isVisible() ) {
-        DAV::$REGISTRY->forget( $this->path . $child );
-      }else{
-        $this->dir[] = $child;
-      }
-    }
+    $this->dir = new DirectoryIterator( $this->localPath );
+    $this->skipInvalidMembers();
   }
   return $this->dir;
 }
 
 
+private function skipInvalidMembers() {
+  while (
+    $this->dir()->valid() && (
+      $this->dir()->isDot() ||
+      !BeeHub_Registry::inst()->resource(
+        $this->path . $this->current()
+      )->isVisible()
+  ) ) {
+    BeeHub_Registry::inst()->forget(
+      $this->path . $this->current()
+    );
+    $this->dir->next();
+  }
+}
+
+
 public function current() {
-  $dir = $this->dir();
-  return $dir[ $this->currentKey ];
+  $retval = rawurlencode($this->dir()->getFilename());
+  if ('dir' == $this->dir()->getType())
+    $retval .= '/';
+  return $retval;
 }
-
-
-public function key() {
-  return $this->currentKey;
+public function key()     { return $this->dir()->key(); }
+public function next()    {
+  $this->dir()->next();
+  $this->skipInvalidMembers();
 }
-
-
-public function next() {
-  $this->currentKey++;
-}
-
-
 public function rewind()  {
-  $this->currentKey = 0;
+  $this->dir()->rewind();
+  $this->skipInvalidMembers();
 }
-
-
-public function valid() {
-  $dir = $this->dir();
-  return ( $this->currentKey < count( $dir ) );
-}
+public function valid()   { return $this->dir()->valid(); }
 
 
 } // class BeeHub_Directory
